@@ -1,0 +1,6 @@
+# Ne servir ni les fichiers internes du dépôt ni l'historique Git
+RedirectMatch 404 /\.git
+<FilesMatch "^(README\.md|\.gitignore)$">
+  Require all denied
+</FilesMatch>
+Options -Indexes

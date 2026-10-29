@@ -4,7 +4,7 @@ Code source du site web de Madame Cho (madamecho.com), pâtisserie de Youngmi Ch
 
 ## Organisation
 
-- `public/` : les fichiers mis en ligne (HTML, CSS, images). C'est ce dossier qui est servi par l'hébergement.
+- La racine du dépôt est la racine du site : OVH clone le dépôt dans le dossier du site. `.htaccess` empêche de servir ce README et le dossier `.git`.
 - Hébergement : OVH, offre Perso, compte client « MADAME CHO ».
 - Tous les textes visibles du site sont en français (R-22 du Rulebook Madame Cho).
 
