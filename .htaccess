@@ -1,3 +1,9 @@
+# Toujours en HTTPS, sur l'adresse principale madamecho.com (sans www)
+RewriteEngine On
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteRule ^ https://madamecho.com%{REQUEST_URI} [L,R=301]
+
 # Ne servir ni les fichiers internes du dépôt ni l'historique Git
 RedirectMatch 404 /\.git
 <FilesMatch "^(README\.md|\.gitignore)$">
