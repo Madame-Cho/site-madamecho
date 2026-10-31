@@ -138,21 +138,18 @@ function show(){
   render(c);
   shownAt = performance.now();
 }
-// Chaîne d'images : plusieurs services de logos, puis le nom en texte si rien ne charge.
+// Images : logo.dev avec la clé publique de Madame Cho (fallback=404 : jamais d'icône passe-partout) ; sinon le nom en texte.
+const LOGO_KEY = "";
 function sources(c){
   const d = c.domaine.replace(/^https?:\/\//,"").split("/")[0];
-  return [
-    "https://logo.clearbit.com/"+d+"?size=400",
-    "https://img.logo.dev/"+d+"?size=400&format=png",
-    "https://icons.duckduckgo.com/ip3/"+d+".ico",
-    "https://www.google.com/s2/favicons?domain="+d+"&sz=256"
-  ];
+  if(!LOGO_KEY || d.startsWith("instagram.com")) return [];
+  return ["https://img.logo.dev/"+d+"?token="+LOGO_KEY+"&size=400&format=png&fallback=404"];
 }
 function render(c){
   const box = $("logo"); box.innerHTML=""; imgOk=null;
   const srcs = sources(c); let k=0;
   const img = new Image(); img.alt="";
-  img.onload = ()=>{ if(img.naturalWidth<40){ next(); return; } imgOk = srcs[k-1]; box.appendChild(img); };
+  img.onload = ()=>{ if(img.naturalWidth<64){ next(); return; } imgOk = srcs[k-1]; box.appendChild(img); };
   img.onerror = next;
   function next(){ if(k<srcs.length){ img.src = srcs[k++]; } else { imgOk=false; box.innerHTML='<div class="fallback">'+esc(c.nom)+'<small>(image indisponible, nom affiché)</small></div>'; } }
   next();

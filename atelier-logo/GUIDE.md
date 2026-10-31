@@ -23,4 +23,4 @@ Onglet « Votes » : une ligne par geste (haut, bas, coeur, passer, annule). Cro
 Claude produit ensuite le « Profil des goûts de Youngmi » (91/01) avec une section sur les biais (images manquantes, marques reconnues, ordre).
 
 ## Images
-Les logos sont chargés depuis des services tiers (Clearbit, logo.dev, DuckDuckGo, Google favicons) côté navigateur, jamais copiés dans le dépôt. Si aucun ne répond, le nom de la maison s'affiche et le vote est marqué « image : non ».
+Les logos sont chargés côté navigateur depuis logo.dev (compte gratuit Madame Cho, clé publique pk_… dans LOGO_KEY de index.html, option fallback=404 pour ne jamais afficher d'icône passe-partout), jamais copiés dans le dépôt. Sans logo, le nom de la maison s'affiche et le vote est marqué « image : non ».
