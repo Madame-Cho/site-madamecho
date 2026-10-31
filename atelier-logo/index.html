@@ -151,7 +151,7 @@ function render(c){
   const img = new Image(); img.alt="";
   img.onload = ()=>{ if(img.naturalWidth<64){ next(); return; } imgOk = srcs[k-1]; box.appendChild(img); };
   img.onerror = next;
-  function next(){ if(k<srcs.length){ img.src = srcs[k++]; } else { imgOk=false; box.innerHTML='<div class="fallback">'+esc(c.nom)+'<small>(image indisponible, nom affiché)</small></div>'; } }
+  function next(){ if(k<srcs.length){ img.src = srcs[k++]; } else { imgOk=false; box.innerHTML='<div class="fallback"><small>logo indisponible, on passe…</small></div>'; setTimeout(()=>{ if(current()===c) vote("sans-image"); }, 400); } }
   next();
 }
 function esc(s){ return s.replace(/[&<>]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
@@ -159,7 +159,7 @@ function vote(v){
   const c = current(); if(!c) return;
   const rec = { t:new Date().toISOString(), prenom:state.prenom, id:c.id, vote:v, connue:$("known").checked?"oui":"non", secondes:Math.round((performance.now()-shownAt)/100)/10, position:state.i+1, session:state.session, image: imgOk===false?"non":"oui" };
   state.votes.push(rec); state.pending.push(rec); state.i++; save();
-  flash({bas:"👎",haut:"👍",coeur:"❤️",passer:"→"}[v]);
+  if(v!=="sans-image") flash({bas:"👎",haut:"👍",coeur:"❤️",passer:"→"}[v]);
   sync(); show();
 }
 function undo(){
