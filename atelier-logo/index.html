@@ -139,7 +139,7 @@ function show(){
   shownAt = performance.now();
 }
 // Images : logo.dev avec la clé publique de Madame Cho (fallback=404 : jamais d'icône passe-partout) ; sinon le nom en texte.
-const LOGO_KEY = "";
+const LOGO_KEY = "pk_R1VMahZ-R7meTooQii3bIg";
 function sources(c){
   const d = c.domaine.replace(/^https?:\/\//,"").split("/")[0];
   if(!LOGO_KEY || d.startsWith("instagram.com")) return [];
