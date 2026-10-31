@@ -11,7 +11,7 @@ Rien ici n'est un secret : la liste des votes n'est pas dans ce dépôt, elle pa
    Tant que l'URL est vide, les votes restent dans le navigateur et se téléchargent en CSV à la fin.
 
 ## 2. Tester (Olivier d'abord)
-- En local : ouvrir le dossier avec `python3 -m http.server` et aller sur http://localhost:8000/atelier-logo/ (un simple double-clic sur le fichier ne charge pas `corpus.json`).
+- En local : double-clic sur `index.html` suffit (le corpus est intégré à la page ; `corpus.json` et `corpus.csv` restent la source pour la feuille).
 - Ou sur la branche GitHub via un aperçu (Netlify, Pages de la branche) si le site le permet.
 - Vérifier : prénom, défilement, 👎👍❤️, « passer », annuler, pause à 50, arrêt et reprise, lignes qui arrivent dans l'onglet « Votes », colonne « Image chargée » (les logos qui ne se chargent pas affichent le nom).
 
