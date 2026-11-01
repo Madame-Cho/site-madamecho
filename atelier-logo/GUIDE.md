@@ -11,6 +11,8 @@ Rien ici n'est un secret : la liste des votes n'est pas dans ce dépôt, elle pa
    Tant que l'URL est vide, les votes restent dans le navigateur et se téléchargent en CSV à la fin.
 
 ## 2. Tester (Olivier d'abord)
+- Cas prévus par la page : logo absent chez logo.dev → fiche passée automatiquement (vote « sans-image ») ; réseau lent (12 s) → fiche passée (« lent ») ; logo blanc sur fond transparent → fond sombre automatique, et bouton « fond sombre / clair » ; logo flou ou qui n'est pas un logo → bouton « logo illisible » ; double clic → un seul vote ; « annuler le dernier » (ou touche Retour arrière) ; lien « voir le site ↗ » dans un nouvel onglet ; réponses gardées par prénom sur l'appareil, reprise automatique ; option « reprendre à une fiche précise » pour changer d'appareil ; « effacer mes réponses sur cet appareil » ; envoi des votes par paquets de 3, et de ce qui reste quand on quitte la page.
+- Limites : un même prénom sur deux appareils sans l'option « reprendre à la fiche n° » revote depuis le début (doublons à écarter à l'analyse par Prénom + Session + Position) ; la qualité des logos dépend de logo.dev (sources parfois petites).
 - En local : double-clic sur `index.html` suffit (le corpus est intégré à la page ; `corpus.json` et `corpus.csv` restent la source pour la feuille).
 - Ou sur la branche GitHub via un aperçu (Netlify, Pages de la branche) si le site le permet.
 - Vérifier : prénom, défilement, 👎👍❤️, « passer », annuler, pause à 50, arrêt et reprise, lignes qui arrivent dans l'onglet « Votes », colonne « Image chargée » (les logos qui ne se chargent pas affichent le nom).
@@ -19,7 +21,7 @@ Rien ici n'est un secret : la liste des votes n'est pas dans ce dépôt, elle pa
 Fusionner la branche dans production : la page sera à https://madamecho.com/atelier-logo/. Retirer le dossier à la fin de la phase 1.
 
 ## 4. Lecture des résultats
-Onglet « Votes » : une ligne par geste (haut, bas, coeur, passer, annule). Croiser avec l'onglet « Corpus » par l'Id.
+Onglet « Votes » : une ligne par geste (haut, bas, coeur, passer, illisible, sans-image, annule). Une ligne « annule » annule la ligne de même Session + Position + Horodatage navigateur. La colonne « Image chargée » porte aussi « (site consulté) » si le lien du site a été ouvert. Croiser avec l'onglet « Corpus » par l'Id.
 Claude produit ensuite le « Profil des goûts de Youngmi » (91/01) avec une section sur les biais (images manquantes, marques reconnues, ordre).
 
 ## Images
