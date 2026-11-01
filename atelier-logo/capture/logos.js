@@ -3,7 +3,7 @@
 //         node logos.js --tout     (refait toutes les fiches, même celles déjà faites)
 //         node logos.js L008 L132  (seulement ces fiches, refaites)
 // Résultat : ../captures/logos/<id>.svg ou .png et ../captures/logos/_logos.json (source retenue pour chaque fiche)
-// Sources, dans l'ordre : Brandfetch logo complet (SVG puis PNG), Brandfetch symbole, logo.dev (symbole carré). Version 2 (navigateur Chromium).
+// Sources, dans l'ordre : Brandfetch logo complet (SVG puis PNG), Brandfetch symbole, logo.dev (symbole carré). Version 3 (fenêtre de Chrome visible : Brandfetch refuse les navigateurs invisibles).
 const fs = require("fs"), path = require("path");
 const { chromium } = require("playwright");
 const CORPUS = path.join(__dirname, "..", "corpus.json");
@@ -24,11 +24,12 @@ function sources(c){
 function origin(req){ let r = req; while(r.redirectedFrom()) r = r.redirectedFrom(); return r.url(); }
 
 // Charge l'image dans la page comme la page « Atelier logo » le fait (balise <img>), et garde les octets de la réponse.
-async function fetchLogo(page, c, srcs){
+async function fetchLogo(page, c, srcs, statuts = []){
   for(const s of (srcs || sources(c))){
     // une seule image est chargée à la fois : on garde la réponse de son adresse d'origine, sinon la dernière réponse image reçue (redirections)
     const bodies = new Map(); let last = null;
-    const onResp = async (resp) => { try{ const type = resp.headers()["content-type"] || ""; if(!resp.ok() || !/image|svg|octet/i.test(type)) return;
+    const onResp = async (resp) => { try{ if(origin(resp.request()) === s.src) statuts.push(s.kind+(s.svg?" svg":"")+" "+resp.status());
+      const type = resp.headers()["content-type"] || ""; if(!resp.ok() || !/image|svg|octet/i.test(type)) return;
       const rec = { buf: await resp.body(), type }; last = rec; if(origin(resp.request()) === s.src) bodies.set(s.src, rec); }catch(e){} };
     page.on("response", onResp);
     let dims = null;
@@ -57,18 +58,22 @@ async function main(){
   const done = id => ["svg","png","webp"].some(e=>fs.existsSync(path.join(OUT, id+"."+e)));
   const todo = (wanted.length || tout) ? corpus : corpus.filter(c=>!done(c.id));
   console.log(todo.length+" logos à télécharger sur "+corpus.length+" fiches actives"+(tout ? " (tout est refait)" : " (les logos déjà présents sont gardés ; « node logos.js --tout » pour tout refaire)"));
-  const browser = await chromium.launch(); const ctx = await browser.newContext({ locale:"fr-FR" }); const page = await ctx.newPage();
+  // Brandfetch refuse les navigateurs « headless » (fenêtre invisible) : on ouvre une vraie fenêtre de Chrome, comme quand tu ouvres la page.
+  let browser;
+  try{ browser = await chromium.launch({ headless:false, channel:"chrome" }); console.log("Chrome installé utilisé (une fenêtre s'ouvre, laisse-la faire)."); }
+  catch(e){ browser = await chromium.launch({ headless:false }); console.log("Chromium de test utilisé (une fenêtre s'ouvre, laisse-la faire)."); }
+  const ctx = await browser.newContext({ locale:"fr-FR" }); const page = await ctx.newPage();
   // page de départ locale (file://), comme la page « Atelier logo » ouverte depuis le disque : une page data: ou about:blank peut être bloquée par Chromium
   const pageFile = path.join(OUT, "_page.html"); fs.writeFileSync(pageFile, "<!doctype html><html><body></body></html>");
   await page.goto(require("url").pathToFileURL(pageFile).href);
   let ok = 0, ko = 0, complets = 0;
   for(const c of todo){
-    const got = await fetchLogo(page, c);
+    const statuts = []; const got = await fetchLogo(page, c, null, statuts);
     for(const e of ["svg","png","webp"]){ const f=path.join(OUT, c.id+"."+e); if(fs.existsSync(f)) fs.unlinkSync(f); }
     if(got){ fs.writeFileSync(path.join(OUT, c.id+"."+got.ext), got.buf);
-      rapport[c.id] = { nom:c.nom, domaine:c.domaine, statut:"ok", kind:got.kind, fichier:c.id+"."+got.ext, largeur:got.w, hauteur:got.h, source:got.src.replace(/\?.*$/,"") }; ok++; if(got.kind==="logo complet") complets++;
+      rapport[c.id] = { nom:c.nom, domaine:c.domaine, statut:"ok", kind:got.kind, fichier:c.id+"."+got.ext, largeur:got.w, hauteur:got.h, source:got.src.replace(/\?.*$/,""), essais:statuts }; ok++; if(got.kind==="logo complet") complets++;
       console.log("✓", c.id, c.nom, "—", got.kind, "("+got.ext+", "+got.w+"×"+got.h+")"); }
-    else { rapport[c.id] = { nom:c.nom, domaine:c.domaine, statut:"aucun logo" }; ko++; console.log("✗", c.id, c.nom, "— aucun logo trouvé"); }
+    else { rapport[c.id] = { nom:c.nom, domaine:c.domaine, statut:"aucun logo", essais:statuts }; ko++; console.log("✗", c.id, c.nom, "— aucun logo trouvé"); }
     fs.writeFileSync(rapportFile, JSON.stringify(rapport, null, 1));
   }
   await browser.close();
