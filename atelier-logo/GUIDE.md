@@ -34,7 +34,7 @@ Les logos sont chargés côté navigateur, jamais copiés dans le dépôt, dans 
 
 ## Onglet « Caractéristiques » (lu par des IA)
 
-Une ligne par fiche (ligne = numéro de la fiche + 1, comme l'onglet Corpus), une colonne par caractéristique, vocabulaire fixe quand c'est possible (les listes sont séparées par « , »). Rempli par Claude à partir des captures des sites et des logos téléchargés sur le PC d'Olivier ; sert au profil des goûts de Youngmi (croisement avec l'onglet Votes par l'Id) et aux consignes de génération de la phase 4. Copie dans `caracteristiques.csv` (avec en-tête).
+Une ligne par fiche (ligne = numéro de la fiche + 1, comme l'onglet Corpus), une colonne par caractéristique, vocabulaire fixe quand c'est possible (les listes sont séparées par « , »). Rempli par Claude à partir des captures des sites et des logos téléchargés sur le PC d'Olivier ; sert au profil des goûts de Youngmi (croisement avec l'onglet Votes par l'Id) et aux consignes de génération de la phase 4. Copie dans `caracteristiques.csv` (avec en-tête) ; l'onglet l'importe par une formule IMPORTDATA (cellule A1) : avant de retirer la page ou de supprimer la branche, figer l'onglet (copier, puis coller les valeurs seulement). Rédigé le 01/11/2026 à partir des 229 captures et des 230 logos du PC d'Olivier (L064 Caffè Florian sans capture : site écrit de mémoire, `C_verifie` = non). Fiches signalées dans `S_particularite` / `L_particularite` : captures bloquées L193 Hermès et L387 Flour Bakery (retirées de `captures/`, à refaire à la main), capture hors sujet L038 Café Pouchkine (domaine repris), site douteux L254 Karamel, doublon L255 = L034, logos d'un groupe et non de la maison L176, L333, L336, image non logo L418.
 
 **Commun**
 
@@ -46,9 +46,9 @@ Une ligne par fiche (ligne = numéro de la fiche + 1, comme l'onglet Corpus), un
 
 **Logo**
 
-- `L_type` · Type de logo : logotype | monogramme | symbole+nom | emblème | sceau | mascotte
+- `L_type` · Type de logo : logotype | monogramme | symbole+nom | symbole | emblème | sceau | mascotte (« symbole » : seule l'image du symbole a pu être récupérée, voir `L_image_montree`)
 - `L_composition` · Composition : horizontal | empilé | symbole au-dessus | symbole à gauche | rond | écusson | carré
-- `L_ecriture` · Écriture : serif-didone | serif-garalde | serif-égyptienne | serif-autre | sans-géométrique | sans-grotesque | sans-humaniste | script | manuscrite | calligraphie | gothique | fantaisie | mixte
+- `L_ecriture` · Écriture : aucun | serif-didone | serif-garalde | serif-égyptienne | serif-autre | sans-géométrique | sans-grotesque | sans-humaniste | script | manuscrite | calligraphie | gothique | fantaisie | mixte
 - `L_casse` · Casse : capitales | bas-de-casse | mixte | script
 - `L_graisse` · Graisse : fine | moyenne | grasse | contrastée
 - `L_espacement` · Espacement des lettres : serré | normal | large
