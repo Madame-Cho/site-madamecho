@@ -82,6 +82,13 @@ input[type=number]{width:120px;margin:6px 0}
 body.olivier .only-olivier{display:grid}
 .actions.one{grid-template-columns:1fr;margin:0 0 8px}
 button.out{background:#fff3f0;color:var(--no);border:2px solid var(--no);font-size:20px;font-weight:700;padding:14px 8px}
+/* fiche déjà jugée : le bouton choisi est encadré et porte « ton vote », les autres sont atténués ; un clic sur un autre remplace le vote */
+#controls.picked .actions button:not(.chosen){opacity:.45}
+#controls.picked .actions button:not(.chosen):hover{opacity:.8}
+#controls .actions button.chosen{position:relative;outline:3px solid var(--ink);outline-offset:-1px;box-shadow:0 6px 18px rgba(0,0,0,.14);background:#fffaf2}
+#controls .actions button.chosen::after{content:"✓ ton vote · 내 투표";position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10px;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap}
+#controls .small button.chosen{outline:2px solid var(--ink);border-radius:999px;padding:6px 10px;font-weight:700;text-decoration:none;background:#fffaf2}
+#controls .small button.chosen::before{content:"✓ "}
 button.out span{color:var(--no);font-weight:400}
 .flag{font-size:14px;color:#444;margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;white-space:nowrap}
 @media (max-width:420px){.flag{font-size:12px}}
@@ -288,7 +295,7 @@ function show(){
   $("known").checked = false;
   $("play").classList.remove("dark"); $("bgBtn").textContent="fond sombre";
   $("site").href = "https://"+c.domaine; siteSeen=false;
-  revising=null; $("backBtn").classList.add("hidden"); $("mine").classList.add("hidden");
+  revising=null; $("backBtn").classList.add("hidden"); $("mine").classList.add("hidden"); markChosen(null);
   render(c); site(c);
 }
 // ---- Revoir et changer ses votes
@@ -310,6 +317,8 @@ function openReview(){
     const im=document.createElement("img"); im.loading="lazy"; im.alt=""; const alt=thumbAlt(c); im.onerror=()=>{ if(alt && im.src!==alt) im.src=alt; else im.remove(); }; im.src=thumbSrc(c);
     b.appendChild(im); b.insertAdjacentHTML("beforeend",'<span class="nm">'+esc(c.nom)+'</span><span class="n">'+r.position+'</span><span class="badge">'+BADGE(r.vote)+'</span>'); b.onclick=()=>revise(r.id); g.appendChild(b); });
 }
+// fiche déjà jugée : le bouton du vote enregistré est mis en évidence (null = aucun)
+function markChosen(v){ $("controls").classList.toggle("picked", !!v); document.querySelectorAll("#controls button[data-v]").forEach(b=>b.classList.toggle("chosen", b.dataset.v===v)); }
 function revise(id, seq){
   const c=byId[id], r=latestRec(id); if(!c||!r) return;
   hideAll(); revising=id; $("play").classList.remove("hidden"); $("controls").classList.remove("hidden"); $("pane").classList.remove("hidden");
@@ -320,7 +329,7 @@ function revise(id, seq){
   $("loveBtn").disabled = r.vote!=="coeur" && hearts() >= Math.floor(ACTIVE.length*HEART_RATE);
   $("undo").disabled = true; $("known").checked = (r.connue==="oui");
   $("play").classList.remove("dark"); $("bgBtn").textContent="fond sombre";
-  $("site").href = "https://"+c.domaine; siteSeen=false;
+  $("site").href = "https://"+c.domaine; siteSeen=false; markChosen(r.vote);
   render(c); site(c);
 }
 function jumpTo(i){ const id=order[i]; if(!id) return; const r=latestRec(id);
