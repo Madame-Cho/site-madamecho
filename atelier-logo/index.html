@@ -64,7 +64,10 @@ input[type=number]{width:120px;margin:6px 0}
 .note a{color:inherit}
 .hidden{display:none}
 .only-olivier{display:none}
-body.olivier .only-olivier{display:inline-block}
+body.olivier .only-olivier{display:grid}
+.actions.one{grid-template-columns:1fr;margin:0 0 8px}
+button.out{background:#fff3f0;color:var(--no);border:2px solid var(--no);font-size:20px;font-weight:700;padding:14px 8px}
+button.out span{color:var(--no);font-weight:400}
 .flag{font-size:14px;color:#444;margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;white-space:nowrap}
 @media (max-width:420px){.flag{font-size:12px}}
 .card.dark .flag{color:#ccc}
@@ -118,12 +121,12 @@ body.olivier .only-olivier{display:inline-block}
     <button class="love" id="loveBtn" data-v="coeur">❤️<span>coup de cœur</span></button>
     <button class="yes" data-v="haut">👍<span>oui · 좋아요</span></button>
   </div>
+  <div class="actions one only-olivier"><button class="out" data-v="retirer" title="passe d'Olivier : la fiche est passée et signalée à Claude pour être retirée du corpus">✕ HORS CORPUS<span>à retirer de la liste (Olivier)</span></button></div>
   <div class="small">
     <button id="undo">↩︎ annuler le dernier</button>
     <button data-v="passer">passer · 넘기기 →</button>
     <button data-v="illisible" title="l'image est floue, coupée, ou ce n'est pas le logo">pas un logo / illisible · 로고 아님</button>
     <button id="reviewBtn">mes votes · 내 투표</button>
-    <button data-v="retirer" class="only-olivier" title="à retirer du corpus (passe d'Olivier) : la fiche est passée et signalée à Claude">✕ hors corpus</button>
     <button id="restart" title="revoir toutes les fiches depuis la première ; un nouveau vote remplace l'ancien">⟲ revenir au début · 처음부터</button>
     <button id="stop">arrêter · 멈추기</button>
   </div>
