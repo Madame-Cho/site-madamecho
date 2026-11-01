@@ -14,12 +14,14 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-sy
 #pane{display:none}
 @media (min-width:1000px){
   .shell{max-width:1360px;display:flex;gap:20px;align-items:flex-start;padding:0 16px}
-  .shell .wrap{flex:0 0 560px;max-width:560px;margin:0;padding:16px 0}
+  .shell .wrap{flex:0 0 560px;max-width:560px;margin:0;padding:16px 0;min-height:0}
+  .shell .card{flex:0 0 auto}
+  .shell #play{min-height:420px}
   #pane{display:flex;flex:1;flex-direction:column;position:sticky;top:0;height:100vh;padding:16px 0;min-width:0}
 }
 .paneHead{font-size:13px;color:var(--muted);padding:2px 4px 8px;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
 .paneHead b{color:var(--ink)}
-.paneHead a{color:var(--muted)}
+.paneHead a{color:#444}
 #pane iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:16px;background:#fff}
 #pane iframe.off{visibility:hidden}
 .paneNote{font-size:12px;color:#aaa;padding:8px 4px 0}
@@ -42,12 +44,12 @@ button span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
 button.no{color:var(--no)}button.yes{color:var(--yes)}button.love{color:var(--love)}
 button:active{transform:scale(.96)}
 button:disabled{opacity:.35;cursor:default;transform:none}
-.small{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;font-size:13px;color:var(--muted);margin-top:8px}
-.small button,.linkish{font-size:13px;padding:8px 6px;box-shadow:none;background:transparent;color:var(--muted);text-decoration:underline;border:0;cursor:pointer;font-family:inherit}
+.small{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;font-size:14px;color:#444;margin-top:8px}
+.small button,.linkish{font-size:14px;padding:8px 6px;box-shadow:none;background:transparent;color:#333;text-decoration:underline;border:0;cursor:pointer;font-family:inherit}
 .pill{position:absolute;top:12px;left:12px;font-size:12px;background:#f1ebe3;color:var(--muted);padding:4px 10px;border-radius:999px}
 .card.dark .pill{background:#333;color:#bbb}
 .tools{position:absolute;top:10px;right:12px;display:flex;gap:10px;font-size:12px}
-.tools a,.tools button{color:var(--muted);text-decoration:underline;background:transparent;border:0;padding:4px;font-size:12px;box-shadow:none;cursor:pointer;font-family:inherit}
+.tools a,.tools button{color:#555;text-decoration:underline;background:transparent;border:0;padding:4px;font-size:12px;box-shadow:none;cursor:pointer;font-family:inherit}
 .card.dark .tools a,.card.dark .tools button{color:#bbb}
 .swipe{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:72px;opacity:0;pointer-events:none;transition:opacity .15s}
 .swipe.show{opacity:.9}
@@ -60,7 +62,8 @@ input[type=number]{width:120px;margin:6px 0}
 .note{font-size:12px;color:#aaa;text-align:center;margin-top:12px}
 .note a{color:inherit}
 .hidden{display:none}
-.flag{font-size:13px;color:var(--muted);margin-top:14px;display:flex;align-items:center;gap:8px;justify-content:center}
+.flag{font-size:14px;color:#444;margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer}
+.card.dark .flag{color:#ccc}
 .flag input{width:18px;height:18px}
 .sitelink{font-size:13px;margin-top:10px;text-align:center}
 #review{justify-content:flex-start;align-items:stretch}
@@ -72,7 +75,7 @@ input[type=number]{width:120px;margin:6px 0}
 .thumb .n{position:absolute;top:3px;left:7px;font-size:10px;color:#aaa}
 .mine{font-size:13px;color:var(--muted);text-align:center;margin-top:6px}
 .card.dark .mine{color:#bbb}
-.sitelink a{color:var(--muted)}
+.sitelink a{color:#444}
 .card.dark .sitelink a{color:#bbb}
 </style>
 </head>
@@ -102,6 +105,7 @@ input[type=number]{width:120px;margin:6px 0}
   <div class="logo" id="logo"></div>
   <div class="brand" id="brand"></div>
   <div class="sitelink"><a id="site" href="#" target="_blank" rel="noopener noreferrer">voir le site ↗ · 사이트 보기</a></div>
+  <label class="flag"><input type="checkbox" id="known"> je connais déjà cette marque (coche avant de voter) · 이 브랜드를 이미 알아요</label>
   <div class="mine hidden" id="mine"></div>
 </section>
 <div id="controls" class="hidden">
@@ -110,7 +114,6 @@ input[type=number]{width:120px;margin:6px 0}
     <button class="love" id="loveBtn" data-v="coeur">❤️<span>coup de cœur</span></button>
     <button class="yes" data-v="haut">👍<span>oui · 좋아요</span></button>
   </div>
-  <label class="flag"><input type="checkbox" id="known"> je connais déjà cette marque (coche avant de voter) · 이 브랜드를 이미 알아요</label>
   <div class="small">
     <button id="undo">↩︎ annuler le dernier</button>
     <button data-v="passer">passer · 넘기기 →</button>
