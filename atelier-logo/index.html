@@ -13,12 +13,14 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-sy
 .shell{max-width:560px;margin:0 auto}
 #pane{display:flex;flex-direction:column;height:62vh;min-height:340px;margin:12px 0 0}
 #pane.hidden{display:none}
+body:not(.started) header .cnt{visibility:hidden}
 @media (min-width:1000px){
   .shell{max-width:none;display:flex;gap:20px;align-items:flex-start;padding:0 16px}
   .shell .wrap{flex:0 0 480px;max-width:480px;margin:0;padding:16px 0;min-height:0}
   .shell .card{flex:0 0 auto}
   .shell #play{min-height:420px}
   #pane{display:flex;flex:1;flex-direction:column;position:sticky;top:0;height:100vh;padding:16px 0;min-width:0;margin:0}
+  .shell:has(> #pane.hidden){justify-content:center}
 }
 .paneHead{font-size:13px;color:var(--muted);padding:2px 4px 8px;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
 .paneHead b{color:var(--ink)}
@@ -53,7 +55,34 @@ body.olivier .actions.five{display:none}
 .duo em.v{background:#dcf2e4;color:#1f6f43}.duo em.v::before{content:"✓ "}
 .duo em.x{background:#fbe1dc;color:#a8321f}.duo em.x::before{content:"✗ "}
 .duo.big{margin-top:9px}.duo.big em{font-size:13px;padding:6px 8px}
-@media (max-width:540px){.actions.five{grid-template-columns:1fr 1fr}.actions.five .love{grid-column:1/-1;min-height:0;flex-direction:row;justify-content:center;gap:12px}}
+.quick{display:flex;justify-content:space-between;gap:8px;margin-top:4px}
+.quick button{font-size:14px;padding:8px 6px;box-shadow:none;background:transparent;color:#333;text-decoration:underline;border:0}
+/* téléphone et tablette en hauteur : fiche compacte, volet du site dessous, boutons de vote fixés en bas de l'écran */
+@media (max-width:999px){
+  .wrap{padding:10px 12px}
+  header{padding:0 0 8px;font-size:13px}
+  #play.card{flex:0 0 auto;min-height:0;padding:36px 14px 12px}
+  #play .logo{height:150px}
+  .flag{margin-top:8px;font-size:13px;white-space:normal;text-align:left}
+  .sitelink{margin-top:6px}
+  #pane{height:calc(100svh - 430px);min-height:260px;margin:10px 0 0}
+  .paneHead{display:none}
+  #controls .bar{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:7px 8px calc(4px + env(safe-area-inset-bottom));background:var(--bg);box-shadow:0 -4px 16px rgba(0,0,0,.12)}
+  #controls .bar>*{max-width:560px;margin-left:auto;margin-right:auto}
+  #controls .bar .actions{margin-top:0;margin-bottom:0}
+  .actions.five{gap:5px}
+  .actions.five button{min-height:0;padding:7px 2px 6px;gap:4px;border-radius:12px}
+  .actions.five .ic{font-size:21px}
+  .actions.five .no .duo,.actions.five .yes .duo{display:none}
+  .actions.five .mix .duo{flex-direction:column;align-items:center;gap:2px}
+  .actions.five .duo.big{margin-top:0}
+  .actions.five .duo em,.actions.five .duo.big em{font-size:10px;padding:2px 5px}
+  .actions.five button span{font-size:11px;line-height:1.2}
+  .actions.five .ko{font-size:10px}
+  .actions.two button{padding:10px 6px;font-size:18px}
+  .quick{margin-top:2px}.quick button{padding:6px 6px;font-size:13px}
+  #controls .actions button.chosen::after{top:-9px}
+}
 .thumb .badge .duo em{font-size:8px;padding:2px 3px}
 .swipe.txt{font-size:34px;font-weight:700;color:var(--yes);text-shadow:0 0 12px #fff}
 button{border:0;border-radius:16px;padding:18px 8px;font-size:22px;cursor:pointer;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.08);color:var(--ink);font-family:inherit}
@@ -91,8 +120,8 @@ button.out{background:#fff3f0;color:var(--no);border:2px solid var(--no);font-si
 #controls.picked .actions button:not(.chosen):hover{opacity:.8}
 #controls .actions button.chosen{position:relative;outline:3px solid var(--ink);outline-offset:-1px;box-shadow:0 6px 18px rgba(0,0,0,.14);background:#fffaf2}
 #controls .actions button.chosen::after{content:"✓ ton vote · 내 투표";position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10px;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap}
-#controls .small button.chosen{outline:2px solid var(--ink);border-radius:999px;padding:6px 10px;font-weight:700;text-decoration:none;background:#fffaf2}
-#controls .small button.chosen::before{content:"✓ "}
+#controls .small button.chosen,#controls .quick button.chosen{outline:2px solid var(--ink);border-radius:999px;padding:6px 10px;font-weight:700;text-decoration:none;background:#fffaf2}
+#controls .small button.chosen::before,#controls .quick button.chosen::before{content:"✓ "}
 button.out span{color:var(--no);font-weight:400}
 .flag{font-size:14px;color:#444;margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;white-space:nowrap}
 @media (max-width:420px){.flag{font-size:12px}}
@@ -115,7 +144,7 @@ button.out span{color:var(--no);font-weight:400}
 <body>
 <div class="shell">
 <div class="wrap">
-<header><span id="who"></span><span><b id="done">0</b> / <span id="total">0</span> · reste <span id="left">0</span> · ❤️ <span id="hearts">0</span>/<span id="maxhearts">0</span></span></header>
+<header><span id="who"></span><span class="cnt"><b id="done">0</b> / <span id="total">0</span> · reste <span id="left">0</span> · ❤️ <span id="hearts">0</span>/<span id="maxhearts">0</span></span></header>
 
 <section id="start" class="card start">
   <h1 style="margin:0 0 6px">Atelier logo</h1>
@@ -142,6 +171,7 @@ button.out span{color:var(--no);font-weight:400}
   <div class="mine hidden" id="mine"></div>
 </section>
 <div id="controls" class="hidden">
+  <div class="bar">
   <div class="actions five">
     <button class="no" data-v="bas" title="ni le logo ni le site (touche 1 ou ←)"><b class="ic">👎</b><i class="duo"><em class="x">logo</em><em class="x">site</em></i><span>rien ne me plaît<span class="ko">둘 다 아니요</span></span></button>
     <button class="mix" data-v="logo" title="j'aime le logo, mais pas le site (touche 2 ou L)"><i class="duo big"><em class="v">logo</em><em class="x">site</em></i><span>le logo oui,<br>le site non<span class="ko">로고만 좋아요</span></span></button>
@@ -150,9 +180,9 @@ button.out span{color:var(--no);font-weight:400}
     <button class="love" id="loveBtn" data-v="coeur" title="coup de cœur, très rare (touche 5 ou ↑)"><b class="ic">❤️</b><span>coup de cœur<span class="ko">최애 · 드물게</span></span></button>
   </div>
   <div class="actions two only-olivier"><button class="keep" data-v="garder" title="passe d'Olivier : la fiche reste dans la liste (touche G)">✓ GARDER<span>reste dans la liste</span></button><button class="out" data-v="retirer" title="passe d'Olivier : la fiche est signalée à Claude pour être retirée du corpus (touche X)">✕ HORS CORPUS<span>à retirer de la liste</span></button></div>
+  <div class="quick"><button id="undo">↩︎ annuler le dernier · 취소</button><button data-v="passer">passer · 넘기기 →</button></div>
+  </div>
   <div class="small">
-    <button id="undo">↩︎ annuler le dernier</button>
-    <button data-v="passer">passer · 넘기기 →</button>
     <button data-v="illisible" title="l'image est floue, coupée, ou ce n'est pas le logo">pas un logo / illisible · 로고 아님</button>
     <button id="reviewBtn">mes votes · 내 투표</button>
     <button id="restart" title="revoir toutes les fiches depuis la première ; un nouveau vote remplace l'ancien">⟲ revenir au début · 처음부터</button>
@@ -182,10 +212,10 @@ button.out span{color:var(--no);font-weight:400}
   <p><button class="linkish" id="review3">revoir mes votes</button> · <button class="linkish" id="again">reprendre</button></p>
 </section>
 </div>
-<aside id="pane">
+<aside id="pane" class="hidden">
   <div class="paneHead"><span>La page d'accueil du site de la marque. <b>Tu juges le logo et le site</b> : les boutons disent lequel tu aimes.<span class="ko">로고와 사이트를 함께 평가해요. 버튼이 무엇이 좋은지 말해 줘요.</span></span><a id="site2" href="#" target="_blank" rel="noopener noreferrer">voir le site ↗</a></div>
   <div class="shotbox"><img id="shot" alt=""><div class="shotmsg" id="shotmsg"></div></div>
-  <p class="paneNote">Capture de la page d'accueil, faite sur le PC d'Olivier, ou à défaut par le service mShots de WordPress.com (quelques secondes la première fois). Image seulement : pour naviguer, « voir le site ».</p>
+  <p class="paneNote">C'est une image de la page d'accueil : pour visiter le site, « voir le site ↗ ».<span class="ko">홈페이지 이미지예요. 사이트를 둘러보려면 « 사이트 보기 »를 눌러요.</span></p>
 </aside>
 </div>
 
@@ -234,7 +264,8 @@ function init(){
   let last=""; try{ last = localStorage.getItem(KEY+"last")||""; }catch(e){}
   if(last){ $("prenom").value = last; const st=load(last); if(st && st.votes.length) $("go").textContent = "Reprendre · 계속 ("+last+", "+st.votes.filter(v=>REAL.has(v.vote)).length+" votes)"; }
 }
-function votedIds(){ return new Set(state.votes.map(v=>v.id)); }
+// fiches traitées ; une fiche passée faute de logo (réseau lent…) est reproposée une fois, en fin de liste
+function votedIds(){ const n={}, s=new Set(); state.votes.forEach(v=>{ if(v.vote==="sans-image"){ if((n[v.id]=(n[v.id]||0)+1)>=2) s.add(v.id); } else s.add(v.id); }); return s; }
 function skipVoted(){ const done=votedIds(); while(state.cursor<order.length && done.has(order[state.cursor])) state.cursor++; }
 function begin(){
   const prenom = $("prenom").value.trim();
@@ -247,12 +278,15 @@ function begin(){
   skipVoted();
   $("who").textContent = prenom;
   document.body.classList.toggle("olivier", /^olivier/i.test(prenom));
+  document.body.classList.add("started");
   save(); sync(true); show();
 }
 function current(){ return byId[order[state.cursor]]; }
 function hearts(){ return state.votes.filter(v=>v.vote==="coeur").length; }
 function realCount(){ return state.votes.filter(v=>REAL.has(v.vote)).length; }
-function hideAll(){ ["start","pause","end","play","review","pane"].forEach(id=>$(id).classList.add("hidden")); $("controls").classList.add("hidden"); site(null); }
+function hideAll(){ ["start","pause","end","play","review","pane"].forEach(id=>$(id).classList.add("hidden")); $("controls").classList.add("hidden"); site(null); document.body.style.paddingBottom=""; if(!wide()) window.scrollTo(0,0); }
+// téléphone : la barre des votes est fixée en bas de l'écran ; on réserve sa hauteur sous la page
+function fitBar(){ const b=document.querySelector("#controls .bar"); document.body.style.paddingBottom = (!wide() && !$("controls").classList.contains("hidden")) ? (b.offsetHeight+8)+"px" : ""; }
 // le volet du site : colonne de droite sur grand écran, sinon sous la fiche, au-dessus des boutons
 function placePane(){ const p=$("pane"); if(wide()){ const sh=document.querySelector(".shell"); if(p.parentNode!==sh) sh.appendChild(p); } else { const play=$("play"); if(play.nextElementSibling!==p) play.after(p); } }
 function remaining(){ const done=votedIds(); return order.filter(id=>!done.has(id)).length; }
@@ -262,13 +296,14 @@ function remaining(){ const done=votedIds(); return order.filter(id=>!done.has(i
 const SHOTS = "https://s0.wordpress.com/mshots/v1/";
 function shotUrl(c, w){ return SHOTS + encodeURIComponent("https://"+c.domaine) + "?w=" + w; }
 let shotTimer=null, shotCard=null;
+const NOSHOT = new Set(["L193","L387"]); // sites qui bloquent les captures (page de blocage) : pas d'image, « voir le site »
+const NOLOCAL = new Set(["L064"]);       // pas de capture rangée avec la page : mShots directement
 function site(c){
-  clearTimeout(shotTimer); shotCard=c; const im=$("shot"), msg=$("shotmsg");
+  clearTimeout(shotTimer); shotCard=c; const im=$("shot"), msg=$("shotmsg"); im.parentNode.scrollTop=0;
   if(!c){ im.removeAttribute("src"); msg.style.display="none"; $("site2").href="#"; return; }
   $("site2").href="https://"+c.domaine; im.removeAttribute("src"); msg.style.display="flex";
+  if(NOSHOT.has(c.id)){ msg.innerHTML='<div>pas d\'image pour ce site, qui bloque les captures : « voir le site ↗ »</div><span class="ko">이 사이트는 캡처가 안 돼요. « 사이트 보기 »를 눌러요.</span>'; prefetch(); return; }
   msg.innerHTML='<div class="spin"></div><div>capture de la page d\'accueil… (quelques secondes la première fois)</div>';
-  // 1) capture faite sur le PC d'Olivier, rangée avec la page (captures/<id>.jpg) ; 2) sinon mShots
-  const local=new Image(); local.onload=()=>{ if(shotCard!==c) return; im.src=local.src; msg.style.display="none"; }; local.onerror=()=>{ if(shotCard===c) tryLoad(); }; local.src="captures/"+c.id+".jpg";
   let attempt=0;
   const tryLoad=()=>{ if(shotCard!==c) return; const w=1200+attempt; const t=new Image(); t.alt="";
     t.onload=()=>{ if(shotCard!==c) return;
@@ -277,9 +312,17 @@ function site(c){
       else { msg.innerHTML="capture pas encore prête · « voir le site »"; } };
     t.onerror=()=>{ if(shotCard!==c) return; if(++attempt<4){ shotTimer=setTimeout(tryLoad, 3500); } else { msg.innerHTML="capture indisponible · « voir le site »"; } };
     t.src=shotUrl(c, w); };
-  // on lance d'avance la capture des trois fiches suivantes
-  if(!revising){ for(let i=1;i<=3;i++){ const n=byId[order[state.cursor+i]]; if(n) fetch(shotUrl(n,1200),{mode:"no-cors"}).catch(()=>{}); } }
+  // 1) capture rangée avec la page (captures/<id>.jpg) ; 2) sinon, ou si elle ne se charge pas, mShots
+  if(NOLOCAL.has(c.id)) tryLoad();
+  else { const local=new Image(); local.onload=()=>{ if(shotCard!==c) return; im.src=local.src; msg.style.display="none"; }; local.onerror=()=>{ if(shotCard===c) tryLoad(); }; local.src="captures/"+c.id+".jpg"; }
+  prefetch();
 }
+// on charge d'avance le logo des deux fiches suivantes et la capture des trois suivantes
+function prefetch(){ if(revising || !state) return;
+  for(let i=1;i<=3;i++){ const n=byId[order[state.cursor+i]]; if(!n) continue;
+    if(i<=2){ const s=sources(n); if(s.length) new Image().src=s[0].src; }
+    if(NOSHOT.has(n.id)) continue;
+    if(NOLOCAL.has(n.id)) fetch(shotUrl(n,1200),{mode:"no-cors"}).catch(()=>{}); else new Image().src="captures/"+n.id+".jpg"; } }
 function show(){
   hideAll();
   if(state.cursor>=order.length){ // fin de la liste : on revient aux fiches sautées (saut par la liste, « reprendre à la fiche n° »)
@@ -300,7 +343,7 @@ function show(){
   $("play").classList.remove("dark"); $("bgBtn").textContent="fond sombre";
   $("site").href = "https://"+c.domaine; siteSeen=false;
   revising=null; $("backBtn").classList.add("hidden"); $("mine").classList.add("hidden"); markChosen(null);
-  render(c); site(c);
+  render(c); site(c); fitBar();
 }
 // ---- Revoir et changer ses votes
 function latestRec(id){ for(let i=state.votes.length-1;i>=0;i--){ if(state.votes[i].id===id) return state.votes[i]; } return null; }
@@ -334,7 +377,7 @@ function revise(id, seq){
   $("undo").disabled = true; $("known").checked = (r.connue==="oui");
   $("play").classList.remove("dark"); $("bgBtn").textContent="fond sombre";
   $("site").href = "https://"+c.domaine; siteSeen=false; markChosen(r.vote);
-  render(c); site(c);
+  render(c); site(c); fitBar();
 }
 function jumpTo(i){ const id=order[i]; if(!id) return; const r=latestRec(id);
   if(r && KEPT(r.vote)) return revise(id);
@@ -357,7 +400,7 @@ function render(c){
   clearTimeout(imgTimer);
   const srcs = sources(c); let k=0;
   const img = new Image(); img.alt=""; img.decoding="async";
-  const give = (why)=>{ clearTimeout(imgTimer); if(revising){ imgOk=false; box.innerHTML='<div class="fallback">logo indisponible pour le moment</div>'; return; } if(current()!==c) return; imgOk=false; box.innerHTML='<div class="fallback">logo indisponible, on passe…</div>'; setTimeout(()=>{ if(current()===c && state && !revising) vote("sans-image", why); }, 350); };
+  const give = (why)=>{ clearTimeout(imgTimer); if(revising){ imgOk=false; box.innerHTML='<div class="fallback">logo indisponible pour le moment</div>'; setLoading(false); return; } if(current()!==c) return; imgOk=false; box.innerHTML='<div class="fallback">logo indisponible, on passe…</div>'; setTimeout(()=>{ if(current()===c && state && !revising) vote("sans-image", why); }, 350); };
   img.onload = ()=>{ clearTimeout(imgTimer); if(shownCard!==c) return; const s=srcs[k-1];
     if(s.svg){ img.style.height="200px"; img.style.width="auto"; img.style.maxWidth="100%"; }
     else { if(img.naturalWidth<64){ next(); return; }
@@ -368,7 +411,7 @@ function render(c){
     box.innerHTML=""; box.appendChild(img); setLoading(false); shownAt = performance.now(); probeLight(s.src, c); };
   img.onerror = next;
   function next(){ if(k<srcs.length){ img.src = srcs[k++].src; } else { give("non"); } }
-  imgTimer = setTimeout(()=>{ img.src=""; give("lent"); }, IMG_TIMEOUT);
+  imgTimer = setTimeout(()=>{ img.onload=img.onerror=null; img.src=""; give("lent"); }, IMG_TIMEOUT);
   next();
 }
 // logo blanc sur fond transparent : on passe le fond en sombre (si le service autorise l'analyse)
@@ -433,6 +476,7 @@ async function finish(){
   await sync(true);
   hideAll(); $("end").classList.remove("hidden");
   const done = realCount(); const over = remaining()===0;
+  $("again").textContent = over ? "tout revoir depuis le début · 처음부터 다시 보기" : "reprendre · 계속";
   $("endText").textContent = done+" logos jugés"+(over?", c'est terminé ! 끝났어요!":". Tu pourras reprendre plus tard. 나중에 이어서 할 수 있어요.");
   $("syncText").textContent = VOTES_URL ? (state.pending.length? state.pending.length+" réponses pas encore envoyées : garde la page ouverte un instant, ou télécharge le fichier.":"Toutes les réponses sont enregistrées.") : "Collecte en ligne non activée : télécharge le fichier et envoie-le à Olivier.";
 }
@@ -442,9 +486,9 @@ function exportCsv(){
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([head+body],{type:"text/csv"})); a.download="votes-"+state.prenom+"-"+new Date().toISOString().slice(0,10)+".csv"; a.click();
 }
 // ---- Liaisons
-document.querySelectorAll("button[data-v]").forEach(b=>b.addEventListener("click",()=>vote(b.dataset.v)));
+document.querySelectorAll("button[data-v]").forEach(b=>b.addEventListener("click",()=>{ b.blur(); vote(b.dataset.v); })); // sans focus, la barre d'espace ne revote pas
 $("go").onclick=begin; $("undo").onclick=undo; $("resume").onclick=()=>show();
-$("stop").onclick=$("stop2").onclick=finish; $("export").onclick=exportCsv; $("again").onclick=()=>{ if(!remaining()) return; show(); };
+$("stop").onclick=$("stop2").onclick=finish; $("export").onclick=exportCsv; $("again").onclick=()=>{ if(!remaining()){ replay=true; state.cursor=0; save(); } show(); }; // tout est jugé : on repasse toutes les fiches, « passer » garde le vote
 $("moreBtn").onclick=()=>$("more").classList.toggle("hidden");
 $("reviewBtn").onclick=$("review2").onclick=$("review3").onclick=openReview; $("reviewBack").onclick=()=>show(); $("backBtn").onclick=openReview;
 $("restart").onclick=()=>{ if(!confirm("Revoir toutes les fiches depuis la première ? Tes votes sont gardés : sur une fiche déjà vue, « passer » garde ton vote, un autre choix le remplace.")) return; replay=true; state.cursor=0; save(); show(); };
@@ -452,9 +496,17 @@ $("reset").onclick=()=>{ const p=$("prenom").value.trim(); if(!p){ $("prenom").f
 $("bgBtn").onclick=()=>{ const d=$("play").classList.toggle("dark"); $("bgBtn").textContent = d ? "fond clair" : "fond sombre"; };
 $("site").addEventListener("click",()=>{ siteSeen=true; }); $("site2").addEventListener("click",()=>{ siteSeen=true; });
 $("jump").addEventListener("change",e=>{ const i=parseInt(e.target.value,10); e.target.value=""; if(!isNaN(i)) jumpTo(i); });
-window.matchMedia("(min-width:1000px)").addEventListener("change",()=>{ placePane(); if(!$("play").classList.contains("hidden")) site(revising ? byId[revising] : current()); });
+window.matchMedia("(min-width:1000px)").addEventListener("change",()=>{ placePane(); if(!$("play").classList.contains("hidden")) site(revising ? byId[revising] : current()); fitBar(); });
+window.addEventListener("resize",fitBar);
 $("prenom").addEventListener("keydown",e=>{ if(e.key==="Enter") begin(); });
-document.addEventListener("keydown",e=>{ if($("play").classList.contains("hidden") || e.target.tagName==="INPUT") return; if(e.key==="ArrowLeft") vote("bas"); if(e.key==="ArrowRight") vote("haut"); if(e.key==="ArrowUp") vote("coeur"); if(e.key==="ArrowDown") vote("passer"); const K={"1":"bas","2":"logo","3":"site","4":"haut","5":"coeur",l:"logo",L:"logo",s:"site",S:"site"}; if(K[e.key]) vote(K[e.key]); if(document.body.classList.contains("olivier")){ if(e.key==="g"||e.key==="G") vote("garder"); if(e.key==="x"||e.key==="X") vote("retirer"); } if(e.key==="Backspace" && !revising) undo(); if(e.key==="Escape" && revising) openReview(); });
+// clavier : pas dans le champ du prénom ni avec Ctrl, Alt ou Cmd (Ctrl+L ne vote pas « logo ») ; la case « je connais » ne bloque pas les touches
+document.addEventListener("keydown",e=>{ const t=e.target;
+  if($("play").classList.contains("hidden") || (t.tagName==="INPUT" && t.type!=="checkbox") || t.tagName==="SELECT" || e.ctrlKey || e.metaKey || e.altKey) return;
+  const K={ArrowLeft:"bas",ArrowRight:"haut",ArrowUp:"coeur",ArrowDown:"passer","1":"bas","2":"logo","3":"site","4":"haut","5":"coeur",l:"logo",L:"logo",s:"site",S:"site"};
+  if(document.body.classList.contains("olivier")) Object.assign(K,{g:"garder",G:"garder",x:"retirer",X:"retirer"});
+  if(K[e.key]){ e.preventDefault(); vote(K[e.key]); return; }
+  if(e.key==="Backspace" && !revising){ e.preventDefault(); undo(); }
+  if(e.key==="Escape" && revising) openReview(); });
 // balayage tactile : horizontal franc, sans défilement vertical
 let x0=null,y0=null; $("play").addEventListener("touchstart",e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
 $("play").addEventListener("touchend",e=>{ if(x0===null) return; const dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0; x0=y0=null; if(Math.abs(dy)>50) return; if(dx>70) vote("haut"); else if(dx<-70) vote("bas"); });
