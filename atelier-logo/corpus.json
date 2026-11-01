@@ -12,7 +12,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, gris",
 "visage": "non",
-"epoque": "moderne, luxe"
+"epoque": "moderne, luxe",
+"site": "Boutique en ligne sobre sur fond blanc, grandes photos de pâtisseries sur fonds colorés, typographie fine noire.",
+"site_style": "luxe, boutique",
+"site_couleurs": "blanc, noir, touches de couleur",
+"site_images": "photos produits"
 },
 {
 "id": "L002",
@@ -27,7 +31,11 @@
 "ecriture": "empattements",
 "couleurs": "vert pastel, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Site vert pastel et or comme une boîte de macarons, photos de macarons et de salons de thé, typographie classique.",
+"site_style": "classique, boutique",
+"site_couleurs": "vert pastel, or, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L003",
@@ -42,7 +50,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Très épuré, vidéos plein écran de fruits en trompe-l'œil, presque pas de texte.",
+"site_style": "minimal, luxe",
+"site_couleurs": "noir, blanc",
+"site_images": "vidéo plein écran"
 },
 {
 "id": "L004",
@@ -57,7 +69,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, cuivre",
 "visage": "personnage animal",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos chaudes de pâtisseries, renard en filigrane, boutique en ligne.",
+"site_style": "chaleureux, boutique",
+"site_couleurs": "blanc, cuivre",
+"site_images": "photos produits"
 },
 {
 "id": "L005",
@@ -72,7 +88,11 @@
 "ecriture": "empattements",
 "couleurs": "rose poudré, brun",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond blanc, photos douces de sablés et du salon de thé, typographie fine.",
+"site_style": "minimal, chaleureux",
+"site_couleurs": "blanc, beige, rose",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L006",
@@ -87,7 +107,11 @@
 "ecriture": "empattements",
 "couleurs": "or, bordeaux",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Site classique, photos de la boutique historique dorée, fond crème.",
+"site_style": "classique",
+"site_couleurs": "crème, or, rouge",
+"site_images": "photos de lieux"
 },
 {
 "id": "L007",
@@ -102,7 +126,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Boutique en ligne sur fond blanc avec bandeau noir, photos de gâteaux, typographie élégante.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos produits"
 },
 {
 "id": "L008",
@@ -117,7 +145,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Site dense sur fond crème, photos de chocolat chaud et du salon Belle Époque, beaucoup de menus.",
+"site_style": "classique, boutique",
+"site_couleurs": "crème, brun, vert",
+"site_images": "photos produits"
 },
 {
 "id": "L009",
@@ -164,7 +196,11 @@
 "ecriture": "empattements",
 "couleurs": "brun, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Site sobre et peu changé, photos sombres de caramels et de chocolats, texte noir.",
+"site_style": "classique",
+"site_couleurs": "brun, noir, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L012",
@@ -179,7 +215,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond sombre, gâteaux photographiés comme des bijoux, typographie fine blanche.",
+"site_style": "luxe, minimal",
+"site_couleurs": "noir, gris, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L013",
@@ -210,7 +250,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Boutique en ligne sur fond blanc, grandes photos de pâtisseries et du chef, touches orange.",
+"site_style": "boutique, chaleureux",
+"site_couleurs": "blanc, noir, orange",
+"site_images": "photos produits"
 },
 {
 "id": "L015",
@@ -225,7 +269,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos colorées de nids de kadaïf, motifs orientaux, typographie moderne.",
+"site_style": "chaleureux, boutique",
+"site_couleurs": "blanc, bleu, or",
+"site_images": "photos produits"
 },
 {
 "id": "L016",
@@ -272,7 +320,11 @@
 "ecriture": "sans",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site minimal sur fond blanc, photos de dorayaki, texte court, esprit japonais.",
+"site_style": "minimal",
+"site_couleurs": "blanc, noir, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L019",
@@ -287,7 +339,11 @@
 "ecriture": "sans",
 "couleurs": "rose, menthe",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, choux colorés en grille, typographie ronde, esprit ludique.",
+"site_style": "ludique, boutique",
+"site_couleurs": "blanc, rose, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L020",
@@ -302,7 +358,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, crème",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond crème et bleu, photos de choux et de la boutique, esprit rétro.",
+"site_style": "rétro, chaleureux",
+"site_couleurs": "crème, bleu, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L021",
@@ -365,7 +425,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Site simple, photos de la boulangerie de 1889 et des pains, fond blanc.",
+"site_style": "artisanal",
+"site_couleurs": "blanc, brun, vert",
+"site_images": "photos de lieux"
 },
 {
 "id": "L025",
@@ -380,7 +444,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, typographie à empattements fine, photos de miches et de la boutique, très sobre.",
+"site_style": "classique, minimal",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L026",
@@ -427,7 +495,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, couleurs vives",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Boutique en ligne sur fond blanc, photos de gâteaux colorés, typographie noire grasse.",
+"site_style": "boutique, moderne",
+"site_couleurs": "blanc, noir, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L029",
@@ -442,7 +514,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, bleu nuit",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de boîtes rouges et de pâtisseries, typographie fine.",
+"site_style": "luxe, boutique",
+"site_couleurs": "blanc, rouge, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L030",
@@ -457,7 +533,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de meringues, vitrine simple, lettrage classique.",
+"site_style": "classique",
+"site_couleurs": "blanc, brun, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L031",
@@ -472,7 +552,11 @@
 "ecriture": "empattements",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de la boutique de 1761 et des gaufres, dorures, esprit rétro.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, or, bleu",
+"site_images": "photos de lieux"
 },
 {
 "id": "L032",
@@ -487,7 +571,11 @@
 "ecriture": "capitales",
 "couleurs": "rose, brun",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Boutique en ligne sur fond blanc, photos de pralulines et de tablettes, rouge.",
+"site_style": "boutique, chaleureux",
+"site_couleurs": "blanc, rouge, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L033",
@@ -502,7 +590,11 @@
 "ecriture": "script élégant",
 "couleurs": "bleu-vert, crème",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond crème, typographie rétro, photos de pâtisseries classiques, esprit années 50.",
+"site_style": "rétro, classique",
+"site_couleurs": "crème, noir, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L034",
@@ -517,7 +609,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu marine, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Boutique en ligne sur fond blanc, photos de gâteaux, noir et or.",
+"site_style": "boutique, moderne",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos produits"
 },
 {
 "id": "L035",
@@ -532,7 +628,11 @@
 "ecriture": "sans",
 "couleurs": "blanc, beige",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos lumineuses de pâtisseries, typographie fine, boutique.",
+"site_style": "minimal, boutique",
+"site_couleurs": "blanc, noir, beige",
+"site_images": "photos produits"
 },
 {
 "id": "L036",
@@ -563,7 +663,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "luxe"
+"epoque": "luxe",
+"site": "Fond blanc, photos de pâtisseries et de madeleines, bleu Ritz, typographie à empattements.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, bleu, or",
+"site_images": "photos produits"
 },
 {
 "id": "L038",
@@ -578,7 +682,11 @@
 "ecriture": "script élégant",
 "couleurs": "or, noir",
 "visage": "non",
-"epoque": "luxe"
+"epoque": "luxe",
+"site": "Fond sombre et dorures, photos de pâtisseries baroques.",
+"site_style": "luxe, classique",
+"site_couleurs": "noir, or, bordeaux",
+"site_images": "photos produits"
 },
 {
 "id": "L039",
@@ -593,7 +701,11 @@
 "ecriture": "capitales",
 "couleurs": "rose fuchsia, noir",
 "visage": "non",
-"epoque": "moderne, luxe"
+"epoque": "moderne, luxe",
+"site": "Boutique en ligne rose et noir, photos de produits, typographie moderne.",
+"site_style": "luxe, boutique",
+"site_couleurs": "rose fuchsia, noir, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L040",
@@ -608,7 +720,11 @@
 "ecriture": "empattements",
 "couleurs": "rouge, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Boutique en ligne, rouge Hédiard, photos de produits d'épicerie fine.",
+"site_style": "classique, boutique",
+"site_couleurs": "rouge, noir, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L041",
@@ -655,7 +771,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, or, couleurs vives",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Boutique très colorée, boîtes de thé multicolores sur fond blanc, promotions.",
+"site_style": "boutique, ludique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L044",
@@ -670,7 +790,11 @@
 "ecriture": "sans",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Boutique en ligne sur fond blanc, photos de thés et de plantations, vert et bleu.",
+"site_style": "boutique, moderne",
+"site_couleurs": "blanc, vert, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L045",
@@ -701,7 +825,11 @@
 "ecriture": "sans",
 "couleurs": "blanc, pastel",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de glaces et de la boutique, typographie simple.",
+"site_style": "chaleureux",
+"site_couleurs": "blanc, bleu, crème",
+"site_images": "photos produits"
 },
 {
 "id": "L047",
@@ -716,7 +844,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "luxe"
+"epoque": "luxe",
+"site": "Boutique en ligne brun et crème, photos de chocolats, typographie fine.",
+"site_style": "luxe, boutique",
+"site_couleurs": "brun, crème, or",
+"site_images": "photos produits"
 },
 {
 "id": "L048",
@@ -731,7 +863,11 @@
 "ecriture": "capitales",
 "couleurs": "vert émeraude",
 "visage": "non",
-"epoque": "moderne, luxe"
+"epoque": "moderne, luxe",
+"site": "Fond sombre, sculptures en chocolat en grand, typographie fine, esprit galerie d'art.",
+"site_style": "luxe, minimal",
+"site_couleurs": "noir, turquoise, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L049",
@@ -762,7 +898,11 @@
 "ecriture": "empattements",
 "couleurs": "or, bleu nuit",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Boutique en ligne sur fond blanc, photos de pralines, or et bleu.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, or, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L051",
@@ -777,7 +917,11 @@
 "ecriture": "empattements",
 "couleurs": "brun, or, rouge",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Site classique et chargé sur fond crème, photos de tablettes et histoire familiale.",
+"site_style": "classique",
+"site_couleurs": "crème, brun, or",
+"site_images": "photos produits"
 },
 {
 "id": "L052",
@@ -808,7 +952,11 @@
 "ecriture": "empattements",
 "couleurs": "bleu, rouge, or",
 "visage": "portrait de femme",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos du Mont-Saint-Michel et des biscuits, rouge.",
+"site_style": "classique",
+"site_couleurs": "blanc, rouge, bleu",
+"site_images": "photos de lieux"
 },
 {
 "id": "L054",
@@ -823,7 +971,11 @@
 "ecriture": "manuscrite",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "artisanal, rétro"
+"epoque": "artisanal, rétro",
+"site": "Fond vichy rouge et blanc, photos de confitures et de recettes, chaleureux.",
+"site_style": "chaleureux, rétro",
+"site_couleurs": "rouge, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L055",
@@ -838,7 +990,11 @@
 "ecriture": "sans",
 "couleurs": "bleu, jaune",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Site coloré jaune et bleu, photos de galettes, esprit famille.",
+"site_style": "ludique, chaleureux",
+"site_couleurs": "jaune, bleu, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L056",
@@ -853,7 +1009,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et rouge, photos de biscuits et grands paquets, site de grande marque.",
+"site_style": "moderne, ludique",
+"site_couleurs": "rouge, blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L057",
@@ -884,7 +1044,11 @@
 "ecriture": "script élégant",
 "couleurs": "rose, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et rose fuchsia, photos de pâtisseries, typographie script.",
+"site_style": "classique",
+"site_couleurs": "blanc, rose, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L059",
@@ -899,7 +1063,11 @@
 "ecriture": "script élégant",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Boutique en ligne sur fond blanc, photos de Luxemburgerli colorés, typographie sobre.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, noir, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L060",
@@ -914,7 +1082,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Boutique en ligne sur fond blanc, grandes photos de plaques de chocolat, sobre.",
+"site_style": "boutique, minimal",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L061",
@@ -929,7 +1101,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond vert d'eau, photos de la pâtisserie de Prada, typographie classique, très raffiné.",
+"site_style": "luxe, classique",
+"site_couleurs": "vert d'eau, or, rose",
+"site_images": "photos de lieux"
 },
 {
 "id": "L062",
@@ -944,7 +1120,11 @@
 "ecriture": "capitales",
 "couleurs": "or, noir",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc, photos du salon milanais et des panettones, typographie fine.",
+"site_style": "classique, luxe",
+"site_couleurs": "blanc, or, bleu",
+"site_images": "photos de lieux"
 },
 {
 "id": "L063",
@@ -959,7 +1139,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Boutique en ligne sur fond blanc, photos de panettones et du maître pâtissier, noir et or.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos produits"
 },
 {
 "id": "L064",
@@ -974,7 +1158,11 @@
 "ecriture": "empattements",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond sombre et dorures, photos du café vénitien de 1720, boutique de thés et cafés.",
+"site_style": "luxe, classique",
+"site_couleurs": "noir, or, rouge",
+"site_images": "photos de lieux"
 },
 {
 "id": "L065",
@@ -1005,7 +1193,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos colorées de gâteaux spectaculaires, typographie ancienne.",
+"site_style": "ludique, classique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L067",
@@ -1020,7 +1212,11 @@
 "ecriture": "sans",
 "couleurs": "orange, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos graphiques de gâteaux, typographie minimale.",
+"site_style": "minimal, moderne",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L068",
@@ -1035,7 +1231,11 @@
 "ecriture": "empattements",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond jaune et blanc, photos de pastéis de nata, site simple.",
+"site_style": "chaleureux, artisanal",
+"site_couleurs": "jaune, blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L069",
@@ -1050,7 +1250,11 @@
 "ecriture": "empattements",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et bleu azulejo, photos de la fabrique, site simple.",
+"site_style": "classique, artisanal",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos de lieux"
 },
 {
 "id": "L070",
@@ -1065,7 +1269,11 @@
 "ecriture": "script élégant",
 "couleurs": "vert eau de Nil, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Boutique en ligne sur fond vert eau-de-nil, photos de produits et de paniers, typographie à empattements.",
+"site_style": "luxe, classique, boutique",
+"site_couleurs": "vert eau-de-nil, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L071",
@@ -1080,7 +1288,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de cronuts et de créations, typographie moderne, boutique.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, noir, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L072",
@@ -1095,7 +1307,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond crème, photos chaudes de pains et de cafés, typographie à empattements.",
+"site_style": "chaleureux, artisanal",
+"site_couleurs": "crème, noir, brun",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L073",
@@ -1110,7 +1326,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos colorées de plats, typographie moderne, boutique et recettes.",
+"site_style": "moderne, chaleureux",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L074",
@@ -1141,7 +1361,11 @@
 "ecriture": "sans",
 "couleurs": "rose, bleu",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, gâteaux très colorés, typographie ronde rose.",
+"site_style": "ludique, boutique",
+"site_couleurs": "blanc, rose, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L076",
@@ -1172,7 +1396,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Site minimal sur fond blanc, quelques photos de viennoiseries, texte court.",
+"site_style": "minimal, artisanal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L078",
@@ -1187,7 +1415,11 @@
 "ecriture": "sans",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos brutes de pains, typographie grasse.",
+"site_style": "brut, minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L079",
@@ -1202,7 +1434,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de café et de croissants, typographie fine, épuré.",
+"site_style": "minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L080",
@@ -1217,7 +1453,11 @@
 "ecriture": "sans",
 "couleurs": "vert, crème",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond crème et noir, photos de brioches à la cannelle, esprit scandinave.",
+"site_style": "chaleureux, minimal",
+"site_couleurs": "crème, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L081",
@@ -1232,7 +1472,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos du café impérial et des gâteaux, typographie classique, boutique.",
+"site_style": "classique",
+"site_couleurs": "blanc, or, brun",
+"site_images": "photos de lieux"
 },
 {
 "id": "L082",
@@ -1247,7 +1491,11 @@
 "ecriture": "script élégant",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond bordeaux et or, photos de la Sachertorte et de l'hôtel, luxe viennois.",
+"site_style": "luxe, classique",
+"site_couleurs": "bordeaux, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L083",
@@ -1278,7 +1526,11 @@
 "ecriture": "script élégant",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos du café munichois et des gâteaux, sobre.",
+"site_style": "classique",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L085",
@@ -1293,7 +1545,11 @@
 "ecriture": "sans",
 "couleurs": "bleu, jaune",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site coréen coloré avec promotions, photos de gâteaux, orange et blanc.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, orange, vert",
+"site_images": "photos produits"
 },
 {
 "id": "L086",
@@ -1308,7 +1564,11 @@
 "ecriture": "sans",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site de chaîne sur fond blanc et bleu, photos de gâteaux et viennoiseries, menus.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, bleu, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L087",
@@ -1339,7 +1599,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond noir, visuels surréalistes de gâteaux-sculptures, typographie minimale.",
+"site_style": "minimal, brut",
+"site_couleurs": "noir, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L089",
@@ -1386,7 +1650,11 @@
 "ecriture": "capitales",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et vert, photos de champs de thé de Jeju, boutique en ligne épurée.",
+"site_style": "minimal, boutique",
+"site_couleurs": "blanc, vert",
+"site_images": "photos de lieux"
 },
 {
 "id": "L092",
@@ -1401,7 +1669,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site coréen coloré, photos de bingsu, promotions, rouge et blanc.",
+"site_style": "ludique, moderne",
+"site_couleurs": "blanc, rouge, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L093",
@@ -1496,7 +1768,11 @@
 "ecriture": "sans",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de tteok colorés, boutique en ligne coréenne.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, brun, pastel",
+"site_images": "photos produits"
 },
 {
 "id": "L099",
@@ -1511,7 +1787,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site de chaîne rouge et blanc, photos de boissons, menus.",
+"site_style": "moderne, ludique",
+"site_couleurs": "rouge, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L100",
@@ -1526,7 +1806,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, blanc",
 "visage": "personnage animal",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos sobres de yokan, typographie japonaise, très épuré.",
+"site_style": "minimal, classique",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L101",
@@ -1557,7 +1841,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond noir et blanc, photos de biscuits en grand, typographie géométrique.",
+"site_style": "minimal, moderne",
+"site_couleurs": "noir, blanc, jaune",
+"site_images": "photos produits"
 },
 {
 "id": "L103",
@@ -1572,7 +1860,11 @@
 "ecriture": "enfantine",
 "couleurs": "jaune, brun",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond jaune et blanc, personnages, photos de gâteaux, ludique.",
+"site_style": "ludique",
+"site_couleurs": "jaune, blanc, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L104",
@@ -1651,7 +1943,11 @@
 "ecriture": "manuscrite",
 "couleurs": "vert, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de matcha et d'ustensiles, typographie japonaise sobre, boutique.",
+"site_style": "minimal, classique",
+"site_couleurs": "blanc, vert, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L109",
@@ -1682,7 +1978,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc, photos de mille-crêpes, typographie fine, boutique en ligne.",
+"site_style": "luxe, minimal, boutique",
+"site_couleurs": "blanc, noir, beige",
+"site_images": "photos produits"
 },
 {
 "id": "L111",
@@ -1713,7 +2013,11 @@
 "ecriture": "sans",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et bleu, photos de tartelettes aux œufs et de pains, simple.",
+"site_style": "moderne, artisanal",
+"site_couleurs": "blanc, bleu, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L113",
@@ -1744,7 +2048,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos de croissants et de cafés, typographie noire, esprit boulangerie française.",
+"site_style": "chaleureux, artisanal",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L115",
@@ -1759,7 +2067,11 @@
 "ecriture": "script élégant",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond vert et blanc, photos de gâteaux au pandan, boutique en ligne simple.",
+"site_style": "classique, boutique",
+"site_couleurs": "vert, blanc, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L116",
@@ -1790,7 +2102,11 @@
 "ecriture": "sans",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos de pains et de tartes, typographie noire simple.",
+"site_style": "artisanal, minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L118",
@@ -1821,7 +2137,11 @@
 "ecriture": "script élégant",
 "couleurs": "bleu-vert, blanc",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond blanc et bleu ciel, photos de cupcakes et de banana pudding, boutique.",
+"site_style": "ludique, boutique",
+"site_couleurs": "blanc, bleu ciel, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L120",
@@ -1836,7 +2156,11 @@
 "ecriture": "sans",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, grosses photos de cookies, typographie grasse, boutique.",
+"site_style": "chaleureux, boutique",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L121",
@@ -1851,7 +2175,11 @@
 "ecriture": "sans",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos de pains et de pâtisseries, typographie fine, épuré.",
+"site_style": "minimal, artisanal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L122",
@@ -1866,7 +2194,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et vert pâle, gâteaux photographiés comme des œuvres, esprit galerie.",
+"site_style": "luxe, minimal",
+"site_couleurs": "blanc, vert pâle, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L123",
@@ -1897,7 +2229,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos sombres de pains, typographie grasse noire.",
+"site_style": "brut, artisanal",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L125",
@@ -1912,7 +2248,11 @@
 "ecriture": "script élégant",
 "couleurs": "rose, vert",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et rose, photos du café milanais à New York, typographie classique.",
+"site_style": "classique, chaleureux",
+"site_couleurs": "blanc, rose, vert",
+"site_images": "photos de lieux"
 },
 {
 "id": "L126",
@@ -1943,7 +2283,11 @@
 "ecriture": "script élégant",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond brun et crème, photos de desserts au chocolat, boutique.",
+"site_style": "chaleureux, boutique",
+"site_couleurs": "brun, crème, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L128",
@@ -1974,7 +2318,11 @@
 "ecriture": "sans",
 "couleurs": "bleu",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et bleu, photos épurées de café, typographie fine, boutique.",
+"site_style": "minimal, boutique",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L130",
@@ -2021,7 +2369,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Site très simple, fond blanc, texte noir, presque pas d'images.",
+"site_style": "minimal, brut",
+"site_couleurs": "blanc, noir",
+"site_images": "typographie seule"
 },
 {
 "id": "L133",
@@ -2036,7 +2388,11 @@
 "ecriture": "script élégant",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond vert et blanc, photos de la terrasse, typographie classique.",
+"site_style": "classique",
+"site_couleurs": "vert, blanc, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L134",
@@ -2051,7 +2407,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "deux personnages",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et vert, photos du café et des deux magots, classique.",
+"site_style": "classique",
+"site_couleurs": "blanc, vert, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L135",
@@ -2066,7 +2426,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de café de spécialité, typographie moderne, boutique.",
+"site_style": "moderne, minimal",
+"site_couleurs": "blanc, noir, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L136",
@@ -2097,7 +2461,11 @@
 "ecriture": "sans",
 "couleurs": "vert, blanc",
 "visage": "sirène",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site de grande marque sur fond blanc et vert, photos de boissons, menus et promotions.",
+"site_style": "moderne, boutique",
+"site_couleurs": "vert, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L138",
@@ -2160,7 +2528,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et gris, photos brutes des cafés dans d'anciennes usines, minimal.",
+"site_style": "brut, minimal",
+"site_couleurs": "blanc, gris, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L142",
@@ -2207,7 +2579,11 @@
 "ecriture": "manuscrite",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos chaudes du restaurant et des plats, typographie rouge rétro.",
+"site_style": "chaleureux, rétro",
+"site_couleurs": "blanc, rouge, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L145",
@@ -2222,7 +2598,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, vert",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Site exubérant aux couleurs vives, photos de plats et de salles, typographie grasse.",
+"site_style": "ludique, rétro",
+"site_couleurs": "rouge, vert, jaune",
+"site_images": "photos de lieux"
 },
 {
 "id": "L146",
@@ -2253,7 +2633,11 @@
 "ecriture": "sans",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos nordiques de plats et de nature, typographie minimale.",
+"site_style": "minimal",
+"site_couleurs": "blanc, noir, vert",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L148",
@@ -2268,7 +2652,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de plats et de la salle, typographie fine, sobre.",
+"site_style": "minimal, luxe",
+"site_couleurs": "blanc, noir, gris",
+"site_images": "photos de lieux"
 },
 {
 "id": "L149",
@@ -2283,7 +2671,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, rouge",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de plats en gros plan, typographie fine.",
+"site_style": "minimal, luxe",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L150",
@@ -2298,7 +2690,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond noir ou blanc, photos d'art de plats et de céramiques, minimal.",
+"site_style": "minimal, luxe",
+"site_couleurs": "noir, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L151",
@@ -2329,7 +2725,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond noir, photos de plats et de restaurants, typographie fine blanche.",
+"site_style": "luxe, minimal",
+"site_couleurs": "noir, blanc, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L153",
@@ -2344,7 +2744,11 @@
 "ecriture": "sans",
 "couleurs": "vert, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond vert et blanc, photos de burgers, typographie ronde, menus.",
+"site_style": "ludique, moderne",
+"site_couleurs": "vert, blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L154",
@@ -2359,7 +2763,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et bordeaux, photos de plats, commande en ligne, site de chaîne.",
+"site_style": "moderne",
+"site_couleurs": "bordeaux, blanc, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L155",
@@ -2390,7 +2798,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond crème, photos de tartines et de grandes tables en bois, typographie brune.",
+"site_style": "chaleureux, artisanal",
+"site_couleurs": "crème, brun",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L157",
@@ -2405,7 +2817,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, rouge",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site marché sur fond blanc, photos de produits italiens, beaucoup de contenu.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, noir, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L158",
@@ -2436,7 +2852,11 @@
 "ecriture": "sans",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et vert, photos de salades, typographie moderne, commande en ligne.",
+"site_style": "moderne, minimal",
+"site_couleurs": "blanc, vert",
+"site_images": "photos produits"
 },
 {
 "id": "L160",
@@ -2451,7 +2871,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, crème",
 "visage": "personnage animal",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de cafés et de canettes, typographie à empattements.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, noir, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L161",
@@ -2482,7 +2906,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "luxe"
+"epoque": "luxe",
+"site": "Fond blanc, photos de palace, bleu Ritz, typographie à empattements fine.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, bleu, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L163",
@@ -2513,7 +2941,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "luxe"
+"epoque": "luxe",
+"site": "Fond noir et rouge, photos sombres de l'hôtel, ambiance musicale, luxe.",
+"site_style": "luxe",
+"site_couleurs": "noir, rouge, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L165",
@@ -2528,7 +2960,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond crème, photos chaleureuses des halls, typographie moderne, un peu ludique.",
+"site_style": "chaleureux, moderne",
+"site_couleurs": "crème, noir, orange",
+"site_images": "photos de lieux"
 },
 {
 "id": "L166",
@@ -2559,7 +2995,11 @@
 "ecriture": "sans",
 "couleurs": "rose, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site coloré et ludique, photos décalées, typographie grasse.",
+"site_style": "ludique",
+"site_couleurs": "multicolore, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L168",
@@ -2574,7 +3014,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond crème, photos de clubs, typographie à empattements, élégant et discret.",
+"site_style": "luxe, chaleureux",
+"site_couleurs": "crème, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L169",
@@ -2589,7 +3033,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc ou sable, photos de resorts spectaculaires, typographie fine espacée.",
+"site_style": "luxe, minimal",
+"site_couleurs": "blanc, sable, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L170",
@@ -2604,7 +3052,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc, grandes photos d'hôtels, typographie à empattements, luxe classique.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L171",
@@ -2619,7 +3071,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu nuit, or",
 "visage": "personnage animal",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond bleu nuit et or, photos d'hôtels, luxe classique.",
+"site_style": "luxe, classique",
+"site_couleurs": "bleu nuit, or, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L172",
@@ -2634,7 +3090,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc, éventail, photos d'hôtels, typographie à empattements.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, noir, rouge",
+"site_images": "photos de lieux"
 },
 {
 "id": "L173",
@@ -2697,7 +3157,11 @@
 "ecriture": "empattements",
 "couleurs": "terracotta, bleu",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond terracotta et blanc, photos de la mer et de l'hôtel années 50, typographie rétro.",
+"site_style": "rétro, chaleureux",
+"site_couleurs": "terracotta, blanc, bleu",
+"site_images": "photos de lieux"
 },
 {
 "id": "L177",
@@ -2760,7 +3224,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc cassé, étiquettes de laboratoire, photos brutes, typographie machine à écrire.",
+"site_style": "brut, minimal",
+"site_couleurs": "blanc cassé, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L181",
@@ -2775,7 +3243,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond crème, gravures anciennes, typographie XIXe, boutique en ligne.",
+"site_style": "rétro, classique, boutique",
+"site_couleurs": "crème, noir, vert",
+"site_images": "illustrations"
 },
 {
 "id": "L182",
@@ -2806,7 +3278,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, orange",
 "visage": "personnage animal",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de mode et de cafés, renard, typographie sobre, boutique.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, noir, bleu",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L184",
@@ -2821,7 +3297,11 @@
 "ecriture": "capitales",
 "couleurs": "noir",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond beige et blanc, photos de mode très lumineuses, typographie en capitales fines.",
+"site_style": "minimal, luxe",
+"site_couleurs": "beige, blanc",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L185",
@@ -2868,7 +3348,11 @@
 "ecriture": "capitales",
 "couleurs": "orange, noir",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc et ambre, photos de flacons et de ginseng, luxe coréen.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, ambre, or",
+"site_images": "photos produits"
 },
 {
 "id": "L188",
@@ -2883,7 +3367,11 @@
 "ecriture": "sans",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et vert, photos de Jeju et de produits, frais.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, vert",
+"site_images": "photos produits"
 },
 {
 "id": "L189",
@@ -2898,7 +3386,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et bleu, photos de produits et de mannequins, moderne.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L190",
@@ -2961,7 +3453,11 @@
 "ecriture": "capitales",
 "couleurs": "orange, brun",
 "visage": "personnage",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc, orange Hermès, animations et dessins ludiques, typographie à empattements.",
+"site_style": "luxe, ludique",
+"site_couleurs": "blanc, orange",
+"site_images": "illustrations"
 },
 {
 "id": "L194",
@@ -2992,7 +3488,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de céramiques blanches sur fond sombre, typographie fine, boutique.",
+"site_style": "classique, minimal",
+"site_couleurs": "blanc, noir, gris",
+"site_images": "photos produits"
 },
 {
 "id": "L196",
@@ -3007,7 +3507,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de la boutique et d'objets, rouge, typographie moderne.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, rouge",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L197",
@@ -3022,7 +3526,11 @@
 "ecriture": "sans",
 "couleurs": "rose, rouge",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos d'enfants, typographie fine, luxe doux.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, rose poudré",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L198",
@@ -3053,7 +3561,11 @@
 "ecriture": "script élégant",
 "couleurs": "rose, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et rose, photos de bébés, douceur.",
+"site_style": "classique, chaleureux",
+"site_couleurs": "blanc, rose, bleu",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L200",
@@ -3084,7 +3596,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, grille de magazine, photos et typographie à empattements, dense.",
+"site_style": "éditorial",
+"site_couleurs": "blanc, noir, rouge",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L202",
@@ -3115,7 +3631,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, vert",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, objets colorés en grille, typographie grasse, boutique en ligne.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L204",
@@ -3146,7 +3666,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, imprimés fleuris géants, couleurs vives, boutique.",
+"site_style": "ludique, boutique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L206",
@@ -3161,7 +3685,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de verres colorés, typographie fine, boutique nordique.",
+"site_style": "minimal, boutique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L207",
@@ -3176,7 +3704,11 @@
 "ecriture": "capitales",
 "couleurs": "orange, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et orange, photos de cocottes colorées, boutique.",
+"site_style": "chaleureux, boutique",
+"site_couleurs": "blanc, orange, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L208",
@@ -3223,7 +3755,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de couteaux et d'ateliers, typographie classique.",
+"site_style": "artisanal, classique",
+"site_couleurs": "blanc, noir, bois",
+"site_images": "photos produits"
 },
 {
 "id": "L211",
@@ -3238,7 +3774,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, tennis colorées, photos lifestyle, boutique.",
+"site_style": "ludique, boutique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L212",
@@ -3253,7 +3793,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, rose poudré",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et rose, photos de ballerines, typographie fine, boutique.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, rose, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L213",
@@ -3300,7 +3844,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "moderne, luxe"
+"epoque": "moderne, luxe",
+"site": "Fond noir et or, photos de machines et de capsules, boutique.",
+"site_style": "luxe, boutique",
+"site_couleurs": "noir, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L216",
@@ -3315,7 +3863,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond bleu et blanc, photos de cafés et de produits, site de grande marque.",
+"site_style": "moderne, boutique",
+"site_couleurs": "bleu, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L217",
@@ -3410,7 +3962,11 @@
 "ecriture": "script élégant",
 "couleurs": "bleu, crème",
 "visage": "personnage femme",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, pots en terre cuite colorés, photos de yaourts, chaleureux.",
+"site_style": "chaleureux",
+"site_couleurs": "blanc, terracotta, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L223",
@@ -3425,7 +3981,11 @@
 "ecriture": "manuscrite",
 "couleurs": "jaune, noir, orange",
 "visage": "deux personnages",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site très coloré, illustrations, typographie manuscrite, humour.",
+"site_style": "ludique",
+"site_couleurs": "multicolore, jaune",
+"site_images": "illustrations"
 },
 {
 "id": "L224",
@@ -3440,7 +4000,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, rouge",
 "visage": "portrait de femme",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos du restaurant lyonnais et des plats, typographie classique.",
+"site_style": "classique, luxe",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L225",
@@ -3503,7 +4067,11 @@
 "ecriture": "sans",
 "couleurs": "bleu, blanc",
 "visage": "portrait de femme",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond crème et rouge, photos de desserts, esprit rétro familial.",
+"site_style": "rétro, chaleureux",
+"site_couleurs": "crème, rouge, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L229",
@@ -3518,7 +4086,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, blanc",
 "visage": "portrait d'homme",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond rouge et jaune, photos de boîtes et de pâtes, site de grande marque américaine.",
+"site_style": "ludique, rétro",
+"site_couleurs": "rouge, jaune, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L230",
@@ -3549,7 +4121,11 @@
 "ecriture": "script élégant",
 "couleurs": "bleu, rouge",
 "visage": "portrait d'enfant",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond blanc et bleu, personnage, photos de gâteaux emballés, ludique.",
+"site_style": "ludique, rétro",
+"site_couleurs": "blanc, bleu, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L232",
@@ -3564,7 +4140,11 @@
 "ecriture": "sans",
 "couleurs": "noir, rose",
 "visage": "silhouette de femme",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site industriel sobre sur fond blanc, photos de desserts, bleu.",
+"site_style": "moderne",
+"site_couleurs": "blanc, bleu, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L233",
@@ -3611,7 +4191,11 @@
 "ecriture": "sans",
 "couleurs": "rose, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos gourmandes de viennoiseries, typographie moderne.",
+"site_style": "moderne, chaleureux",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L236",
@@ -3626,7 +4210,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de pains et de la boutique, simple.",
+"site_style": "artisanal",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L237",
@@ -3657,7 +4245,11 @@
 "ecriture": "capitales",
 "couleurs": "rose, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de pâtisseries de grands chefs, magazine et boutique.",
+"site_style": "éditorial, boutique",
+"site_couleurs": "blanc, noir, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L239",
@@ -3672,7 +4264,11 @@
 "ecriture": "sans",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond pastel, photos de latte art et de la boutique, esprit Instagram.",
+"site_style": "moderne, ludique",
+"site_couleurs": "pastel, blanc",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L240",
@@ -3719,7 +4315,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, jaune",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de donuts énormes, typographie ronde.",
+"site_style": "ludique",
+"site_couleurs": "blanc, rose, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L243",
@@ -3750,7 +4350,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et bleu, photos de pains et de viennoiseries, typographie moderne.",
+"site_style": "moderne, artisanal",
+"site_couleurs": "blanc, bleu, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L245",
@@ -3765,7 +4369,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de viennoiseries franco-japonaises, simple.",
+"site_style": "artisanal, minimal",
+"site_couleurs": "blanc, noir, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L246",
@@ -3796,7 +4404,11 @@
 "ecriture": "sans",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Site simple sur fond blanc, photos de madeleines et de la boutique.",
+"site_style": "artisanal",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L248",
@@ -3811,7 +4423,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de pains sans gluten, typographie moderne, couleurs douces.",
+"site_style": "moderne, artisanal",
+"site_couleurs": "blanc, noir, vert",
+"site_images": "photos produits"
 },
 {
 "id": "L249",
@@ -3890,7 +4506,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et or, photos de madeleines et de pâtisseries, typographie classique.",
+"site_style": "classique",
+"site_couleurs": "blanc, or, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L254",
@@ -3905,7 +4525,11 @@
 "ecriture": "sans",
 "couleurs": "caramel, crème",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond caramel et crème, photos de pâtisseries au caramel, typographie ronde.",
+"site_style": "chaleureux, moderne",
+"site_couleurs": "caramel, crème",
+"site_images": "photos produits"
 },
 {
 "id": "L255",
@@ -3920,7 +4544,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "moderne, luxe"
+"epoque": "moderne, luxe",
+"site": "Fond blanc, photos de gâteaux, noir et or, boutique.",
+"site_style": "moderne, luxe",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos produits"
 },
 {
 "id": "L256",
@@ -3967,7 +4595,11 @@
 "ecriture": "sans",
 "couleurs": "ocre, brun",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond crème, photos de pains et de boutiques, typographie ronde.",
+"site_style": "artisanal, chaleureux",
+"site_couleurs": "crème, brun, ocre",
+"site_images": "photos produits"
 },
 {
 "id": "L259",
@@ -3998,7 +4630,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Site très simple sur fond blanc, surtout du texte, quelques photos.",
+"site_style": "minimal, brut",
+"site_couleurs": "blanc, rouge, noir",
+"site_images": "typographie seule"
 },
 {
 "id": "L261",
@@ -4013,7 +4649,11 @@
 "ecriture": "enfantine",
 "couleurs": "rose, jaune, bleu",
 "visage": "personnage",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site coloré, gâteaux fantaisie, illustrations, typographie ronde.",
+"site_style": "ludique",
+"site_couleurs": "rose, jaune, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L262",
@@ -4028,7 +4668,11 @@
 "ecriture": "capitales",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et vert, photos d'épicerie et de plats, boutique en ligne.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, vert",
+"site_images": "photos produits"
 },
 {
 "id": "L263",
@@ -4043,7 +4687,11 @@
 "ecriture": "capitales",
 "couleurs": "jaune, noir",
 "visage": "personnage",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond jaune et blanc, photos des équipes souriantes, typographie ronde, chaleureux.",
+"site_style": "chaleureux, ludique",
+"site_couleurs": "jaune, blanc, noir",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L264",
@@ -4074,7 +4722,11 @@
 "ecriture": "empattements",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond crème, photos de la brasserie Art nouveau, typographie classique rouge.",
+"site_style": "classique, rétro",
+"site_couleurs": "crème, rouge, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L266",
@@ -4089,7 +4741,11 @@
 "ecriture": "empattements",
 "couleurs": "rouge, or",
 "visage": "portrait d'homme",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond rouge et or, photos du café historique, portrait, classique chargé.",
+"site_style": "classique, rétro",
+"site_couleurs": "rouge, or, crème",
+"site_images": "photos de lieux"
 },
 {
 "id": "L267",
@@ -4104,7 +4760,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond bleu nuit et or, photos des fresques et de la salle, luxe Belle Époque.",
+"site_style": "luxe, classique",
+"site_couleurs": "bleu, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L268",
@@ -4119,7 +4779,11 @@
 "ecriture": "capitales",
 "couleurs": "argent, bleu",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond bleu et argent, photos de la salle sur la Seine, typographie fine.",
+"site_style": "luxe, classique",
+"site_couleurs": "bleu, argent, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L269",
@@ -4134,7 +4798,11 @@
 "ecriture": "script élégant",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond rouge et or, photos Art nouveau, typographie script.",
+"site_style": "luxe, rétro",
+"site_couleurs": "rouge, or, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L270",
@@ -4149,7 +4817,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc, photos de plats et de restaurants, typographie fine noire, sobre.",
+"site_style": "luxe, minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L271",
@@ -4164,7 +4836,11 @@
 "ecriture": "capitales",
 "couleurs": "gris, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond gris et blanc, photos de plats, typographie sobre.",
+"site_style": "minimal",
+"site_couleurs": "gris, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L272",
@@ -4179,7 +4855,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc, photos de plats et portraits, typographie fine, élégant.",
+"site_style": "luxe, minimal",
+"site_couleurs": "blanc, noir, beige",
+"site_images": "photos produits"
 },
 {
 "id": "L273",
@@ -4194,7 +4874,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et bleu, photos de la mer et du jardin, typographie moderne.",
+"site_style": "minimal, chaleureux",
+"site_couleurs": "blanc, bleu, vert",
+"site_images": "photos de lieux"
 },
 {
 "id": "L274",
@@ -4225,7 +4909,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc, photos de plats et de la salle, typographie fine.",
+"site_style": "luxe, minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L276",
@@ -4240,7 +4928,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, bronze",
 "visage": "non",
-"epoque": "moderne, luxe"
+"epoque": "moderne, luxe",
+"site": "Fond noir et bronze, photos de chocolats, boutique en ligne.",
+"site_style": "luxe, boutique",
+"site_couleurs": "noir, bronze, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L277",
@@ -4255,7 +4947,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond noir et or, photos d'atelier et de tablettes, esprit manufacture.",
+"site_style": "rétro, luxe",
+"site_couleurs": "noir, or, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L278",
@@ -4270,7 +4966,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond brun et blanc, photos de chocolat et de pâtissiers, boutique et contenu pour les professionnels.",
+"site_style": "classique, boutique",
+"site_couleurs": "brun, blanc, or",
+"site_images": "photos produits"
 },
 {
 "id": "L279",
@@ -4285,7 +4985,11 @@
 "ecriture": "empattements",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond brun et crème, photos de tablettes et de plantations, boutique.",
+"site_style": "classique, boutique",
+"site_couleurs": "brun, crème, or",
+"site_images": "photos produits"
 },
 {
 "id": "L280",
@@ -4316,7 +5020,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond brun et crème, photos de chocolats et de la boutique lyonnaise, classique.",
+"site_style": "classique",
+"site_couleurs": "brun, crème, or",
+"site_images": "photos produits"
 },
 {
 "id": "L282",
@@ -4331,7 +5039,11 @@
 "ecriture": "empattements",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond bleu et or, gravures, photos de la boutique de 1800, classique.",
+"site_style": "classique, luxe",
+"site_couleurs": "bleu, or, crème",
+"site_images": "illustrations"
 },
 {
 "id": "L283",
@@ -4346,7 +5058,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond crème et vert, photos de la boutique de 1761 et de confiseries, rétro.",
+"site_style": "rétro, classique",
+"site_couleurs": "crème, vert, or",
+"site_images": "photos produits"
 },
 {
 "id": "L284",
@@ -4361,7 +5077,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et noir, photos de chocolats colorés, typographie grasse.",
+"site_style": "moderne, minimal",
+"site_couleurs": "blanc, noir, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L285",
@@ -4376,7 +5096,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond crème, photos brutes de tablettes et de fèves, typographie large.",
+"site_style": "minimal, brut",
+"site_couleurs": "crème, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L286",
@@ -4391,7 +5115,11 @@
 "ecriture": "sans",
 "couleurs": "bleu, rouge, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site coloré, illustrations d'artistes, typographie ronde, ludique.",
+"site_style": "ludique",
+"site_couleurs": "multicolore, bleu, rouge",
+"site_images": "illustrations"
 },
 {
 "id": "L287",
@@ -4406,7 +5134,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond brun et crème, photos de chocolats et de calissons, boutique classique.",
+"site_style": "classique, boutique",
+"site_couleurs": "brun, crème, or",
+"site_images": "photos produits"
 },
 {
 "id": "L288",
@@ -4437,7 +5169,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et rouge, photos de truffes et de boutiques fleuries, classique.",
+"site_style": "classique",
+"site_couleurs": "blanc, rouge, or",
+"site_images": "photos produits"
 },
 {
 "id": "L290",
@@ -4452,7 +5188,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond brun et or, photos de tablettes, luxe italien.",
+"site_style": "luxe, classique",
+"site_couleurs": "brun, or, crème",
+"site_images": "photos produits"
 },
 {
 "id": "L291",
@@ -4467,7 +5207,11 @@
 "ecriture": "script élégant",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et bleu, photos de pralines et de boîtes, classique belge.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, bleu, or",
+"site_images": "photos produits"
 },
 {
 "id": "L292",
@@ -4482,7 +5226,11 @@
 "ecriture": "empattements",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond crème et brun, photos de spéculoos et de la boutique, rétro.",
+"site_style": "rétro, classique",
+"site_couleurs": "crème, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L293",
@@ -4497,7 +5245,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond noir et rouge, photos de chocolats et du chef, esprit rock.",
+"site_style": "moderne, brut",
+"site_couleurs": "noir, rouge, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L294",
@@ -4528,7 +5280,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, violet, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond blanc, boîtes très colorées à motifs, photos de truffes, ludique.",
+"site_style": "ludique, classique",
+"site_couleurs": "multicolore, rouge, violet",
+"site_images": "photos produits"
 },
 {
 "id": "L296",
@@ -4543,7 +5299,11 @@
 "ecriture": "empattements",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond bleu et blanc, gravures, photos de chocolats, rétro.",
+"site_style": "rétro, classique",
+"site_couleurs": "bleu, blanc",
+"site_images": "illustrations"
 },
 {
 "id": "L297",
@@ -4558,7 +5318,11 @@
 "ecriture": "empattements",
 "couleurs": "multicolore",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond blanc, boîtes rétro colorées, photos de pastilles, typographie ancienne.",
+"site_style": "rétro, ludique",
+"site_couleurs": "multicolore, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L298",
@@ -4573,7 +5337,11 @@
 "ecriture": "empattements",
 "couleurs": "or, bleu",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond bleu et or, photos de gianduiotti et du café turinois, classique.",
+"site_style": "classique, luxe",
+"site_couleurs": "bleu, or, crème",
+"site_images": "photos produits"
 },
 {
 "id": "L299",
@@ -4620,7 +5388,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond noir et or, photos de boîtes de thé, boutique en ligne.",
+"site_style": "luxe, classique, boutique",
+"site_couleurs": "noir, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L302",
@@ -4667,7 +5439,11 @@
 "ecriture": "capitales",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et vert, photos de thés et de sachets colorés, boutique japonaise.",
+"site_style": "moderne, boutique",
+"site_couleurs": "blanc, vert, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L305",
@@ -4682,7 +5458,11 @@
 "ecriture": "empattements",
 "couleurs": "jaune, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond jaune et or, photos de salons et de boîtes, luxe.",
+"site_style": "luxe, classique",
+"site_couleurs": "jaune, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L306",
@@ -4697,7 +5477,11 @@
 "ecriture": "sans",
 "couleurs": "noir, blanc",
 "visage": "personnage",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de boissons et visuels graphiques, typographie minimale.",
+"site_style": "minimal, moderne",
+"site_couleurs": "blanc, noir, gris",
+"site_images": "photos produits"
 },
 {
 "id": "L307",
@@ -4712,7 +5496,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et vert, photos de matcha et de la maison d'Uji, japonais.",
+"site_style": "classique, minimal",
+"site_couleurs": "blanc, vert, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L308",
@@ -4759,7 +5547,11 @@
 "ecriture": "capitales",
 "couleurs": "or, vert, orange",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond vert et or, photos de salons orientalistes et de boîtes, luxe.",
+"site_style": "luxe, classique",
+"site_couleurs": "vert, or, orange",
+"site_images": "photos de lieux"
 },
 {
 "id": "L311",
@@ -4806,7 +5598,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et bleu, photos de café et de sachets, typographie moderne.",
+"site_style": "moderne, artisanal",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L314",
@@ -4821,7 +5617,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos sobres de café, typographie fine, boutique minimale.",
+"site_style": "minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L315",
@@ -4852,7 +5652,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, pastel",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, sachets pastel, typographie fine, boutique nordique.",
+"site_style": "minimal, boutique",
+"site_couleurs": "blanc, pastel",
+"site_images": "photos produits"
 },
 {
 "id": "L317",
@@ -4883,7 +5687,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "personnage animal",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, photos de café et de cheesecake, typographie noire.",
+"site_style": "minimal, chaleureux",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L319",
@@ -4898,7 +5706,11 @@
 "ecriture": "capitales",
 "couleurs": "orange, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond orange et noir, graphisme pop, photos de café.",
+"site_style": "ludique, moderne",
+"site_couleurs": "orange, noir, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L320",
@@ -4913,7 +5725,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, crème",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond crème et brun, photos de cafés en bois, singe, rétro japonais.",
+"site_style": "rétro, chaleureux",
+"site_couleurs": "crème, brun",
+"site_images": "photos de lieux"
 },
 {
 "id": "L321",
@@ -4928,7 +5744,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de café et de la boutique, minimal japonais.",
+"site_style": "minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L322",
@@ -4943,7 +5763,11 @@
 "ecriture": "sans",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos d'ustensiles et de café, boutique épurée.",
+"site_style": "minimal, boutique",
+"site_couleurs": "blanc, noir, bois",
+"site_images": "photos produits"
 },
 {
 "id": "L323",
@@ -4958,7 +5782,11 @@
 "ecriture": "capitales",
 "couleurs": "jaune, noir",
 "visage": "personnage",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond blanc et jaune, masque de lutteur, photos de café, boutique coréenne.",
+"site_style": "rétro, ludique",
+"site_couleurs": "blanc, jaune, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L324",
@@ -4973,7 +5801,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, jaune",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond brun et jaune, photos du café romain, cerf, classique.",
+"site_style": "rétro, classique",
+"site_couleurs": "brun, jaune",
+"site_images": "photos de lieux"
 },
 {
 "id": "L325",
@@ -4988,7 +5820,11 @@
 "ecriture": "empattements",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond bleu et or, photos de l'épicerie munichoise et de cafés, classique.",
+"site_style": "classique, boutique",
+"site_couleurs": "bleu, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L326",
@@ -5019,7 +5855,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, crème",
 "visage": "portrait d'enfant",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond bleu et crème, photos de glaces en fleur, angelot, classique.",
+"site_style": "classique, ludique",
+"site_couleurs": "bleu, crème",
+"site_images": "photos produits"
 },
 {
 "id": "L328",
@@ -5034,7 +5874,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond bleu et blanc, photos de gelato, typographie grasse.",
+"site_style": "moderne",
+"site_couleurs": "bleu, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L329",
@@ -5049,7 +5893,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, jaune",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Site délirant aux couleurs vives, illustrations, typographie manuscrite.",
+"site_style": "ludique",
+"site_couleurs": "multicolore, noir",
+"site_images": "illustrations"
 },
 {
 "id": "L330",
@@ -5064,7 +5912,11 @@
 "ecriture": "capitales",
 "couleurs": "pastel, noir",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond pastel, pots colorés, typographie fine, boutique.",
+"site_style": "minimal, ludique",
+"site_couleurs": "pastel, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L331",
@@ -5079,7 +5931,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, crème",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond crème et bleu, photos de glaces, typographie rétro.",
+"site_style": "rétro, chaleureux",
+"site_couleurs": "crème, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L332",
@@ -5094,7 +5950,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, multicolore",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, pots multicolores, typographie script, ludique.",
+"site_style": "ludique, boutique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "photos produits"
 },
 {
 "id": "L333",
@@ -5109,7 +5969,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc et or, photos Art déco de l'hôtel, typographie fine.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, or, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L334",
@@ -5124,7 +5988,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond vert et or, photos du palace, typographie à empattements.",
+"site_style": "luxe, classique",
+"site_couleurs": "vert, or, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L335",
@@ -5155,7 +6023,11 @@
 "ecriture": "capitales",
 "couleurs": "or, noir",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc et or, photos Art déco, typographie fine.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, or, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L337",
@@ -5170,7 +6042,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc, photos de maisons de luxe, bleu, typographie fine.",
+"site_style": "luxe, minimal",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos de lieux"
 },
 {
 "id": "L338",
@@ -5185,7 +6061,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc et bleu, photos de trains et d'hôtels de légende, typographie à empattements.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, bleu, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L339",
@@ -5200,7 +6080,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond blanc, photos d'hôtels, typographie fine, très sobre.",
+"site_style": "luxe, minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L340",
@@ -5215,7 +6099,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc et bleu, photos de palaces, blason, classique.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, bleu, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L341",
@@ -5230,7 +6118,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc et noir, photos de palaces coloniaux, typographie fine.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L342",
@@ -5245,7 +6137,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos chaleureuses d'intérieurs, typographie fine, intime.",
+"site_style": "minimal, chaleureux",
+"site_couleurs": "blanc, bois, noir",
+"site_images": "photos de lieux"
 },
 {
 "id": "L343",
@@ -5260,7 +6156,11 @@
 "ecriture": "sans",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond rouge et blanc, photos de chambres et du restaurant, cœur, rétro.",
+"site_style": "rétro, ludique",
+"site_couleurs": "rouge, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L344",
@@ -5275,7 +6175,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond rouge et or, photos de jardins et de zelliges, luxe marocain.",
+"site_style": "luxe, classique",
+"site_couleurs": "rouge, or, vert",
+"site_images": "photos de lieux"
 },
 {
 "id": "L345",
@@ -5290,7 +6194,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond bleu et blanc, photos dolce vita années 60, typographie rétro.",
+"site_style": "rétro, luxe",
+"site_couleurs": "bleu, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L346",
@@ -5321,7 +6229,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"site": "Fond noir et or, photos du hall moderniste, typographie fine.",
+"site_style": "luxe, minimal",
+"site_couleurs": "noir, or, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L348",
@@ -5352,7 +6264,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond bleu et blanc, photos de cigares au beurre et de boîtes, épuré.",
+"site_style": "minimal, classique",
+"site_couleurs": "bleu, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L350",
@@ -5367,7 +6283,11 @@
 "ecriture": "empattements",
 "couleurs": "brun, crème",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond brun et crème, photos de baumkuchen, typographie classique.",
+"site_style": "classique",
+"site_couleurs": "brun, crème",
+"site_images": "photos produits"
 },
 {
 "id": "L351",
@@ -5382,7 +6302,11 @@
 "ecriture": "capitales",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond vert foncé et or, photos de financiers et de boutiques, classique.",
+"site_style": "classique, luxe",
+"site_couleurs": "vert, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L352",
@@ -5413,7 +6337,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de gâteaux aux fruits en coupe, typographie à empattements.",
+"site_style": "classique",
+"site_couleurs": "blanc, noir, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L354",
@@ -5524,7 +6452,11 @@
 "ecriture": "script élégant",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et vert, photos de tartes aux fruits, script français.",
+"site_style": "classique, chaleureux",
+"site_couleurs": "blanc, vert",
+"site_images": "photos produits"
 },
 {
 "id": "L361",
@@ -5539,7 +6471,11 @@
 "ecriture": "capitales",
 "couleurs": "jaune, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond jaune et noir, photos de tartes au fromage, ludique.",
+"site_style": "ludique, moderne",
+"site_couleurs": "jaune, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L362",
@@ -5554,7 +6490,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond bleu et blanc, vache, photos de biscuits et de boîtes.",
+"site_style": "rétro, ludique",
+"site_couleurs": "bleu, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L363",
@@ -5569,7 +6509,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, crème",
 "visage": "personnage animal",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond brun et crème, écureuil, photos de sablés, ludique.",
+"site_style": "ludique, chaleureux",
+"site_couleurs": "brun, crème",
+"site_images": "illustrations"
 },
 {
 "id": "L364",
@@ -5584,7 +6528,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond vert et blanc, photos de pains coréens, site simple.",
+"site_style": "rétro, artisanal",
+"site_couleurs": "vert, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L365",
@@ -5615,7 +6563,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos d'objets épurés, typographie fine, boutique.",
+"site_style": "minimal, boutique",
+"site_couleurs": "blanc, gris, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L367",
@@ -5662,7 +6614,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, argent",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond blanc et argent, photos d'orfèvrerie, typographie fine, luxe.",
+"site_style": "luxe, classique",
+"site_couleurs": "blanc, argent, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L370",
@@ -5677,7 +6633,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et bleu, photos de faïences, boutique classique.",
+"site_style": "classique, boutique",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L371",
@@ -5692,7 +6652,11 @@
 "ecriture": "script élégant",
 "couleurs": "rouge, crème",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond crème et rouge, photos de plats en céramique, chaleureux.",
+"site_style": "chaleureux, boutique",
+"site_couleurs": "crème, rouge",
+"site_images": "photos produits"
 },
 {
 "id": "L372",
@@ -5723,7 +6687,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc et bleu, photos de porcelaine, typographie fine.",
+"site_style": "classique, luxe",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos produits"
 },
 {
 "id": "L374",
@@ -5738,7 +6706,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"site": "Fond noir et or, photos de bougies, typographie classique, luxe.",
+"site_style": "luxe, classique",
+"site_couleurs": "noir, or",
+"site_images": "photos produits"
 },
 {
 "id": "L375",
@@ -5753,7 +6725,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, blanc, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond noir et or, photos de moutardes et de la boutique, classique.",
+"site_style": "classique, boutique",
+"site_couleurs": "noir, or, jaune",
+"site_images": "photos produits"
 },
 {
 "id": "L376",
@@ -5784,7 +6760,11 @@
 "ecriture": "empattements",
 "couleurs": "rose, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond rose et blanc, photos de biscuits roses, classique.",
+"site_style": "classique, chaleureux",
+"site_couleurs": "rose, blanc, or",
+"site_images": "photos produits"
 },
 {
 "id": "L378",
@@ -5799,7 +6779,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "personnage animal",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond noir et or, photos de caviar et de la salle, luxe.",
+"site_style": "luxe, classique",
+"site_couleurs": "noir, or",
+"site_images": "photos produits"
 },
 {
 "id": "L379",
@@ -5814,7 +6798,11 @@
 "ecriture": "capitales",
 "couleurs": "bleu, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond bleu et blanc, photos de caviar et de saumon, boutique.",
+"site_style": "classique, boutique",
+"site_couleurs": "bleu, blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L380",
@@ -5829,7 +6817,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, noir",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond rouge et noir, photos de charcuteries, rétro.",
+"site_style": "rétro, artisanal",
+"site_couleurs": "rouge, noir, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L381",
@@ -5844,7 +6836,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, vert",
 "visage": "personnage animal",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond rouge et vert, photos du Pays basque et de charcuteries, chaleureux.",
+"site_style": "artisanal, chaleureux",
+"site_couleurs": "rouge, vert, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L382",
@@ -5859,7 +6855,11 @@
 "ecriture": "capitales",
 "couleurs": "vert, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et vert, photos de ferme et de produits, épuré.",
+"site_style": "minimal, chaleureux",
+"site_couleurs": "blanc, vert",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L383",
@@ -5874,7 +6874,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, noir",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond rouge et blanc, photos de bagels et de la boutique, rétro new-yorkais.",
+"site_style": "rétro",
+"site_couleurs": "rouge, blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L384",
@@ -5889,7 +6893,11 @@
 "ecriture": "capitales",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond rouge et or, photos de la brasserie, typographie classique.",
+"site_style": "rétro, classique",
+"site_couleurs": "rouge, or, crème",
+"site_images": "photos de lieux"
 },
 {
 "id": "L385",
@@ -5904,7 +6912,11 @@
 "ecriture": "manuscrite",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, motifs fleuris bleus, photos de cookies et de cafés, chaleureux.",
+"site_style": "chaleureux, artisanal",
+"site_couleurs": "blanc, bleu",
+"site_images": "photos lifestyle"
 },
 {
 "id": "L386",
@@ -5935,7 +6947,11 @@
 "ecriture": "sans",
 "couleurs": "orange, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et orange, photos de pâtisseries, typographie ronde.",
+"site_style": "moderne, chaleureux",
+"site_couleurs": "blanc, orange",
+"site_images": "photos produits"
 },
 {
 "id": "L388",
@@ -5950,7 +6966,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos brutes de pains et de plats, typographie grasse.",
+"site_style": "brut, minimal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L389",
@@ -5965,7 +6985,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et noir, photos du gâteau pastèque, moderne.",
+"site_style": "moderne, minimal",
+"site_couleurs": "blanc, noir, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L390",
@@ -5996,7 +7020,11 @@
 "ecriture": "empattements",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond rouge et or, photos de mooncakes, boutique classique.",
+"site_style": "classique, boutique",
+"site_couleurs": "rouge, or, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L392",
@@ -6027,7 +7055,11 @@
 "ecriture": "capitales",
 "couleurs": "orange, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc et orange, photos de gâteaux à l'ananas et de bois, épuré.",
+"site_style": "minimal, chaleureux",
+"site_couleurs": "blanc, orange, bois",
+"site_images": "photos produits"
 },
 {
 "id": "L394",
@@ -6042,7 +7074,11 @@
 "ecriture": "capitales",
 "couleurs": "vert, jaune",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond vert et jaune, photos de toasts et de kopi, rétro.",
+"site_style": "rétro",
+"site_couleurs": "vert, jaune, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L395",
@@ -6073,7 +7109,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc et noir, photos de pâtisseries, typographie fine.",
+"site_style": "minimal, luxe",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L397",
@@ -6088,7 +7128,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond vert et blanc, photos de pâtisseries et de traiteur, classique.",
+"site_style": "classique, boutique",
+"site_couleurs": "vert, blanc, or",
+"site_images": "photos produits"
 },
 {
 "id": "L398",
@@ -6119,7 +7163,11 @@
 "ecriture": "capitales",
 "couleurs": "brun, rose",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond brun et rose, photos de donuts, typographie grasse.",
+"site_style": "ludique, moderne",
+"site_couleurs": "brun, rose",
+"site_images": "photos produits"
 },
 {
 "id": "L400",
@@ -6166,7 +7214,11 @@
 "ecriture": "empattements",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond brun et or, photos du café florentin, classique.",
+"site_style": "classique",
+"site_couleurs": "brun, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L403",
@@ -6181,7 +7233,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de la pâtisserie milanaise, typographie à empattements.",
+"site_style": "classique",
+"site_couleurs": "blanc, noir, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L404",
@@ -6196,7 +7252,11 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond vert et or, photos du café néoclassique, classique.",
+"site_style": "classique, luxe",
+"site_couleurs": "vert, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L405",
@@ -6227,7 +7287,11 @@
 "ecriture": "empattements",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond rouge et blanc, photos de baklava, boutique.",
+"site_style": "classique, boutique",
+"site_couleurs": "rouge, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L407",
@@ -6242,7 +7306,11 @@
 "ecriture": "capitales",
 "couleurs": "rose, blanc",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond rose, photos de gâteaux et de cafés viennois, rétro.",
+"site_style": "rétro, ludique",
+"site_couleurs": "rose, blanc",
+"site_images": "photos produits"
 },
 {
 "id": "L408",
@@ -6257,7 +7325,11 @@
 "ecriture": "script élégant",
 "couleurs": "or, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond crème et or, photos de la pâtisserie impériale, classique.",
+"site_style": "classique",
+"site_couleurs": "crème, or",
+"site_images": "photos de lieux"
 },
 {
 "id": "L409",
@@ -6272,7 +7344,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de pains et de viennoiseries, typographie fine.",
+"site_style": "minimal, artisanal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L410",
@@ -6303,7 +7379,11 @@
 "ecriture": "script élégant",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond blanc, photos de pâtisseries françaises, script noir.",
+"site_style": "classique",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L412",
@@ -6334,7 +7414,11 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond noir et or, photo du cookie, typographie à empattements, très simple.",
+"site_style": "classique, minimal",
+"site_couleurs": "noir, or",
+"site_images": "photos produits"
 },
 {
 "id": "L414",
@@ -6365,7 +7449,11 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, multicolore",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"site": "Fond blanc, illustrations, biscuits glacés colorés, ludique.",
+"site_style": "ludique, boutique",
+"site_couleurs": "blanc, multicolore",
+"site_images": "illustrations"
 },
 {
 "id": "L416",
@@ -6380,7 +7468,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos de donuts et de pains, typographie fine.",
+"site_style": "artisanal, moderne",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L417",
@@ -6395,7 +7487,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"site": "Fond blanc, photos de viennoiseries, minimal.",
+"site_style": "minimal, artisanal",
+"site_couleurs": "blanc, noir",
+"site_images": "photos produits"
 },
 {
 "id": "L418",
@@ -6410,7 +7506,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos brutes de pains, typographie simple.",
+"site_style": "brut, artisanal",
+"site_couleurs": "blanc, noir, brun",
+"site_images": "photos produits"
 },
 {
 "id": "L419",
@@ -6425,7 +7525,11 @@
 "ecriture": "script élégant",
 "couleurs": "violet, blanc",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"site": "Fond blanc, photos de gâteaux, violet, artisanal.",
+"site_style": "artisanal, chaleureux",
+"site_couleurs": "blanc, violet",
+"site_images": "photos produits"
 },
 {
 "id": "L420",
@@ -6440,7 +7544,11 @@
 "ecriture": "script élégant",
 "couleurs": "rose, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond rose, photos de cupcakes et du salon fleuri, romantique.",
+"site_style": "classique, ludique",
+"site_couleurs": "rose, blanc",
+"site_images": "photos de lieux"
 },
 {
 "id": "L421",
@@ -6455,7 +7563,11 @@
 "ecriture": "capitales",
 "couleurs": "noir, crème",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"site": "Fond crème et noir, photos de Bombay rétro, typographie vintage.",
+"site_style": "rétro",
+"site_couleurs": "crème, noir, rouge",
+"site_images": "photos de lieux"
 },
 {
 "id": "L422",
@@ -6486,6 +7598,10 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"site": "Fond noir et or, photos de la salle Art déco, classique.",
+"site_style": "luxe, classique",
+"site_couleurs": "noir, or, crème",
+"site_images": "photos de lieux"
 }
 ]
