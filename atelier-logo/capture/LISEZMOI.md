@@ -12,6 +12,12 @@ But : une image de la page d'accueil de chaque site du corpus, cookies acceptés
 - `node capture.js L008 L132` : refait seulement ces fiches.
 - Résultat : dossier `../captures/` avec un fichier `Lxxx.jpg` par fiche (1280 × 960) et `_rapport.json` (statut, bandeau de cookies trouvé ou non).
 
+## Sites qui affichent « je ne suis pas un robot »
+Certains sites (protégés par Cloudflare ou un captcha) montrent une page de vérification à tout navigateur automatique : c'est ce qu'on voit dans les captures mShots de la page. Le script les reconnaît et les marque « vérification » dans `_rapport.json`, sans faire d'image.
+- Quand le premier passage est terminé, lancer `node capture.js --manuel` : une fenêtre de navigateur **visible** s'ouvre, un site à la fois, seulement pour ces fiches. Coche la case « je ne suis pas un robot » dans la fenêtre ; le script attend (2 min au plus), accepte les cookies et fait la capture.
+- Si le site reste bloqué même à la main, il garde le statut « vérification » : la page affichera la capture mShots, et Youngmi pourra ouvrir le site avec « voir le site ».
+- `node capture.js --manuel L008 L132` : mode manuel pour des fiches précises.
+
 ## Ensuite
 Vérifier quelques images (bandeau fermé ? page chargée ?), puis envoyer à Claude le dossier `captures` zippé dans le fil, ou le déposer dans `atelier-logo/captures/` sur la branche de travail. La page affiche d'abord `captures/<id>.jpg` ; si l'image manque, elle prend la capture mShots.
 
