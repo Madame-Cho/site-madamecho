@@ -4,8 +4,9 @@ But : une image de la page d'accueil de chaque site du corpus, cookies acceptés
 
 ## Installation (une fois, 10 min)
 1. Installer Node.js (version LTS) : https://nodejs.org — « Windows Installer » ou « macOS Installer », tout par défaut.
-2. Ouvrir un terminal dans ce dossier `capture` (Windows : clic droit > « Ouvrir dans le Terminal » ; Mac : Terminal, puis `cd` suivi du dossier glissé).
-3. Taper : `npm install` puis `npx playwright install chromium` (télécharge un navigateur de test, ~150 Mo).
+2. Extraire le zip sur le disque local, par exemple dans `C:\capture-sites`, **jamais dans Google Drive, OneDrive ou Dropbox** : la synchronisation abîme les fichiers installés par npm (erreur `ERR_INVALID_PACKAGE_CONFIG`).
+3. Ouvrir un terminal dans ce dossier `capture` (Windows : clic droit > « Ouvrir dans le Terminal » ; Mac : Terminal, puis `cd` suivi du dossier glissé).
+4. Taper : `npm install` puis `npx playwright install chromium` (télécharge un navigateur de test, ~150 Mo).
 
 ## Lancer
 - `node capture.js` : capture toutes les fiches actives de `../corpus.json` (3 sites à la fois, environ 15 à 25 minutes pour 230 sites). Les captures déjà faites sont gardées : on peut relancer après une coupure.
