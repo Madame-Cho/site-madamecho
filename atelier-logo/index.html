@@ -63,7 +63,8 @@ input[type=number]{width:120px;margin:6px 0}
 .note{font-size:12px;color:#aaa;text-align:center;margin-top:12px}
 .note a{color:inherit}
 .hidden{display:none}
-.flag{font-size:14px;color:#444;margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer}
+.flag{font-size:14px;color:#444;margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;white-space:nowrap}
+@media (max-width:420px){.flag{font-size:12px}}
 .card.dark .flag{color:#ccc}
 .flag input{width:18px;height:18px}
 .sitelink{font-size:13px;margin-top:10px;text-align:center}
@@ -106,7 +107,7 @@ input[type=number]{width:120px;margin:6px 0}
   <div class="logo" id="logo"></div>
   <div class="brand" id="brand"></div>
   <div class="sitelink"><a id="site" href="#" target="_blank" rel="noopener noreferrer">voir le site ↗ · 사이트 보기</a></div>
-  <label class="flag"><input type="checkbox" id="known"> je connais déjà cette marque (coche avant de voter) · 이 브랜드를 이미 알아요</label>
+  <label class="flag" title="à cocher avant de voter"><input type="checkbox" id="known"> je connais déjà cette marque · 이 브랜드를 이미 알아요</label>
   <div class="mine hidden" id="mine"></div>
 </section>
 <div id="controls" class="hidden">
