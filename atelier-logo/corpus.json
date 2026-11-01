@@ -16,7 +16,8 @@
 "site": "Boutique en ligne sobre sur fond blanc, grandes photos de pâtisseries sur fonds colorés, typographie fine noire.",
 "site_style": "luxe, boutique",
 "site_couleurs": "blanc, noir, touches de couleur",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L002",
@@ -362,7 +363,8 @@
 "site": "Fond crème et bleu, photos de choux et de la boutique, esprit rétro.",
 "site_style": "rétro, chaleureux",
 "site_couleurs": "crème, bleu, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L021",
@@ -537,7 +539,8 @@
 "site": "Fond blanc, photos de meringues, vitrine simple, lettrage classique.",
 "site_style": "classique",
 "site_couleurs": "blanc, brun, rose",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L031",
@@ -705,7 +708,8 @@
 "site": "Boutique en ligne rose et noir, photos de produits, typographie moderne.",
 "site_style": "luxe, boutique",
 "site_couleurs": "rose fuchsia, noir, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L040",
@@ -724,7 +728,8 @@
 "site": "Boutique en ligne, rouge Hédiard, photos de produits d'épicerie fine.",
 "site_style": "classique, boutique",
 "site_couleurs": "rouge, noir, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L041",
@@ -867,7 +872,8 @@
 "site": "Fond sombre, sculptures en chocolat en grand, typographie fine, esprit galerie d'art.",
 "site_style": "luxe, minimal",
 "site_couleurs": "noir, turquoise, brun",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L049",
@@ -902,7 +908,8 @@
 "site": "Boutique en ligne sur fond blanc, photos de pralines, or et bleu.",
 "site_style": "classique, boutique",
 "site_couleurs": "blanc, or, bleu",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L051",
@@ -956,7 +963,8 @@
 "site": "Fond blanc, photos du Mont-Saint-Michel et des biscuits, rouge.",
 "site_style": "classique",
 "site_couleurs": "blanc, rouge, bleu",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L054",
@@ -1105,7 +1113,8 @@
 "site": "Fond vert d'eau, photos de la pâtisserie de Prada, typographie classique, très raffiné.",
 "site_style": "luxe, classique",
 "site_couleurs": "vert d'eau, or, rose",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L062",
@@ -1530,7 +1539,8 @@
 "site": "Fond blanc, photos du café munichois et des gâteaux, sobre.",
 "site_style": "classique",
 "site_couleurs": "blanc, noir, or",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L085",
@@ -1549,7 +1559,8 @@
 "site": "Site coréen coloré avec promotions, photos de gâteaux, orange et blanc.",
 "site_style": "moderne, boutique",
 "site_couleurs": "blanc, orange, vert",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L086",
@@ -1654,7 +1665,8 @@
 "site": "Fond blanc et vert, photos de champs de thé de Jeju, boutique en ligne épurée.",
 "site_style": "minimal, boutique",
 "site_couleurs": "blanc, vert",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L092",
@@ -2287,7 +2299,8 @@
 "site": "Fond brun et crème, photos de desserts au chocolat, boutique.",
 "site_style": "chaleureux, boutique",
 "site_couleurs": "brun, crème, rouge",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L128",
@@ -2532,7 +2545,8 @@
 "site": "Fond blanc et gris, photos brutes des cafés dans d'anciennes usines, minimal.",
 "site_style": "brut, minimal",
 "site_couleurs": "blanc, gris, noir",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L142",
@@ -2748,7 +2762,8 @@
 "site": "Fond vert et blanc, photos de burgers, typographie ronde, menus.",
 "site_style": "ludique, moderne",
 "site_couleurs": "vert, blanc, noir",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L154",
@@ -3056,7 +3071,8 @@
 "site": "Fond blanc, grandes photos d'hôtels, typographie à empattements, luxe classique.",
 "site_style": "luxe, classique",
 "site_couleurs": "blanc, noir, or",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L171",
@@ -3301,7 +3317,8 @@
 "site": "Fond beige et blanc, photos de mode très lumineuses, typographie en capitales fines.",
 "site_style": "minimal, luxe",
 "site_couleurs": "beige, blanc",
-"site_images": "photos lifestyle"
+"site_images": "photos lifestyle",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L185",
@@ -3371,7 +3388,8 @@
 "site": "Fond blanc et vert, photos de Jeju et de produits, frais.",
 "site_style": "moderne, boutique",
 "site_couleurs": "blanc, vert",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L189",
@@ -3511,7 +3529,8 @@
 "site": "Fond blanc, photos de la boutique et d'objets, rouge, typographie moderne.",
 "site_style": "moderne, boutique",
 "site_couleurs": "blanc, rouge",
-"site_images": "photos lifestyle"
+"site_images": "photos lifestyle",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L197",
@@ -3530,7 +3549,8 @@
 "site": "Fond blanc, photos d'enfants, typographie fine, luxe doux.",
 "site_style": "luxe, classique",
 "site_couleurs": "blanc, rose poudré",
-"site_images": "photos lifestyle"
+"site_images": "photos lifestyle",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L198",
@@ -3565,7 +3585,8 @@
 "site": "Fond blanc et rose, photos de bébés, douceur.",
 "site_style": "classique, chaleureux",
 "site_couleurs": "blanc, rose, bleu",
-"site_images": "photos lifestyle"
+"site_images": "photos lifestyle",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L200",
@@ -3778,7 +3799,8 @@
 "site": "Fond blanc, tennis colorées, photos lifestyle, boutique.",
 "site_style": "ludique, boutique",
 "site_couleurs": "blanc, multicolore",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L212",
@@ -3848,7 +3870,8 @@
 "site": "Fond noir et or, photos de machines et de capsules, boutique.",
 "site_style": "luxe, boutique",
 "site_couleurs": "noir, or, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L216",
@@ -3867,7 +3890,8 @@
 "site": "Fond bleu et blanc, photos de cafés et de produits, site de grande marque.",
 "site_style": "moderne, boutique",
 "site_couleurs": "bleu, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L217",
@@ -4004,7 +4028,8 @@
 "site": "Fond blanc, photos du restaurant lyonnais et des plats, typographie classique.",
 "site_style": "classique, luxe",
 "site_couleurs": "blanc, noir, or",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L225",
@@ -4090,7 +4115,8 @@
 "site": "Fond rouge et jaune, photos de boîtes et de pâtes, site de grande marque américaine.",
 "site_style": "ludique, rétro",
 "site_couleurs": "rouge, jaune, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L230",
@@ -4214,7 +4240,8 @@
 "site": "Fond blanc, photos de pains et de la boutique, simple.",
 "site_style": "artisanal",
 "site_couleurs": "blanc, noir, brun",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L237",
@@ -4373,7 +4400,8 @@
 "site": "Fond blanc, photos de viennoiseries franco-japonaises, simple.",
 "site_style": "artisanal, minimal",
 "site_couleurs": "blanc, noir, rouge",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L246",
@@ -4408,7 +4436,8 @@
 "site": "Site simple sur fond blanc, photos de madeleines et de la boutique.",
 "site_style": "artisanal",
 "site_couleurs": "blanc, bleu",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L248",
@@ -4510,7 +4539,8 @@
 "site": "Fond blanc et or, photos de madeleines et de pâtisseries, typographie classique.",
 "site_style": "classique",
 "site_couleurs": "blanc, or, noir",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L254",
@@ -4634,7 +4664,8 @@
 "site": "Site très simple sur fond blanc, surtout du texte, quelques photos.",
 "site_style": "minimal, brut",
 "site_couleurs": "blanc, rouge, noir",
-"site_images": "typographie seule"
+"site_images": "typographie seule",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L261",
@@ -4672,7 +4703,8 @@
 "site": "Fond blanc et vert, photos d'épicerie et de plats, boutique en ligne.",
 "site_style": "moderne, boutique",
 "site_couleurs": "blanc, vert",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L263",
@@ -4764,7 +4796,8 @@
 "site": "Fond bleu nuit et or, photos des fresques et de la salle, luxe Belle Époque.",
 "site_style": "luxe, classique",
 "site_couleurs": "bleu, or",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L268",
@@ -4840,7 +4873,8 @@
 "site": "Fond gris et blanc, photos de plats, typographie sobre.",
 "site_style": "minimal",
 "site_couleurs": "gris, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L272",
@@ -4859,7 +4893,8 @@
 "site": "Fond blanc, photos de plats et portraits, typographie fine, élégant.",
 "site_style": "luxe, minimal",
 "site_couleurs": "blanc, noir, beige",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L273",
@@ -5024,7 +5059,8 @@
 "site": "Fond brun et crème, photos de chocolats et de la boutique lyonnaise, classique.",
 "site_style": "classique",
 "site_couleurs": "brun, crème, or",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L282",
@@ -5249,7 +5285,8 @@
 "site": "Fond noir et rouge, photos de chocolats et du chef, esprit rock.",
 "site_style": "moderne, brut",
 "site_couleurs": "noir, rouge, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L294",
@@ -5322,7 +5359,8 @@
 "site": "Fond blanc, boîtes rétro colorées, photos de pastilles, typographie ancienne.",
 "site_style": "rétro, ludique",
 "site_couleurs": "multicolore, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L298",
@@ -5443,7 +5481,8 @@
 "site": "Fond blanc et vert, photos de thés et de sachets colorés, boutique japonaise.",
 "site_style": "moderne, boutique",
 "site_couleurs": "blanc, vert, multicolore",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L305",
@@ -5462,7 +5501,8 @@
 "site": "Fond jaune et or, photos de salons et de boîtes, luxe.",
 "site_style": "luxe, classique",
 "site_couleurs": "jaune, or, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L306",
@@ -5551,7 +5591,8 @@
 "site": "Fond vert et or, photos de salons orientalistes et de boîtes, luxe.",
 "site_style": "luxe, classique",
 "site_couleurs": "vert, or, orange",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L311",
@@ -5729,7 +5770,8 @@
 "site": "Fond crème et brun, photos de cafés en bois, singe, rétro japonais.",
 "site_style": "rétro, chaleureux",
 "site_couleurs": "crème, brun",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L321",
@@ -5805,7 +5847,8 @@
 "site": "Fond brun et jaune, photos du café romain, cerf, classique.",
 "site_style": "rétro, classique",
 "site_couleurs": "brun, jaune",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L325",
@@ -5935,7 +5978,8 @@
 "site": "Fond crème et bleu, photos de glaces, typographie rétro.",
 "site_style": "rétro, chaleureux",
 "site_couleurs": "crème, bleu",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L332",
@@ -6456,7 +6500,8 @@
 "site": "Fond blanc et vert, photos de tartes aux fruits, script français.",
 "site_style": "classique, chaleureux",
 "site_couleurs": "blanc, vert",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L361",
@@ -6970,7 +7015,8 @@
 "site": "Fond blanc, photos brutes de pains et de plats, typographie grasse.",
 "site_style": "brut, minimal",
 "site_couleurs": "blanc, noir",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L389",
@@ -7167,7 +7213,8 @@
 "site": "Fond brun et rose, photos de donuts, typographie grasse.",
 "site_style": "ludique, moderne",
 "site_couleurs": "brun, rose",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L400",
@@ -7256,7 +7303,8 @@
 "site": "Fond vert et or, photos du café néoclassique, classique.",
 "site_style": "classique, luxe",
 "site_couleurs": "vert, or",
-"site_images": "photos de lieux"
+"site_images": "photos de lieux",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L405",
@@ -7291,7 +7339,8 @@
 "site": "Fond rouge et blanc, photos de baklava, boutique.",
 "site_style": "classique, boutique",
 "site_couleurs": "rouge, blanc",
-"site_images": "photos produits"
+"site_images": "photos produits",
+"retire": "hors corpus, 3e passe d'Olivier"
 },
 {
 "id": "L407",
