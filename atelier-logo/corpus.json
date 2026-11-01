@@ -1745,7 +1745,8 @@
 "C_coherence": "faible",
 "C_mots_cles": "monogramme, script, douteux",
 "C_verifie": "oui"
-}
+},
+"retire": "capture hors sujet (domaine repris par un tiers), après revue des captures"
 },
 {
 "id": "L039",
@@ -10059,7 +10060,8 @@
 "C_coherence": "faible",
 "C_mots_cles": "toque, icône générique, douteux",
 "C_verifie": "oui"
-}
+},
+"retire": "site douteux (blog et non site officiel), après revue des captures"
 },
 {
 "id": "L255",
@@ -10122,7 +10124,8 @@
 "C_coherence": "moyenne",
 "C_mots_cles": "doublon, didone, noir",
 "C_verifie": "oui"
-}
+},
+"retire": "doublon de L034 (même site et même logo), après revue des captures"
 },
 {
 "id": "L256",
