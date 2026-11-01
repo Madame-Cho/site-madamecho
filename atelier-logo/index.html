@@ -22,8 +22,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-sy
 .paneHead{font-size:13px;color:var(--muted);padding:2px 4px 8px;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
 .paneHead b{color:var(--ink)}
 .paneHead a{color:#444}
-#pane iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:16px;background:#fff}
-#pane iframe.off{visibility:hidden}
+.shotbox{flex:1;overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff;position:relative;min-height:0}
+.shotbox img{width:100%;display:block}
+.shotmsg{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;color:#999;font-size:14px;text-align:center;padding:20px;background:#fff}
 .paneNote{font-size:12px;color:#aaa;padding:8px 4px 0}
 .brand{font-size:15px;color:var(--ink);text-align:center;margin-top:8px}
 .brand small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
@@ -146,9 +147,9 @@ input[type=number]{width:120px;margin:6px 0}
 </section>
 </div>
 <aside id="pane">
-  <div class="paneHead"><span>Le site de la marque, pour voir le logo dans son contexte. <b>Tu évalues le logo, pas le site.</b><span class="ko">사이트가 아니라 로고를 평가해요.</span></span><a id="site2" href="#" target="_blank" rel="noopener noreferrer">voir en grand ↗</a></div>
-  <iframe id="frame" class="off" title="site de la marque" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms" referrerpolicy="no-referrer" loading="lazy"></iframe>
-  <p class="paneNote">Fenêtre vide ou message d'erreur ? Ce site refuse l'affichage dans une autre page : utilise « voir en grand ». Rien de ce que tu fais dans cette fenêtre n'est enregistré.</p>
+  <div class="paneHead"><span>La page d'accueil du site, pour voir le logo dans son contexte. <b>Tu évalues le logo, pas le site.</b><span class="ko">사이트가 아니라 로고를 평가해요.</span></span><a id="site2" href="#" target="_blank" rel="noopener noreferrer">voir le site ↗</a></div>
+  <div class="shotbox"><img id="shot" alt=""><div class="shotmsg" id="shotmsg"></div></div>
+  <p class="paneNote">Capture d'écran prise automatiquement (service mShots de WordPress.com) : la première fois, elle peut mettre quelques secondes. Image seulement : pour naviguer, « voir le site ».</p>
 </aside>
 </div>
 
@@ -208,9 +209,29 @@ function hearts(){ return state.votes.filter(v=>v.vote==="coeur").length; }
 function realCount(){ return state.votes.filter(v=>REAL.has(v.vote)).length; }
 function hideAll(){ ["start","pause","end","play","review"].forEach(id=>$(id).classList.add("hidden")); $("controls").classList.add("hidden"); site(null); }
 function remaining(){ const done=votedIds(); return order.filter(id=>!done.has(id)).length; }
-// le site de la marque dans le volet de droite (grand écran seulement) ; null = volet vide
-function site(c){ const f=$("frame"); if(!c || !wide()){ if(f.getAttribute("src")!=="about:blank") f.src="about:blank"; f.classList.add("off"); $("site2").href="#"; return; }
-  f.classList.remove("off"); $("site2").href="https://"+c.domaine; if(f.getAttribute("src")!=="https://"+c.domaine) f.src="https://"+c.domaine; }
+// capture d'écran de la page d'accueil dans le volet de droite (grand écran seulement) ; null = volet vide.
+// mShots (WordPress.com) renvoie une image « Generating Preview » tant que la capture n'est pas prête ; la capture est mise en cache
+// par adresse, et « w » ne fait que redimensionner : on réessaie avec w+1, w+2… et on garde l'image dont la largeur vaut exactement w.
+const SHOTS = "https://s0.wordpress.com/mshots/v1/";
+function shotUrl(c, w){ return SHOTS + encodeURIComponent("https://"+c.domaine) + "?w=" + w; }
+let shotTimer=null, shotCard=null;
+function site(c){
+  clearTimeout(shotTimer); shotCard=c; const im=$("shot"), msg=$("shotmsg");
+  if(!c || !wide()){ im.removeAttribute("src"); msg.style.display="none"; $("site2").href="#"; return; }
+  $("site2").href="https://"+c.domaine; im.removeAttribute("src"); msg.style.display="flex";
+  msg.innerHTML='<div class="spin"></div><div>capture de la page d\'accueil… (quelques secondes la première fois)</div>';
+  let attempt=0;
+  const tryLoad=()=>{ if(shotCard!==c) return; const w=1200+attempt; const t=new Image(); t.alt="";
+    t.onload=()=>{ if(shotCard!==c) return;
+      if(t.naturalWidth===w){ im.src=t.src; msg.style.display="none"; }
+      else if(++attempt<12){ shotTimer=setTimeout(tryLoad, 3500); }
+      else { msg.innerHTML="capture pas encore prête · « voir le site »"; } };
+    t.onerror=()=>{ if(shotCard!==c) return; if(++attempt<4){ shotTimer=setTimeout(tryLoad, 3500); } else { msg.innerHTML="capture indisponible · « voir le site »"; } };
+    t.src=shotUrl(c, w); };
+  tryLoad();
+  // on lance d'avance la capture des trois fiches suivantes
+  if(!revising){ for(let i=1;i<=3;i++){ const n=byId[order[state.cursor+i]]; if(n) fetch(shotUrl(n,1200),{mode:"no-cors"}).catch(()=>{}); } }
+}
 function show(){
   hideAll();
   if(state.cursor>=order.length){ // fin de la liste : on revient aux fiches sautées (saut par la liste, « reprendre à la fiche n° »)
