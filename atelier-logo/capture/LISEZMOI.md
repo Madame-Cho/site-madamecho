@@ -15,7 +15,7 @@ But : une image de la page d'accueil de chaque site du corpus, cookies acceptés
 
 ## Sites qui affichent « je ne suis pas un robot »
 Certains sites (protégés par Cloudflare ou un captcha) montrent une page de vérification à tout navigateur automatique : c'est ce qu'on voit dans les captures mShots de la page. Le script les reconnaît et les marque « vérification » dans `_rapport.json`, sans faire d'image.
-- Quand le premier passage est terminé, lancer `node capture.js --manuel` : une fenêtre de navigateur **visible** s'ouvre, un site à la fois, seulement pour ces fiches. Coche la case « je ne suis pas un robot » dans la fenêtre ; le script attend (2 min au plus), accepte les cookies et fait la capture.
+- Quand le premier passage est terminé, lancer `node capture.js --manuel` : une fenêtre de navigateur **visible** s'ouvre, un site à la fois, seulement pour ces fiches. Coche la case « je ne suis pas un robot » dans la fenêtre ; le script voit en général seul que le vrai site est affiché, accepte les cookies et fait la capture. S'il continue d'écrire « coche la case… » alors que le vrai site est affiché, appuie sur **Entrée** dans le terminal : la capture se fait tout de suite (2 min au plus par site, sinon il passe au suivant).
 - Si le site reste bloqué même à la main, il garde le statut « vérification » : la page affichera la capture mShots, et Youngmi pourra ouvrir le site avec « voir le site ».
 - `node capture.js --manuel L008 L132` : mode manuel pour des fiches précises.
 
