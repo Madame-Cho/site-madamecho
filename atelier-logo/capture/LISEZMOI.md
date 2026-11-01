@@ -19,6 +19,9 @@ Certains sites (protégés par Cloudflare ou un captcha) montrent une page de v�
 - Si le site reste bloqué même à la main, il garde le statut « vérification » : la page affichera la capture mShots, et Youngmi pourra ouvrir le site avec « voir le site ».
 - `node capture.js --manuel L008 L132` : mode manuel pour des fiches précises.
 
+## Logos (1 min)
+`node logos.js` télécharge le logo de chaque fiche active tel que la page le montre (Brandfetch, puis logo.dev), dans `../captures/logos/<id>.svg` ou `.png`, avec `_logos.json` (source retenue). Claude s'en sert pour décrire chaque logo en détail. À lancer après les captures, avant de zipper le dossier `captures`.
+
 ## Ensuite
 Vérifier quelques images (bandeau fermé ? page chargée ?), puis envoyer à Claude le dossier `captures` zippé dans le fil, ou le déposer dans `atelier-logo/captures/` sur la branche de travail. La page affiche d'abord `captures/<id>.jpg` ; si l'image manque, elle prend la capture mShots.
 
