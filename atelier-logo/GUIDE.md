@@ -31,3 +31,67 @@ Claude produit ensuite le « Profil des goûts de Youngmi » (91/01) avec une se
 
 ## Images
 Les logos sont chargés côté navigateur, jamais copiés dans le dépôt, dans cet ordre : Brandfetch logo complet (SVG puis PNG, avec le nom), Brandfetch symbole, logo.dev (symbole carré). Brandfetch : Logo API gratuite (1 000 000 requêtes par mois, sans attribution), compte Madame Cho, client ID public dans BF_ID de index.html, chemin `fallback/404`. logo.dev : compte Community gratuit Madame Cho, clé publique pk_… dans LOGO_KEY, `fallback=404`, mention « Logos provided by Logo.dev » sur la page. Jamais d'icône passe-partout : sans logo, la fiche est passée automatiquement (vote « sans-image »). Les deux comptes sont à fermer à la fin de la phase 1 (P-18). Les captures de pages d'accueil viennent de mShots (WordPress.com), sans compte.
+
+## Onglet « Caractéristiques » (lu par des IA)
+
+Une ligne par fiche (ligne = numéro de la fiche + 1, comme l'onglet Corpus), une colonne par caractéristique, vocabulaire fixe quand c'est possible (les listes sont séparées par « , »). Rempli par Claude à partir des captures des sites et des logos téléchargés sur le PC d'Olivier ; sert au profil des goûts de Youngmi (croisement avec l'onglet Votes par l'Id) et aux consignes de génération de la phase 4. Copie dans `caracteristiques.csv` (avec en-tête).
+
+**Commun**
+
+- `id` · Id : L001…
+- `nom` · Maison : libre
+- `statut` · Statut : actif | retiré
+- `categorie` · Catégorie : de l'onglet Corpus
+- `pays` · Pays : de l'onglet Corpus
+
+**Logo**
+
+- `L_type` · Type de logo : logotype | monogramme | symbole+nom | emblème | sceau | mascotte
+- `L_composition` · Composition : horizontal | empilé | symbole au-dessus | symbole à gauche | rond | écusson | carré
+- `L_ecriture` · Écriture : serif-didone | serif-garalde | serif-égyptienne | serif-autre | sans-géométrique | sans-grotesque | sans-humaniste | script | manuscrite | calligraphie | gothique | fantaisie | mixte
+- `L_casse` · Casse : capitales | bas-de-casse | mixte | script
+- `L_graisse` · Graisse : fine | moyenne | grasse | contrastée
+- `L_espacement` · Espacement des lettres : serré | normal | large
+- `L_symbole` · Symbole : aucun | animal | végétal | objet | figure humaine | architecture | monogramme | forme géométrique | abstrait | aliment | plusieurs
+- `L_symbole_detail` · Détail du symbole : libre (ex. renard assis, couronne à cinq pointes)
+- `L_couleur_principale` · Couleur principale : noir | blanc | or | rouge | bleu | vert | rose | brun | orange | jaune | violet | gris | beige | multicolore
+- `L_couleurs` · Couleurs : liste
+- `L_nb_couleurs` · Nombre de couleurs : 1 | 2 | 3+
+- `L_fond` · Fond du logo tel que montré : clair | sombre | coloré
+- `L_epoque` · Époque évoquée : XIXe | 1900 Art nouveau | Art déco | années 50 | années 70 | années 90 | contemporain | intemporel
+- `L_style` · Styles : liste : classique, luxe, minimal, moderne, artisanal, ludique, rétro, pop, brut, romantique, oriental, japonais, coréen, scandinave, institutionnel
+- `L_ornements` · Ornements : liste : aucun, filets, cadre, cartouche, couronne, étoiles, date, lieu, devise, soulignement, points, motif
+- `L_mentions` · Mentions écrites en plus du nom : libre (ex. Paris · depuis 1862 · pâtisserie)
+- `L_densite` · Densité : minimal | équilibré | chargé
+- `L_ton` · Ton : liste : élégant, chaleureux, espiègle, sérieux, naturel, luxueux, populaire, doux, puissant
+- `L_lisibilite` · Lisibilité : forte | moyenne | faible
+- `L_image_montree` · Image montrée par la page : logo complet | symbole seul
+- `L_particularite` · Particularité distinctive : libre
+- `L_texte` · Description détaillée du logo : libre, 2 à 4 phrases
+
+**Site**
+
+- `S_mise_en_page` · Mise en page : héros plein écran | grille produits | magazine | une colonne | mosaïque | vidéo plein écran | texte seul | diaporama
+- `S_hero` · Premier visuel : photo produit | photo lieu | photo personne | vidéo | illustration | texte ou logo | diaporama | mixte
+- `S_fond` · Fond dominant : blanc | crème | beige | sombre | coloré | photo
+- `S_couleur_accent` · Couleur d'accent : noir | blanc | or | rouge | bleu | vert | rose | brun | orange | jaune | violet | gris | beige | multicolore | aucune
+- `S_couleurs` · Couleurs : liste
+- `S_typo` · Typographie : serif | sans | script | mixte | condensée
+- `S_titres` · Casse des titres : capitales | bas-de-casse | mixte
+- `S_photo_ton` · Ton des photos : lumineux | sombre | pastel | saturé | naturel | studio | aucune photo
+- `S_densite` · Densité : aéré | moyen | dense
+- `S_logo_place` · Place du logo sur le site : centré | gauche | grand | discret | absent
+- `S_boutique` · Boutique en ligne visible : oui | non
+- `S_langue` · Langue de la page : FR | EN | KO | JA | DE | IT | ES | PT | autre
+- `S_style` · Styles : liste : luxe, classique, minimal, moderne, chaleureux, ludique, rétro, artisanal, brut, éditorial, boutique, pop, institutionnel
+- `S_ton` · Ton : liste : élégant, chaleureux, espiègle, sobre, gourmand, institutionnel, naturel, dynamique
+- `S_gene` · Gêne visible sur la capture : aucune | bandeau cookies | fenêtre surgissante | bandeau promo | page de blocage | page vide ou partielle
+- `S_capture` · Image que Youngmi verra : locale | mShots | aucune
+- `S_particularite` · Particularité distinctive : libre
+- `S_texte` · Description détaillée du site : libre, 2 à 4 phrases
+
+**Croisé**
+
+- `C_coherence` · Cohérence logo / site : forte | moyenne | faible
+- `C_mots_cles` · Mots-clés : liste libre
+- `C_verifie` · Vérifié sur image : oui | non (écrit de mémoire)
