@@ -2,7 +2,7 @@
 // Usage : node logos.js            (toutes les fiches actives de ../corpus.json, saute celles déjà faites)
 //         node logos.js --tout     (refait toutes les fiches, même celles déjà faites)
 //         node logos.js L008 L132  (seulement ces fiches, refaites)
-// Résultat : ../captures/logos/<id>.svg ou .png et ../captures/logos/_logos.json (source retenue pour chaque fiche)
+// Résultat : ../captures/logos/<id>.svg, .png, .webp ou .jpg (extension d'après le contenu) et ../captures/logos/_logos.json (source retenue pour chaque fiche)
 // Sources, dans l'ordre : Brandfetch logo complet (SVG puis PNG), Brandfetch symbole, logo.dev (symbole carré). Version 3 (fenêtre de Chrome visible : Brandfetch refuse les navigateurs invisibles).
 const fs = require("fs"), path = require("path");
 const { chromium } = require("playwright");
@@ -42,8 +42,14 @@ async function fetchLogo(page, c, srcs, statuts = []){
     const got = bodies.get(s.src) || last;
     if(!dims || !got) continue;
     if(!s.svg && dims.w < 64) continue;           // comme la page : une image minuscule est ignorée
-    const isSvg = s.svg || /svg/i.test(got.type) || /<svg[\s>]/i.test(got.buf.subarray(0, 2000).toString("utf8"));
-    return { ...s, buf: got.buf, ext: isSvg ? "svg" : (/webp/i.test(got.type) ? "webp" : "png"), w: dims.w, h: dims.h };
+    // extension d'après le contenu reçu : Brandfetch renvoie souvent du WebP même pour l'adresse logo.svg
+    const b = got.buf, txt = b.subarray(0, 2000).toString("utf8");
+    const ext = (b.toString("latin1",0,4)==="RIFF" && b.toString("latin1",8,12)==="WEBP") ? "webp"
+      : (b[0]===0x89 && b.toString("latin1",1,4)==="PNG") ? "png"
+      : (b[0]===0xFF && b[1]===0xD8) ? "jpg"
+      : (b.toString("latin1",0,3)==="GIF") ? "gif"
+      : (/<svg[\s>]/i.test(txt) || /svg/i.test(got.type)) ? "svg" : "png";
+    return { ...s, buf: got.buf, ext, w: dims.w, h: dims.h };
   }
   return null;
 }
