@@ -11,11 +11,11 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 .wrap{max-width:560px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column}
 .shell{max-width:560px;margin:0 auto}
-#pane{display:flex;flex-direction:column;height:44vh;min-height:280px;margin:12px 0 0}
+#pane{display:flex;flex-direction:column;height:62vh;min-height:340px;margin:12px 0 0}
 #pane.hidden{display:none}
 @media (min-width:1000px){
-  .shell{max-width:1360px;display:flex;gap:20px;align-items:flex-start;padding:0 16px}
-  .shell .wrap{flex:0 0 560px;max-width:560px;margin:0;padding:16px 0;min-height:0}
+  .shell{max-width:none;display:flex;gap:20px;align-items:flex-start;padding:0 16px}
+  .shell .wrap{flex:0 0 480px;max-width:480px;margin:0;padding:16px 0;min-height:0}
   .shell .card{flex:0 0 auto}
   .shell #play{min-height:420px}
   #pane{display:flex;flex:1;flex-direction:column;position:sticky;top:0;height:100vh;padding:16px 0;min-width:0;margin:0}
@@ -41,13 +41,14 @@ header b{color:var(--ink)}
 .spin{width:28px;height:28px;border:3px solid #ddd;border-top-color:#888;border-radius:50%;animation:r 1s linear infinite}
 @keyframes r{to{transform:rotate(360deg)}}
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0 8px}
-.actions.five{grid-template-columns:repeat(5,1fr);gap:8px}
-.actions.five button{padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;min-height:132px}
+.actions.five{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+body.olivier .actions.five{display:none}
+.actions.five button{min-width:0;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;min-height:132px}
 .actions.five button span{font-size:11px;line-height:1.25;margin:0;color:var(--ink)}
 .actions.five .ko{font-size:10px;margin-top:3px;color:var(--muted)}
 .actions.five button.mix{color:var(--ink)}
 .ic{font-size:28px;line-height:1;display:block}
-.duo{display:inline-flex;gap:3px;font-style:normal}
+.duo{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:3px;font-style:normal}
 .duo em{font-style:normal;font-size:11px;font-weight:700;padding:3px 6px;border-radius:999px;line-height:1;white-space:nowrap}
 .duo em.v{background:#dcf2e4;color:#1f6f43}.duo em.v::before{content:"✓ "}
 .duo em.x{background:#fbe1dc;color:#a8321f}.duo em.x::before{content:"✗ "}
@@ -81,6 +82,9 @@ input[type=number]{width:120px;margin:6px 0}
 .only-olivier{display:none}
 body.olivier .only-olivier{display:grid}
 .actions.one{grid-template-columns:1fr;margin:0 0 8px}
+.actions.two{grid-template-columns:1fr 1fr;margin:14px 0 8px}
+button.keep{background:#eef8f1;color:#1f6f43;border:2px solid #1f6f43;font-size:20px;font-weight:700;padding:14px 8px}
+button.keep span{color:#1f6f43;font-weight:400}
 button.out{background:#fff3f0;color:var(--no);border:2px solid var(--no);font-size:20px;font-weight:700;padding:14px 8px}
 /* fiche déjà jugée : le bouton choisi est encadré et porte « ton vote », les autres sont atténués ; un clic sur un autre remplace le vote */
 #controls.picked .actions button:not(.chosen){opacity:.45}
@@ -145,7 +149,7 @@ button.out span{color:var(--no);font-weight:400}
     <button class="yes" data-v="haut" title="j'aime le logo et le site (touche 4 ou →)"><b class="ic">👍</b><i class="duo"><em class="v">logo</em><em class="v">site</em></i><span>les deux me plaisent<span class="ko">둘 다 좋아요</span></span></button>
     <button class="love" id="loveBtn" data-v="coeur" title="coup de cœur, très rare (touche 5 ou ↑)"><b class="ic">❤️</b><span>coup de cœur<span class="ko">최애 · 드물게</span></span></button>
   </div>
-  <div class="actions one only-olivier"><button class="out" data-v="retirer" title="passe d'Olivier : la fiche est passée et signalée à Claude pour être retirée du corpus">✕ HORS CORPUS<span>à retirer de la liste (Olivier)</span></button></div>
+  <div class="actions two only-olivier"><button class="keep" data-v="garder" title="passe d'Olivier : la fiche reste dans la liste (touche G)">✓ GARDER<span>reste dans la liste</span></button><button class="out" data-v="retirer" title="passe d'Olivier : la fiche est signalée à Claude pour être retirée du corpus (touche X)">✕ HORS CORPUS<span>à retirer de la liste</span></button></div>
   <div class="small">
     <button id="undo">↩︎ annuler le dernier</button>
     <button data-v="passer">passer · 넘기기 →</button>
@@ -181,7 +185,7 @@ button.out span{color:var(--no);font-weight:400}
 <aside id="pane">
   <div class="paneHead"><span>La page d'accueil du site de la marque. <b>Tu juges le logo et le site</b> : les boutons disent lequel tu aimes.<span class="ko">로고와 사이트를 함께 평가해요. 버튼이 무엇이 좋은지 말해 줘요.</span></span><a id="site2" href="#" target="_blank" rel="noopener noreferrer">voir le site ↗</a></div>
   <div class="shotbox"><img id="shot" alt=""><div class="shotmsg" id="shotmsg"></div></div>
-  <p class="paneNote">Capture d'écran prise automatiquement (service mShots de WordPress.com) : la première fois, elle peut mettre quelques secondes. Image seulement : pour naviguer, « voir le site ».</p>
+  <p class="paneNote">Capture de la page d'accueil, faite sur le PC d'Olivier, ou à défaut par le service mShots de WordPress.com (quelques secondes la première fois). Image seulement : pour naviguer, « voir le site ».</p>
 </aside>
 </div>
 
@@ -204,13 +208,13 @@ const byId = Object.fromEntries(CORPUS.map(c=>[c.id,c]));
 let seen = 0, pausedAt = 0; // fiches jugées depuis l'ouverture de la page : pause toutes les BATCH
 let replay = false; // « revenir au début » : on repasse toutes les fiches dans l'ordre, un nouveau vote remplace l'ancien
 let order = [], state = null, shownAt = 0, imgOk = null, imgKind = "", shownCard = null, siteSeen = false, loading = false, lock = false, imgTimer = null, revising = null;
-const EMO = {haut:"👍",bas:"👎",coeur:"❤️",passer:"→",illisible:"🚫",retirer:"✕",logo:"logo ✓ · site ✗",site:"site ✓ · logo ✗"};
-const LABEL = {haut:"les deux me plaisent",bas:"rien ne me plaît",coeur:"coup de cœur",passer:"passé",illisible:"pas un logo / illisible",retirer:"hors corpus",logo:"le logo oui, le site non",site:"le site oui, le logo non"};
-const FLASH = {bas:"👎",haut:"👍",coeur:"❤️",passer:"→",logo:"logo ✓",site:"site ✓"};
+const EMO = {haut:"👍",bas:"👎",coeur:"❤️",passer:"→",illisible:"🚫",retirer:"✕",garder:"✓",logo:"logo ✓ · site ✗",site:"site ✓ · logo ✗"};
+const LABEL = {haut:"les deux me plaisent",bas:"rien ne me plaît",coeur:"coup de cœur",passer:"passé",illisible:"pas un logo / illisible",retirer:"hors corpus",garder:"gardé",logo:"le logo oui, le site non",site:"le site oui, le logo non"};
+const FLASH = {bas:"👎",haut:"👍",coeur:"❤️",passer:"→",logo:"logo ✓",site:"site ✓",garder:"✓",retirer:"✕"};
 const DUO = (l,s)=>'<i class="duo"><em class="'+(l?"v":"x")+'">logo</em><em class="'+(s?"v":"x")+'">site</em></i>';
 const BADGE = v => v==="logo" ? DUO(1,0) : v==="site" ? DUO(0,1) : EMO[v]; // vignette dans « mes votes »
 const said = v => (v==="logo"||v==="site") ? LABEL[v] : EMO[v]+" "+LABEL[v];
-const KEPT = v => REAL.has(v) || v==="illisible" || v==="retirer"; // votes qu'on peut revoir et changer
+const KEPT = v => REAL.has(v) || v==="illisible" || v==="retirer" || v==="garder"; // votes qu'on peut revoir et changer
 const wide = () => window.matchMedia("(min-width:1000px)").matches;
 const $ = id => document.getElementById(id);
 const REAL = new Set(["haut","bas","coeur","passer","logo","site"]); // logo = le logo oui mais pas le site ; site = le site oui mais pas le logo
@@ -242,7 +246,7 @@ function begin(){
   if(sa>=1 && sa<=order.length){ state.cursor = sa-1; }
   skipVoted();
   $("who").textContent = prenom;
-  document.body.classList.toggle("olivier", prenom.toLowerCase()==="olivier");
+  document.body.classList.toggle("olivier", /^olivier/i.test(prenom));
   save(); sync(true); show();
 }
 function current(){ return byId[order[state.cursor]]; }
@@ -399,7 +403,7 @@ function vote(v, why){
     secondes: imgOk ? Math.round((performance.now()-shownAt)/100)/10 : 0, position:state.cursor+1, session:state.session,
     image: (imgOk ? "oui · "+imgKind : (why||"non")) + (siteSeen ? " (site consulté)" : ""), sent:false };
   state.votes.push(rec); state.pending.push(rec.k); state.cursor++; if(!replay) skipVoted(); save(); if(KEPT(v)) seen++;
-  if(REAL.has(v)) flash(FLASH[v]);
+  if(FLASH[v]) flash(FLASH[v]);
   sync(); show();
 }
 function undo(){
@@ -450,7 +454,7 @@ $("site").addEventListener("click",()=>{ siteSeen=true; }); $("site2").addEventL
 $("jump").addEventListener("change",e=>{ const i=parseInt(e.target.value,10); e.target.value=""; if(!isNaN(i)) jumpTo(i); });
 window.matchMedia("(min-width:1000px)").addEventListener("change",()=>{ placePane(); if(!$("play").classList.contains("hidden")) site(revising ? byId[revising] : current()); });
 $("prenom").addEventListener("keydown",e=>{ if(e.key==="Enter") begin(); });
-document.addEventListener("keydown",e=>{ if($("play").classList.contains("hidden") || e.target.tagName==="INPUT") return; if(e.key==="ArrowLeft") vote("bas"); if(e.key==="ArrowRight") vote("haut"); if(e.key==="ArrowUp") vote("coeur"); if(e.key==="ArrowDown") vote("passer"); const K={"1":"bas","2":"logo","3":"site","4":"haut","5":"coeur",l:"logo",L:"logo",s:"site",S:"site"}; if(K[e.key]) vote(K[e.key]); if(e.key==="Backspace" && !revising) undo(); if(e.key==="Escape" && revising) openReview(); });
+document.addEventListener("keydown",e=>{ if($("play").classList.contains("hidden") || e.target.tagName==="INPUT") return; if(e.key==="ArrowLeft") vote("bas"); if(e.key==="ArrowRight") vote("haut"); if(e.key==="ArrowUp") vote("coeur"); if(e.key==="ArrowDown") vote("passer"); const K={"1":"bas","2":"logo","3":"site","4":"haut","5":"coeur",l:"logo",L:"logo",s:"site",S:"site"}; if(K[e.key]) vote(K[e.key]); if(document.body.classList.contains("olivier")){ if(e.key==="g"||e.key==="G") vote("garder"); if(e.key==="x"||e.key==="X") vote("retirer"); } if(e.key==="Backspace" && !revising) undo(); if(e.key==="Escape" && revising) openReview(); });
 // balayage tactile : horizontal franc, sans défilement vertical
 let x0=null,y0=null; $("play").addEventListener("touchstart",e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
 $("play").addEventListener("touchend",e=>{ if(x0===null) return; const dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0; x0=y0=null; if(Math.abs(dy)>50) return; if(dx>70) vote("haut"); else if(dx<-70) vote("bas"); });
