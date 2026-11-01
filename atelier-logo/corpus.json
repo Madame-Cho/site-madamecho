@@ -3874,7 +3874,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, bleu",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L253",
@@ -3934,7 +3935,8 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L257",
@@ -3949,7 +3951,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L258",
@@ -3979,7 +3982,8 @@
 "ecriture": "script élégant",
 "couleurs": "rose, or",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L260",
@@ -4054,7 +4058,8 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L265",
@@ -4204,7 +4209,8 @@
 "ecriture": "capitales",
 "couleurs": "vert, gris",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L275",
@@ -4294,7 +4300,8 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L281",
@@ -4414,7 +4421,8 @@
 "ecriture": "empattements",
 "couleurs": "bleu nuit, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L289",
@@ -4504,7 +4512,8 @@
 "ecriture": "script élégant",
 "couleurs": "rose, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L295",
@@ -4579,7 +4588,8 @@
 "ecriture": "capitales",
 "couleurs": "orange, noir",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L300",
@@ -4594,7 +4604,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L301",
@@ -4624,7 +4635,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, rose",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L303",
@@ -4639,7 +4651,8 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L304",
@@ -4714,7 +4727,8 @@
 "ecriture": "empattements",
 "couleurs": "noir, vert",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L309",
@@ -4729,7 +4743,8 @@
 "ecriture": "capitales",
 "couleurs": "jaune, noir",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L310",
@@ -4759,7 +4774,8 @@
 "ecriture": "empattements",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L312",
@@ -4774,7 +4790,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L313",
@@ -4819,7 +4836,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L316",
@@ -4849,7 +4867,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, sable",
 "visage": "personnage animal",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L318",
@@ -4984,7 +5003,8 @@
 "ecriture": "script élégant",
 "couleurs": "noir, rouge",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L327",
@@ -5119,7 +5139,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal, luxe"
+"epoque": "minimal, luxe",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L336",
@@ -5284,7 +5305,8 @@
 "ecriture": "capitales",
 "couleurs": "or, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L347",
@@ -5314,7 +5336,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L349",
@@ -5374,7 +5397,8 @@
 "ecriture": "capitales",
 "couleurs": "rouge, blanc",
 "visage": "portrait d'enfant",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L353",
@@ -5404,7 +5428,8 @@
 "ecriture": "empattements",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L355",
@@ -5419,7 +5444,8 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L356",
@@ -5434,7 +5460,8 @@
 "ecriture": "manuscrite",
 "couleurs": "noir, rouge",
 "visage": "personnage animal",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L357",
@@ -5449,7 +5476,8 @@
 "ecriture": "capitales",
 "couleurs": "brun, rose",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L358",
@@ -5464,7 +5492,8 @@
 "ecriture": "capitales",
 "couleurs": "bleu, blanc",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L359",
@@ -5479,7 +5508,8 @@
 "ecriture": "manuscrite",
 "couleurs": "multicolore",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L360",
@@ -5569,7 +5599,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "moderne"
+"epoque": "moderne",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L366",
@@ -5599,7 +5630,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L368",
@@ -5614,7 +5646,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "classique, luxe"
+"epoque": "classique, luxe",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L369",
@@ -5674,7 +5707,8 @@
 "ecriture": "capitales",
 "couleurs": "cuivre, noir",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L373",
@@ -5734,7 +5768,8 @@
 "ecriture": "script élégant",
 "couleurs": "rouge, blanc",
 "visage": "non",
-"epoque": "artisanal"
+"epoque": "artisanal",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L377",
@@ -5884,7 +5919,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, blanc",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L387",
@@ -5944,7 +5980,8 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L391",
@@ -5974,7 +6011,8 @@
 "ecriture": "capitales",
 "couleurs": "rouge, brun",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L393",
@@ -6019,7 +6057,8 @@
 "ecriture": "empattements",
 "couleurs": "brun, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L396",
@@ -6064,7 +6103,8 @@
 "ecriture": "script élégant",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "pas de logo disponible (Brandfetch, logo.dev), 2e passe d'Olivier"
 },
 {
 "id": "L399",
@@ -6094,7 +6134,8 @@
 "ecriture": "empattements",
 "couleurs": "vert, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L401",
@@ -6109,7 +6150,8 @@
 "ecriture": "empattements",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L402",
@@ -6169,7 +6211,8 @@
 "ecriture": "empattements",
 "couleurs": "rouge, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L406",
@@ -6244,7 +6287,8 @@
 "ecriture": "script élégant",
 "couleurs": "bleu, or",
 "visage": "non",
-"epoque": "classique"
+"epoque": "classique",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L411",
@@ -6274,7 +6318,8 @@
 "ecriture": "capitales",
 "couleurs": "vert, crème",
 "visage": "personnage animal",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L413",
@@ -6304,7 +6349,8 @@
 "ecriture": "capitales",
 "couleurs": "noir, or",
 "visage": "non",
-"epoque": "rétro"
+"epoque": "rétro",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L415",
@@ -6424,7 +6470,8 @@
 "ecriture": "sans",
 "couleurs": "noir, rose",
 "visage": "non",
-"epoque": "minimal"
+"epoque": "minimal",
+"retire": "hors corpus, 2e passe d'Olivier"
 },
 {
 "id": "L423",
