@@ -23,7 +23,7 @@ const SELECTORS = [
   "button[id*='accept' i]", "button[class*='accept' i]", "a[id*='accept' i]", "button[aria-label*='accept' i]", "button[aria-label*='accepter' i]", "button[title*='accepter' i]"
 ];
 // pages de vérification « je ne suis pas un robot » (Cloudflare, hCaptcha, reCAPTCHA, Akamai…)
-const VERIF = /je ne suis pas un robot|i'?m not a robot|not a robot|v[ée]rifiez que vous [êe]tes (un )?humain|verify (that )?you are (a )?human|confirm you are human|prouvez que vous|just a moment|un instant\.{0,3}$|attention required|access denied|acc[èe]s refus[ée]|checking your browser|v[ée]rification de votre navigateur|performing security|enable javascript and cookies to continue|사람인지 확인|로봇이 아닙니다/i;
+const VERIF = /je ne suis pas un robot|i'?m not a robot|not a robot|v[ée]rifiez que vous [êe]tes (un )?humain|verify (that )?you are (a )?human|confirm you are human|prouvez que vous|just a moment|un instant\.{0,3}$|attention required|access denied|acc[èe]s refus[ée]|checking your browser|v[ée]rification de votre navigateur|performing security|enable javascript and cookies to continue|you have been blocked|acc[èe]s temporairement restreint|access to this page has been denied|request blocked|사람인지 확인|로봇이 아닙니다/i;
 const VERIF_FRAMES = /challenges\.cloudflare\.com|hcaptcha\.com\/captcha|google\.com\/recaptcha\/api2\/anchor|geo\.captcha-delivery\.com|arkoselabs/;
 
 async function clickConsent(page){
