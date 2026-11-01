@@ -63,6 +63,8 @@ input[type=number]{width:120px;margin:6px 0}
 .note{font-size:12px;color:#aaa;text-align:center;margin-top:12px}
 .note a{color:inherit}
 .hidden{display:none}
+.only-olivier{display:none}
+body.olivier .only-olivier{display:inline-block}
 .flag{font-size:14px;color:#444;margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;white-space:nowrap}
 @media (max-width:420px){.flag{font-size:12px}}
 .card.dark .flag{color:#ccc}
@@ -121,6 +123,8 @@ input[type=number]{width:120px;margin:6px 0}
     <button data-v="passer">passer · 넘기기 →</button>
     <button data-v="illisible" title="l'image est floue, coupée, ou ce n'est pas le logo">pas un logo / illisible · 로고 아님</button>
     <button id="reviewBtn">mes votes · 내 투표</button>
+    <button data-v="retirer" class="only-olivier" title="à retirer du corpus (passe d'Olivier) : la fiche est passée et signalée à Claude">✕ hors corpus</button>
+    <button id="restart" title="revoir toutes les fiches depuis la première ; un nouveau vote remplace l'ancien">⟲ revenir au début · 처음부터</button>
     <button id="stop">arrêter · 멈추기</button>
   </div>
 </div>
@@ -171,8 +175,10 @@ const ALL = CORPUS.map(c=>c.id);
 const ACTIVE = CORPUS.filter(c=>!c.retire);
 const byId = Object.fromEntries(CORPUS.map(c=>[c.id,c]));
 let seen = 0, pausedAt = 0; // fiches jugées depuis l'ouverture de la page : pause toutes les BATCH
+let replay = false; // « revenir au début » : on repasse toutes les fiches dans l'ordre, un nouveau vote remplace l'ancien
 let order = [], state = null, shownAt = 0, imgOk = null, imgKind = "", shownCard = null, siteSeen = false, loading = false, lock = false, imgTimer = null, revising = null;
-const EMO = {haut:"👍",bas:"👎",coeur:"❤️",passer:"→",illisible:"🚫"}, LABEL = {haut:"oui",bas:"non",coeur:"coup de cœur",passer:"passé",illisible:"pas un logo / illisible"};
+const EMO = {haut:"👍",bas:"👎",coeur:"❤️",passer:"→",illisible:"🚫",retirer:"✕"}, LABEL = {haut:"oui",bas:"non",coeur:"coup de cœur",passer:"passé",illisible:"pas un logo / illisible",retirer:"hors corpus"};
+const KEPT = v => REAL.has(v) || v==="illisible" || v==="retirer"; // votes qu'on peut revoir et changer
 const wide = () => window.matchMedia("(min-width:1000px)").matches;
 const $ = id => document.getElementById(id);
 const REAL = new Set(["haut","bas","coeur","passer"]);
@@ -183,7 +189,8 @@ function save(){ try{ localStorage.setItem(kfor(state.prenom), JSON.stringify(st
 
 // mélange déterministe par prénom : chaque personne a son propre ordre, stable d'une séance à l'autre et d'un appareil à l'autre
 function seeded(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;} return ()=>{h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return ((h^=h>>>16)>>>0)/4294967296;}; }
-function shuffle(ids, seed){ const r=seeded(seed), a=ids.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+// ordre stable : chaque fiche reçoit une clé tirée de (prénom, id) ; ajouter ou retirer des fiches ne change pas l'ordre relatif des autres
+function shuffle(ids, seed){ return ids.map(id=>[seeded(seed+"|"+id)(), id]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); }
 
 function init(){
   $("total").textContent = ACTIVE.length;
@@ -203,6 +210,7 @@ function begin(){
   if(sa>=1 && sa<=order.length){ state.cursor = sa-1; }
   skipVoted();
   $("who").textContent = prenom;
+  document.body.classList.toggle("olivier", prenom.toLowerCase()==="olivier");
   save(); sync(true); show();
 }
 function current(){ return byId[order[state.cursor]]; }
@@ -221,6 +229,8 @@ function site(c){
   if(!c || !wide()){ im.removeAttribute("src"); msg.style.display="none"; $("site2").href="#"; return; }
   $("site2").href="https://"+c.domaine; im.removeAttribute("src"); msg.style.display="flex";
   msg.innerHTML='<div class="spin"></div><div>capture de la page d\'accueil… (quelques secondes la première fois)</div>';
+  // 1) capture faite sur le PC d'Olivier, rangée avec la page (captures/<id>.jpg) ; 2) sinon mShots
+  const local=new Image(); local.onload=()=>{ if(shotCard!==c) return; im.src=local.src; msg.style.display="none"; }; local.onerror=()=>{ if(shotCard===c) tryLoad(); }; local.src="captures/"+c.id+".jpg";
   let attempt=0;
   const tryLoad=()=>{ if(shotCard!==c) return; const w=1200+attempt; const t=new Image(); t.alt="";
     t.onload=()=>{ if(shotCard!==c) return;
@@ -229,17 +239,18 @@ function site(c){
       else { msg.innerHTML="capture pas encore prête · « voir le site »"; } };
     t.onerror=()=>{ if(shotCard!==c) return; if(++attempt<4){ shotTimer=setTimeout(tryLoad, 3500); } else { msg.innerHTML="capture indisponible · « voir le site »"; } };
     t.src=shotUrl(c, w); };
-  tryLoad();
   // on lance d'avance la capture des trois fiches suivantes
   if(!revising){ for(let i=1;i<=3;i++){ const n=byId[order[state.cursor+i]]; if(n) fetch(shotUrl(n,1200),{mode:"no-cors"}).catch(()=>{}); } }
 }
 function show(){
   hideAll();
   if(state.cursor>=order.length){ // fin de la liste : on revient aux fiches sautées (saut par la liste, « reprendre à la fiche n° »)
-    const done=votedIds(); const first=order.findIndex(id=>!done.has(id));
-    if(first<0) return finish();
+    const done=votedIds(); const first=replay ? -1 : order.findIndex(id=>!done.has(id));
+    if(first<0){ replay=false; return finish(); }
     state.cursor=first; save();
   }
+  if(replay){ const r=latestRec(order[state.cursor]); if(r && KEPT(r.vote)) return revise(order[state.cursor], true); }
+  if(!replay) skipVoted();
   if(seen>0 && seen%BATCH===0 && pausedAt!==seen){ pausedAt=seen; $("pauseDone").textContent=realCount(); $("pause").classList.remove("hidden"); return; }
   $("play").classList.remove("hidden"); $("controls").classList.remove("hidden");
   const c = current();
@@ -255,16 +266,16 @@ function show(){
 }
 // ---- Revoir et changer ses votes
 function latestRec(id){ for(let i=state.votes.length-1;i>=0;i--){ if(state.votes[i].id===id) return state.votes[i]; } return null; }
-function judged(){ const seen=new Set(), list=[]; for(let i=state.votes.length-1;i>=0;i--){ const v=state.votes[i]; if(seen.has(v.id)) continue; seen.add(v.id); if(REAL.has(v.vote)||v.vote==="illisible") list.push(v); } return list.sort((a,b)=>a.position-b.position); }
+function judged(){ const seen=new Set(), list=[]; for(let i=state.votes.length-1;i>=0;i--){ const v=state.votes[i]; if(seen.has(v.id)) continue; seen.add(v.id); if(KEPT(v.vote)) list.push(v); } return list.sort((a,b)=>a.position-b.position); }
 function thumbSrc(c){ const s=sources(c).filter(x=>!x.svg); return s.length ? s[0].src : ""; }
 function thumbAlt(c){ const s=sources(c).filter(x=>!x.svg); return s.length>1 ? s[s.length-1].src : ""; }
 function fillJump(){
   const sel=$("jump"); sel.innerHTML="";
   const o=document.createElement("option"); o.value=""; o.textContent="Aller à une fiche… · 카드로 이동 (n° · marque)"; sel.appendChild(o);
-  order.forEach((id,i)=>{ const r=latestRec(id); const v=r && (REAL.has(r.vote)||r.vote==="illisible") ? " "+EMO[r.vote] : ""; const op=document.createElement("option"); op.value=i; op.textContent=(i+1)+" · "+byId[id].nom+v; sel.appendChild(op); });
+  order.forEach((id,i)=>{ const r=latestRec(id); const v=r && KEPT(r.vote) ? " "+EMO[r.vote] : ""; const op=document.createElement("option"); op.value=i; op.textContent=(i+1)+" · "+byId[id].nom+v; sel.appendChild(op); });
 }
 function openReview(){
-  hideAll(); revising=null; $("review").classList.remove("hidden");
+  hideAll(); revising=null; replay=false; $("review").classList.remove("hidden");
   const list=judged(); $("reviewCount").textContent=list.length; fillJump();
   const g=$("grid"); g.innerHTML="";
   if(!list.length){ g.innerHTML='<p style="grid-column:1/-1;color:#aaa;text-align:center">aucun vote pour l\'instant</p>'; }
@@ -272,12 +283,12 @@ function openReview(){
     const im=document.createElement("img"); im.loading="lazy"; im.alt=""; const alt=thumbAlt(c); im.onerror=()=>{ if(alt && im.src!==alt) im.src=alt; else im.remove(); }; im.src=thumbSrc(c);
     b.appendChild(im); b.insertAdjacentHTML("beforeend",'<span class="nm">'+esc(c.nom)+'</span><span class="n">'+r.position+'</span><span class="badge">'+EMO[r.vote]+'</span>'); b.onclick=()=>revise(r.id); g.appendChild(b); });
 }
-function revise(id){
+function revise(id, seq){
   const c=byId[id], r=latestRec(id); if(!c||!r) return;
   hideAll(); revising=id; $("play").classList.remove("hidden"); $("controls").classList.remove("hidden");
-  $("pos").textContent = "fiche "+r.position+" · modifier";
-  $("mine").textContent = "Ton vote : "+EMO[r.vote]+" "+LABEL[r.vote]+" · choisis à nouveau, ou reviens à la liste."; $("mine").classList.remove("hidden");
-  $("backBtn").classList.remove("hidden");
+  $("pos").textContent = seq ? (state.cursor+1)+" / "+order.length+" · déjà vue" : "fiche "+r.position+" · modifier";
+  $("mine").textContent = "Ton vote : "+EMO[r.vote]+" "+LABEL[r.vote]+(seq ? " · vote à nouveau pour le remplacer, ou « passer » pour le garder." : " · choisis à nouveau, ou reviens à la liste."); $("mine").classList.remove("hidden");
+  if(seq) $("backBtn").classList.add("hidden"); else $("backBtn").classList.remove("hidden");
   $("done").textContent = realCount(); $("hearts").textContent = hearts();
   $("loveBtn").disabled = r.vote!=="coeur" && hearts() >= Math.floor(ACTIVE.length*HEART_RATE);
   $("undo").disabled = true; $("known").checked = (r.connue==="oui");
@@ -286,7 +297,7 @@ function revise(id){
   render(c); site(c);
 }
 function jumpTo(i){ const id=order[i]; if(!id) return; const r=latestRec(id);
-  if(r && (REAL.has(r.vote)||r.vote==="illisible")) return revise(id);
+  if(r && KEPT(r.vote)) return revise(id);
   state.cursor=i; save(); show(); }
 // ---- Images : logo.dev avec la clé publique (fallback=404 : jamais d'icône passe-partout) ; sinon la fiche est passée.
 // Images, dans l'ordre : Brandfetch logo complet (SVG puis PNG), Brandfetch symbole, logo.dev (symbole carré). fallback=404 partout : jamais d'image passe-partout.
@@ -337,25 +348,28 @@ function vote(v, why){
   if(loading && REAL.has(v) && v!=="passer") return;
   if(v==="sans-image" && revising) return;
   lock=true; setTimeout(()=>{lock=false;}, 350);
+  if(revising && replay && v==="passer"){ revising=null; state.cursor=order.indexOf(c.id)+1; save(); show(); return; }
   if(revising){
     const old = latestRec(c.id);
     if(old){ if(old.sent) send([{...strip(old), vote:"annule"}]).catch(()=>{}); state.votes = state.votes.filter(x=>x!==old); state.pending = state.pending.filter(k=>k!==old.k); }
     const rec2 = { k: Date.now().toString(36)+Math.random().toString(36).slice(2,6), t:new Date().toISOString(), prenom:state.prenom, id:c.id, vote:v, connue:$("known").checked?"oui":"non",
       secondes: imgOk ? Math.round((performance.now()-shownAt)/100)/10 : 0, position: old ? old.position : state.cursor+1, session:state.session,
       image: (imgOk ? "oui · "+imgKind : "non") + (siteSeen ? " (site consulté)" : "") + " (modifié)", sent:false };
-    state.votes.push(rec2); state.pending.push(rec2.k); save(); sync(); openReview(); return;
+    state.votes.push(rec2); state.pending.push(rec2.k); save(); sync();
+    if(replay){ revising=null; state.cursor=order.indexOf(c.id)+1; if(REAL.has(v)) flash({bas:"👎",haut:"👍",coeur:"❤️",passer:"→"}[v]); show(); } else openReview();
+    return;
   }
   const rec = { k: Date.now().toString(36)+Math.random().toString(36).slice(2,6), t:new Date().toISOString(), prenom:state.prenom, id:c.id, vote:v, connue:$("known").checked?"oui":"non",
     secondes: imgOk ? Math.round((performance.now()-shownAt)/100)/10 : 0, position:state.cursor+1, session:state.session,
     image: (imgOk ? "oui · "+imgKind : (why||"non")) + (siteSeen ? " (site consulté)" : ""), sent:false };
-  state.votes.push(rec); state.pending.push(rec.k); state.cursor++; skipVoted(); save(); if(REAL.has(v)||v==="illisible") seen++;
+  state.votes.push(rec); state.pending.push(rec.k); state.cursor++; if(!replay) skipVoted(); save(); if(KEPT(v)) seen++;
   if(REAL.has(v)) flash({bas:"👎",haut:"👍",coeur:"❤️",passer:"→"}[v]);
   sync(); show();
 }
 function undo(){
   if(!state.votes.length) return;
   let last = state.votes.pop();
-  while(last && !REAL.has(last.vote) && last.vote!=="illisible" && state.votes.length){ state.pending = state.pending.filter(k=>k!==last.k); last = state.votes.pop(); }
+  while(last && !KEPT(last.vote) && state.votes.length){ state.pending = state.pending.filter(k=>k!==last.k); last = state.votes.pop(); }
   state.pending = state.pending.filter(k=>k!==last.k);
   if(last.sent) send([{...last, vote:"annule"}]).catch(()=>{});
   state.cursor = Math.max(0, order.indexOf(last.id)); save(); show();
@@ -393,6 +407,7 @@ $("go").onclick=begin; $("undo").onclick=undo; $("resume").onclick=()=>show();
 $("stop").onclick=$("stop2").onclick=finish; $("export").onclick=exportCsv; $("again").onclick=()=>{ if(!remaining()) return; show(); };
 $("moreBtn").onclick=()=>$("more").classList.toggle("hidden");
 $("reviewBtn").onclick=$("review2").onclick=$("review3").onclick=openReview; $("reviewBack").onclick=()=>show(); $("backBtn").onclick=openReview;
+$("restart").onclick=()=>{ if(!confirm("Revoir toutes les fiches depuis la première ? Tes votes sont gardés : sur une fiche déjà vue, « passer » garde ton vote, un autre choix le remplace.")) return; replay=true; state.cursor=0; save(); show(); };
 $("reset").onclick=()=>{ const p=$("prenom").value.trim(); if(!p){ $("prenom").focus(); return; } if(confirm("Effacer les réponses de "+p+" gardées sur cet appareil ? (celles déjà envoyées restent dans la feuille)")){ try{ localStorage.removeItem(kfor(p)); }catch(e){} $("go").textContent="Commencer · 시작"; } };
 $("bgBtn").onclick=()=>{ const d=$("play").classList.toggle("dark"); $("bgBtn").textContent = d ? "fond clair" : "fond sombre"; };
 $("site").addEventListener("click",()=>{ siteSeen=true; }); $("site2").addEventListener("click",()=>{ siteSeen=true; });
