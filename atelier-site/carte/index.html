@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Ma carte et mes photos</title>
+<style>
+:root{--bg:#fff;--ink:#3B1D0E;--muted:#7a6a60;--line:#e6dcd2;--soft:#f7f2ec;--on:#3B1D0E;--ok:#2e6b3a;--warn:#8a5a00;--warnbg:#fff5dc}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 120px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0 8px;border-bottom:1px solid var(--line)}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+.brand b{letter-spacing:.22em;font-weight:500;color:var(--ink)}
+.steps{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
+.steps button{flex:1;min-width:0;font:inherit;font-size:13px;line-height:1.2;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:10px;padding:7px 4px;cursor:pointer;white-space:nowrap}
+.steps button .ko{display:block;font-size:11px;margin:0}
+.steps button.on{background:var(--on);border-color:var(--on);color:#fff}
+.steps button.on .ko{color:#e8dcd2}
+.ko{display:block;color:var(--muted);font-size:.88em;margin-top:2px;font-weight:400}
+h1{font-size:24px;font-weight:500;margin:22px 0 8px;letter-spacing:.02em}
+h2{font-size:19px;font-weight:600;margin:0 0 4px}
+h3{font-size:15px;font-weight:600;margin:16px 0 6px}
+p{margin:0 0 12px}
+.note{font-size:14px;background:var(--soft);border-radius:12px;padding:10px 12px;margin:0 0 14px}
+.test{background:var(--warnbg);color:var(--warn);border-radius:12px;padding:8px 12px;font-size:14px;margin:10px 0 0}
+.card{border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 0 14px;background:#fff}
+.card.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
+.thumbs{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px}
+.thumbs img{height:96px;width:auto;border-radius:10px;border:1px solid var(--line);flex:none}
+.nophoto{font-size:13px;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 10px;margin:0 0 10px}
+.known{font-size:14px;margin:6px 0 10px}
+.known .src{color:var(--muted);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{font:inherit;font-size:15px;line-height:1.25;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 14px;cursor:pointer;text-align:left;min-height:44px}
+.chips button .ko{display:inline;margin:0 0 0 6px;font-size:.85em}
+.chips button.on{background:var(--on);border-color:var(--on);color:#fff}
+.chips button.on .ko{color:#e8dcd2}
+.chips.three{display:grid;grid-template-columns:repeat(3,1fr)}
+.chips.three button{border-radius:12px;text-align:center;padding:9px 6px}
+.chips.three button .ko{display:block;margin:2px 0 0}
+input[type=text],input[type=number],textarea,select{font:inherit;width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;color:var(--ink);min-height:44px}
+textarea{min-height:76px;resize:vertical}
+label.f{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
+.row{display:flex;gap:8px;align-items:center;margin:0 0 8px}
+.row input:first-child{flex:2}
+.row input.prix{flex:1;max-width:120px}
+.row .x{flex:none;width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--muted);font-size:18px;cursor:pointer}
+.link{font:inherit;font-size:14px;background:none;border:0;color:var(--ink);text-decoration:underline;padding:6px 0;cursor:pointer}
+.al{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.al:first-of-type{border-top:0}
+.al .nm{font-size:15px}
+.al .nm .ko{font-size:12px}
+.tri{display:flex;gap:4px}
+.tri button{font:inherit;font-size:13px;min-width:52px;min-height:44px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--ink);padding:4px 6px;line-height:1.1}
+.tri button .ko{display:block;font-size:11px;margin:0}
+.tri button.on{background:var(--on);color:#fff;border-color:var(--on)}
+.tri button.on .ko{color:#e8dcd2}
+.sub{grid-column:1/-1;margin:2px 0 4px}
+.fiche summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fiche summary::-webkit-details-marker{display:none}
+.fiche summary .st{font-size:13px;color:var(--muted);white-space:nowrap}
+.fiche summary .st.ok{color:var(--ok)}
+.verif{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{font:inherit;font-size:16px;border:0;border-radius:14px;padding:12px 18px;background:var(--on);color:#fff;cursor:pointer;min-height:44px}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.done{background:var(--ok)}
+.photo img{width:100%;height:auto;border-radius:12px;display:block;margin:0 0 10px;background:var(--soft)}
+.photo .meta{font-size:12px;color:var(--muted);margin:0 0 8px}
+.warn{font-size:13px;color:var(--warn);background:var(--warnbg);border-radius:10px;padding:8px 10px;margin:8px 0 0}
+.star{margin-top:10px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:6}
+.bar .in{max-width:680px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.bar .st{flex:1;font-size:13px;color:var(--muted);line-height:1.3}
+.small{font-size:13px;color:var(--muted)}
+.small a,.small button{color:var(--ink);background:none;border:0;padding:0;font:inherit;text-decoration:underline;cursor:pointer}
+.hidden{display:none!important}
+.count{font-weight:600}
+.count.ok{color:var(--ok)}
+@media (min-width:560px){.thumbs img{height:120px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<div class="brand"><b>MADAME CHO</b><span>Séance 1 · 1회차</span></div>
+<div class="steps hidden" id="steps">
+<button data-s="1">Gâteaux<span class="ko">케이크</span></button>
+<button data-s="2">Fiches<span class="ko">상세 정보</span></button>
+<button data-s="3">Photos<span class="ko">사진</span></button>
+<button data-s="4">Fin<span class="ko">끝</span></button>
+</div>
+</div>
+<div id="testban" class="test hidden">Version de test : rien n'est envoyé, les réponses restent sur cet appareil.<span class="ko">테스트 버전: 아무것도 전송되지 않고, 답은 이 기기에만 남아요.</span></div>
+
+<section id="s0">
+<h1>Ma carte et mes photos<span class="ko">내 메뉴와 사진</span></h1>
+<p>Choisis les gâteaux de la carte de lancement du site, donne leurs détails, et dis-nous quoi faire de chaque photo. Compte 25 à 35 minutes.<span class="ko">사이트 오픈 메뉴에 넣을 케이크를 고르고, 자세한 내용을 적고, 사진마다 어떻게 할지 알려 주세요. 25~35분 걸려요.</span></p>
+<p>Tout ce que nous savons déjà est pré-rempli, avec sa source : corrige ce qui est faux, complète ce qui manque. Une case vide veut dire « je ne sais pas encore », jamais « non ».<span class="ko">이미 아는 내용은 출처와 함께 미리 채워 두었어요. 틀린 건 고치고, 빠진 건 채워 주세요. 빈칸은 '아직 모름'이라는 뜻이고, '없음'이 아니에요.</span></p>
+<p>Tu peux t'arrêter et reprendre plus tard avec le même lien : tes réponses restent sur cet appareil et sont envoyées au fur et à mesure. Rien n'est publié sans ton accord.<span class="ko">같은 링크로 멈췄다가 나중에 이어서 해도 돼요. 답은 이 기기에 저장되고 바로바로 전송돼요. 영미 동의 없이는 아무것도 올리지 않아요.</span></p>
+<label class="f" for="prenom">Ton prénom · 이름</label>
+<input type="text" id="prenom" autocomplete="given-name" value="Youngmi">
+<p style="margin:16px 0 0"><button class="btn" id="go">Commencer · 시작</button></p>
+</section>
+
+<section id="s1" class="hidden">
+<h1>Mes gâteaux<span class="ko">내 케이크</span></h1>
+<p>Choisis <b>6 à 8 gâteaux</b> pour la carte de lancement, parmi ceux que tu fais déjà. Les autres pourront venir plus tard.<span class="ko">오픈 메뉴에 넣을 케이크 <b>6~8가지</b>를 지금 만들고 있는 것 중에서 골라 주세요. 나머지는 나중에 추가할 수 있어요.</span></p>
+<p class="note">Sur la carte : <span class="count" id="cnt1">0</span> · 메뉴에 넣은 케이크: <span class="count" id="cnt1b">0</span> (6~8)</p>
+<div id="list1"></div>
+<div class="card">
+<h3>Un gâteau qui manque ?<span class="ko">빠진 케이크가 있나요?</span></h3>
+<div class="row"><input type="text" id="newg" placeholder="Nom du gâteau · 케이크 이름"><button class="btn ghost" id="addg">Ajouter · 추가</button></div>
+</div>
+</section>
+
+<section id="s2" class="hidden">
+<h1>Mes fiches<span class="ko">상세 정보</span></h1>
+<p>Une fiche par gâteau choisi. Quand une fiche est juste, touche « Fiche vérifiée » : sans cela, rien n'est considéré comme validé.<span class="ko">고른 케이크마다 상세 정보가 하나씩 있어요. 내용이 맞으면 '확인 완료'를 눌러 주세요. 누르지 않으면 확인된 것으로 보지 않아요.</span></p>
+<div id="list2"></div>
+<p id="none2" class="note hidden">Choisis d'abord des gâteaux à l'étape 1.<span class="ko">먼저 1단계에서 케이크를 골라 주세요.</span></p>
+</section>
+
+<section id="s3" class="hidden">
+<h1>Mes photos<span class="ko">내 사진</span></h1>
+<p>Pour chaque image : le gâteau qu'elle montre, ce qu'elle est (vraie photo, retouche, image IA), et ce qu'on en fait. Une étoile pour la grande photo de l'accueil (trois au plus).<span class="ko">이미지마다: 어떤 케이크인지, 어떤 이미지인지 (실제 사진, 보정, AI 이미지), 어떻게 할지 알려 주세요. 첫 화면 큰 사진에는 별표를 해 주세요 (최대 3개).</span></p>
+<p class="note">Sur le site, un gâteau vendu est montré en vraie photo. Une image créée ou très transformée par l'IA peut servir pour l'ambiance, avec la mention « image créée par IA », jamais pour présenter un gâteau.<span class="ko">사이트에서 판매하는 케이크는 실제 사진으로 보여 줘요. AI가 만들었거나 크게 바꾼 이미지는 'AI 이미지' 표시와 함께 분위기용으로만 쓸 수 있고, 케이크를 소개하는 데는 쓰지 않아요.</span></p>
+<div id="list3"></div>
+<div class="card">
+<h3>Les photos qui manquent<span class="ko">아직 없는 사진</span></h3>
+<p>À prendre en priorité, quand tu peux : un gâteau d'anniversaire personnalisé, et une boîte que tes mains préparent ou remettent. Tu pourras les déposer dans le Drive (90-À trier) ou les envoyer par email.<span class="ko">시간 될 때 먼저 찍으면 좋은 사진: 맞춤 생일 케이크, 그리고 영미 손으로 상자를 준비하거나 건네는 모습. 드라이브 (90-À trier)에 넣거나 이메일로 보내 주면 돼요.</span></p>
+</div>
+</section>
+
+<section id="s4" class="hidden">
+<h1>C'est presque fini<span class="ko">거의 다 했어요</span></h1>
+<div id="recap" class="note"></div>
+<p>Quand tout te va, touche « J'ai fini ». Tu pourras encore revenir et corriger après.<span class="ko">모두 괜찮으면 '다 했어요'를 눌러 주세요. 그 뒤에도 다시 들어와서 고칠 수 있어요.</span></p>
+<p><button class="btn" id="fin">J'ai fini · 다 했어요</button></p>
+<div id="merci" class="hidden">
+<h2>Merci !<span class="ko">고마워요!</span></h2>
+<p>Claude écrit maintenant les fiches et les textes du site à partir de tes réponses, et prépare deux maquettes. Tu les reliras à la séance 2.<span class="ko">이제 Claude가 답을 바탕으로 상세 정보와 사이트 글을 쓰고, 시안 두 개를 준비해요. 2회차에서 다시 확인하게 돼요.</span></p>
+</div>
+<p class="small" id="sendst"></p>
+<p class="small"><a id="dl" href="#">Télécharger mes réponses · 답변 내려받기</a> · <button id="wipe">Effacer mes réponses sur cet appareil · 이 기기에서 답 지우기</button></p>
+</section>
+</div>
+
+<div class="bar hidden" id="bar"><div class="in"><span class="st" id="st"></span><button class="btn ghost" id="prev">←</button><button class="btn" id="next">Suivant · 다음</button></div></div>
+
+<script>
+// Atelier du site, séance 1 (« Ma carte et mes photos »). Spécification du site, rubrique 12.
+// Les réponses partent par ANSWERS_URL vers l'onglet Votes de la feuille privée « Tinder des logos » (Drive 91/01),
+// avec le script déjà déployé pour l'atelier du logo ; Image chargée = « site-carte » (voir ../GUIDE.md, section 1).
+// Avec ?test, ou ouverte depuis un fichier : rien n'est envoyé (bandeau « version de test »).
+// Rien de confidentiel ici : seulement les prix proposés aux particuliers et des photos destinées au public (R-08, R-35).
+const ANSWERS_URL = "https://script.google.com/macros/s/AKfycbyVml4MzVCR8PdS47jJzIyw8vQbNeBELkFrDrxe0_ZAAJ7EndYoUcb94df7gwMSIts/exec";
+const TEST = !ANSWERS_URL || location.protocol === "file:" || /[?&]test\b/.test(location.search);
+const KEY = "atelier-site-carte-v1:";
+const SRC_OCT = ["factures aux particuliers d'octobre 2026", "2026년 10월 개인 손님 영수증"];
+
+// Gâteaux proposés : ce qu'on voit sur les photos et dans les factures. Prix = prix TTC payés par des particuliers.
+const G = [
+ {id:"entremets-fruits", fr:"Entremets aux fruits", ko:"과일 앙트르메", ph:["p06","p26"], tailles:[["6 personnes","48"],["10 personnes","60"]], src:SRC_OCT},
+ {id:"charlotte-choco-framboise", fr:"Charlotte chocolat-framboise", ko:"초콜릿 라즈베리 샤를로트", ph:["p20"], tailles:[["6 personnes","35"]], src:SRC_OCT},
+ {id:"tarte-pecan", fr:"Tarte aux noix de pécan", ko:"피칸 타르트", ph:["p24","p14"], tailles:[["6 personnes","31"]], src:["facture d'octobre 2026 (30,96 €)","2026년 10월 영수증 (30.96유로)"]},
+ {id:"cookies", fr:"Cookies (chocolat noir, chocolat au lait…)", ko:"쿠키 (다크 초콜릿, 밀크 초콜릿…)", ph:["p16","p19"], tailles:[["la pièce","3,50"]], src:SRC_OCT},
+ {id:"gateau-carottes", fr:"Gâteau aux carottes", ko:"당근 케이크", ph:["p18"]},
+ {id:"cake-noix", fr:"Cake aux noix caramélisées", ko:"캐러멜 호두 파운드케이크", ph:["p25"]},
+ {id:"chocolat-or", fr:"Gâteau au chocolat, cacao et or", ko:"초콜릿 케이크 (카카오, 금박)", ph:["p29"]},
+ {id:"tarte-figues", fr:"Tarte aux figues et raisins", ko:"무화과 포도 타르트", ph:["p02"]},
+ {id:"cakes", fr:"Cakes (marbré, matcha, banane…)", ko:"파운드케이크 (마블, 말차, 바나나…)", ph:["p05"]},
+ {id:"brownies", fr:"Brownies (chocolat, matcha)", ko:"브라우니 (초콜릿, 말차)", ph:["p28"]},
+ {id:"choux", fr:"Choux (praliné, chocolat, caramel…)", ko:"슈 (프랄린, 초콜릿, 캐러멜…)", ph:["p01","p03","p07","p08","p11","p21","p23"]},
+ {id:"tartelettes", fr:"Tartelettes (fraise…)", ko:"타르틀렛 (딸기…)", ph:["p10"]},
+ {id:"carres", fr:"Carrés citron et chocolat", ko:"레몬·초콜릿 사각 케이크", ph:["p15"]},
+ {id:"petits-moules", fr:"Petits gâteaux moulés (type kouglof)", ko:"작은 틀 케이크 (쿠글로프 모양)", ph:["p00","p09"]},
+ {id:"cheesecake", fr:"Cheesecake", ko:"치즈케이크", ph:["p13"]},
+ {id:"tarte-pignons", fr:"Tarte aux pignons", ko:"잣 타르트", ph:[]},
+ {id:"anniversaire", fr:"Gâteau d'anniversaire personnalisé", ko:"맞춤 생일 케이크", ph:[]}
+];
+// Photos : proposition de Claude pour le gâteau montré, et ce que dit le fichier d'origine.
+const OPENAI = ["Le fichier d'origine porte la marque de ChatGPT (OpenAI).","원본 파일에 ChatGPT(OpenAI) 표시가 있어요."];
+const NOMARK = ["Pas de marque d'IA lisible dans le fichier d'origine.","원본 파일에서 AI 표시를 찾지 못했어요."];
+const PHONE = ["Photo de téléphone, sans marque d'IA.","휴대폰 사진, AI 표시 없음."];
+const P = [
+ ["p00","petits-moules",OPENAI],["p01","choux",NOMARK],["p02","tarte-figues",OPENAI],["p03","choux",NOMARK],["p05","cakes",OPENAI],
+ ["p06","entremets-fruits",OPENAI],["p07","choux",OPENAI],["p08","choux",NOMARK],["p09","petits-moules",OPENAI],["p10","tartelettes",PHONE],
+ ["p11","choux",NOMARK],["p12","emballage",OPENAI],["p13","cheesecake",OPENAI],["p14","tarte-pecan",OPENAI],["p15","carres",OPENAI],
+ ["p16","cookies",OPENAI],["p18","gateau-carottes",OPENAI],["p19","cookies",OPENAI],["p20","charlotte-choco-framboise",OPENAI],["p21","choux",OPENAI],
+ ["p23","choux",NOMARK],["p24","tarte-pecan",OPENAI],["p25","cake-noix",OPENAI],["p26","entremets-fruits",NOMARK],["p27","emballage",PHONE],
+ ["p28","brownies",OPENAI],["p29","chocolat-or",OPENAI]
+];
+const AUTRES = [["emballage","Emballage, boîte","포장, 상자"],["autre","Autre","기타"],["pas-moi","Pas un de mes gâteaux","내 케이크가 아님"]];
+const ALL = [
+ ["gluten","Céréales contenant du gluten","글루텐 함유 곡물",["Blé","밀"],[["Blé","밀"],["Seigle","호밀"],["Orge","보리"],["Avoine","귀리"],["Épeautre","스펠트"],["Kamut","카무트"]]],
+ ["crustaces","Crustacés","갑각류"],["oeufs","Œufs","달걀"],["poissons","Poissons","생선"],["arachides","Arachides (cacahuètes)","땅콩"],["soja","Soja","대두(콩)"],
+ ["lait","Lait (lactose compris)","우유 (유당 포함)"],
+ ["noix","Fruits à coque","견과류",null,[["Amande","아몬드"],["Noisette","헤이즐넛"],["Noix","호두"],["Cajou","캐슈너트"],["Pécan","피칸"],["Noix du Brésil","브라질너트"],["Pistache","피스타치오"],["Macadamia","마카다미아"]]],
+ ["celeri","Céleri","셀러리"],["moutarde","Moutarde","겨자"],["sesame","Graines de sésame","참깨"],["sulfites","Sulfites (plus de 10 mg/kg)","아황산염 (10mg/kg 초과)"],["lupin","Lupin","루핀"],["mollusques","Mollusques","연체동물"]
+];
+const DELAI = [["La veille","하루 전"],["2 jours avant","2일 전"],["3 jours avant","3일 전"],["1 semaine avant","1주일 전"]];
+const PERSO = [["Message écrit","메시지 글씨"],["Prénom","이름"],["Âge, chiffre","나이, 숫자"],["Bougies","초"],["Couleurs","색"],["Thème","테마"],["Décor, figurine","장식, 피규어"],["Rien","없음"]];
+const CONS = [["Au réfrigérateur","냉장"],["À température ambiante","실온"]];
+const DUREE = [["Le jour même","당일"],["2 jours","2일"],["3 jours","3일"],["1 semaine","1주일"]];
+const TYPES = [["vraie","Vraie photo, sans retouche","실제 사진, 보정 없음"],["retouche","Vraie photo, retouche légère (lumière, cadrage, fond)","실제 사진, 가벼운 보정 (빛, 구도, 배경)"],["transformee","Vraie photo très transformée (forme, décor, taille)","실제 사진을 크게 바꿈 (모양, 장식, 크기)"],["ia","Image créée par l'IA","AI가 만든 이미지"]];
+const DECI = [["garder","Garder","쓰기"],["retoucher","Retoucher","고치기"],["retirer","Retirer","빼기"]];
+
+let S = null, prenom = "", step = 0, queue = [], sending = false, session = Math.random().toString(36).slice(2,10);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bi = (fr, ko) => `${esc(fr)}<span class="ko">${esc(ko)}</span>`;
+const gat = id => G.find(g => g.id === id) || (S.extras || []).find(g => g.id === id);
+const allG = () => G.concat(S.extras || []);
+
+function blank(){ return {gateaux:{}, extras:[], photos:{}, fin:false}; }
+function load(){ try { return JSON.parse(localStorage.getItem(KEY + prenom.toLowerCase())) || blank(); } catch(e){ return blank(); } }
+function save(){ try { localStorage.setItem(KEY + prenom.toLowerCase(), JSON.stringify(S)); } catch(e){} }
+function gs(id){ const g = gat(id); if (!S.gateaux[id]) S.gateaux[id] = {choix:"", nom:g ? g.fr : "", tailles:(g && g.tailles ? g.tailles.map(t => t.slice()) : [["",""]]), delai:"", delaiAutre:"", perso:[], persoAutre:"", cons:[], duree:"", dureeAutre:"", allerg:{}, gluten:[], noix:[], traces:"", phrase:"", verifie:false}; return S.gateaux[id]; }
+function ps(id){ const p = P.find(x => x[0] === id); if (!S.photos[id]) S.photos[id] = {gateau:p ? p[1] : "", propose:true, type:"", decision:"", retouche:"", etoile:false}; return S.photos[id]; }
+
+// Envoi : une ligne par gâteau ou par photo, la dernière ligne par prénom et Id fait foi.
+const timers = {};
+function changed(id, obj){ save(); clearTimeout(timers[id]); timers[id] = setTimeout(() => push(id, obj), 900); status(); }
+function push(id, obj){ queue = queue.filter(r => r.id !== id); queue.push({prenom, id, vote:JSON.stringify(obj), connue:"", secondes:"", position:"", session, image:"site-carte", t:new Date().toISOString()}); flush(); }
+async function flush(){
+ if (TEST || sending || !queue.length) { status(); return; }
+ sending = true; const rows = queue.slice();
+ try { await fetch(ANSWERS_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({rows})}); queue = queue.filter(r => !rows.includes(r)); }
+ catch(e) {}
+ sending = false; status(); if (queue.length) setTimeout(flush, 5000);
+}
+window.addEventListener("pagehide", () => { if (!TEST && queue.length && navigator.sendBeacon) navigator.sendBeacon(ANSWERS_URL, new Blob([JSON.stringify({rows:queue})], {type:"text/plain"})); });
+function status(){
+ const n = Object.values(S ? S.gateaux : {}).filter(g => g.choix === "oui").length;
+ const v = Object.values(S ? S.gateaux : {}).filter(g => g.choix === "oui" && g.verifie).length;
+ const ph = S ? P.filter(p => S.photos[p[0]] && S.photos[p[0]].decision).length : 0;
+ const msg = `${n} gâteaux · ${v} fiches ✓ · ${ph}/${P.length} photos` + (TEST ? " · test" : queue.length ? " · envoi en attente" : " · envoyé");
+ $("st").textContent = msg; $("sendst").textContent = TEST ? "Version de test : rien n'est envoyé. · 테스트: 전송 안 됨" : (queue.length ? "Envoi en attente (réseau) · 전송 대기 중" : "Tout est envoyé · 모두 전송됨");
+ $("cnt1").textContent = n; $("cnt1b").textContent = n;
+ $("cnt1").classList.toggle("ok", n >= 6 && n <= 8); $("cnt1b").classList.toggle("ok", n >= 6 && n <= 8);
+}
+
+function chips(opts, sel, multi, onPick, cls){
+ const d = document.createElement("div"); d.className = "chips" + (cls ? " " + cls : "");
+ opts.forEach(o => { const b = document.createElement("button"); b.type = "button"; const v = o[0];
+  b.innerHTML = `${esc(o[o.length === 3 ? 1 : 0])}<span class="ko">${esc(o[o.length === 3 ? 2 : 1])}</span>`;
+  const isOn = () => multi ? sel().includes(v) : sel() === v;
+  b.classList.toggle("on", isOn());
+  b.onclick = () => { onPick(v); [...d.children].forEach((c, i) => c.classList.toggle("on", multi ? sel().includes(opts[i][0]) : sel() === opts[i][0])); };
+  d.appendChild(b); });
+ return d;
+}
+function toggleIn(arr, v){ const i = arr.indexOf(v); if (i < 0) arr.push(v); else arr.splice(i, 1); }
+
+// Étape 1
+function render1(){
+ const L = $("list1"); L.innerHTML = "";
+ allG().forEach(g => { const st = gs(g.id); const c = document.createElement("div"); c.className = "card" + (st.choix === "oui" ? " sel" : "");
+  let h = `<h2>${bi(g.fr, g.ko)}</h2>`;
+  h += g.ph && g.ph.length ? `<div class="thumbs">${g.ph.map(p => `<img src="photos/${p}.webp" alt="" loading="lazy">`).join("")}</div>` : `<div class="nophoto">Pas encore de photo · 아직 사진 없음</div>`;
+  if (g.tailles) h += `<div class="known">Prix déjà pratiqué : ${g.tailles.map(t => `${esc(t[1])} € (${esc(t[0])})`).join(", ")}<span class="ko">이미 받은 가격 (세금 포함)</span><span class="src">Source : ${esc(g.src[0])} · ${esc(g.src[1])}</span></div>`;
+  c.innerHTML = h;
+  c.appendChild(chips([["oui","Sur la carte","메뉴에 넣기"],["peut","Peut-être","고민 중"],["non","Non","안 넣기"]], () => st.choix, false, v => { st.choix = st.choix === v ? "" : v; c.classList.toggle("sel", st.choix === "oui"); changed("gateau:" + g.id, st); }, "three"));
+  L.appendChild(c); });
+}
+$("addg").onclick = () => { const v = $("newg").value.trim(); if (!v) return; const id = "x-" + v.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) + "-" + Date.now().toString(36).slice(-3);
+ S.extras.push({id, fr:v, ko:"", ph:[]}); const st = gs(id); st.choix = "oui"; $("newg").value = ""; changed("gateau:" + id, Object.assign({ajoute:v}, st)); render1(); };
+
+// Étape 2
+function field(lbl, ko, el){ const w = document.createElement("div"); w.innerHTML = `<label class="f">${esc(lbl)} · ${esc(ko)}</label>`; w.appendChild(el); return w; }
+function input(val, ph, on, type){ const i = document.createElement(type === "area" ? "textarea" : "input"); if (type !== "area") i.type = "text"; i.value = val || ""; if (ph) i.placeholder = ph; i.oninput = () => on(i.value); return i; }
+function render2(){
+ const L = $("list2"); L.innerHTML = ""; const ids = allG().filter(g => gs(g.id).choix === "oui");
+ $("none2").classList.toggle("hidden", ids.length > 0);
+ ids.forEach((g, n) => { const st = gs(g.id); const up = () => { st.verifie = false; mark(); drawV(); changed("gateau:" + g.id, st); };
+  const d = document.createElement("details"); d.className = "card fiche"; if (n === 0 && !st.verifie) d.open = true;
+  const sm = document.createElement("summary"); const mark = () => { sm.innerHTML = `<h2>${bi(st.nom || g.fr, g.ko)}</h2><span class="st ${st.verifie ? "ok" : ""}">${st.verifie ? "✓ vérifiée · 확인됨" : "à vérifier · 확인 필요"}</span>`; };
+  mark(); d.appendChild(sm); const b = document.createElement("div");
+  b.appendChild(field("Nom sur le site", "사이트에 쓸 이름", input(st.nom, "", v => { st.nom = v; up(); })));
+  // Tailles et prix
+  const tw = document.createElement("div"); tw.innerHTML = `<label class="f">Tailles et prix pour les particuliers, TTC · 크기와 가격 (개인 손님, 세금 포함)</label>`;
+  if (g.tailles) tw.innerHTML += `<p class="small">Pré-rempli depuis les ${esc(g.src[0])} : à confirmer. · ${esc(g.src[1])}에서 가져왔어요. 확인해 주세요.</p>`;
+  const rows = document.createElement("div");
+  const drawRows = () => { rows.innerHTML = ""; st.tailles.forEach((t, i) => { const r = document.createElement("div"); r.className = "row";
+   const a = input(t[0], "Taille ou nombre de parts · 크기/인원", v => { t[0] = v; up(); }); const p = input(t[1], "Prix € · 가격", v => { t[1] = v; up(); }); p.className = "prix"; p.inputMode = "decimal";
+   const x = document.createElement("button"); x.className = "x"; x.type = "button"; x.textContent = "×"; x.onclick = () => { st.tailles.splice(i, 1); drawRows(); up(); };
+   r.append(a, p, x); rows.appendChild(r); }); };
+  drawRows(); tw.appendChild(rows);
+  const add = document.createElement("button"); add.className = "link"; add.type = "button"; add.textContent = "+ une taille · 크기 추가"; add.onclick = () => { st.tailles.push(["", ""]); drawRows(); up(); };
+  tw.appendChild(add); b.appendChild(tw);
+  // Délai, personnalisation, conservation
+  b.appendChild(field("Commander au plus tard", "주문 마감", chips(DELAI, () => st.delai, false, v => { st.delai = st.delai === v ? "" : v; up(); })));
+  b.appendChild(input(st.delaiAutre, "Autre délai · 다른 마감", v => { st.delaiAutre = v; up(); }));
+  b.appendChild(field("Ce que tu peux personnaliser", "맞춤 가능한 것", chips(PERSO, () => st.perso, true, v => { toggleIn(st.perso, v); up(); })));
+  b.appendChild(input(st.persoAutre, "Autre, ou ce que tu refuses · 기타, 또는 안 하는 것", v => { st.persoAutre = v; up(); }));
+  b.appendChild(field("Conservation", "보관", chips(CONS, () => st.cons, true, v => { toggleIn(st.cons, v); up(); })));
+  b.appendChild(field("À manger dans les", "드시는 기한", chips(DUREE, () => st.duree, false, v => { st.duree = st.duree === v ? "" : v; up(); })));
+  b.appendChild(input(st.dureeAutre, "Autre durée · 다른 기한", v => { st.dureeAutre = v; up(); }));
+  // Allergènes
+  const aw = document.createElement("div"); aw.innerHTML = `<h3>Allergènes : les 14 à déclarer<span class="ko">알레르기 유발 성분: 표시 의무 14가지</span></h3><p class="small">Pour chacun : oui (il y en a), non (il n'y en a pas), ou « ? » si tu n'es pas sûre. Personne ne répond à ta place. · 하나씩: 들어감, 안 들어감, 확실하지 않으면 '?'. 대신 답하지 않아요.</p>`;
+  ALL.forEach(a => { const row = document.createElement("div"); row.className = "al";
+   row.innerHTML = `<div class="nm">${bi(a[1], a[2])}</div>`;
+   const tri = document.createElement("div"); tri.className = "tri";
+   const sub = document.createElement("div"); sub.className = "sub";
+   const drawSub = () => { sub.innerHTML = ""; if (a[4] && st.allerg[a[0]] === "oui") { const arr = a[0] === "gluten" ? st.gluten : st.noix; sub.appendChild(chips(a[4], () => arr, true, v => { toggleIn(arr, v); up(); })); } };
+   [["oui","Oui","들어감"],["non","Non","안 들어감"],["nsp","?","모름"]].forEach(o => { const bt = document.createElement("button"); bt.type = "button"; bt.innerHTML = `${o[1]}<span class="ko">${o[2]}</span>`; bt.classList.toggle("on", st.allerg[a[0]] === o[0]);
+    bt.onclick = () => { st.allerg[a[0]] = st.allerg[a[0]] === o[0] ? undefined : o[0]; [...tri.children].forEach(c => c.classList.remove("on")); if (st.allerg[a[0]]) bt.classList.add("on"); drawSub(); up(); };
+    tri.appendChild(bt); });
+   row.appendChild(tri); drawSub(); row.appendChild(sub); aw.appendChild(row); });
+  aw.appendChild(field("Traces possibles (autres produits du même atelier)", "같은 작업실 재료의 혼입 가능성", input(st.traces, "ex. fruits à coque, sésame · 예: 견과류, 참깨", v => { st.traces = v; up(); })));
+  b.appendChild(aw);
+  b.appendChild(field("Une ou deux phrases sur ce gâteau, en français ou en coréen", "이 케이크를 한두 문장으로 (프랑스어나 한국어)", input(st.phrase, "", v => { st.phrase = v; up(); }, "area")));
+  const vf = document.createElement("div"); vf.className = "verif";
+  const vb = document.createElement("button"); vb.type = "button"; const drawV = () => { vb.className = "btn" + (st.verifie ? " done" : ""); vb.innerHTML = st.verifie ? "✓ Fiche vérifiée · 확인 완료" : "Fiche vérifiée · 확인 완료"; };
+  drawV(); vb.onclick = () => { st.verifie = !st.verifie; drawV(); mark(); changed("gateau:" + g.id, st); if (st.verifie) d.open = false; };
+  vf.appendChild(vb); b.appendChild(vf); d.appendChild(b); L.appendChild(d); });
+}
+
+// Étape 3
+function render3(){
+ const L = $("list3"); L.innerHTML = "";
+ const opts = allG().map(g => [g.id, g.fr, g.ko]).concat(AUTRES);
+ P.forEach(p => { const st = ps(p[0]); const c = document.createElement("div"); c.className = "card photo";
+  c.innerHTML = `<img src="photos/${p[0]}.webp" alt="" loading="lazy"><div class="meta">${esc(p[0])} · ${esc(p[2][0])} · ${esc(p[2][1])}</div>`;
+  const sel = document.createElement("select"); opts.forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = `${o[1]} · ${o[2] || ""}`; sel.appendChild(op); });
+  const op0 = document.createElement("option"); op0.value = ""; op0.textContent = "— je ne sais pas · 모름 —"; sel.insertBefore(op0, sel.firstChild);
+  sel.value = st.gateau || "";
+  const lab = document.createElement("div"); const drawLab = () => { lab.innerHTML = `<label class="f">Le gâteau montré${st.propose ? " (proposition de Claude)" : ""} · 사진 속 케이크${st.propose ? " (Claude의 추측)" : ""}</label>`; };
+  drawLab(); sel.onchange = () => { st.gateau = sel.value; st.propose = false; drawLab(); changed("photo:" + p[0], st); };
+  c.appendChild(lab); c.appendChild(sel);
+  c.appendChild(field("Cette image est", "이 이미지는", chips(TYPES, () => st.type, false, v => { st.type = st.type === v ? "" : v; warn(); changed("photo:" + p[0], st); })));
+  c.appendChild(field("Que faire ?", "어떻게 할까요?", chips(DECI, () => st.decision, false, v => { st.decision = st.decision === v ? "" : v; rt.classList.toggle("hidden", st.decision !== "retoucher"); warn(); changed("photo:" + p[0], st); }, "three")));
+  const rt = input(st.retouche, "Quoi retoucher ? · 무엇을 고칠까요?", v => { st.retouche = v; changed("photo:" + p[0], st); }, "area"); rt.classList.toggle("hidden", st.decision !== "retoucher"); rt.style.marginTop = "8px"; c.appendChild(rt);
+  const w = document.createElement("div"); w.className = "warn hidden"; w.innerHTML = "Gardée seulement pour l'ambiance, avec la mention « image créée par IA », jamais pour présenter un gâteau vendu.<span class=\"ko\">'AI 이미지' 표시와 함께 분위기용으로만 쓰고, 판매하는 케이크를 소개하는 데는 쓰지 않아요.</span>";
+  const warn = () => w.classList.toggle("hidden", !((st.type === "ia" || st.type === "transformee") && st.decision === "garder")); warn(); c.appendChild(w);
+  const sw = document.createElement("div"); sw.className = "star";
+  sw.appendChild(chips([["etoile","★ Grande photo de l'accueil","첫 화면 큰 사진"]], () => st.etoile ? "etoile" : "", false, () => {
+   const n = P.filter(x => S.photos[x[0]] && S.photos[x[0]].etoile).length;
+   if (!st.etoile && n >= 3) { sm.classList.remove("hidden"); return; }
+   sm.classList.add("hidden"); st.etoile = !st.etoile; changed("photo:" + p[0], st); }));
+  const sm = document.createElement("div"); sm.className = "warn hidden"; sm.innerHTML = "Trois étoiles au plus : retire d'abord une autre étoile.<span class=\"ko\">별표는 최대 3개예요. 먼저 다른 별표를 빼 주세요.</span>";
+  sw.appendChild(sm); c.appendChild(sw); L.appendChild(c); });
+}
+
+// Étape 4
+function render4(){
+ const ch = allG().filter(g => gs(g.id).choix === "oui"), mb = allG().filter(g => gs(g.id).choix === "peut");
+ const nv = ch.filter(g => !gs(g.id).verifie), ph = P.filter(p => !(S.photos[p[0]] && S.photos[p[0]].decision));
+ let h = `<b>Sur la carte (${ch.length}) · 메뉴 (${ch.length})</b><br>${ch.map(g => esc(gs(g.id).nom || g.fr)).join(", ") || "—"}`;
+ if (mb.length) h += `<br><br><b>Peut-être · 고민 중</b><br>${mb.map(g => esc(g.fr)).join(", ")}`;
+ if (ch.length && (ch.length < 6 || ch.length > 8)) h += `<br><br>La carte de lancement compte 6 à 8 gâteaux. · 오픈 메뉴는 6~8가지예요.`;
+ if (nv.length) h += `<br><br>Fiches pas encore vérifiées · 아직 확인 안 된 정보: ${nv.map(g => esc(gs(g.id).nom || g.fr)).join(", ")}`;
+ if (ph.length) h += `<br><br>Photos sans décision · 결정 안 한 사진: ${ph.length}`;
+ $("recap").innerHTML = h; $("merci").classList.toggle("hidden", !S.fin);
+}
+$("fin").onclick = () => { S.fin = true; push("fin", {fin:true, gateaux:allG().filter(g => gs(g.id).choix === "oui").map(g => g.id)}); save(); render4(); window.scrollTo(0, document.body.scrollHeight); };
+$("dl").onclick = e => { e.preventDefault(); const blob = new Blob([JSON.stringify({prenom, reponses:S}, null, 2)], {type:"application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `ma-carte-${prenom || "reponses"}.json`; a.click(); };
+let wipeArmed = false;
+$("wipe").onclick = () => { if (!wipeArmed) { wipeArmed = true; $("wipe").textContent = "Touche encore pour confirmer (ce qui est déjà envoyé reste) · 한 번 더 누르면 지워져요 (이미 전송된 답은 남아요)"; setTimeout(() => { wipeArmed = false; $("wipe").textContent = "Effacer mes réponses sur cet appareil · 이 기기에서 답 지우기"; }, 6000); return; }
+ wipeArmed = false; try { localStorage.removeItem(KEY + prenom.toLowerCase()); } catch(e){} S = blank(); $("wipe").textContent = "Effacer mes réponses sur cet appareil · 이 기기에서 답 지우기"; go(1); };
+
+// Navigation
+function go(n){
+ step = n; ["s0","s1","s2","s3","s4"].forEach((s, i) => $(s).classList.toggle("hidden", i !== n));
+ [...$("steps").children].forEach(b => b.classList.toggle("on", +b.dataset.s === n));
+ if (n === 1) render1(); if (n === 2) render2(); if (n === 3) render3(); if (n === 4) render4();
+ $("prev").classList.toggle("hidden", n <= 1); $("next").classList.toggle("hidden", n >= 4);
+ status(); window.scrollTo(0, 0);
+}
+[...$("steps").children].forEach(b => b.onclick = () => go(+b.dataset.s));
+$("prev").onclick = () => go(Math.max(1, step - 1)); $("next").onclick = () => go(Math.min(4, step + 1));
+$("go").onclick = () => { prenom = $("prenom").value.trim() || "Youngmi"; S = load(); $("steps").classList.remove("hidden"); $("bar").classList.remove("hidden"); go(1); };
+if (TEST) $("testban").classList.remove("hidden");
+</script>
+</body>
+</html>
