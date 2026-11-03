@@ -34,7 +34,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .compteur{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;margin-left:8px;border-radius:10px;background:var(--accent);color:var(--sur-accent);font-size:11px;letter-spacing:0}
 
 /* Accueil */
-.ouverture{padding:4px 0 0}
+.ouverture{padding:4px 0 0;max-width:1696px;margin:0 auto}
+.ouverture img{width:100%}
 .ouverture .texte{padding:24px var(--g) 0;max-width:620px}
 .ouverture h1{font:400 26px/1.3 var(--police)}
 .ouverture p{color:var(--doux);margin-top:8px}
@@ -171,7 +172,6 @@ button,input,select,textarea{font:inherit;color:inherit}
 .pied address a{display:inline-block;padding:4px 0}
 .liens-pied{display:flex;flex-wrap:wrap;justify-content:center;gap:0 18px;font:400 11px/1.4 var(--police);letter-spacing:.16em;text-transform:uppercase}
 .liens-pied a{display:inline-flex;align-items:center;min-height:44px}
-.mention-ia{font-size:12px;color:var(--doux)}
 
 @media (min-width:520px){.deux-champs{grid-template-columns:1fr 1fr}}
 @media (min-width:700px){
