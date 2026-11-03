@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Madame Cho · maquette B « Galerie »</title>
+<link rel="stylesheet" href="../commun/base.css">
+<style>
+/* Maquette B, « Galerie » : beaucoup de blanc, des photos encadrées comme dans un livre, le texte à côté (références Aman, Ett Hem). */
+.entete{display:grid;justify-items:center;gap:16px;padding:26px var(--gouttiere) 0}
+.entete img{width:210px}
+.entete nav{display:flex;gap:22px;overflow-x:auto;max-width:100%;padding:12px 2px 14px;border-top:1px solid var(--ligne);font:400 12px/1 var(--titres);letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
+.entete nav a{text-decoration:none}
+.ouverture{display:grid;gap:30px;padding:8px var(--gouttiere) 64px;max-width:1180px;margin:0 auto}
+.ouverture img{width:100%;aspect-ratio:4/5;object-fit:cover}
+.ouverture .texte{display:grid;gap:18px;align-content:center;text-align:center;justify-items:center}
+.ouverture blockquote{margin:0;font:italic 400 clamp(28px,6.4vw,46px)/1.2 var(--texte);text-wrap:balance}
+.ouverture cite{font:400 12px/1 var(--titres);letter-spacing:.2em;text-transform:uppercase;font-style:normal;color:var(--texte-doux)}
+.ouverture .lieu{font-size:12px;color:var(--texte-doux)}
+.selection{max-width:1180px;margin:0 auto;padding:0 var(--gouttiere) 40px;display:grid;gap:56px}
+.selection h2,.bloc h2{text-align:center;font-size:13px;margin:0}
+.rang{display:grid;gap:18px}
+.rang img{width:100%;aspect-ratio:1;object-fit:cover}
+.rang h3{font:400 26px/1.2 var(--texte);margin:0}
+.rang p{margin:0;color:var(--texte-doux)}
+.rang .prix{font:400 12px/1.4 var(--titres);letter-spacing:.18em;text-transform:uppercase;color:var(--chocolat)}
+.rang a{font:500 12px/1 var(--titres);letter-spacing:.2em;text-transform:uppercase}
+.rang .t{display:grid;gap:12px;align-content:center}
+.anniv{background:var(--ivoire);padding:64px var(--gouttiere)}
+.anniv .dedans{max-width:1180px;margin:0 auto;display:grid;gap:28px}
+.anniv img{width:100%;aspect-ratio:4/5;object-fit:cover}
+.anniv h2{font:400 32px/1.2 var(--texte);margin:6px 0 14px}
+.anniv ul{margin:0 0 26px;padding:0;list-style:none;border-top:1px solid var(--ligne)}
+.anniv li{padding:12px 0;border-bottom:1px solid var(--ligne)}
+.bloc{max-width:820px;margin:0 auto;padding:64px var(--gouttiere);display:grid;gap:22px;text-align:center;justify-items:center}
+.bloc img{width:110px}
+.bloc h3{font:400 30px/1.2 var(--texte);margin:0}
+.bloc p{margin:0}
+.pros{display:grid;gap:26px;text-align:left;width:100%;border-top:1px solid var(--ligne);padding-top:26px}
+.pros h3{font-size:24px}
+.infos{border-top:1px solid var(--ligne);border-bottom:1px solid var(--ligne);max-width:1180px;margin:0 auto;padding:36px var(--gouttiere);display:grid;gap:22px}
+.infos dt{font:500 11px/1.4 var(--titres);letter-spacing:.18em;text-transform:uppercase;color:var(--texte-doux);margin-bottom:4px}
+.infos dd{margin:0;font-size:16px}
+.separateur{text-align:center;padding:48px var(--gouttiere) 0;font:500 11px/1.4 var(--titres);letter-spacing:.2em;text-transform:uppercase;color:var(--texte-doux)}
+.gateau{max-width:1180px;margin:0 auto;padding:24px var(--gouttiere) 64px;display:grid;gap:28px}
+.gateau img{width:100%;aspect-ratio:1;object-fit:cover}
+.gateau h2{font:400 32px/1.15 var(--texte);margin:0 0 10px}
+.gateau .phrase{margin:0 0 24px;color:var(--texte-doux)}
+.gateau .bouton{width:100%;margin-top:28px}
+.gateau .compo{font-size:16px;margin:0 0 22px;padding-left:18px}
+footer{border-top:1px solid var(--ligne);padding:44px var(--gouttiere) calc(36px + env(safe-area-inset-bottom,0px));display:grid;gap:18px;justify-items:center;text-align:center;font-size:15px;color:var(--texte-doux)}
+footer img{width:150px}
+footer address{font-style:normal;line-height:1.7;color:var(--chocolat)}
+footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 18px;font:400 11px/1.4 var(--titres);letter-spacing:.16em;text-transform:uppercase}
+@media (min-width:860px){
+  .entete img{width:260px}
+  .ouverture{grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding-top:28px}
+  .ouverture img{aspect-ratio:4/5}
+  .rang{grid-template-columns:1.15fr 1fr;gap:56px;align-items:center}
+  .rang:nth-of-type(even) img{order:2}
+  .anniv .dedans{grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .pros{grid-template-columns:1fr 1fr}
+  .infos{grid-template-columns:repeat(4,1fr)}
+  .gateau{grid-template-columns:1.1fr 1fr;gap:56px;align-items:start}
+}
+</style>
+</head>
+<body>
+<div class="bandeau-maquette">Maquette B « Galerie » · textes et photos provisoires</div>
+<header class="entete">
+  <img src="../commun/logo-chocolat.svg" alt="Madame Cho">
+  <nav aria-label="Menu"><a href="#selection">La carte</a><a href="#anniversaires">Anniversaires</a><a href="#pros">Professionnels</a><a href="#demande">Ma demande</a></nav>
+</header>
+<section class="ouverture">
+  <img src="../commun/photos/p12.webp" alt="Une boîte Madame Cho prête à offrir">
+  <div class="texte">
+    <span class="capitales lieu">Pâtisserie à Meudon · sur commande</span>
+    <blockquote>« Un lieu où l'on fait de délicieux desserts. »</blockquote>
+    <cite>Youngmi Cho</cite>
+    <a class="bouton" href="#selection">Voir la carte</a>
+  </div>
+</section>
+<section class="selection" id="selection">
+  <h2 class="capitales">La carte</h2>
+  <div class="rang">
+    <img src="../commun/photos/p20.webp" alt="" loading="lazy">
+    <div class="t"><h3>Charlotte chocolat-framboise</h3><p>Du chocolat sous toutes ses textures, et juste ce qu'il faut d'acidité avec la framboise.</p><span class="prix">4 à 10 personnes · de 28 à 60 €</span><a href="#gateau">Voir le gâteau →</a></div>
+  </div>
+  <div class="rang">
+    <img src="../commun/photos/p24.webp" alt="" loading="lazy">
+    <div class="t"><h3>Tarte aux noix de pécan</h3><p>Le sirop de riz apporte une douceur délicate, juste assez pour révéler le goût des noix.</p><span class="prix">4 à 10 personnes · de 26 à 45 €</span><a href="#gateau">Voir le gâteau →</a></div>
+  </div>
+  <div class="rang">
+    <img src="../commun/photos/p21.webp" alt="" loading="lazy" style="aspect-ratio:3/2">
+    <div class="t"><h3>Choux</h3><p>Choux craquelin posés sur un sablé : vanille, caramel, chocolat, praliné noisette ou citron.</p><span class="prix">2,50 € pièce · à partir de 10</span><a href="#gateau">Voir le gâteau →</a></div>
+  </div>
+</section>
+<section class="anniv" id="anniversaires">
+  <div class="dedans">
+    <img src="../commun/photos/p06.webp" alt="" loading="lazy">
+    <div>
+      <span class="capitales" style="font-size:12px">Anniversaires</span>
+      <h2>Le gâteau de la fête, écrit pour vous</h2>
+      <ul><li>Entremets, charlotte ou tarte, de 4 à 10 personnes</li><li>Message et prénom écrits sur le gâteau</li><li>Bougies sur demande</li><li>À commander 2 jours avant</li></ul>
+      <a class="bouton" href="#demande">Faire ma demande</a>
+    </div>
+  </div>
+</section>
+<section class="bloc" id="maison">
+  <img src="../commun/rond-ivoire.svg" alt="">
+  <span class="capitales" style="font-size:12px">La maison</span>
+  <h3>Youngmi Cho</h3>
+  <p>Diplômée de l'Université nationale de Séoul, formée à l'École Ducasse, Youngmi a passé six ans dans de grandes maisons de la gastronomie française, dont le George V et La Réserve. À Meudon, elle prépare aujourd'hui chaque gâteau à la commande.</p>
+  <div class="pros" id="pros">
+    <div><h3>Restaurants et cafés</h3><p>Madame Cho prépare chaque semaine les desserts de restaurants et cafés parisiens.</p></div>
+    <div><h3>Événements d'entreprise</h3><p>Une sélection sucrée pour vos réunions et vos fêtes, sur devis. <a href="#demande">Demande d'un professionnel</a></p></div>
+  </div>
+</section>
+<dl class="infos">
+  <div><dt>Retrait</dt><dd>Sur rendez-vous, 4 avenue du Château, Meudon</dd></div>
+  <div><dt>Délais</dt><dd>La veille ou 2 jours avant, selon le gâteau</dd></div>
+  <div><dt>Paiement</dt><dd>[à confirmer par Youngmi]</dd></div>
+  <div><dt>Réponse</dt><dd>Sous 24 heures, à chaque demande</dd></div>
+</dl>
+<div class="separateur" id="gateau">Aperçu : la page d'un gâteau</div>
+<article class="gateau">
+  <img src="../commun/photos/p20.webp" alt="Charlotte chocolat-framboise" loading="lazy">
+  <div>
+    <h2>Charlotte chocolat-framboise</h2>
+    <p class="phrase">Du chocolat sous toutes ses textures, et juste ce qu'il faut d'acidité avec la framboise.</p>
+    <ul class="compo"><li>Biscuit joconde au chocolat</li><li>Croustillant au grué de cacao</li><li>Confit de framboise</li><li>Mousse au chocolat noir</li><li>Chantilly au chocolat au lait</li><li>Framboises fraîches</li></ul>
+    <ul class="tailles">
+      <li><span>16 cm · 4 personnes</span><b>28 €</b></li>
+      <li><span>18 cm · 6 personnes</span><b>39 €</b></li>
+      <li><span>20 cm · 8 personnes</span><b>48 €</b></li>
+      <li><span>22 cm · 10 personnes</span><b>60 €</b></li>
+    </ul>
+    <dl class="details">
+      <div><dt>Commander</dt><dd>2 jours avant le retrait, sur rendez-vous à Meudon</dd></div>
+      <div><dt>Personnalisation</dt><dd>Message écrit, prénom, bougies</dd></div>
+      <div><dt>Allergènes</dt><dd>Gluten, œufs, lait, fruits à coque (amande)</dd></div>
+      <div><dt>Conservation</dt><dd>Au réfrigérateur, à déguster dans les 3 jours</dd></div>
+    </dl>
+    <a class="bouton plein" href="#demande">Ajouter à ma demande</a>
+  </div>
+</article>
+<footer id="demande">
+  <img src="../commun/logo-chocolat.svg" alt="Madame Cho">
+  <address>4 avenue du Château, 92190 Meudon · retrait sur rendez-vous<br>06 61 31 17 79 · contact@madamecho.com</address>
+  <nav><a href="#">Mentions légales</a><a href="#">Conditions de commande</a><a href="#">Confidentialité</a><a href="#">Les avis</a><a href="#">Instagram</a></nav>
+</footer>
+</body>
+</html>

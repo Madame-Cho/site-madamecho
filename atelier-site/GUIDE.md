@@ -18,8 +18,10 @@ Quatre étapes, reprise sur l'appareil (localStorage `atelier-site-carte-v1:<pr�
 
 Envoi : une ligne par gâteau (`gateau:<id>`), par photo (`photo:<pNN>`) et `fin` ; Vote = l'état complet en JSON ; Image chargée = `site-carte`. Chaque modification renvoie la ligne (après 0,9 s) : la dernière ligne par Prénom et Id fait foi. Claude lit ces lignes pour écrire les fiches produits, les textes et les deux maquettes de la séance 2.
 
-## 3. Séance 2 : « Mes textes et ma maquette » (`textes/`, à venir)
-Construite après la séance 1, à partir de ses réponses : relecture des textes, jours et heures de retrait, choix entre deux maquettes.
+## 3. Séance 2 : « Mes textes et ma maquette » (`textes/`)
+Construite le 03/11/2026 à partir des réponses de la séance 1, avec des propositions tirées du Drive (consigne d'Olivier du 02/11). Six étapes : Fiches (les 6 gâteaux tels qu'ils seront sur le site, FR + KO, « C'est juste / À corriger » et questions), Commande (retrait, paiement, acompte, anniversaires), Fêtes (gâteaux du moment pour Noël et janvier), Maison (parcours, photo de Youngmi, professionnels sans nom ni prix, avis de clients), Maquette (photos marquées ChatGPT, photo d'accueil, choix A ou B), Fin.
+Envoi : une ligne par partie, Id préfixé par `s2:` (`s2:fiche:<id>`, `s2:traces`, `s2:commande`, `s2:fetes`, `s2:maison`, `s2:avis`, `s2:photos`, `s2:maquette`, `s2:fin`) ; Image chargée = `site-textes`. Les avis de clients ne vont que dans la feuille privée.
+Les deux maquettes sont dans `maquettes/a/` (« Plein écran ») et `maquettes/b/` (« Galerie »), avec `maquettes/commun/` (feuille de style, polices Jost et Newsreader en licence SIL OFL, logo K06-3, photos 1600 px). Textes et photos provisoires.
 
 ## 4. Mise en ligne (uniquement sur feu vert d'Olivier, R-19)
-Fusionner la branche dans main puis dans production (OVH) : https://madamecho.com/atelier-site/carte/. Vérifier sur téléphone que la page s'affiche et qu'une réponse arrive dans la feuille. Retirer le dossier à la fin du chantier (l'historique Git garde les fichiers : rien de secret n'y est).
+Fusionner la branche dans main puis dans production (OVH) : https://madamecho.com/atelier-site/carte/ et https://madamecho.com/atelier-site/textes/. Vérifier sur téléphone que la page s'affiche et qu'une réponse arrive dans la feuille. Retirer le dossier à la fin du chantier (l'historique Git garde les fichiers : rien de secret n'y est).
