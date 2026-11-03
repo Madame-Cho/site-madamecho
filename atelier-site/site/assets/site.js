@@ -69,9 +69,9 @@
     ls.forEach(function (l) { tot[l.p] = (tot[l.p] || 0) + l.q; });
     Object.keys(tot).forEach(function (id) {
       var p = CAT.produits[id];
-      if (p.mode === 'parfums' && tot[id] < p.minimum) out.push(p.nom + ' : ' + p.minimum + ' au minimum (' + tot[id] + ' pour l’instant).');
+      if (p.mode === 'parfums' && tot[id] < p.minimum) out.push(p.nom + '\u00a0: ' + p.minimum + ' au minimum (' + tot[id] + ' pour l’instant).');
       if (p.mode === 'parfums' && p.pas > 1) ls.forEach(function (l) {
-        if (l.p === id && l.q % p.pas) out.push(p.nom + ' ' + p.parfums[l.v].libelle + ' : par ' + p.pas + ' du même parfum.');
+        if (l.p === id && l.q % p.pas) out.push(p.nom + ' ' + p.parfums[l.v].libelle + '\u00a0: par ' + p.pas + ' du même parfum.');
       });
     });
     return out;
@@ -102,7 +102,7 @@
         var t = ($('input[name=taille]:checked', form) || {}).value;
         if (!t) return;
         ajouter([{ p: id, t: t, q: q }]);
-        confirmer('Ajouté à votre demande : ' + q + ' × ' + p.nom + ', ' + p.tailles[t].libelle + '.');
+        confirmer('Ajouté à votre demande\u00a0: ' + q + ' × ' + p.nom + ', ' + p.tailles[t].libelle + '.');
         q = 1; maj();
       });
     } else {
@@ -130,7 +130,7 @@
         Object.keys(qs).forEach(function (v) { if (qs[v] > 0) { nouv.push({ p: id, v: v, q: qs[v] }); tot += qs[v]; } });
         if (tot < p.minimum) return;
         ajouter(nouv);
-        confirmer('Ajouté à votre demande : ' + tot + ' ' + p.nom.toLowerCase() + '.');
+        confirmer('Ajouté à votre demande\u00a0: ' + tot + ' ' + p.nom.toLowerCase() + '.');
         qs = {}; majP();
       });
     }
@@ -203,7 +203,7 @@
         det.textContent = libelle(l) + (p.mode === 'parfums' ? ' · ' + euros(p.unite) + ' la pièce' : '');
         var act = document.createElement('div'); act.className = 'l-actions';
         var pas = p.mode === 'parfums' ? p.pas : 1, maxQ = p.mode === 'taille' ? 10 : 200;
-        var grp = document.createElement('div'); grp.className = 'pas'; grp.setAttribute('role', 'group'); grp.setAttribute('aria-label', 'Quantité : ' + p.nom + ', ' + libelle(l));
+        var grp = document.createElement('div'); grp.className = 'pas'; grp.setAttribute('role', 'group'); grp.setAttribute('aria-label', 'Quantité\u00a0: ' + p.nom + ', ' + libelle(l));
         var m = document.createElement('button'); m.type = 'button'; m.textContent = '−'; m.setAttribute('aria-label', 'Moins');
         var o = document.createElement('output'); o.textContent = l.q;
         var pl = document.createElement('button'); pl.type = 'button'; pl.textContent = '+'; pl.setAttribute('aria-label', 'Plus');
@@ -220,7 +220,7 @@
         if (p.plaque) {
           var k = cleLigne(l);
           var lab = document.createElement('label'); lab.className = 'champ plaque';
-          var sp = document.createElement('span'); sp.innerHTML = 'Plaque en chocolat, comprise : prénom et message <i>(facultatif)</i>';
+          var sp = document.createElement('span'); sp.innerHTML = 'Plaque en chocolat, comprise\u00a0: prénom et message <i>(facultatif)</i>';
           var inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 60; inp.value = plaques[k] || '';
           inp.addEventListener('input', function () { plaques[k] = inp.value; });
           lab.appendChild(sp); lab.appendChild(inp); div.appendChild(lab);
@@ -243,15 +243,15 @@
       if (ref) t.push('Demande ' + ref);
       ls.forEach(function (l) {
         var p = CAT.produits[l.p], k = cleLigne(l);
-        t.push('- ' + l.q + ' × ' + p.nom + ', ' + libelle(l) + ' : ' + euros(prixLigne(l)) + (plaques[k] ? ' (plaque : « ' + plaques[k].trim() + ' »)' : ''));
+        t.push('- ' + l.q + ' × ' + p.nom + ', ' + libelle(l) + '\u00a0: ' + euros(prixLigne(l)) + (plaques[k] ? ' (plaque\u00a0: «\u00a0' + plaques[k].trim() + '\u00a0»)' : ''));
         total += prixLigne(l);
       });
-      if (ls.length) t.push('Total indicatif : ' + euros(total) + ' TTC');
-      if (f.perso.value.trim()) t.push('Personnalisation : ' + f.perso.value.trim());
-      if (f.date.value) t.push('Retrait souhaité : ' + dateFr(f.date.value) + ', ' + (CAT.moments[f.moment.value] || '').toLowerCase());
-      t.push('Nom : ' + f.nom.value.trim());
-      t.push('Email : ' + f.email.value.trim() + (f.telephone.value.trim() ? ' · Téléphone : ' + f.telephone.value.trim() : ''));
-      if (f.pro && f.pro.checked) t.push('Entreprise : ' + f.societe.value.trim() + (f.besoin.value.trim() ? ' · Besoin : ' + f.besoin.value.trim() : ''));
+      if (ls.length) t.push('Total indicatif\u00a0: ' + euros(total) + ' TTC');
+      if (f.perso.value.trim()) t.push('Personnalisation\u00a0: ' + f.perso.value.trim());
+      if (f.date.value) t.push('Retrait souhaité\u00a0: ' + dateFr(f.date.value) + ', ' + (CAT.moments[f.moment.value] || '').toLowerCase());
+      t.push('Nom\u00a0: ' + f.nom.value.trim());
+      t.push('Email\u00a0: ' + f.email.value.trim() + (f.telephone.value.trim() ? ' · Téléphone\u00a0: ' + f.telephone.value.trim() : ''));
+      if (f.pro && f.pro.checked) t.push('Entreprise\u00a0: ' + f.societe.value.trim() + (f.besoin.value.trim() ? ' · Besoin\u00a0: ' + f.besoin.value.trim() : ''));
       return t.join('\n');
     }
 
@@ -264,7 +264,7 @@
       manques(ls).forEach(function (m) { out.push(m); });
       if (!f.date.value) err(f.date, 'Choisissez une date de retrait.');
       else if (f.date.value < dateIn.min) err(f.date, 'La date de retrait doit être au plus tôt le ' + dateFr(dateIn.min) + '.');
-      else if (f.date.value.slice(5) === '12-24') err(f.date, 'Pas de retrait le 24 décembre : choisissez une autre date.');
+      else if (f.date.value.slice(5) === '12-24') err(f.date, 'Pas de retrait le 24 décembre\u00a0: choisissez une autre date.');
       else if (f.date.value > dateIn.max) err(f.date, 'Choisissez une date dans les six prochains mois.');
       if (f.nom.value.trim().length < 2) err(f.nom, 'Indiquez votre prénom et votre nom.');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) err(f.email, 'Indiquez une adresse email valide, pour recevoir la réponse de Youngmi.');
@@ -322,7 +322,7 @@
           if (j && j.ok && j.ref) fini(j.ref);
           else echec((j && j.erreurs && j.erreurs.length) ? j.erreurs.join(' ') : 'L’envoi n’a pas abouti.');
         })
-        .catch(function () { clearTimeout(minuterie); echec('L’envoi n’a pas abouti (connexion interrompue ?).'); });
+        .catch(function () { clearTimeout(minuterie); echec('L’envoi n’a pas abouti (connexion interrompue\u00a0?).'); });
     });
   }
 

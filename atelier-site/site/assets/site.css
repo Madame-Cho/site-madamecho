@@ -73,7 +73,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .maison{display:grid;gap:32px;max-width:1100px;margin:0 auto}
 .portrait img{max-height:80svh;width:auto;margin:0 auto}
 .reperes{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:18px;font:400 12px/1.5 var(--police);letter-spacing:.14em;text-transform:uppercase;color:var(--doux)}
-.restos{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:16px}
+.restos{display:flex;flex-wrap:wrap;gap:0 22px;font-size:16px}
+.restos a{display:inline-flex;align-items:center;min-height:44px}
 .offre{margin-top:22px;border-top:1px solid var(--ligne)}
 .offre li{padding:11px 0;border-bottom:1px solid var(--ligne)}
 .large{max-width:1100px;margin:0 auto}
@@ -198,3 +199,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 }
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 @media print{.entete,.pied,.bandeau-apercu,.formulaire{display:none}}
+/* Bouton Instagram aux couleurs de Madame Cho : chocolat plein, texte et pictogramme ivoire */
+.insta{display:inline-flex;align-items:center;gap:10px;min-height:48px;margin-top:28px;padding:0 22px 0 18px;background:var(--chocolat);color:var(--ivoire);border:1px solid var(--chocolat);text-decoration:none;font:500 12px/1.2 var(--police);letter-spacing:.2em;text-transform:uppercase}
+.insta svg{flex:none}
+.insta span{white-space:nowrap}
+.insta .insta-pseudo{text-transform:none;letter-spacing:.04em;font-weight:400;opacity:.85;padding-left:10px;border-left:1px solid rgba(243,237,228,.35)}
+.insta:hover{background:var(--ivoire);color:var(--chocolat)}
+.insta:hover .insta-pseudo{border-left-color:rgba(59,29,14,.3)}
+.insta:focus-visible{outline:2px solid var(--chocolat);outline-offset:3px}
+.insta-pied{margin-top:0}
+@media (max-width:480px){.insta .insta-pseudo{display:none}}
