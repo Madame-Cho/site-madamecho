@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Six maquettes de mon site</title>
+<style>
+@font-face{font-family:"Jost";src:url("commun/polices/jost-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Jost";src:url("commun/polices/jost-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
+:root{--bg:#fff;--ink:#3B1D0E;--muted:#7a6a60;--line:#e6dcd2;--soft:#f7f2ec;--on:#3B1D0E;--ok:#2e6b3a;--warn:#8a5a00;--warnbg:#fff5dc}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 120px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0 8px;border-bottom:1px solid var(--line)}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+.brand b{letter-spacing:.22em;font-weight:500;color:var(--ink)}
+.steps{display:flex;gap:4px;margin-top:8px}
+.steps button{flex:1 1 auto;min-width:0;font:inherit;font-size:13px;line-height:1.2;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:10px;padding:7px 2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps button .ko{display:block;font-size:11px;margin:0}
+.steps button.on{background:var(--on);border-color:var(--on);color:#fff}
+.steps button.on .ko{color:#e8dcd2}
+.steps button.fait{border-color:var(--ok);color:var(--ok)}
+.steps button.fait.on{background:var(--on);color:#fff}
+.ko{display:block;color:var(--muted);font-size:.88em;margin-top:2px;font-weight:400}
+h1{font-size:24px;font-weight:500;margin:22px 0 8px;letter-spacing:.02em}
+h2{font-size:19px;font-weight:600;margin:0 0 4px}
+p{margin:0 0 12px}
+.note{font-size:14px;background:var(--soft);border-radius:12px;padding:10px 12px;margin:0 0 14px}
+.note ul{margin:6px 0 0;padding-left:18px}
+.note li{margin:0 0 6px}
+.test{background:var(--warnbg);color:var(--warn);border-radius:12px;padding:8px 12px;font-size:14px;margin:10px 0 0}
+.card{border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 0 14px;background:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{font:inherit;font-size:15px;line-height:1.25;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 14px;cursor:pointer;text-align:left;min-height:44px}
+.chips button .ko{display:inline;margin:0 0 0 6px;font-size:.85em}
+.chips button.on{background:var(--on);border-color:var(--on);color:#fff}
+.chips button.on .ko{color:#e8dcd2}
+.chips.three,.chips.four{display:grid;grid-template-columns:repeat(3,1fr)}
+.chips.four{grid-template-columns:repeat(2,1fr)}
+.chips.three button,.chips.four button{border-radius:12px;text-align:center;padding:8px 4px}
+.chips.three button .ko,.chips.four button .ko{display:block;margin:2px 0 0}
+input[type=text],textarea{font:inherit;width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;color:var(--ink);min-height:44px}
+textarea{min-height:96px;resize:vertical}
+label.f{display:block;font-size:14px;color:var(--muted);margin:14px 0 6px}
+.q{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.q>.lab{font-size:15px;margin:0 0 8px}
+.q>.lab .ko{font-size:13px}
+.grille .ligne{padding:10px 0;border-top:1px solid var(--line)}
+.grille .ligne:first-child{border-top:0}
+.grille .ligne .lab{font-size:15px;margin:0 0 6px}
+.grille .ligne .lab .ko{display:inline;margin-left:6px;font-size:13px}
+.btn{font:inherit;font-size:16px;border:0;border-radius:14px;padding:12px 18px;background:var(--on);color:#fff;cursor:pointer;min-height:44px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.large{width:100%}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:6}
+.bar .in{max-width:680px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.bar .st{flex:1;font-size:13px;color:var(--muted);line-height:1.3}
+.small{font-size:13px;color:var(--muted)}
+.small a,.small button{color:var(--ink);background:none;border:0;padding:0;font:inherit;text-decoration:underline;cursor:pointer}
+.hidden{display:none!important}
+.apercu{display:grid;grid-template-columns:38fr 62fr;gap:8px;align-items:start;margin:0 0 12px}
+.apercu figure{margin:0}
+.apercu img{width:100%;height:auto;border-radius:10px;border:1px solid var(--line);display:block}
+.apercu figcaption{font-size:12px;color:var(--muted);margin-top:4px;text-align:center}
+.nom{font:500 13px/1.3 "Jost",-apple-system,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:22px 0 0}
+.vu{font-size:13px;color:var(--ok);margin:8px 0 0}
+.texte{background:var(--soft);border-radius:12px;padding:14px;margin:0 0 4px}
+.texte p{margin:0 0 10px}
+.texte .ko{margin-top:8px}
+.recap li{margin:0 0 4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<div class="brand"><b>MADAME CHO</b><span>Séance 3 · 3회차</span></div>
+<div class="steps hidden" id="steps">
+<button data-s="1">1<span class="ko">갤러리</span></button>
+<button data-s="2">2<span class="ko">호텔</span></button>
+<button data-s="3">3<span class="ko">메종</span></button>
+<button data-s="4">4<span class="ko">쇼콜라</span></button>
+<button data-s="5">5<span class="ko">수첩</span></button>
+<button data-s="6">6<span class="ko">한 화면</span></button>
+<button data-s="7">Choix<span class="ko">선택</span></button>
+<button data-s="8">Fin<span class="ko">끝</span></button>
+</div>
+</div>
+<div id="testban" class="test hidden">Version de test : rien n'est envoyé, les réponses restent sur cet appareil.<span class="ko">테스트 버전: 아무것도 전송되지 않고, 답은 이 기기에만 남아요.</span></div>
+
+<section id="s0">
+<h1>Six maquettes de mon site<span class="ko">내 사이트 시안 6개</span></h1>
+<p>Avec tes textes et tes photos de la séance 2, Claude a construit six maquettes de ton site, toutes différentes. Pour chacune : ouvre-la, fais-la défiler jusqu'en bas, puis reviens ici donner ton avis. À la fin, choisis ta préférée. Compte 20 à 30 minutes.<span class="ko">2회차의 글과 사진으로 Claude가 서로 다른 사이트 시안 6개를 만들었어요. 하나씩 열어서 끝까지 내려 보고, 여기로 돌아와서 의견을 남겨 주세요. 마지막에 가장 마음에 드는 시안을 골라 주세요. 20~30분 걸려요.</span></p>
+<div class="note">Ce qui est pareil dans les six :<span class="ko">6개 모두 같은 점:</span>
+<ul>
+<li>tes photos ne sont plus recadrées : carrées pour les trois grands gâteaux, au format d'origine pour les autres ;<span class="ko">사진이 이제 잘리지 않아요. 큰 케이크 3개는 정사각형, 나머지는 원본 비율이에요.</span></li>
+<li>les bougies sont retirées, et le texte des anniversaires parle de personnalisation ;<span class="ko">초는 뺐고, 생일 케이크 글은 맞춤 주문 내용으로 바꿨어요.</span></li>
+<li>les cinq restaurants sont nommés, et une petite mention en bas de page dit que les photos ont été retouchées avec une IA (lumière et fond) ;<span class="ko">레스토랑 다섯 곳의 이름이 들어가고, 맨 아래에 'AI로 빛과 배경을 보정한 사진'이라는 작은 문구가 들어가요.</span></li>
+<li>la case grise « Portrait de Youngmi » attend ta future photo.<span class="ko">회색 칸 'Portrait de Youngmi'에는 나중에 영미 사진이 들어가요.</span></li>
+</ul></div>
+<p>Pour chaque maquette, tu as une petite grille (j'aime, moyen, je n'aime pas), ce que tu voudrais garder, et une case pour tes commentaires. Tu peux t'arrêter et reprendre plus tard avec le même lien : tes réponses restent sur cet appareil et sont envoyées au fur et à mesure. Rien n'est publié sans ton accord.<span class="ko">시안마다 간단한 평가표 (좋아요, 보통, 별로), 남기고 싶은 부분, 의견 칸이 있어요. 같은 링크로 멈췄다가 나중에 이어서 해도 돼요. 답은 이 기기에 저장되고 바로바로 전송돼요. 영미 동의 없이는 아무것도 올리지 않아요.</span></p>
+<label class="f" for="prenom">Ton prénom · 이름</label>
+<input type="text" id="prenom" autocomplete="given-name" value="Youngmi">
+<p style="margin:16px 0 0"><button class="btn" id="go">Commencer · 시작</button></p>
+</section>
+
+<section id="s1" class="hidden"><div id="m1"></div></section>
+<section id="s2" class="hidden"><div id="m2"></div></section>
+<section id="s3" class="hidden"><div id="m3"></div></section>
+<section id="s4" class="hidden"><div id="m4"></div></section>
+<section id="s5" class="hidden"><div id="m5"></div></section>
+<section id="s6" class="hidden"><div id="m6"></div></section>
+
+<section id="s7" class="hidden">
+<h1>Mon choix<span class="ko">내 선택</span></h1>
+<div id="list7"></div>
+</section>
+
+<section id="s8" class="hidden">
+<h1>C'est presque fini<span class="ko">거의 다 했어요</span></h1>
+<div id="recap" class="note"></div>
+<p>Quand tout te va, touche « J'ai fini ». Tu pourras encore revenir et corriger après.<span class="ko">모두 괜찮으면 '다 했어요'를 눌러 주세요. 그 뒤에도 다시 들어와서 고칠 수 있어요.</span></p>
+<p><button class="btn" id="fin">J'ai fini · 다 했어요</button></p>
+<div id="merci" class="hidden">
+<h2>Merci !<span class="ko">고마워요!</span></h2>
+<p>Claude construit le site sur ta maquette préférée, avec tes commentaires. Tu verras le site en entier avant sa mise en ligne.<span class="ko">Claude가 영미가 고른 시안과 의견으로 사이트를 만들어요. 사이트를 올리기 전에 전체를 먼저 보여 줄게요.</span></p>
+</div>
+<p class="small" id="sendst"></p>
+<p class="small"><a id="dl" href="#">Télécharger mes réponses · 답변 내려받기</a> · <button id="wipe">Effacer mes réponses sur cet appareil · 이 기기에서 답 지우기</button></p>
+</section>
+</div>
+
+<div class="bar hidden" id="bar"><div class="in"><span class="st" id="st"></span><button class="btn ghost" id="prev">←</button><button class="btn" id="next">Suivant · 다음</button></div></div>
+
+<script>
+// Atelier du site, séance 3 (« Six maquettes de mon site »). Spécification du site, rubrique 12.
+// Les réponses partent par ANSWERS_URL vers l'onglet Votes de la feuille privée de l'atelier du logo (Drive 91/01),
+// avec le script déjà déployé ; Image chargée = « site-maquettes » (voir ../GUIDE.md, sections 1 et 4).
+// Avec ?test, ou ouverte depuis un fichier : rien n'est envoyé (bandeau « version de test »).
+// Rien de confidentiel ici : textes destinés au public, prix proposés aux particuliers, photos destinées au public.
+const ANSWERS_URL = "https://script.google.com/macros/s/AKfycbyVml4MzVCR8PdS47jJzIyw8vQbNeBELkFrDrxe0_ZAAJ7EndYoUcb94df7gwMSIts/exec";
+const TEST = !ANSWERS_URL || location.protocol === "file:" || /[?&]test\b/.test(location.search);
+const KEY = "atelier-site-maquettes-v1:";
+
+// Les six maquettes : dossier, nom, nom coréen, description FR et KO.
+const M = [
+ ["galerie","Galerie","갤러리","Tout en blanc, une seule famille de lettres, les photos posées comme dans une galerie, beaucoup d'espace. Inspiration : Kinto.","전부 흰색이고 글씨체는 한 가지만 써요. 사진을 갤러리처럼 여백을 두고 걸었고, 공간이 넉넉해요. 참고: Kinto."],
+ ["hotel","Hôtel","호텔","Blanc et gris pierre, grands titres élégants, un gâteau par ligne en alternance, très aéré. Inspiration : Aman.","흰색과 돌 같은 회색, 큰 우아한 제목, 케이크를 한 줄에 하나씩 좌우로 번갈아 놓았어요. 아주 여유로워요. 참고: Aman."],
+ ["maison","Maison","메종","Plus chaleureux : touches de vert sauge et de bois, ta présentation avant la carte, les gâteaux en bande à faire glisser. Inspiration : Ett Hem.","더 따뜻한 느낌이에요. 세이지 그린과 나무 색을 살짝 넣고, 케이크보다 영미 소개를 먼저 보여 줘요. 케이크는 옆으로 밀어서 봐요. 참고: Ett Hem."],
+ ["chocolat","Chocolat","쇼콜라","La couleur de ton logo en grandes bandes, logo blanc, titres en capitales espacées, gâteaux en grand.","로고 색 (초콜릿색)을 넓은 띠로 쓰고, 로고는 흰색, 제목은 간격을 띄운 대문자예요. 케이크 사진이 커요."],
+ ["carnet","Carnet","수첩","Comme un magazine, en noir et blanc : de grandes phrases, et la carte présentée comme un menu de restaurant (nom, phrase, prix) avec une petite photo.","잡지 같은 흑백 스타일이에요. 큰 문장으로 시작하고, 케이크는 레스토랑 메뉴판처럼 이름, 설명, 가격과 작은 사진으로 보여 줘요."],
+ ["ecran","Un gâteau par écran","한 화면에 케이크 하나","Le plein écran que tu as choisi à la séance 2, poussé plus loin : très peu de mots, chaque gâteau prend tout l'écran, photo entière au centre.","2회차에서 고른 '꽉 찬 화면'을 더 살렸어요. 글은 아주 적고, 케이크 하나가 화면 전체를 차지해요. 사진은 잘리지 않고 가운데에 있어요."]
+];
+const AVIS = [["adore","J'adore","아주 좋아요"],["aime","J'aime","좋아요"],["bof","Bof","그저 그래요"],["non","Je n'aime pas","별로예요"]];
+const NIVEAU = [["oui","J'aime","좋아요"],["moyen","Moyen","보통"],["non","Je n'aime pas","별로"]];
+const GRILLE = [["ouverture","La première image et le titre","첫 화면 (사진과 제목)"],["couleurs","Les couleurs","색"],["lettres","Les lettres (polices)","글씨체"],["carte","La présentation des gâteaux","케이크를 보여 주는 방식"],["ambiance","L'ambiance générale","전체 분위기"],["telephone","Facile à lire sur téléphone","휴대폰에서 읽기 편해요"]];
+const GARDER = [["ouverture","La première image","첫 화면"],["couleurs","Les couleurs","색"],["lettres","Les lettres","글씨체"],["carte","La carte des gâteaux","케이크 목록"],["maison","La maison","메종 소개"],["pros","Les professionnels","전문 고객"],["etapes","Comment ça marche","주문 방법"],["fiche","La page d'un gâteau","케이크 상세 페이지"],["pied","Le bas de page","맨 아래"]];
+const ACOMPTE = [["perso","Oui : seulement pour une personnalisation (au-delà de la plaque avec prénom et message)","네, 맞춤 주문일 때만 (이름과 메시지 초콜릿 판은 제외)"],["toutes","Non : pour toutes les commandes","아니요, 모든 주문에"],["autre","Autrement","다르게"]];
+const JUSTE = [["juste","C'est juste","맞아요"],["corriger","À corriger","고칠 게 있어요"]];
+const ANNIV = [
+ ["Pour un anniversaire, choisissez un entremets aux fruits, une charlotte chocolat-framboise ou une tarte aux noix de pécan, pour 4 à 10 personnes.","생일에는 과일 앙트르메, 초콜릿 라즈베리 샤를로트, 피칸 타르트 중에서 4~10인 크기로 골라 주세요."],
+ ["Youngmi écrit le prénom et le message de votre choix sur une plaque en chocolat, compris dans le prix. Vous pouvez aussi demander une personnalisation : un goût, des couleurs, un ingrédient à éviter ou une recette adaptée.","원하는 이름과 메시지를 영미가 초콜릿 판에 써 드려요 (가격에 포함). 맛, 색, 빼야 할 재료, 맞춤 레시피 같은 맞춤 주문도 요청할 수 있어요."],
+ ["À commander au moins 2 jours à l'avance, ou la veille pour la tarte.","최소 2일 전까지 주문해 주세요 (타르트는 하루 전까지)."]
+];
+
+let S = null, prenom = "", step = 0, queue = [], sending = false, session = Math.random().toString(36).slice(2,10);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bi = (fr, ko) => `${esc(fr)}<span class="ko">${esc(ko)}</span>`;
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+function blankM(){ return {avis:"", grille:{}, garder:[], note:"", vu:false}; }
+function blank(){ const m = {}; M.forEach(x => m[x[0]] = blankM()); return {m, choix:{prefere:"", second:"", melange:"", acompte:"", acompteNote:"", anniv:"", annivNote:"", autre:""}, fin:false, step:1}; }
+function load(){ try { const s = JSON.parse(localStorage.getItem(KEY + prenom.toLowerCase())); if (!s) return blank(); const b = blank(); M.forEach(x => b.m[x[0]] = Object.assign(blankM(), (s.m || {})[x[0]])); return Object.assign(b, s, {m:b.m, choix:Object.assign(b.choix, s.choix)}); } catch(e){ return blank(); } }
+function save(){ try { localStorage.setItem(KEY + prenom.toLowerCase(), JSON.stringify(S)); localStorage.setItem(KEY + "dernier", prenom); } catch(e){} }
+
+// Envoi : une ligne par maquette (s3:m:<dossier>), une pour le choix (s3:choix), une à la fin (s3:fin) ; la dernière ligne par prénom et Id fait foi.
+const timers = {};
+function changed(id, obj){ save(); clearTimeout(timers[id]); timers[id] = setTimeout(() => push(id, obj), 900); status(); }
+function push(id, obj){ queue = queue.filter(r => r.id !== "s3:" + id); queue.push({prenom, id:"s3:" + id, vote:JSON.stringify(obj), connue:"", secondes:"", position:"", session, image:"site-maquettes", t:new Date().toISOString()}); flush(); }
+async function flush(){
+ if (TEST || sending || !queue.length) { status(); return; }
+ sending = true; const rows = queue.slice();
+ try { await fetch(ANSWERS_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({rows})}); queue = queue.filter(r => !rows.includes(r)); }
+ catch(e) {}
+ sending = false; status(); if (queue.length) setTimeout(flush, 5000);
+}
+window.addEventListener("pagehide", () => { if (!TEST && queue.length && navigator.sendBeacon) navigator.sendBeacon(ANSWERS_URL, new Blob([JSON.stringify({rows:queue})], {type:"text/plain"})); });
+
+// Questions en attente : l'avis général et les six lignes de la grille, pour chaque maquette ; le choix final et l'acompte.
+function attenteM(id){ const m = S.m[id]; return (m.avis ? 0 : 1) + GRILLE.filter(g => !m.grille[g[0]]).length; }
+function pending(){ const a = [0]; M.forEach(x => a.push(attenteM(x[0]))); const c = S.choix; a.push([c.prefere, c.acompte, c.anniv].filter(v => !v).length); return a; }
+function status(){
+ if (!S) return;
+ const a = pending(), tot = a.slice(1).reduce((x, y) => x + y, 0);
+ const notees = M.filter(x => attenteM(x[0]) === 0).length;
+ $("st").textContent = `${notees}/6 maquettes notées · ${tot} réponse${tot > 1 ? "s" : ""} en attente` + (TEST ? " · test" : queue.length ? " · envoi en attente" : " · envoyé");
+ $("sendst").textContent = TEST ? "Version de test : rien n'est envoyé. · 테스트: 전송 안 됨" : (queue.length ? "Envoi en attente (réseau) · 전송 대기 중" : "Tout est envoyé · 모두 전송됨");
+ [...$("steps").children].forEach(b => { const n = +b.dataset.s; b.classList.toggle("fait", n <= 7 && a[n] === 0); });
+}
+
+// Briques communes.
+function chips(opts, sel, multi, onPick, cls){
+ const d = el("div", "chips" + (cls ? " " + cls : ""));
+ const draw = () => [...d.children].forEach((c, i) => c.classList.toggle("on", multi ? sel().includes(opts[i][0]) : sel() === opts[i][0]));
+ opts.forEach(o => { const b = el("button", "", `${esc(o[1])}<span class="ko">${esc(o[2])}</span>`); b.type = "button"; b.onclick = () => { onPick(o[0]); draw(); }; d.appendChild(b); });
+ draw(); return d;
+}
+function toggleIn(arr, v){ const i = arr.indexOf(v); if (i < 0) arr.push(v); else arr.splice(i, 1); }
+function ask(obj, key, fr, ko, opts, multi, rowId, root, cls){
+ const w = el("div", "q", `<div class="lab">${bi(fr, ko)}</div>`);
+ if (multi && !Array.isArray(obj[key])) obj[key] = [];
+ w.appendChild(chips(opts, () => obj[key], multi, v => { if (multi) toggleIn(obj[key], v); else obj[key] = obj[key] === v ? "" : v; changed(rowId, root); }, cls));
+ return w;
+}
+function area(obj, key, ph, rowId, root){ const t = document.createElement("textarea"); t.value = obj[key] || ""; t.placeholder = ph; t.oninput = () => { obj[key] = t.value; changed(rowId, root); }; return t; }
+
+// Une étape par maquette : aperçus, bouton pour l'ouvrir, avis général, grille, ce que je garde, commentaires.
+function renderM(n){
+ const [id, nom, ko, dfr, dko] = M[n - 1], m = S.m[id], row = "m:" + id;
+ const box = $("m" + n); box.innerHTML = "";
+ box.appendChild(el("div", "nom", `Maquette ${n} sur 6 · 시안 ${n}/6`));
+ box.appendChild(el("h1", "", bi(`« ${nom} »`, ko)));
+ box.appendChild(el("p", "", bi(dfr, dko)));
+ box.appendChild(el("div", "apercu", `<figure><img src="apercus/${id}-tel.webp" width="390" height="844" alt="Maquette ${n} sur téléphone"><figcaption>Téléphone · 휴대폰</figcaption></figure><figure><img src="apercus/${id}-pc.webp" width="960" height="600" alt="Maquette ${n} sur ordinateur"><figcaption>Ordinateur · 컴퓨터</figcaption></figure>`));
+ const a = el("a", "btn large", `Ouvrir la maquette ${n} · 시안 ${n} 열기`); a.href = id + "/";
+ a.onclick = () => { m.vu = true; save(); push(row, m); };
+ box.appendChild(a);
+ box.appendChild(el("p", "small", bi("Fais-la défiler jusqu'en bas, puis touche « ← Retour à mes avis » tout en haut.", "끝까지 내려 본 다음, 맨 위의 '← Retour à mes avis'를 눌러 돌아오세요.")));
+ if (m.vu) box.appendChild(el("p", "vu", "✓ Ouverte · 열어 봤어요"));
+ const c = el("div", "card");
+ c.appendChild(el("h2", "", bi("Mon avis sur cette maquette", "이 시안에 대한 내 의견")));
+ c.appendChild(ask(m, "avis", "Dans l'ensemble", "전체적으로", AVIS, false, row, m, "four"));
+ const g = el("div", "q grille", `<div class="lab">${bi("Point par point", "하나씩")}</div>`);
+ GRILLE.forEach(([k, fr, k2]) => {
+  const l = el("div", "ligne", `<div class="lab">${esc(fr)}<span class="ko">${esc(k2)}</span></div>`);
+  l.appendChild(chips(NIVEAU, () => m.grille[k] || "", false, v => { m.grille[k] = m.grille[k] === v ? "" : v; changed(row, m); }, "three"));
+  g.appendChild(l);
+ });
+ c.appendChild(g);
+ c.appendChild(ask(m, "garder", "Ce que je voudrais garder pour mon site (plusieurs choix possibles)", "내 사이트에 남기고 싶은 부분 (여러 개 선택 가능)", GARDER, true, row, m));
+ const q = el("div", "q", `<div class="lab">${bi("Mes commentaires sur cette maquette", "이 시안에 대한 의견")}</div>`);
+ q.appendChild(area(m, "note", "Ce que j'aime, ce que je changerais… · 좋은 점, 바꾸고 싶은 점…", row, m));
+ c.appendChild(q);
+ box.appendChild(c);
+}
+
+// Étape 7 : la préférée, la deuxième, le mélange, puis deux points à confirmer.
+function render7(){
+ const box = $("list7"), c = S.choix; box.innerHTML = "";
+ const opts = M.map((x, i) => [x[0], `${i + 1}. ${x[1]}`, x[2]]);
+ const k1 = el("div", "card");
+ k1.appendChild(ask(c, "prefere", "Ma maquette préférée", "가장 마음에 드는 시안", opts.concat([["melange","Un mélange de plusieurs","여러 개를 섞어서"]]), false, "choix", c));
+ k1.appendChild(ask(c, "second", "En deuxième", "두 번째로 좋은 시안", opts.concat([["aucune","Aucune","없음"]]), false, "choix", c));
+ const q = el("div", "q", `<div class="lab">${bi("Si tu veux un mélange : qu'est-ce que tu prends dans chaque maquette ?", "섞고 싶다면, 어느 시안에서 무엇을 가져올지 적어 주세요.")}</div>`);
+ q.appendChild(area(c, "melange", "Par exemple : les couleurs de la 3, la carte de la 2… · 예: 3번의 색, 2번의 케이크 목록…", "choix", c));
+ k1.appendChild(q);
+ box.appendChild(k1);
+
+ const k2 = el("div", "card");
+ k2.appendChild(el("h2", "", bi("Le texte des anniversaires", "생일 케이크 글")));
+ k2.appendChild(el("p", "small", bi("Ton texte de la séance 2, avec « gâteau sur mesure » remplacé par la personnalisation. Il est sur les six maquettes.", "2회차에 영미가 쓴 글에서 '맞춤 케이크'를 '맞춤 주문' 내용으로 바꿨어요. 6개 시안에 모두 들어가 있어요.")));
+ k2.appendChild(el("div", "texte", ANNIV.map(p => `<p>${bi(p[0], p[1])}</p>`).join("")));
+ k2.appendChild(ask(c, "anniv", "Ce texte est-il juste ?", "이 글이 맞나요?", JUSTE, false, "choix", c, "four"));
+ const q2 = el("div", "q"); q2.appendChild(area(c, "annivNote", "Ce que je change · 고칠 부분", "choix", c)); k2.appendChild(q2);
+ box.appendChild(k2);
+
+ const k3 = el("div", "card");
+ k3.appendChild(el("h2", "", bi("L'acompte de 30 %", "30% 선금")));
+ k3.appendChild(el("p", "small", bi("Sur le site, nous avons écrit : « Pour une personnalisation, un acompte de 30 % est demandé. »", "사이트에 '맞춤 주문에는 30% 선금을 받아요'라고 썼어요.")));
+ k3.appendChild(ask(c, "acompte", "C'est bien ça ?", "맞나요?", ACOMPTE, false, "choix", c));
+ const q3 = el("div", "q"); q3.appendChild(area(c, "acompteNote", "Précise si besoin · 필요하면 자세히 적어 주세요", "choix", c)); k3.appendChild(q3);
+ box.appendChild(k3);
+
+ const k4 = el("div", "card");
+ k4.appendChild(el("h2", "", bi("Autre chose ?", "더 하고 싶은 말")));
+ k4.appendChild(area(c, "autre", "Tout ce que tu veux me dire sur le site · 사이트에 대해 하고 싶은 말", "choix", c));
+ box.appendChild(k4);
+}
+
+function render8(){
+ const lab = id => { const x = M.find(y => y[0] === id); return x ? `${M.indexOf(x) + 1}. ${x[1]}` : (id === "melange" ? "un mélange" : id === "aucune" ? "aucune" : "—"); };
+ const avis = id => { const a = AVIS.find(x => x[0] === S.m[id].avis); return a ? a[1] : "pas encore noté"; };
+ const a = pending();
+ $("recap").innerHTML = `<b>Mes avis · 내 의견</b><ul class="recap">${M.map((x, i) => `<li>${i + 1}. ${esc(x[1])} : ${esc(avis(x[0]))}${a[i + 1] ? ` (${a[i + 1]} en attente · 대기 ${a[i + 1]})` : ""}</li>`).join("")}</ul>`
+  + `<p style="margin:8px 0 0">Ma préférée · 가장 좋은 시안 : <b>${esc(lab(S.choix.prefere))}</b> · en deuxième · 두 번째 : ${esc(lab(S.choix.second))}</p>`;
+ $("merci").classList.toggle("hidden", !S.fin);
+}
+$("fin").onclick = () => { S.fin = true; push("fin", {fin:true, attente:pending().slice(1), heure:new Date().toTimeString().slice(0,8)}); save(); render8(); window.scrollTo(0, document.body.scrollHeight); };
+$("dl").onclick = e => { e.preventDefault(); const blob = new Blob([JSON.stringify({prenom, reponses:S}, null, 2)], {type:"application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `mes-maquettes-${prenom || "reponses"}.json`; a.click(); };
+let wipeArmed = false;
+const WIPE = "Effacer mes réponses sur cet appareil · 이 기기에서 답 지우기";
+$("wipe").onclick = () => { if (!wipeArmed) { wipeArmed = true; $("wipe").textContent = "Touche encore pour confirmer (ce qui est déjà envoyé reste) · 한 번 더 누르면 지워져요 (이미 전송된 답은 남아요)"; setTimeout(() => { wipeArmed = false; $("wipe").textContent = WIPE; }, 6000); return; }
+ wipeArmed = false; try { localStorage.removeItem(KEY + prenom.toLowerCase()); } catch(e){} S = blank(); $("wipe").textContent = WIPE; go(1); };
+
+// Navigation : l'étape en cours est gardée, pour revenir au même endroit après avoir ouvert une maquette.
+function go(n){
+ step = n; S.step = n; save();
+ for (let i = 0; i <= 8; i++) $("s" + i).classList.toggle("hidden", i !== n);
+ [...$("steps").children].forEach(b => b.classList.toggle("on", +b.dataset.s === n));
+ if (n >= 1 && n <= 6) renderM(n); else if (n === 7) render7(); else if (n === 8) render8();
+ $("prev").classList.toggle("hidden", n <= 1); $("next").classList.toggle("hidden", n >= 8);
+ status(); window.scrollTo(0, 0);
+}
+function start(){ prenom = $("prenom").value.trim() || "Youngmi"; S = load(); $("steps").classList.remove("hidden"); $("bar").classList.remove("hidden"); go(S.step >= 1 && S.step <= 8 ? S.step : 1); }
+[...$("steps").children].forEach(b => b.onclick = () => go(+b.dataset.s));
+$("prev").onclick = () => go(Math.max(1, step - 1)); $("next").onclick = () => go(Math.min(8, step + 1));
+$("go").onclick = start;
+if (TEST) $("testban").classList.remove("hidden");
+// Retour depuis une maquette : on reprend directement là où elle en était.
+try { const d = localStorage.getItem(KEY + "dernier"); if (d) { $("prenom").value = d; start(); } } catch(e){}
+</script>
+</body>
+</html>
