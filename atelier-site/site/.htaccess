@@ -1,0 +1,5 @@
+# Version d'essai du nouveau site : le dossier atelier-site/ refuse les .js (scripts de feuille) ;
+# ici, les scripts du site (panier et formulaire) doivent être servis. Le reste des règles d'atelier-site/ s'applique.
+<FilesMatch "\.js$">
+  Require all granted
+</FilesMatch>
