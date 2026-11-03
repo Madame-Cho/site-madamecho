@@ -1,9 +1,0 @@
-# Atelier du site (pages de choix de Youngmi pour le nouveau site, temporaires) : seules les pages et les photos sont servies.
-# Le guide et le script de la feuille restent dans le dépôt, pas sur le site.
-<FilesMatch "\.(md|gs|csv|json|js)$">
-  Require all denied
-</FilesMatch>
-# Ni les pages ni les photos ne doivent être indexées (en plus de la balise robots des pages)
-<IfModule mod_headers.c>
-  Header set X-Robots-Tag "noindex, nofollow, noarchive"
-</IfModule>

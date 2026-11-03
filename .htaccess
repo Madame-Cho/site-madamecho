@@ -1,3 +1,5 @@
+# Réglages du serveur pour le site Madame Cho, générés par gen.py (passe SEO du 03/11/2026) : ne pas modifier à la main.
+
 # Toujours en HTTPS, sur l'adresse principale madamecho.com (sans www)
 RewriteEngine On
 RewriteCond %{SERVER_PORT} 80 [OR]
@@ -10,3 +12,52 @@ RedirectMatch 404 /\.git
   Require all denied
 </FilesMatch>
 Options -Indexes
+
+# Fichiers et dossiers cachés (limites du formulaire, clés…) jamais servis, où qu'ils soient, sauf .well-known
+RewriteRule (^|/)\.(?!well-known(/|$)) - [R=404,L]
+
+# Anciennes pages de travail, retirées à la mise en ligne du 03/11/2026 :
+# la version d'essai renvoie vers la même page du site, l'atelier du logo et l'atelier du site n'existent plus (410)
+RewriteRule ^atelier-site/site/(.*)$ /$1 [R=301,L]
+RewriteRule ^atelier-(site|logo)(/|$) - [G,L]
+
+# Page introuvable (et anciennes pages retirées)
+ErrorDocument 404 /404.html
+ErrorDocument 410 /404.html
+
+# Types des fichiers
+AddType image/webp .webp
+AddType font/woff2 .woff2
+AddType application/manifest+json .webmanifest
+
+# Compression des textes
+<IfModule mod_deflate.c>
+  <IfModule mod_filter.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml application/javascript text/javascript application/json image/svg+xml application/manifest+json
+  </IfModule>
+</IfModule>
+
+# Cache du navigateur : les feuilles de style et scripts portent leur version (?v=…), les pages sont toujours relues
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/javascript "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 month"
+  ExpiresByType application/manifest+json "access plus 1 week"
+</IfModule>
+
+# En-têtes de sécurité (audit du site, C09) ; la politique de contenu n'autorise que les fichiers du site
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
+</IfModule>

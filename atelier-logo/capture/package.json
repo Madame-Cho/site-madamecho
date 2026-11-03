@@ -1,1 +1,0 @@
-{ "name": "capture-sites-atelier-logo", "private": true, "version": "1.0.0", "description": "Captures des pages d'accueil du corpus du Tinder des logos (Madame Cho)", "scripts": { "capture": "node capture.js" }, "dependencies": { "playwright": "^1.48.0" } }
