@@ -1,2 +1,5 @@
 # Fichiers créés par le formulaire sur le serveur (limites d envoi), jamais dans le dépôt
 .limites/
+
+# Cache de Python créé par la génération du site
+__pycache__/
