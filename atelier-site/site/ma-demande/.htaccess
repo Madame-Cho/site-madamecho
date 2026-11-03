@@ -1,5 +1,5 @@
-# Le dossier des limites d'envoi et la carte côté serveur ne sont pas servis
+# Le dossier des limites d'envoi, la carte et la signature côté serveur ne sont pas servis
 RedirectMatch 404 /ma-demande/\.limites
-<FilesMatch "^catalogue\.php$">
+<FilesMatch "^(catalogue|dkim)\.php$|\.pem$">
   Require all denied
 </FilesMatch>

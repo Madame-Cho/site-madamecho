@@ -4,7 +4,7 @@
  * - POST seulement ; destinataire fixe ; l'adresse du client seulement en « Reply-To », après validation.
  * - Seuls les gâteaux, tailles et parfums de la carte sont acceptés ; prix et délais recalculés ici.
  * - Champ-piège et limite de tentatives contre le spam ; messages d'erreur sans donnée personnelle.
- * - Aucun secret dans ce fichier (dépôt public, R-08).
+ * - Aucun secret dans ce fichier (dépôt public, R-08). Signature DKIM : dkim.php (clé créée sur le serveur).
  */
 declare(strict_types=1);
 mb_internal_encoding('UTF-8');
@@ -15,6 +15,7 @@ const EXPEDITEUR = 'site@madamecho.com';
 const MAX_PAR_HEURE = 5;
 
 $CAT = require __DIR__ . '/catalogue.php';
+require __DIR__ . '/dkim.php';
 $enJson = stripos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false;
 
 function repondre(bool $ok, array $data, bool $enJson): void {
@@ -188,18 +189,29 @@ $t[] = 'Répondre à cet email écrit directement au client. Rappel : une propos
 $corps = implode("\r\n", $t);
 
 $sujet = 'Demande ' . $ref . ' : ' . $nom . ', retrait le ' . $jour->format('d/m');
-$entetes = implode("\r\n", [
-    'From: ' . mb_encode_mimeheader('Site Madame Cho', 'UTF-8', 'B') . ' <' . EXPEDITEUR . '>',
-    'Reply-To: ' . $email,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
-    'X-Mailer: madamecho.com',
-]);
-// Expéditeur d'enveloppe sur madamecho.com (SPF « include:mx.ovh.com ») ; si l'hébergement refuse -f, envoi sans.
 $sujetEnc = mb_encode_mimeheader($sujet, 'UTF-8', 'B');
-$envoye = @mail(DESTINATAIRE, $sujetEnc, $corps, $entetes, '-f' . EXPEDITEUR);
-if (!$envoye) $envoye = @mail(DESTINATAIRE, $sujetEnc, $corps, $entetes);
+// Corps en base64 : rien ne peut le modifier en chemin, la signature DKIM reste valable.
+$corpsEnc = rtrim(chunk_split(base64_encode($corps), 76, "\r\n"), "\r\n") . "\r\n";
+$signes = [
+    'From' => mb_encode_mimeheader('Site Madame Cho', 'UTF-8', 'B') . ' <' . EXPEDITEUR . '>',
+    'To' => DESTINATAIRE,
+    'Subject' => $sujetEnc,
+    'Date' => date('r'),
+    'Message-ID' => '<' . strtolower($ref) . '.' . bin2hex(random_bytes(6)) . '@' . DKIM_DOMAINE . '>',
+    'Reply-To' => $email,
+    'MIME-Version' => '1.0',
+    'Content-Type' => 'text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding' => 'base64',
+];
+$lignesEntetes = [];
+$signature = dkim_signer($signes, $corpsEnc);
+if ($signature) $lignesEntetes[] = $signature;
+foreach ($signes as $n => $v) if ($n !== 'To' && $n !== 'Subject') $lignesEntetes[] = $n . ': ' . $v;   // To et Subject : ajoutés par mail()
+$lignesEntetes[] = 'X-Mailer: madamecho.com';
+$entetes = implode("\r\n", $lignesEntetes);
+// Expéditeur d'enveloppe sur madamecho.com ; si l'hébergement refuse -f, envoi sans.
+$envoye = @mail(DESTINATAIRE, $sujetEnc, $corpsEnc, $entetes, '-f' . EXPEDITEUR);
+if (!$envoye) $envoye = @mail(DESTINATAIRE, $sujetEnc, $corpsEnc, $entetes);
 
 if ($fh) {
     if ($envoye) { $etat['envois'][] = time(); $etat['dernier'] = ['e' => $empreinte, 't' => time(), 'ref' => $ref]; }
