@@ -4,7 +4,7 @@
 @font-face{font-family:"Jost";src:url("polices/jost-latin-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Jost";src:url("polices/jost-latin-500-normal.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
 :root{
- --fond:#fff;--texte:#2B2623;--doux:#736A64;--ligne:#E9E5E1;--accent:#2B2623;--sur-accent:#fff;--chocolat:#3B1D0E;--ivoire:#F3EDE4;--erreur:#8A2A12;
+ --fond:#fff;--texte:#2B2623;--doux:#736A64;--ligne:#E9E5E1;--accent:#2B2623;--sur-accent:#fff;--chocolat:#3B1D0E;--ivoire:#F3EDE4;--erreur:#8A2A12;--champ:#958B84;
  --police:"Jost",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
  --g:max(16px,env(safe-area-inset-left,0px))
 }
@@ -144,7 +144,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .champ{display:grid;gap:6px;margin-top:16px}
 .champ>span{font-size:14px}
 .champ i{font-style:normal;color:var(--doux)}
-.champ input,.champ select,.champ textarea{width:100%;min-height:48px;padding:10px 12px;border:1px solid #BDB5AE;border-radius:0;background:#fff;font-size:16px}
+.champ input,.champ select,.champ textarea{width:100%;min-height:48px;padding:10px 12px;border:1px solid var(--champ);border-radius:0;background:#fff;font-size:16px}
 .champ textarea{resize:vertical}
 .champ input:focus,.champ select:focus,.champ textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
 .champ [aria-invalid="true"]{border-color:var(--erreur)}
@@ -160,6 +160,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .recap{white-space:pre-wrap;font:400 14px/1.6 var(--police);background:var(--ivoire);padding:16px;margin:12px 0 0}
 .texte-long p{margin-top:10px}
 .texte-long .sous-titre{margin-top:32px}
+.encadre{border:1px solid var(--champ);padding:4px 18px 16px;margin-top:14px;font-size:14px}
+.encadre p{margin-top:12px}
 .a-completer{background:#FBE8C8;color:var(--texte);padding:0 4px}
 
 /* Pied de page */

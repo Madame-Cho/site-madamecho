@@ -4,6 +4,8 @@
  * - POST seulement ; destinataire fixe ; l'adresse du client seulement en « Reply-To », après validation.
  * - Seuls les gâteaux, tailles et parfums de la carte sont acceptés ; prix et délais recalculés ici.
  * - Champ-piège et limite de tentatives contre le spam ; messages d'erreur sans donnée personnelle.
+ * - Si une protection ne marche pas (dossier des limites, verrou, signature DKIM), aucun email ne part :
+ *   la page le dit et propose le téléphone ou l'email (audit du site du 03/11/2026, C04).
  * - Aucun secret dans ce fichier (dépôt public, R-08). Signature DKIM : dkim.php (clé créée sur le serveur).
  */
 declare(strict_types=1);
@@ -13,10 +15,15 @@ date_default_timezone_set('Europe/Paris');
 const DESTINATAIRE = 'contact@madamecho.com';
 const EXPEDITEUR = 'site@madamecho.com';
 const MAX_PAR_HEURE = 5;
+const DUREE_EMPREINTES = 7200;   // 2 heures suffisent à la limite horaire ; avec le ménage quotidien d'OVH, jamais plus de 48 heures (politique de confidentialité)
+const INDISPONIBLE = 'Le formulaire est momentanément indisponible, et votre demande n\'est pas partie.';
 
 $CAT = require __DIR__ . '/catalogue.php';
 require __DIR__ . '/dkim.php';
+require __DIR__ . '/menage.php';
 $enJson = stripos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false;
+$dossier = __DIR__ . '/.limites';
+menage_empreintes($dossier, DUREE_EMPREINTES);   // à chaque appel, même refusé ; la tâche planifiée d'OVH le fait aussi chaque jour
 
 function repondre(bool $ok, array $data, bool $enJson): void {
     if ($enJson) {
@@ -85,21 +92,30 @@ if ($pro && $societe === '') $erreurs[] = 'Indiquez le nom de l\'entreprise.';
 $brut = json_decode(champ('lignes', 6000) ?: '[]', true);
 if (!is_array($brut) || count($brut) > 30) { $brut = []; $erreurs[] = 'La liste des gâteaux n\'est pas lisible.'; }
 $lignes = []; $total = 0; $delai = 0; $parProduit = [];
+$texte = fn($x) => is_string($x) ? $x : '';   // un tableau ou un nombre à la place d'un identifiant est refusé, sans erreur PHP
+$parCle = [];
 foreach ($brut as $l) {
     if (!is_array($l)) { $erreurs[] = 'Un gâteau de la demande n\'est pas reconnu.'; continue; }
-    $p = $CAT['produits'][$l['p'] ?? ''] ?? null;
+    $pid = $texte($l['p'] ?? null);
+    $p = $CAT['produits'][$pid] ?? null;
     $q = is_int($l['q'] ?? null) ? $l['q'] : 0;
     if (!$p || $q < 1) { $erreurs[] = 'Un gâteau de la demande n\'est pas reconnu.'; continue; }
     if ($p['mode'] === 'taille') {
-        $t = $p['tailles'][$l['t'] ?? ''] ?? null;
+        $tid = $texte($l['t'] ?? null);
+        $t = $p['tailles'][$tid] ?? null;
+        $cle = $pid . '|' . $tid; $parCle[$cle] = ($parCle[$cle] ?? 0) + $q;
         if (!$t || $q > 10) { $erreurs[] = 'Une taille de la demande n\'est pas reconnue.'; continue; }
+        if ($parCle[$cle] > 10) { $erreurs[] = $p['nom'] . ' : 10 au plus par taille ; pour davantage, décrivez-le dans votre message.'; continue; }
         $libelle = $t['libelle']; $prix = $t['prix'] * $q;
     } else {
-        $v = $p['parfums'][$l['v'] ?? ''] ?? null;
+        $vid = $texte($l['v'] ?? null);
+        $v = $p['parfums'][$vid] ?? null;
+        $cle = $pid . '|' . $vid; $parCle[$cle] = ($parCle[$cle] ?? 0) + $q;
         if (!$v || $q > 200) { $erreurs[] = 'Un parfum de la demande n\'est pas reconnu.'; continue; }
+        if ($parCle[$cle] > 200) { $erreurs[] = $p['nom'] . ' : 200 au plus par parfum ; pour davantage, décrivez-le dans votre message.'; continue; }
         if ($q % $p['pas'] !== 0) { $erreurs[] = $p['nom'] . ' : par ' . $p['pas'] . ' du même parfum.'; continue; }
         $libelle = $v['libelle']; $prix = $p['unite'] * $q;
-        $parProduit[$l['p']] = ($parProduit[$l['p']] ?? 0) + $q;
+        $parProduit[$pid] = ($parProduit[$pid] ?? 0) + $q;
     }
     $plaque = ($p['plaque'] && isset($l['plaque']) && is_string($l['plaque'])) ? uneLigne(mb_substr($l['plaque'], 0, 60)) : '';
     $lignes[] = ['nom' => $p['nom'], 'libelle' => $libelle, 'q' => $q, 'prix' => $prix, 'plaque' => $plaque];
@@ -111,6 +127,7 @@ foreach ($parProduit as $id => $n) {
 }
 if (!$lignes && $perso === '' && $besoin === '') $erreurs[] = 'Ajoutez au moins un gâteau, ou décrivez votre demande.';
 if ($perso !== '' || $besoin !== '' || !$lignes) $delai = max($delai, (int)$CAT['delaiPerso']);
+if ($pro) $delai = max($delai, (int)($CAT['delaiPro'] ?? 14));   // demande d'un professionnel : deux semaines (audit C02)
 
 /* ---------- La date de retrait ---------- */
 $jour = DateTimeImmutable::createFromFormat('!Y-m-d', $date, new DateTimeZone('Europe/Paris'));
@@ -130,30 +147,47 @@ if ($erreurs) {
 }
 
 /* ---------- Limite de tentatives et double envoi ---------- */
-$dossier = __DIR__ . '/.limites';
-if (!is_dir($dossier)) @mkdir($dossier, 0700, true);
-$ipHash = hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? '') . '|' . date('Y-m-d'));
+// Sans protection en état de marche, rien ne part (C04) : l'incident technique seul est noté dans le journal d'erreurs d'OVH.
+function indisponible(string $cause, bool $enJson, $fh = null): void {
+    if ($fh) { flock($fh, LOCK_UN); fclose($fh); }
+    error_log('madamecho formulaire : ' . $cause);   // jamais de donnée du client
+    http_response_code(503);
+    repondre(false, ['erreurs' => [INDISPONIBLE]], $enJson);
+}
+if (!is_dir($dossier) && !@mkdir($dossier, 0700, true)) indisponible('dossier des limites absent', $enJson);
+$sel = sel_empreintes($dossier);
+if ($sel === null) indisponible('clé des empreintes illisible', $enJson);
+// Empreinte pseudonymisée de l'adresse IP : HMAC avec une clé secrète du serveur, jamais l'adresse elle-même.
+// Sans date dans l'empreinte, la limite de 5 envois est bien glissante sur une heure, même à minuit.
+$ipHash = hash_hmac('sha256', (string)($_SERVER['REMOTE_ADDR'] ?? ''), $sel);
 $empreinte = hash('sha256', (string)json_encode([$nom, $email, $date, $moment, $lignes, $perso, $besoin]));
 $fichier = $dossier . '/' . substr($ipHash, 0, 32) . '.json';
 $etat = ['envois' => [], 'dernier' => null];
 $fh = @fopen($fichier, 'c+');
-if ($fh) {
-    flock($fh, LOCK_EX);
-    $lu = json_decode(stream_get_contents($fh) ?: '', true);
-    if (is_array($lu)) $etat = $lu + $etat;
-    $etat['envois'] = array_values(array_filter($etat['envois'], fn($t) => $t > time() - 3600));
-    if (is_array($etat['dernier']) && $etat['dernier']['e'] === $empreinte && $etat['dernier']['t'] > time() - 120) {
-        flock($fh, LOCK_UN); fclose($fh);
-        repondre(true, ['ref' => $etat['dernier']['ref']], $enJson);   // double clic : même référence, pas de second email
-    }
-    if (count($etat['envois']) >= MAX_PAR_HEURE) {
-        flock($fh, LOCK_UN); fclose($fh);
-        http_response_code(429);
-        repondre(false, ['erreurs' => ['Trop de demandes envoyées en peu de temps. Réessayez dans une heure, ou appelez le 06 61 31 17 79.']], $enJson);
-    }
+if (!$fh) indisponible('fichier des limites non ouvert', $enJson);
+if (!flock($fh, LOCK_EX)) indisponible('verrou non obtenu', $enJson, $fh);
+$lu = json_decode(stream_get_contents($fh) ?: '', true);
+if (is_array($lu)) {
+    if (isset($lu['envois']) && is_array($lu['envois'])) $etat['envois'] = array_values(array_filter($lu['envois'], 'is_int'));
+    $d = $lu['dernier'] ?? null;
+    if (is_array($d) && is_string($d['e'] ?? null) && is_int($d['t'] ?? null) && is_string($d['ref'] ?? null)) $etat['dernier'] = $d;
 }
-// Ménage : fichiers de plus de deux jours
-foreach (glob($dossier . '/*.json') ?: [] as $f) { if (@filemtime($f) < time() - 172800) @unlink($f); }
+$etat['envois'] = array_values(array_filter($etat['envois'], fn($t) => $t > time() - 3600));
+if ($etat['dernier'] && $etat['dernier']['e'] === $empreinte && $etat['dernier']['t'] > time() - 120) {
+    flock($fh, LOCK_UN); fclose($fh);
+    repondre(true, ['ref' => $etat['dernier']['ref']], $enJson);   // double clic : même référence, pas de second email
+}
+if (count($etat['envois']) >= MAX_PAR_HEURE) {
+    flock($fh, LOCK_UN); fclose($fh);
+    http_response_code(429);
+    repondre(false, ['erreurs' => ['Trop de demandes envoyées en peu de temps. Réessayez dans une heure, ou appelez le 06 61 31 17 79.']], $enJson);
+}
+function ecrire_etat($fh, array $etat): bool {
+    return ftruncate($fh, 0) && rewind($fh) && fwrite($fh, (string)json_encode($etat)) !== false && fflush($fh);
+}
+// L'envoi est compté avant de partir : si le compteur ne peut pas être écrit, rien ne part.
+$etat['envois'][] = time();
+if (!ecrire_etat($fh, $etat)) indisponible('compteur non écrit', $enJson, $fh);
 
 /* ---------- L'email à Madame Cho ---------- */
 $ref = 'MC-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
@@ -205,7 +239,11 @@ $signes = [
 ];
 $lignesEntetes = [];
 $signature = dkim_signer($signes, $corpsEnc);
-if ($signature) $lignesEntetes[] = $signature;
+if (!$signature) {   // sans signature, l'email risquerait les indésirables (DMARC p=quarantine) : rien ne part
+    array_pop($etat['envois']); ecrire_etat($fh, $etat);
+    indisponible('signature DKIM impossible', $enJson, $fh);
+}
+$lignesEntetes[] = $signature;
 foreach ($signes as $n => $v) if ($n !== 'To' && $n !== 'Subject') $lignesEntetes[] = $n . ': ' . $v;   // To et Subject : ajoutés par mail()
 $lignesEntetes[] = 'X-Mailer: madamecho.com';
 $entetes = implode("\r\n", $lignesEntetes);
@@ -213,13 +251,13 @@ $entetes = implode("\r\n", $lignesEntetes);
 $envoye = @mail(DESTINATAIRE, $sujetEnc, $corpsEnc, $entetes, '-f' . EXPEDITEUR);
 if (!$envoye) $envoye = @mail(DESTINATAIRE, $sujetEnc, $corpsEnc, $entetes);
 
-if ($fh) {
-    if ($envoye) { $etat['envois'][] = time(); $etat['dernier'] = ['e' => $empreinte, 't' => time(), 'ref' => $ref]; }
-    ftruncate($fh, 0); rewind($fh); fwrite($fh, json_encode($etat)); fflush($fh);
-    flock($fh, LOCK_UN); fclose($fh);
-}
+if ($envoye) $etat['dernier'] = ['e' => $empreinte, 't' => time(), 'ref' => $ref];
+else array_pop($etat['envois']);
+ecrire_etat($fh, $etat);
+flock($fh, LOCK_UN); fclose($fh);
 if (!$envoye) {
+    error_log('madamecho formulaire : mail() a échoué');
     http_response_code(503);
-    repondre(false, ['erreurs' => ['L\'envoi n\'a pas abouti de notre côté.']], $enJson);
+    repondre(false, ['erreurs' => ['L\'envoi n\'a pas abouti de notre côté, et votre demande n\'est pas partie.']], $enJson);
 }
 repondre(true, ['ref' => $ref], $enJson);

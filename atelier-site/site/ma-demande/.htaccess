@@ -1,5 +1,6 @@
-# Le dossier des limites d'envoi, la carte et la signature côté serveur ne sont pas servis
+# Le dossier des limites d'envoi, la carte, la signature, le ménage et la page de préparation DKIM ne sont pas servis
+# (cle-dkim.php a servi une fois, le 03/11/2026 ; pour la rouvrir, retirer « cle-dkim » de la liste)
 RedirectMatch 404 /ma-demande/\.limites
-<FilesMatch "^(catalogue|dkim)\.php$|\.pem$">
+<FilesMatch "^(catalogue|dkim|menage|cle-dkim)\.php$|\.pem$">
   Require all denied
 </FilesMatch>

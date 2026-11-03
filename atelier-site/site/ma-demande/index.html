@@ -15,15 +15,15 @@
 <meta property="og:image" content="https://madamecho.com/assets/photos/partage.jpg">
 <meta property="og:locale" content="fr_FR">
 <meta name="theme-color" content="#ffffff">
-<link rel="icon" href="../assets/favicon.ico" sizes="48x48">
-<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<link rel="manifest" href="../assets/site.webmanifest">
+<link rel="icon" href="../assets/favicon.ico?v=2026-11-03c" sizes="48x48">
+<link rel="icon" href="../assets/favicon.svg?v=2026-11-03c" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=2026-11-03c">
+<link rel="manifest" href="../assets/site.webmanifest?v=2026-11-03c">
 <link rel="preload" href="../assets/polices/jost-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../assets/site.css?v=2026-11-03b">
+<link rel="stylesheet" href="../assets/site.css?v=2026-11-03c">
 </head>
 <body class="page-demande">
-<div class="bandeau-apercu" role="note">Version d'essai du nouveau site, non publique : une demande envoyée ici arrive vraiment à contact@madamecho.com.</div><a class="aller" href="#contenu">Aller au contenu</a>
+<div class="bandeau-apercu" role="note">Version d'essai du nouveau site, non référencée par les moteurs de recherche : une demande envoyée ici arrive vraiment à contact@madamecho.com.</div><a class="aller" href="#contenu">Aller au contenu</a>
 <header class="entete">
  <a class="logo-lien" href="../"><img class="logo" src="../assets/logo-chocolat.svg" alt="Madame Cho, retour à l'accueil" width="168" height="50"></a>
  <nav class="nav" aria-label="Menu principal">
@@ -47,16 +47,16 @@
   <h2 class="sous-titre" id="perso">Un gâteau personnalisé ?</h2>
   <p class="aide">Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
   <label class="champ"><span>Votre envie <i>(facultatif)</i></span>
-   <textarea name="perso" rows="4" maxlength="1200" data-perso></textarea></label>
-  <p class="aide">Pour une allergie, indiquez seulement l'ingrédient à éviter, sans autre information de santé.</p>
+   <textarea name="perso" rows="4" maxlength="1200" data-perso aria-describedby="aide-sante"></textarea></label>
+  <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Youngmi au <a href="tel:+33661311779">06 61 31 17 79</a>.</p>
 
   <h2 class="sous-titre">Le retrait</h2>
   <p class="aide">Au 4 avenue du Château, 92190 Meudon, sur rendez-vous. Youngmi confirme l'heure dans sa réponse.</p>
   <div class="deux-champs">
-   <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date></label>
+   <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date aria-describedby="aide-date"></label>
    <label class="champ"><span>Moment</span><select name="moment" required><option value="matin">Le matin, de 9 h à 12 h</option><option value="midi">À midi, de 12 h à 14 h</option><option value="apres-midi">L&#x27;après-midi, de 14 h à 18 h</option><option value="soir">Le soir, de 18 h à 20 h</option></select></label>
   </div>
-  <p class="aide" data-date-aide></p>
+  <p class="aide" id="aide-date" data-date-aide></p>
 
   <h2 class="sous-titre" id="coordonnees">Vos coordonnées</h2>
   <label class="champ"><span>Prénom et nom</span><input type="text" name="nom" autocomplete="name" required maxlength="80"></label>
@@ -68,7 +68,8 @@
   <div class="piege" aria-hidden="true"><label>Ne pas remplir <input type="text" name="site_web" tabindex="-1" autocomplete="off"></label></div>
 
   <p class="notice">Vos coordonnées servent seulement à répondre à votre demande ; elles ne sont ni vendues ni utilisées pour de la publicité. <a href="../confidentialite/">Confidentialité</a> · <a href="../conditions-de-commande/">Conditions de commande</a></p>
-  <p class="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
+  <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
+  <p class="aide" data-sans-stockage hidden>Votre navigateur ne garde pas la demande d'une page à l'autre. Si vous voulez d'autres gâteaux, ajoutez-les depuis leur page juste avant d'envoyer, ou écrivez-les dans « Votre envie ».</p>
   <button class="bouton plein envoyer" type="submit" data-envoyer>Envoyer ma demande, sans engagement</button>
   <p class="aide centre">Un souci ? Appelez Youngmi au <a href="tel:+33661311779">06 61 31 17 79</a> ou écrivez à <a href="mailto:contact@madamecho.com">contact@madamecho.com</a>.</p>
  </form>
@@ -98,7 +99,7 @@
  </nav>
  <p class="mention-ia">Photos retouchées avec une IA : lumière et fond.</p>
 </footer>
-<script src="../assets/catalogue.js?v=2026-11-03b"></script>
-<script src="../assets/site.js?v=2026-11-03b"></script>
+<script src="../assets/catalogue.js?v=2026-11-03c"></script>
+<script src="../assets/site.js?v=2026-11-03c"></script>
 </body>
 </html>

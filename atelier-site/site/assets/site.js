@@ -14,38 +14,64 @@
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
 
-  /* ---------- Panier ---------- */
+  /* ---------- Panier ----------
+     Une seule source : le stockage du navigateur quand il marche ; sinon, la mémoire de la page, et la demande passe
+     dans l'adresse vers « Ma demande » (#d=…). Mêmes plafonds que le serveur : 10 par taille, 200 par parfum (audit C05). */
+  function own(o, k) { return !!o && typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k); }
+  function produit(l) { return l && own(CAT.produits, l.p) ? CAT.produits[l.p] : null; }
+  function maxQ(p) { var m = p.mode === 'taille' ? 10 : 200, pas = p.mode === 'taille' ? 1 : p.pas; return m - (m % pas); }
   function valide(l) {
-    var p = CAT.produits[l && l.p];
-    if (!p || !(l.q > 0) || l.q > 500) return false;
-    if (p.mode === 'taille') return !!(p.tailles[l.t]) && l.q <= 10;
-    return !!(p.parfums[l.v]);
+    var p = produit(l);
+    if (!p || typeof l.q !== 'number' || l.q % 1 || l.q < 1 || l.q > maxQ(p)) return false;
+    return p.mode === 'taille' ? own(p.tailles, l.t) : own(p.parfums, l.v);
   }
+  var STOCKAGE = (function () {
+    try { localStorage.setItem(CLE + '-essai', '1'); localStorage.removeItem(CLE + '-essai'); return true; } catch (e) { return false; }
+  })();
+  /* Renvoie la demande gardée, [] si elle est vide ou expirée (elle est alors effacée, audit C07), null sans stockage. */
   function lire() {
+    if (!STOCKAGE) return null;
     try {
       var d = JSON.parse(localStorage.getItem(CLE) || 'null');
-      if (!d || !d.maj || Date.now() - d.maj > DUREE || !Array.isArray(d.lignes)) return [];
+      if (!d) return [];
+      if (!d.maj || Date.now() - d.maj > DUREE || !Array.isArray(d.lignes)) { localStorage.removeItem(CLE); return []; }
       return d.lignes.filter(valide);
     } catch (e) { return []; }
   }
-  function ecrire(lignes) {
-    try {
-      if (lignes.length) localStorage.setItem(CLE, JSON.stringify({ lignes: lignes, maj: Date.now() }));
-      else localStorage.removeItem(CLE);
-    } catch (e) { /* navigation privée : le panier vit le temps de la page */ }
-    memoire = lignes;
+  function depuisAdresse() {
+    var m = /(?:^#|&)d=([^&]*)/.exec(location.hash);
+    if (!m) return [];
+    try { var l = JSON.parse(decodeURIComponent(m[1])); return Array.isArray(l) ? l.filter(valide) : []; } catch (e) { return []; }
+  }
+  var memoire = STOCKAGE ? [] : depuisAdresse();
+  function ecrire(ls) {
+    memoire = ls;
+    if (STOCKAGE) {
+      try {
+        if (ls.length) localStorage.setItem(CLE, JSON.stringify({ lignes: ls, maj: Date.now() }));
+        else localStorage.removeItem(CLE);
+      } catch (e) { STOCKAGE = false; }   // stockage plein ou refusé : la demande vit le temps de la page
+    }
     compteur();
   }
-  var memoire = lire();
-  function lignes() { var l = lire(); return l.length ? l : memoire; }
+  function lignes() { var l = lire(); return l === null ? memoire.slice() : l; }
   function cleLigne(l) { return l.p + '|' + (l.t || l.v); }
+  /* Ajoute des lignes ; renvoie les messages des quantités plafonnées, jamais de ligne perdue en silence. */
   function ajouter(nouv) {
-    var ls = lignes().slice();
+    var ls = lignes(), msgs = [], ajoute = false;
     nouv.forEach(function (n) {
+      var p = produit(n), max = maxQ(p);
       var trouve = ls.filter(function (l) { return cleLigne(l) === cleLigne(n); })[0];
-      if (trouve) trouve.q += n.q; else ls.push(n);
+      var avant = trouve ? trouve.q : 0, q = Math.min(avant + n.q, max);
+      if (avant + n.q > max) msgs.push(p.nom + ', ' + libelle(n) + '\u00a0: ' + max + ' au plus dans une demande. Pour davantage, décrivez-le dans «\u00a0Votre envie\u00a0».');
+      if (q <= avant) return;
+      ajoute = true;
+      if (trouve) trouve.q = q;
+      else { var o = { p: n.p, q: q }; if (n.t) o.t = n.t; if (n.v) o.v = n.v; ls.push(o); }
     });
     ecrire(ls);
+    msgs.rien = !ajoute;
+    return msgs;
   }
   function compteur() {
     var vus = {}; lignes().forEach(function (l) { vus[l.p] = 1; });
@@ -84,10 +110,11 @@
     var id = art.getAttribute('data-produit'), p = CAT.produits[id], form = $('[data-ajout]', art);
     var conf = $('[data-confirmation]', art), bouton = $('[data-ajouter]', art);
     var lienDemande = (APERCU ? '../../ma-demande/index.html' : '../../ma-demande/');
-    function confirmer(texte) {
+    function confirmer(texte, msgs) {
       conf.innerHTML = '';
-      conf.appendChild(document.createTextNode(texte + ' '));
-      var a = document.createElement('a'); a.href = lienDemande; a.textContent = 'Voir ma demande';
+      conf.appendChild(document.createTextNode(texte + ' ' + (msgs.length ? msgs.join(' ') + ' ' : '')));
+      var a = document.createElement('a'); a.textContent = 'Voir ma demande';
+      a.href = lienDemande + (STOCKAGE ? '' : '#d=' + encodeURIComponent(JSON.stringify(lignes())));
       conf.appendChild(a);
     }
     if (p.mode === 'taille') {
@@ -101,8 +128,8 @@
         e.preventDefault();
         var t = ($('input[name=taille]:checked', form) || {}).value;
         if (!t) return;
-        ajouter([{ p: id, t: t, q: q }]);
-        confirmer('Ajouté à votre demande\u00a0: ' + q + ' × ' + p.nom + ', ' + p.tailles[t].libelle + '.');
+        var msgs = ajouter([{ p: id, t: t, q: q }]);
+        confirmer(msgs.rien ? 'Rien n’a été ajouté.' : msgs.length ? 'Demande mise à jour.' : 'Ajouté à votre demande\u00a0: ' + q + ' × ' + p.nom + ', ' + p.tailles[t].libelle + '.', msgs);
         q = 1; maj();
       });
     } else {
@@ -129,8 +156,8 @@
         var nouv = [], tot = 0;
         Object.keys(qs).forEach(function (v) { if (qs[v] > 0) { nouv.push({ p: id, v: v, q: qs[v] }); tot += qs[v]; } });
         if (tot < p.minimum) return;
-        ajouter(nouv);
-        confirmer('Ajouté à votre demande\u00a0: ' + tot + ' ' + p.nom.toLowerCase() + '.');
+        var msgs = ajouter(nouv);
+        confirmer(msgs.rien ? 'Rien n’a été ajouté.' : msgs.length ? 'Demande mise à jour.' : 'Ajouté à votre demande\u00a0: ' + tot + ' ' + p.nom.toLowerCase() + '.', msgs);
         qs = {}; majP();
       });
     }
@@ -168,13 +195,14 @@
       var on = $('[data-pro]') && $('[data-pro]').checked;
       $('[data-societe]').hidden = !on; $('[data-message-pro]').hidden = !on;
     }
-    if ($('[data-pro]')) $('[data-pro]').addEventListener('change', majPro);
+    if ($('[data-pro]')) $('[data-pro]').addEventListener('change', function () { majPro(); majDate(); });
     majPro();
 
     function delaiMin(ls) {
       var d = 0;
       ls.forEach(function (l) { d = Math.max(d, CAT.produits[l.p].delai); });
       if (perso.value.trim() || !ls.length) d = Math.max(d, CAT.delaiPerso);
+      if ($('[data-pro]') && $('[data-pro]').checked) d = Math.max(d, CAT.delaiPro || 14);   // professionnels : deux semaines
       return d;
     }
     function majDate() {
@@ -185,14 +213,27 @@
       dateAide.textContent = 'Au plus tôt le ' + dateFr(dateIn.min) + (n === 1 ? ' (commande la veille).' : ' (commande ' + n + ' jours avant).') + ' Pas de retrait le 24 décembre.';
     }
 
+    var sansStockage = $('[data-sans-stockage]');
+    if (sansStockage) sansStockage.hidden = STOCKAGE;
+    panier.setAttribute('tabindex', '-1');
+    function changer(k, f) {   // modifie la ligne de clé k dans la demande telle qu'elle est maintenant (autre onglet compris)
+      var ls2 = lignes(), j = -1;
+      ls2.forEach(function (l, x) { if (cleLigne(l) === k) j = x; });
+      if (j >= 0) { f(ls2, j); ecrire(ls2); }
+      rendre();
+    }
     function rendre() {
       var ls = lignes();
+      // Le bouton qui avait le focus le retrouve après la mise à jour (audit C08)
+      var actif = document.activeElement, cleF = actif && panier.contains(actif) ? actif.getAttribute('data-f') : null;
       panier.innerHTML = '';
       if (!ls.length) {
         var v = document.createElement('p'); v.className = 'vide';
         v.textContent = 'Votre demande est vide pour l’instant. ';
         var va = document.createElement('a'); va.href = lienCarte; va.textContent = 'Voir la carte'; v.appendChild(va);
-        panier.appendChild(v); majDate(); return;
+        panier.appendChild(v); majDate();
+        if (cleF) panier.focus();
+        return;
       }
       var total = 0;
       ls.forEach(function (l, i) {
@@ -208,17 +249,19 @@
         var o = document.createElement('output'); o.textContent = l.q;
         var pl = document.createElement('button'); pl.type = 'button'; pl.textContent = '+'; pl.setAttribute('aria-label', 'Plus');
         m.disabled = l.q <= pas; pl.disabled = l.q + pas > maxQ;
-        m.addEventListener('click', function () { var ls2 = lignes(); ls2[i].q = Math.max(pas, ls2[i].q - pas); ecrire(ls2); rendre(); });
-        pl.addEventListener('click', function () { var ls2 = lignes(); ls2[i].q = Math.min(maxQ, ls2[i].q + pas); ecrire(ls2); rendre(); });
+        var k = cleLigne(l);
+        m.setAttribute('data-f', k + '|m'); pl.setAttribute('data-f', k + '|p');
+        m.addEventListener('click', function () { changer(k, function (a, j) { a[j].q = Math.max(pas, a[j].q - pas); }); });
+        pl.addEventListener('click', function () { changer(k, function (a, j) { a[j].q = Math.min(maxQ, a[j].q + pas); }); });
         grp.appendChild(m); grp.appendChild(o); grp.appendChild(pl);
         var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'lien-bouton'; rm.textContent = 'Retirer';
         rm.setAttribute('aria-label', 'Retirer ' + p.nom + ', ' + libelle(l));
-        rm.addEventListener('click', function () { var ls2 = lignes(); ls2.splice(i, 1); ecrire(ls2); rendre(); });
+        rm.setAttribute('data-f', 'retirer|' + i);
+        rm.addEventListener('click', function () { changer(k, function (a, j) { a.splice(j, 1); }); });
         var px = document.createElement('span'); px.className = 'l-prix'; px.textContent = euros(prixLigne(l)); total += prixLigne(l);
         act.appendChild(grp); act.appendChild(rm); act.appendChild(px);
         div.appendChild(im); div.appendChild(nom); div.appendChild(det); div.appendChild(act);
         if (p.plaque) {
-          var k = cleLigne(l);
           var lab = document.createElement('label'); lab.className = 'champ plaque';
           var sp = document.createElement('span'); sp.innerHTML = 'Plaque en chocolat, comprise\u00a0: prénom et message <i>(facultatif)</i>';
           var inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 60; inp.value = plaques[k] || '';
@@ -233,7 +276,16 @@
       var ms = manques(ls);
       if (ms.length) { var a = document.createElement('p'); a.className = 'avert'; a.textContent = ms.join(' '); panier.appendChild(a); }
       majDate();
+      if (cleF) {
+        var cible = $('[data-f="' + cleF.replace(/"/g, '') + '"]', panier);
+        if (!cible && /^retirer\|/.test(cleF)) {   // ligne retirée : le bouton « Retirer » de la ligne qui prend sa place, ou de la dernière
+          var rs = $$('[data-f^="retirer|"]', panier); cible = rs[Math.min(+cleF.split('|')[1], rs.length - 1)];
+        }
+        if (cible && cible.disabled) cible = $('button:not([disabled])', cible.parentNode);
+        (cible || panier).focus();
+      }
     }
+    rendreDemande = rendre;
     perso.addEventListener('input', majDate);
     form.addEventListener('input', function (e) { if (e.target.removeAttribute) e.target.removeAttribute('aria-invalid'); });
     rendre();
@@ -258,7 +310,14 @@
     function verifier() {
       var f = form.elements, out = [], ls = lignes();
       $$('[aria-invalid]', form).forEach(function (x) { x.removeAttribute('aria-invalid'); });
-      function err(el, msg) { out.push(msg); if (el) el.setAttribute('aria-invalid', 'true'); }
+      function err(el, msg) {
+        out.push(msg);
+        if (el) {
+          el.setAttribute('aria-invalid', 'true');
+          var d = (el.getAttribute('aria-describedby') || '').split(' ').filter(Boolean);
+          if (d.indexOf('erreurs') < 0) { d.push('erreurs'); el.setAttribute('aria-describedby', d.join(' ')); }
+        }
+      }
       if (!ls.length && !f.perso.value.trim() && !(f.pro.checked && f.besoin.value.trim()))
         err(f.perso, 'Ajoutez au moins un gâteau de la carte, ou décrivez votre gâteau personnalisé.');
       manques(ls).forEach(function (m) { out.push(m); });
@@ -326,8 +385,10 @@
     });
   }
 
+  var rendreDemande = null;
   compteur();
   pageGateau();
   pageDemande();
-  window.addEventListener('storage', function (e) { if (e.key === CLE) compteur(); });
+  // Une demande changée ou vidée dans un autre onglet est reprise ici, jamais un ancien contenu (audit C05)
+  window.addEventListener('storage', function (e) { if (e.key === CLE || e.key === null) { compteur(); if (rendreDemande) rendreDemande(); } });
 })();
