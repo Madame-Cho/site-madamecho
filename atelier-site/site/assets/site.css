@@ -211,3 +211,6 @@ button,input,select,textarea{font:inherit;color:inherit}
 .insta:focus-visible{outline:2px solid var(--chocolat);outline-offset:3px}
 .insta-pied{margin-top:0}
 @media (max-width:480px){.insta .insta-pseudo{display:none}}
+/* Passe SEO du 03/11/2026 : activité dans le pied de page, liens de la page 404 */
+.pied .activite{color:var(--doux);font-size:14px}
+.liens-404{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
