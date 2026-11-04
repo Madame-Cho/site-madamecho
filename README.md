@@ -22,3 +22,5 @@ Code source du site web de Madame Cho (madamecho.com), pâtisserie de Youngmi Ch
 - `production` : ce qui est en ligne. OVH déploie cette branche (association Git ; en cas de doute, « Déployer Git » dans l'espace client OVH).
 - Publier = pousser la version validée sur `production`. Seuls le Claude d'Olivier et le ChatGPT de Youngmi publient, et uniquement après le feu vert explicite d'Olivier ou de Youngmi sur la version exacte ; chaque publication est notée dans le journal des publications (Drive, 15/04). Voir R-19 et P-15 du Rulebook Madame Cho.
 - Aucun mot de passe, clé ou jeton dans ce dépôt (R-08), ni tarif professionnel, nom de client ou photo de restaurant (R-35).
+
+<!-- Test d’écriture depuis ChatGPT effectué le 4 novembre 2026, sur une branche de test uniquement. -->
