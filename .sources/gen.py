@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-04-horaires"
+VERSION = "2026-11-04-evenements"
 SITE = "https://madamecho.com/"
 BASE = "/atelier-site/site/" if ESSAI else "/"   # chemin absolu du site sur le serveur (page 404, servie à n'importe quelle adresse)
 MAJ = VERSION[:10]        # date de mise à jour annoncée au plan du site
@@ -54,15 +54,16 @@ def img(nom, prof, alt, tailles="100vw", lazy=True, cls="", grand=None, petit=No
 
 def entete(prof):
     a = lien("", prof)
-    pros = f'<a class="loin" href="{a}#pros">Professionnels</a>' if AVEC_PROS else ""
+    pros = f'<a href="{a}#pros">Professionnels</a>' if AVEC_PROS else ""
     return f'''<a class="aller" href="#contenu">Aller au contenu</a>
 <header class="entete">
  <a class="logo-lien" href="{a}"><img class="logo" src="{R(prof)}assets/logo-chocolat.svg" alt="Madame Cho, retour à l'accueil" width="168" height="50"></a>
  <nav class="nav" aria-label="Menu principal">
-  <a href="{a}#carte">La carte</a>
+  <a href="{lien("carte/", prof)}">La carte</a>
   <a href="{a}#anniversaires">Anniversaires</a>
-  <a class="loin" href="{a}#maison">La maison</a>
+  <a href="{a}#evenements">Événements</a>
   {pros}
+  <a href="{a}#maison">La maison</a>
   <a class="nav-demande" href="{lien('ma-demande/', prof)}">Ma demande<span class="compteur" data-compteur hidden></span></a>
  </nav>
 </header>'''
@@ -187,7 +188,7 @@ def accueil(prof=0):
  <div><h2 class="titre" id="t-pros"><span class="etiquette">Professionnels</span> {titre}</h2><p>{E(PROS if DEMANDE_PRO else PROS_REF)}</p>
  <div class="sous-titre">Ils servent nos desserts</div><ul class="restos">{rs}</ul>
  {offre}</div>
- <div>{img("professionnels-desserts", prof, "Assortiment de desserts : tarte aux fruits à coque, pâtisseries individuelles et gâteau aux carottes", "(min-width: 860px) 45vw, 100vw", grand="professionnels-desserts-1600.webp", petit="professionnels-desserts-800.webp")}</div>
+ <div>{img("professionnels-desserts", prof, "Assortiment de desserts : tarte aux fruits à coque, pâtisseries individuelles et gâteau aux carottes", "(min-width: 860px) 45vw, 100vw", grand="professionnels-final-grand.webp", petit="professionnels-final-600.webp")}</div>
 </div></section>'''
     corps = f'''<section class="ouverture" aria-labelledby="t-accueil">
  {img("ouverture", prof, "Quatre choux craquelin posés sur une pierre claire, dans la lumière du matin", "(min-width: 860px) calc(100vw - 96px), 100vw", lazy=False, grand="ouverture-1600.webp", petit="ouverture-800.webp")}
@@ -203,12 +204,23 @@ def accueil(prof=0):
  <div><h2 class="titre" id="t-anniv"><span class="etiquette">Anniversaires</span> Un gâteau à votre nom</h2>{anniv}
  <a class="bouton" href="{a}#perso">Faire ma demande</a></div>
 </div></section>
+<section class="bloc" id="evenements" aria-labelledby="t-evenements"><div class="large">
+ <h2 class="titre" id="t-evenements"><span class="etiquette">Événements &amp; créations sur commande</span> Un thème, une occasion, une touche gourmande.</h2>
+ <p>Anniversaire d’enfant, baptême, mariage ou toute autre occasion : Madame Cho imagine des créations gourmandes sur commande, adaptées au thème et à l’ambiance que vous souhaitez. Halloween n’est ici qu’un exemple parmi tant d’autres !</p>
+ <p>Partagez vos envies, votre thème, la date et le nombre de personnes : imaginons ensemble les douceurs qui accompagneront votre événement.</p>
+ <div class="evenements-photos"><figure>{img("evenement-biscuits", prof, "Truffes au chocolat en forme d’araignées et biscuits en forme de doigts de sorcière", "(min-width: 700px) 45vw, 100vw")}<figcaption>Truffes au chocolat en forme d’araignées<br>et biscuits « doigts de sorcière ».</figcaption></figure>
+ <figure>{img("evenement-fantomes", prof, "Mini-gâteaux au chocolat décorés de petits fantômes", "(min-width: 700px) 45vw, 100vw")}<figcaption>Mini-gâteaux fantômes au chocolat<br>Une création imaginée pour Halloween.</figcaption></figure></div>
+ <a class="bouton" href="{a}#perso">Parlons de votre événement</a>
+</div></section>
+{pros}
 <section class="bloc" id="maison" aria-labelledby="t-maison"><div class="maison">
  <figure class="portrait">{img("youngmi", prof, "Youngmi Cho en cuisine, en toque, dressant des assiettes", "(min-width: 860px) 40vw, 100vw", grand="youngmi-900.webp", petit="youngmi-450.webp")}</figure>
  <div><h2 class="titre" id="t-maison"><span class="etiquette">La maison</span> Youngmi Cho</h2><p>{E(PARCOURS)}</p><ul class="reperes">{rep}</ul>
  {bouton_insta()}</div>
+</div><div class="deux atelier">
+ <figure>{img("atelier", prof, "Étagères et matériel de pâtisserie dans l’atelier de Madame Cho", "(min-width: 860px) 40vw, 100vw")}<figcaption>Dans l’atelier de Madame Cho.</figcaption></figure>
+ <div><h3 class="titre">Dans l’atelier</h3><p>C’est dans cet atelier que Youngmi prépare ses créations. Ustensiles, moules et petits équipements composent son espace de travail au quotidien.</p><a class="bouton" href="{lien('carte/', prof)}">Découvrir les gâteaux</a></div>
 </div></section>
-{pros}
 <section class="bloc" id="commander" aria-labelledby="t-cmd"><div class="large">
  <h2 class="titre" id="t-cmd"><span class="etiquette">Commander</span> Comment ça marche</h2>
  <ol class="etapes">{etapes}</ol>

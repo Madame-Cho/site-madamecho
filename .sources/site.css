@@ -216,3 +216,12 @@ button,input,select,textarea{font:inherit;color:inherit}
 .liens-404{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
 .liens-404 .bouton{margin:0}
 .insecable{white-space:nowrap}
+
+/* Événements et atelier : sections approuvées par Youngmi. */
+.evenements-photos{display:grid;gap:24px;margin:32px 0}
+.evenements-photos figcaption,.atelier figcaption{font-size:14px;color:var(--doux);line-height:1.5;margin-top:12px}
+#evenements .large>p+p{margin-top:16px}
+.atelier{margin-top:56px;padding-top:48px;border-top:1px solid var(--ligne)}
+.atelier figure img{max-height:600px;width:auto;margin:auto}
+.atelier .bouton{margin-top:24px}
+@media(min-width:700px){.evenements-photos{grid-template-columns:1fr 1fr}}
