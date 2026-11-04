@@ -92,18 +92,18 @@ MOMENTS = [("matin", "Le matin, de 9 h à 12 h"), ("midi", "À midi, de 12 h à 
            ("apres-midi", "L'après-midi, de 14 h à 18 h"), ("soir", "Le soir, de 18 h à 19 h")]
 JOURS_FERMES = ["12-24"]  # pas de retrait le 24 décembre (séance 2)
 
-H1 = "Des gâteaux à la façon de Youngmi Cho, à Meudon."
+H1 = "Des gâteaux à la façon de Madame Cho, à Meudon."
 SOUS = "Sur commande, à retirer sur rendez-vous, tous les jours de 9 h à 19 h."
 INTRO = "Madame Cho, c'est la pâtisserie à votre écoute : entremets, tartes, choux et cookies, préparés à la commande, avec le soin du détail et une touche de Corée."
 ANNIV = [
- "Pour un anniversaire, Youngmi réalise votre gâteau sur commande, pour 4 à 12 personnes. Saveurs, couleurs, ingrédients, décoration : faites-lui part de vos envies pour imaginer ensemble un gâteau à votre image.",
+ "Pour un anniversaire, Madame Cho réalise votre gâteau sur commande, pour 4 à 12 personnes. Saveurs, couleurs, ingrédients, décoration : faites-lui part de vos envies pour imaginer ensemble un gâteau à votre image.",
  "Une plaque en chocolat avec le prénom et le message de votre choix est comprise dans le prix.",
  "Commandez au moins 2 jours à l'avance.",
 ]
 PARCOURS = "Diplômée de l'Université nationale de Séoul, Youngmi arrive en France en 2015 et se forme à l'École Ducasse. Elle passe six ans dans de grandes maisons de la gastronomie française, dont le George V et La Réserve. Aujourd'hui, à Meudon, elle prépare chaque gâteau à la commande et partage aussi les saveurs de la Corée."
 REPERES = ["Université nationale de Séoul", "École Ducasse", "George V et La Réserve", "Saveurs coréennes"]
 PROS_REF = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés."
-PROS = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés. Pour une réunion, un séminaire ou une fête d'entreprise, Youngmi compose une sélection sucrée, sur devis."
+PROS = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés. Pour une réunion, un séminaire ou une fête d'entreprise, Madame Cho compose une sélection sucrée, sur devis."
 # Restaurants qui servent les desserts de Madame Cho (noms : accord écrit du 03/11 ; liens donnés par Olivier le 03/11, site officiel sinon Instagram ; vérifiés par Youngmi le 04/11, Approach corrigé)
 RESTOS = [
  ("Approach", "https://www.instagram.com/approachcoffee_/"),
@@ -115,8 +115,8 @@ RESTOS = [
 OFFRE = ["Plateaux de petites pièces", "Boîtes individuelles", "Gâteaux à partager", "Coffrets de cookies à offrir"]
 ETAPES = [
  ("Vous choisissez", "Ajoutez vos gâteaux à votre demande, sans engagement."),
- ("Youngmi vous répond", "Sous 24 heures, avec une proposition écrite : le prix, le jour et l'heure du retrait."),
- ("Vous confirmez", "Vous acceptez la proposition par écrit, et Youngmi confirme votre commande."),
+ ("Madame Cho vous répond", "Sous 24 heures, avec une proposition écrite : le prix, le jour et l'heure du retrait."),
+ ("Vous confirmez", "Vous acceptez la proposition par écrit, et Madame Cho confirme votre commande."),
  ("Vous retirez à Meudon", "Au 4 avenue du Château, à l'heure convenue."),
 ]
 PRATIQUE = [
@@ -136,16 +136,16 @@ INSTAGRAM = "https://www.instagram.com/madamecho.fr/"
 # Titres et descriptions pour les moteurs de recherche et le partage : tirés des textes validés, sans nouvelle promesse.
 # Une description reste sous 160 signes, pour ne pas être coupée dans les résultats.
 SEO_ACCUEIL = ("Madame Cho, pâtisserie et gâteaux d'anniversaire à Meudon",
-               "Gâteaux d'anniversaire, entremets, tartes, choux et cookies faits main par Youngmi Cho, formée à l'École Ducasse. Sur commande, retrait à Meudon (92).")
+               "Gâteaux d'anniversaire, entremets, tartes, choux et cookies faits main par Madame Cho. Sur commande, retrait à Meudon (92).")
 SEO_CARTE = ("La carte et les prix · Madame Cho, pâtisserie à Meudon",
              "La carte de Madame Cho et ses prix : entremets aux fruits, charlotte chocolat-framboise, tarte aux noix de pécan, cookies, choux et petits cakes.")
 SEO_PRODUITS = {
  "entremets-fruits": ("Entremets aux fruits sur commande à Meudon",
-                      "Entremets aux fruits de saison fait main par Youngmi Cho : génoise moelleuse et crème vanille, de 4 à 10 personnes, dès 28 €. Retrait à Meudon."),
+                      "Entremets aux fruits de saison fait main par Madame Cho : génoise moelleuse et crème vanille, de 4 à 10 personnes, dès 28 €. Retrait à Meudon."),
  "charlotte-chocolat-framboise": ("Charlotte chocolat-framboise sur commande à Meudon",
-                      "Charlotte chocolat-framboise faite main par Youngmi Cho : mousse au chocolat noir, confit et framboises fraîches. De 4 à 10 personnes, dès 28 €."),
+                      "Charlotte chocolat-framboise faite main par Madame Cho : mousse au chocolat noir, confit et framboises fraîches. De 4 à 10 personnes, dès 28 €."),
  "tarte-pecan": ("Tarte aux noix de pécan sur commande à Meudon",
-                      "Tarte aux noix de pécan au sirop de riz, faite main par Youngmi Cho. De 4 à 10 personnes, dès 26 €. Sur commande, à retirer à Meudon."),
+                      "Tarte aux noix de pécan au sirop de riz, faite main par Madame Cho. De 4 à 10 personnes, dès 26 €. Sur commande, à retirer à Meudon."),
  "cookies": ("Cookies au chocolat sur commande à Meudon",
                       "Cookies faits main, noisette et caramel ou cacahuète et praliné, au chocolat noir ou au lait. 3,50 € la pièce, à partir de 6. Retrait à Meudon."),
  "choux": ("Choux craquelin sur commande à Meudon",

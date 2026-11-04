@@ -39,8 +39,8 @@ function repondre(bool $ok, array $data, bool $enJson): void {
        . '<meta name="robots" content="noindex"><title>Ma demande · Madame Cho</title><link rel="stylesheet" href="../assets/site.css"></head>'
        . '<body><main class="bloc premier"><div class="etroit">';
     if ($ok) {
-        echo '<div class="etiquette">Demande envoyée</div><h1 class="titre">Merci, Youngmi vous répond sous 24 heures</h1>'
-           . '<p>Votre demande n\'est pas encore une commande : Youngmi vous envoie une proposition écrite, que vous acceptez par écrit.</p>'
+        echo '<div class="etiquette">Demande envoyée</div><h1 class="titre">Merci, Madame Cho vous répond sous 24 heures</h1>'
+           . '<p>Votre demande n\'est pas encore une commande : Madame Cho vous envoie une proposition écrite, que vous acceptez par écrit.</p>'
            . '<p class="ref">Référence : <b>' . $h($data['ref']) . '</b></p>';
     } else {
         echo '<h1 class="titre">La demande n\'a pas pu être envoyée</h1><p>' . $h(implode(' ', $data['erreurs'] ?? [])) . '</p>'

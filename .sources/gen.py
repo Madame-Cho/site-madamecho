@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-04-intro"
+VERSION = "2026-11-04-marque"
 SITE = "https://madamecho.com/"
 BASE = "/atelier-site/site/" if ESSAI else "/"   # chemin absolu du site sur le serveur (page 404, servie à n'importe quelle adresse)
 MAJ = VERSION[:10]        # date de mise à jour annoncée au plan du site
@@ -214,12 +214,12 @@ def accueil(prof=0):
 </div></section>
 {pros}
 <section class="bloc" id="maison" aria-labelledby="t-maison"><div class="maison">
- <figure class="portrait">{img("youngmi", prof, "Youngmi Cho en cuisine, en toque, dressant des assiettes", "(min-width: 860px) 40vw, 100vw", grand="youngmi-900.webp", petit="youngmi-450.webp")}</figure>
- <div><h2 class="titre" id="t-maison"><span class="etiquette">La maison</span> Youngmi Cho</h2><p>{E(PARCOURS)}</p><ul class="reperes">{rep}</ul>
+ <figure class="portrait">{img("youngmi", prof, "Madame Cho en cuisine, en toque, dressant des assiettes", "(min-width: 860px) 40vw, 100vw", grand="youngmi-900.webp", petit="youngmi-450.webp")}</figure>
+ <div><h2 class="titre" id="t-maison"><span class="etiquette">La maison</span> Madame Cho</h2><p>{E(PARCOURS)}</p><ul class="reperes">{rep}</ul>
  {bouton_insta()}</div>
 </div><div class="deux atelier">
  <figure>{img("atelier", prof, "Étagères et matériel de pâtisserie dans l’atelier de Madame Cho", "(min-width: 860px) 40vw, 100vw")}<figcaption>Dans l’atelier de Madame Cho.</figcaption></figure>
- <div><h3 class="titre">Dans l’atelier</h3><p>C’est dans cet atelier que Youngmi prépare ses créations. Ustensiles, moules et petits équipements composent son espace de travail au quotidien.</p><a class="bouton" href="{lien('carte/', prof)}">Découvrir les gâteaux</a></div>
+ <div><h3 class="titre">Dans l’atelier</h3><p>C’est dans cet atelier que Madame Cho prépare ses créations. Ustensiles, moules et petits équipements composent son espace de travail au quotidien.</p><a class="bouton" href="{lien('carte/', prof)}">Découvrir les gâteaux</a></div>
 </div></section>
 <section class="bloc" id="commander" aria-labelledby="t-cmd"><div class="large">
  <h2 class="titre" id="t-cmd"><span class="etiquette">Commander</span> Comment ça marche</h2>
@@ -238,7 +238,7 @@ def accueil(prof=0):
 def carte():
     prof = 1
     corps = f'''<section class="bloc premier" aria-labelledby="t-carte"><div class="tete-page"><h1 class="etiquette centre" id="t-carte">La carte</h1>
- <p class="chapo centre">Six gâteaux préparés à la commande par Youngmi, à retirer sur rendez-vous à Meudon.</p></div>
+ <p class="chapo centre">Six gâteaux préparés à la commande par Madame Cho, à retirer sur rendez-vous à Meudon.</p></div>
  <div class="grille">{carte_items(prof, "h2")}</div>
  <p class="petit centre">{E(TRACES)}</p>
  <p class="centre"><a class="bouton" href="{lien('', prof)}#anniversaires">Un gâteau d'anniversaire ?</a></p>
@@ -326,7 +326,7 @@ def demande():
     corps = f'''<section class="bloc premier demande" aria-labelledby="t-dem">
 <div class="etroit">
  <h1 class="titre" id="t-dem">Ma demande</h1>
- <p class="chapo">Sans engagement : Youngmi vérifie ses disponibilités et vous répond sous 24 heures par une proposition écrite. Votre commande n'est réservée qu'après votre accord et sa confirmation.</p>
+ <p class="chapo">Sans engagement : Madame Cho vérifie ses disponibilités et vous répond sous 24 heures par une proposition écrite. Votre commande n'est réservée qu'après votre accord et sa confirmation.</p>
 
  <form id="formulaire" class="formulaire" method="post" action="envoyer.php" novalidate>
   <h2 class="sous-titre">Vos gâteaux</h2>
@@ -336,10 +336,10 @@ def demande():
   <p class="aide">Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
   <label class="champ"><span>Votre envie <i>(facultatif)</i></span>
    <textarea name="perso" rows="4" maxlength="1200" data-perso aria-describedby="aide-sante"></textarea></label>
-  <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Youngmi au <a href="tel:{TEL_LIEN}">{TEL}</a>.</p>
+  <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a>.</p>
 
   <h2 class="sous-titre">Le retrait</h2>
-  <p class="aide">Au {E(ADRESSE)}, sur rendez-vous. Youngmi confirme l'heure dans sa réponse.</p>
+  <p class="aide">Au {E(ADRESSE)}, sur rendez-vous. Madame Cho confirme l'heure dans sa réponse.</p>
   <div class="deux-champs">
    <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date aria-describedby="aide-date"></label>
    <label class="champ"><span>Moment</span><select name="moment" required>{moments}</select></label>
@@ -359,13 +359,13 @@ def demande():
   <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
   <p class="aide" data-sans-stockage hidden>Votre navigateur ne garde pas la demande d'une page à l'autre. Si vous voulez d'autres gâteaux, ajoutez-les depuis leur page juste avant d'envoyer, ou écrivez-les dans « Votre envie ».</p>
   <button class="bouton plein envoyer" type="submit" data-envoyer>Envoyer ma demande, sans engagement</button>
-  <p class="aide centre">Un souci ? Appelez Youngmi au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+  <p class="aide centre">Un souci ? Appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
  </form>
 
  <div class="recu" data-recu hidden tabindex="-1">
   <div class="etiquette">Demande envoyée</div>
-  <h2 class="titre">Merci, Youngmi vous répond sous 24 heures</h2>
-  <p>Votre demande n'est pas encore une commande : Youngmi vous envoie une proposition écrite (prix, jour et heure du retrait), que vous acceptez par écrit.</p>
+  <h2 class="titre">Merci, Madame Cho vous répond sous 24 heures</h2>
+  <p>Votre demande n'est pas encore une commande : Madame Cho vous envoie une proposition écrite (prix, jour et heure du retrait), que vous acceptez par écrit.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>
   <p class="aide">Gardez ce récapitulatif. <button type="button" class="lien-bouton" data-copier>Copier le récapitulatif</button></p>
@@ -407,9 +407,9 @@ MENTIONS = [
 CONFID = [
  ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
  ("Pourquoi", ["Seulement pour répondre à votre demande, vous faire une proposition, préparer et retirer votre commande. Base légale : les mesures prises à votre demande avant un contrat, puis le contrat lui-même. Aucune publicité, aucune revente."]),
- ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Youngmi en parle avec vous au téléphone."]),
- ("Qui les reçoit", ["Youngmi Cho, et Olivier Dion qui l'aide à répondre aux demandes. Prestataires techniques : OVH (hébergement du site et envoi du formulaire, en France) et Google (messagerie).",
-   "Pour classer les emails et préparer les réponses, Youngmi et Olivier se font aider par des assistants d'intelligence artificielle : Claude (Anthropic) et ChatGPT (OpenAI). Ces assistants ne décident de rien et n'envoient aucun email : Youngmi relit et répond elle-même. Aucun autre destinataire.",
+ ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
+ ("Qui les reçoit", ["Madame Cho. Prestataires techniques : OVH (hébergement du site et envoi du formulaire, en France) et Google (messagerie).",
+   "Pour classer les emails et préparer les réponses, Madame Cho se fait aider par des assistants d'intelligence artificielle : Claude (Anthropic) et ChatGPT (OpenAI). Ces assistants ne décident de rien et n'envoient aucun email : Madame Cho relit et répond elle-même. Aucun autre destinataire.",
    "Google, Anthropic et OpenAI peuvent traiter des données hors de l'Union européenne, notamment aux États-Unis, avec les garanties prévues par leurs conditions (cadre de protection des données UE–États-Unis ou clauses contractuelles types de la Commission européenne)."]),
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
  ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les factures sont conservées 10 ans, comme la loi l'exige."]),
@@ -419,7 +419,7 @@ CONFID = [
 CONDITIONS = [
  ("Madame Cho", [f"MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
  ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau."]),
- ("2. La proposition et l'acceptation", ["Youngmi répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et heure du retrait, acompte éventuel. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
+ ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et heure du retrait, acompte éventuel. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
  ("3. Les prix", ["Les prix sont indiqués en euros TTC. Le prix de la carte est celui de la proposition ; une personnalisation au-delà de la plaque en chocolat (comprise) est chiffrée dans la proposition."]),
  ("4. L'acompte", ["Pour un gâteau personnalisé au-delà de la plaque, un acompte de 30 % du prix est demandé à l'acceptation de la proposition ; il est déduit du prix au retrait."]),
  ("5. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, sur rendez-vous, à l'heure convenue, tous les jours de 9 h à 19 h (pas de retrait le 24 décembre). Le client vérifie sa commande au retrait."]),
@@ -438,7 +438,7 @@ def introuvable():
     prof = -1
     corps = f'''<section class="bloc premier" aria-labelledby="t-404"><div class="etroit">
  <h1 class="titre" id="t-404"><span class="etiquette">Page introuvable</span> Cette page n'existe pas, ou plus.</h1>
- <p>Les gâteaux de Madame Cho sont sur la carte. Pour une question, appelez Youngmi au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+ <p>Les gâteaux de Madame Cho sont sur la carte. Pour une question, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
  <p class="liens-404"><a class="bouton plein" href="{lien('carte/', prof)}">Voir la carte</a> <a class="bouton" href="{lien('', prof)}">Retour à l'accueil</a></p>
 </div></section>'''
     return page("404.html", "Page introuvable · Madame Cho", "Cette page n'existe pas sur le site de Madame Cho.", corps, prof, indexer=False)
