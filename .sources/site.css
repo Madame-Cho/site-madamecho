@@ -238,3 +238,5 @@ button,input,select,textarea{font:inherit;color:inherit}
  .accueil .ouverture{padding-top:14px}
 }
 @media(max-width:350px){.nav{padding-left:8px;padding-right:8px;gap:0 2px;font-size:9px;letter-spacing:.035em}}
+
+@media(min-width:860px){.intro{max-width:960px;padding-left:32px;padding-right:32px;text-wrap:balance}}
