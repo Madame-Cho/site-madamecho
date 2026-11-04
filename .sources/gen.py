@@ -154,7 +154,8 @@ def page(chemin, titre, desc, corps, prof, script_page="", jsonld=None, classe="
 {pied(prof)}
 {cfg}<script src="{r}assets/catalogue.js?v={VERSION}"></script>
 <script src="{r}assets/site.js?v={VERSION}"></script>
-{script_page}</body>
+{script_page}<!-- test -->
+</body>
 </html>
 '''
 
