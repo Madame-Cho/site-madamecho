@@ -92,9 +92,9 @@ MOMENTS = [("matin", "Le matin, de 9 h à 12 h"), ("midi", "À midi, de 12 h à 
            ("apres-midi", "L'après-midi, de 14 h à 18 h"), ("soir", "Le soir, de 18 h à 19 h")]
 JOURS_FERMES = ["12-24"]  # pas de retrait le 24 décembre (séance 2)
 
-H1 = "Des gâteaux faits à la main, à Meudon."
+H1 = "Des gâteaux à la façon de Youngmi Cho, à Meudon."
 SOUS = "Sur commande, à retirer sur rendez-vous, tous les jours de 9 h à 19 h."
-INTRO = "Madame Cho, c'est la pâtisserie de Youngmi Cho : entremets, tartes, choux et cookies, préparés à la commande, avec le soin du détail et un peu de Corée."
+INTRO = "Madame Cho, c'est la pâtisserie à votre écoute : entremets, tartes, choux et cookies, préparés à la commande, avec le soin du détail et une touche de Corée."
 ANNIV = [
  "Pour un anniversaire, Youngmi réalise votre gâteau sur commande, pour 4 à 12 personnes. Saveurs, couleurs, ingrédients, décoration : faites-lui part de vos envies pour imaginer ensemble un gâteau à votre image.",
  "Une plaque en chocolat avec le prénom et le message de votre choix est comprise dans le prix.",
