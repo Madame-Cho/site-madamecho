@@ -1,4 +1,5 @@
 # Données du site Madame Cho v2 : textes et carte, tirés des réponses de Youngmi
+# (réponses du 04/11/2026 : annulation 24 h avant le retrait, soja (lécithine) partout où il y a du chocolat, photos choux et anniversaire, lien d'Approach)
 # (séance 1 du 03/11/2026 : carte et fiches ; séance 2 : textes, retrait, paiement ;
 #  séance 3 : maquette « Galerie », acompte confirmé, texte Anniversaires réécrit par elle).
 # Prix en centimes, TTC. Un gâteau dont une information manque n'est pas proposé (spécification, rubrique 5).
@@ -16,7 +17,7 @@ PRODUITS = [
                ("20", "20 cm", "8 personnes", 4800), ("22", "22 cm", "10 personnes", 6000)],
       delai=2, delai_txt="2 jours avant le retrait", plaque=True,
       conservation="Au réfrigérateur, à déguster dans les 3 jours.",
-      allergenes="Gluten (blé), œufs, lait.",
+      allergenes="Gluten (blé), œufs, lait, soja (lécithine de la plaque en chocolat).",
       carte_pour="4 à 10 personnes", carte_prix="dès 28 €"),
  dict(id="charlotte-chocolat-framboise", nom="Charlotte chocolat-framboise", photo="charlotte",
       alt="Charlotte au chocolat couronnée de framboises fraîches",
@@ -29,7 +30,7 @@ PRODUITS = [
                ("20", "20 cm", "8 personnes", 4800), ("22", "22 cm", "10 personnes", 6000)],
       delai=2, delai_txt="2 jours avant le retrait", plaque=True,
       conservation="Au réfrigérateur, à déguster dans les 3 jours.",
-      allergenes="Gluten (blé), œufs, lait, fruits à coque (amande).",
+      allergenes="Gluten (blé), œufs, lait, soja (lécithine du chocolat), fruits à coque (amande).",
       carte_pour="4 à 10 personnes", carte_prix="dès 28 €"),
  dict(id="tarte-pecan", nom="Tarte aux noix de pécan", photo="tarte",
       alt="Tarte aux noix de pécan sur un plat à pied",
@@ -40,7 +41,7 @@ PRODUITS = [
                ("20", "20 cm", "6 à 8 personnes", 3600), ("24", "24 cm", "8 à 10 personnes", 4500)],
       delai=1, delai_txt="la veille du retrait", plaque=True,
       conservation="Au réfrigérateur, à déguster dans les 3 jours.",
-      allergenes="Gluten (blé), œufs, lait, fruits à coque (noix, noix de pécan).",
+      allergenes="Gluten (blé), œufs, lait, fruits à coque (noix, noix de pécan), soja (lécithine de la plaque en chocolat).",
       carte_pour="4 à 10 personnes", carte_prix="dès 26 €"),
  dict(id="cookies", nom="Cookies au chocolat", photo="cookies",
       alt="Cookie au chocolat garni de noisettes et de caramel, d'autres cookies derrière",
@@ -54,10 +55,10 @@ PRODUITS = [
       regle="À partir de 6 cookies, en mélangeant les combinaisons comme vous voulez.",
       delai=1, delai_txt="la veille du retrait", plaque=False,
       conservation="À température ambiante, à déguster dans les 3 jours.",
-      allergenes="Gluten (blé), œufs, lait, arachides, fruits à coque (noisette).",
+      allergenes="Gluten (blé), œufs, lait, soja (lécithine du chocolat), arachides, fruits à coque (noisette). Les cookies cacahuète et praliné ne contiennent pas de noisette.",
       carte_pour="à partir de 6", carte_prix="3,50 € la pièce"),
- dict(id="choux", nom="Choux", photo="choux",
-      alt="Plateau de choux craquelin de quatre parfums",
+ dict(id="choux", nom="Choux", photo="choux-parfums",
+      alt="Cinq choux craquelin alignés sur une pierre claire, un de chaque parfum",
       phrase="Choux craquelin garnis selon vos envies et déposés sur un sablé.",
       court="Choux craquelin garnis selon vos envies et posés sur un sablé : vanille, caramel, chocolat, praliné noisette ou citron.",
       compo=[], mode="parfums", taille="Environ 5 cm de diamètre", unite=250, minimum=10, pas=5,
@@ -69,7 +70,7 @@ PRODUITS = [
       regle="À partir de 10 choux, par 5 du même parfum.",
       delai=2, delai_txt="2 jours avant le retrait", plaque=False,
       conservation="Au réfrigérateur, à déguster dans les 3 jours.",
-      allergenes="Gluten (blé), œufs, lait, fruits à coque (noisette).",
+      allergenes="Gluten (blé), œufs, lait, soja (lécithine du chocolat), fruits à coque (noisette). La noisette ne concerne que le chou praliné noisette.",
       carte_pour="à partir de 10, par 5 du même parfum", carte_prix="2,50 € la pièce"),
  dict(id="petits-gateaux-du-gouter", nom="Petits gâteaux du goûter", photo="gouter",
       alt="Quatre petits cakes moulés : chocolat, coco, caramel et chocolat noir",
@@ -83,7 +84,7 @@ PRODUITS = [
       regle="À partir de 6 petits gâteaux, en mélangeant les parfums comme vous voulez.",
       delai=2, delai_txt="2 jours avant le retrait", plaque=False,
       conservation="Au réfrigérateur, à déguster dans les 3 jours.",
-      allergenes="Gluten (blé), œufs, lait, arachides.",
+      allergenes="Gluten (blé), œufs, lait, soja (lécithine du chocolat), arachides. Les arachides ne concernent que le cake vegan au praliné cacahuète, qui est sans œufs ni lait.",
       carte_pour="à partir de 6", carte_prix="3,50 € la pièce"),
 ]
 
@@ -103,9 +104,9 @@ PARCOURS = "Diplômée de l'Université nationale de Séoul, Youngmi arrive en F
 REPERES = ["Université nationale de Séoul", "École Ducasse", "George V et La Réserve", "Saveurs coréennes"]
 PROS_REF = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés."
 PROS = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés. Pour une réunion, un séminaire ou une fête d'entreprise, Youngmi compose une sélection sucrée, sur devis."
-# Restaurants qui servent les desserts de Madame Cho (noms : accord écrit du 03/11 ; liens donnés par Olivier le 03/11, site officiel sinon Instagram)
+# Restaurants qui servent les desserts de Madame Cho (noms : accord écrit du 03/11 ; liens donnés par Olivier le 03/11, site officiel sinon Instagram ; vérifiés par Youngmi le 04/11, Approach corrigé)
 RESTOS = [
- ("Approach", "https://www.instagram.com/p/DOnj8xMjK2U/"),
+ ("Approach", "https://www.instagram.com/approachcoffee_/"),
  ("On", "https://www.instagram.com/on_resto/"),
  ("On The Bab", "https://www.onthebab.com/"),
  ("Misu", "https://www.instagram.com/misu.paris/"),
@@ -120,7 +121,7 @@ ETAPES = [
 ]
 PRATIQUE = [
  ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 20 h. Pas de livraison."),
- ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Pas de retrait le 24 décembre."),
+ ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre."),
  ("Paiement", "Au retrait, par carte bancaire, virement ou espèces. Pour une personnalisation au-delà de la plaque, un acompte de 30 % est demandé."),
  ("Conservation", "Indiquée sur la page de chaque gâteau."),
 ]

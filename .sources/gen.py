@@ -198,7 +198,7 @@ def accueil(prof=0):
  <p class="petit centre">{E(TRACES)}</p>
 </section>
 <section class="bloc" id="anniversaires" aria-labelledby="t-anniv"><div class="deux">
- <div>{img("tarte", prof, "Tarte aux noix de pécan sur un plat à pied", "(min-width: 860px) 45vw, 100vw")}</div>
+ <div>{img("anniversaire", prof, "Tiramisu cerclé de chocolat, saupoudré de cacao et de feuilles d'or", "(min-width: 860px) 45vw, 100vw")}</div>
  <div><h2 class="titre" id="t-anniv"><span class="etiquette">Anniversaires</span> Un gâteau à votre nom</h2>{anniv}
  <a class="bouton" href="{a}#perso">Faire ma demande</a></div>
 </div></section>
@@ -364,14 +364,14 @@ def demande():
                 corps, prof, classe="page-demande", indexer=False)
 
 # ---------- Pages légales ----------
-def legale(slug, titre, desc, sections):
+def legale(slug, titre, desc, sections, maj="3 novembre 2026"):
     prof = 1
     s = ""
     for h, ps in sections:
         s += f'<h2 class="sous-titre">{E(h)}</h2>' + "".join(p if p.startswith("<") else f"<p>{p}</p>" for p in ps)
     corps = f'''<section class="bloc premier" aria-labelledby="t-leg"><div class="etroit texte-long">
  <h1 class="titre" id="t-leg">{E(titre)}</h1>{s}
- <p class="petit">Mise à jour : 3 novembre 2026.</p></div></section>'''
+ <p class="petit">Mise à jour : {maj}.</p></div></section>'''
     return page(f"{slug}/index.html", f"{titre} · Madame Cho", desc, corps, prof)
 
 # Médiateur : CM2C choisi par Olivier ; texte à remplacer par ses coordonnées et le numéro d'adhérent dès la confirmation de l'adhésion
@@ -411,8 +411,8 @@ CONDITIONS = [
  ("4. L'acompte", ["Pour un gâteau personnalisé au-delà de la plaque, un acompte de 30 % du prix est demandé à l'acceptation de la proposition ; il est déduit du prix au retrait."]),
  ("5. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, sur rendez-vous, à l'heure convenue, tous les jours de 9 h à 20 h (pas de retrait le 24 décembre). Le client vérifie sa commande au retrait."]),
  ("6. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces, déduction faite de l'acompte éventuel."]),
- # Délai d'annulation : à fixer par Youngmi (mail du 03/11) ; d'ici là, il est donné dans chaque proposition écrite (AM-33)
- ("7. Annulation", ["Le délai pendant lequel le client peut annuler sans frais, par écrit, est indiqué dans la proposition écrite de Madame Cho, avant toute commande. Passé ce délai, l'acompte versé reste acquis à Madame Cho."]),
+ # Délai d'annulation fixé par Youngmi le 04/11/2026 (réponse au mail du 03/11) : 24 heures avant le retrait
+ ("7. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait. Passé ce délai, l'acompte versé, s'il y en a un, reste acquis à Madame Cho."]),
  ("8. Droit de rétractation", ["Les gâteaux de la carte sont des denrées fraîches, à consommer dans les 3 jours : le droit de rétractation ne s'applique pas à eux, car ils sont susceptibles de se détériorer rapidement (code de la consommation, article L221-28, 4°). Il ne s'applique pas non plus à un gâteau confectionné selon les choix du client, comme un gâteau personnalisé (même article, 3°)."]),
  ("9. Allergènes", ["Les allergènes de chaque gâteau sont indiqués sur sa page et rappelés au retrait. Tous les gâteaux sont préparés dans un atelier qui utilise aussi des fruits à coque et des arachides."]),
  ("10. Réclamations", [f"Une réclamation s'adresse à <a href=\"mailto:{EMAIL}\">{EMAIL}</a> ou au {TEL}, de préférence le jour du retrait."]),
@@ -571,7 +571,7 @@ if not APERCU:
 images_partage()
 ecrire("mentions-legales/index.html", legale("mentions-legales", "Mentions légales", "Mentions légales du site de Madame Cho, pâtisserie à Meudon.", MENTIONS))
 ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID))
-ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, acompte, retrait, paiement.", CONDITIONS))
+ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, acompte, retrait, paiement.", CONDITIONS, maj="4 novembre 2026"))
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
 ecrire("ma-demande/catalogue.php", "<?php\n// Carte de Madame Cho, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(cat) + ";\n")

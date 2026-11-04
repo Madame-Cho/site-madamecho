@@ -31,14 +31,6 @@
 600,
 600
 ],
-"choux-grand.webp": [
-1200,
-1200
-],
-"choux-600.webp": [
-600,
-600
-],
 "gouter-grand.webp": [
 1200,
 1200
@@ -70,5 +62,21 @@
 "gouter-large-800.webp": [
 800,
 450
+],
+"choux-parfums-grand.webp": [
+629,
+629
+],
+"choux-parfums-600.webp": [
+600,
+600
+],
+"anniversaire-grand.webp": [
+1200,
+1200
+],
+"anniversaire-600.webp": [
+600,
+600
 ]
 }
