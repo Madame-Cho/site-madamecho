@@ -187,7 +187,7 @@ def accueil(prof=0):
  <div><h2 class="titre" id="t-pros"><span class="etiquette">Professionnels</span> {titre}</h2><p>{E(PROS if DEMANDE_PRO else PROS_REF)}</p>
  <div class="sous-titre">Ils servent nos desserts</div><ul class="restos">{rs}</ul>
  {offre}</div>
- <div>{img("gouter-large", prof, "Petits cakes moulés alignés sur une pierre claire", "(min-width: 860px) 45vw, 100vw", grand="gouter-large-1600.webp", petit="gouter-large-800.webp")}</div>
+ <div>{img("professionnels-desserts", prof, "Assortiment de desserts : tarte aux fruits à coque, pâtisseries individuelles et gâteau aux carottes", "(min-width: 860px) 45vw, 100vw", grand="professionnels-desserts-1600.webp", petit="professionnels-desserts-800.webp")}</div>
 </div></section>'''
     corps = f'''<section class="ouverture" aria-labelledby="t-accueil">
  {img("ouverture", prof, "Quatre choux craquelin posés sur une pierre claire, dans la lumière du matin", "(min-width: 860px) calc(100vw - 96px), 100vw", lazy=False, grand="ouverture-1600.webp", petit="ouverture-800.webp")}
