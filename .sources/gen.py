@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-03f"
+VERSION = "2026-11-04-horaires"
 SITE = "https://madamecho.com/"
 BASE = "/atelier-site/site/" if ESSAI else "/"   # chemin absolu du site sur le serveur (page 404, servie à n'importe quelle adresse)
 MAJ = VERSION[:10]        # date de mise à jour annoncée au plan du site
@@ -83,7 +83,7 @@ def pied(prof):
     return f'''<footer class="pied">
  <img class="logo-pied" src="{r}assets/logo-chocolat.svg" alt="Madame Cho" width="150" height="45" loading="lazy">
  <p class="activite">{E(ACTIVITE).replace("Hauts-de-Seine", '<span class="insecable">Hauts-de-Seine</span>')}</p>
- <address>{E(ADRESSE)}<br>Retrait sur rendez-vous, tous les jours de 9 h à 20 h<br>
+ <address>{E(ADRESSE)}<br>Retrait sur rendez-vous, tous les jours de 9 h à 19 h<br>
  <a href="tel:{TEL_LIEN}">{TEL}</a> · <a href="mailto:{EMAIL}">{EMAIL}</a><br>
  </address>
  {bouton_insta("insta-pied")}
@@ -410,7 +410,7 @@ CONDITIONS = [
  ("2. La proposition et l'acceptation", ["Youngmi répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et heure du retrait, acompte éventuel. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
  ("3. Les prix", ["Les prix sont indiqués en euros TTC. Le prix de la carte est celui de la proposition ; une personnalisation au-delà de la plaque en chocolat (comprise) est chiffrée dans la proposition."]),
  ("4. L'acompte", ["Pour un gâteau personnalisé au-delà de la plaque, un acompte de 30 % du prix est demandé à l'acceptation de la proposition ; il est déduit du prix au retrait."]),
- ("5. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, sur rendez-vous, à l'heure convenue, tous les jours de 9 h à 20 h (pas de retrait le 24 décembre). Le client vérifie sa commande au retrait."]),
+ ("5. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, sur rendez-vous, à l'heure convenue, tous les jours de 9 h à 19 h (pas de retrait le 24 décembre). Le client vérifie sa commande au retrait."]),
  ("6. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces, déduction faite de l'acompte éventuel."]),
  # Délai d'annulation fixé par Youngmi le 04/11/2026 (réponse au mail du 03/11) : 24 heures avant le retrait
  ("7. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait. Passé ce délai, l'acompte versé, s'il y en a un, reste acquis à Madame Cho."]),

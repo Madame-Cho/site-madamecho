@@ -89,11 +89,11 @@ PRODUITS = [
 ]
 
 MOMENTS = [("matin", "Le matin, de 9 h à 12 h"), ("midi", "À midi, de 12 h à 14 h"),
-           ("apres-midi", "L'après-midi, de 14 h à 18 h"), ("soir", "Le soir, de 18 h à 20 h")]
+           ("apres-midi", "L'après-midi, de 14 h à 18 h"), ("soir", "Le soir, de 18 h à 19 h")]
 JOURS_FERMES = ["12-24"]  # pas de retrait le 24 décembre (séance 2)
 
 H1 = "Des gâteaux faits à la main, à Meudon."
-SOUS = "Sur commande, à retirer sur rendez-vous, tous les jours de 9 h à 20 h."
+SOUS = "Sur commande, à retirer sur rendez-vous, tous les jours de 9 h à 19 h."
 INTRO = "Madame Cho, c'est la pâtisserie de Youngmi Cho : entremets, tartes, choux et cookies, préparés à la commande, avec le soin du détail et un peu de Corée."
 ANNIV = [
  "Pour un anniversaire, Youngmi réalise votre gâteau sur commande, pour 4 à 12 personnes. Saveurs, couleurs, ingrédients, décoration : faites-lui part de vos envies pour imaginer ensemble un gâteau à votre image.",
@@ -120,7 +120,7 @@ ETAPES = [
  ("Vous retirez à Meudon", "Au 4 avenue du Château, à l'heure convenue."),
 ]
 PRATIQUE = [
- ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 20 h. Pas de livraison."),
+ ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h. Pas de livraison."),
  ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre."),
  ("Paiement", "Au retrait, par carte bancaire, virement ou espèces. Pour une personnalisation au-delà de la plaque, un acompte de 30 % est demandé."),
  ("Conservation", "Indiquée sur la page de chaque gâteau."),
