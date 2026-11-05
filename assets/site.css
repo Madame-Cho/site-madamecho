@@ -240,3 +240,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 @media(max-width:350px){.nav{padding-left:8px;padding-right:8px;gap:0 2px;font-size:9px;letter-spacing:.035em}}
 
 @media(min-width:860px){.intro{max-width:960px;padding-left:32px;padding-right:32px;text-wrap:balance}}
+
+/* Même cadre pour le portrait et la photo de l’atelier, sur tous les écrans. */
+#maison .portrait,#maison .atelier>figure{width:100%;max-width:431px;margin-left:auto;margin-right:auto}
+#maison .portrait img,#maison .atelier>figure img{display:block;width:100%;height:auto;max-height:none;aspect-ratio:852/1186;object-fit:cover;object-position:center}
+.evenements-collage{margin:32px 0}
+.evenements-collage img{width:100%;height:auto}
+.evenements-collage figcaption{font-size:14px;color:var(--doux);line-height:1.5;margin-top:12px}

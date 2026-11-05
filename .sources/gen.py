@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-04-marque"
+VERSION = "2026-11-05-photos"
 SITE = "https://madamecho.com/"
 BASE = "/atelier-site/site/" if ESSAI else "/"   # chemin absolu du site sur le serveur (page 404, servie à n'importe quelle adresse)
 MAJ = VERSION[:10]        # date de mise à jour annoncée au plan du site
@@ -208,8 +208,7 @@ def accueil(prof=0):
  <h2 class="titre" id="t-evenements"><span class="etiquette">Événements &amp; créations sur commande</span> Un thème, une occasion, une touche gourmande.</h2>
  <p>Anniversaire d’enfant, baptême, mariage ou toute autre occasion : Madame Cho imagine des créations gourmandes sur commande, adaptées au thème et à l’ambiance que vous souhaitez. Halloween n’est ici qu’un exemple parmi tant d’autres !</p>
  <p>Partagez vos envies, votre thème, la date et le nombre de personnes : imaginons ensemble les douceurs qui accompagneront votre événement.</p>
- <div class="evenements-photos"><figure>{img("evenement-biscuits", prof, "Truffes au chocolat en forme d’araignées et biscuits en forme de doigts de sorcière", "(min-width: 700px) 45vw, 100vw")}<figcaption>Truffes au chocolat en forme d’araignées<br>et biscuits « doigts de sorcière ».</figcaption></figure>
- <figure>{img("evenement-fantomes", prof, "Mini-gâteaux au chocolat décorés de petits fantômes", "(min-width: 700px) 45vw, 100vw")}<figcaption>Mini-gâteaux fantômes au chocolat<br>Une création imaginée pour Halloween.</figcaption></figure></div>
+ <figure class="evenements-collage">{img("halloween-triptyque", prof, "Créations d’Halloween : truffes araignées et biscuits doigts de sorcière, mini-gâteaux au chocolat et desserts fantômes", "(min-width: 1200px) 1100px, 100vw")}<figcaption>Truffes au chocolat en forme d’araignées et biscuits « doigts de sorcière », mini-gâteaux au chocolat et desserts fantômes : des créations imaginées pour Halloween.</figcaption></figure>
  <a class="bouton" href="{a}#perso">Parlons de votre événement</a>
 </div></section>
 {pros}
