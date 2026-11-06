@@ -412,12 +412,13 @@ MENTIONS = [
 CONFID = [
  ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
  ("Pourquoi", ["Seulement pour répondre à votre demande, vous faire une proposition, préparer et retirer votre commande. Base légale : les mesures prises à votre demande avant un contrat, puis le contrat lui-même. Aucune publicité, aucune revente."]),
- ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
- ("Qui les reçoit", ["Madame Cho. Prestataires techniques : OVH (hébergement du site et envoi du formulaire, en France) et Google (messagerie).",
-   "Pour classer les emails et préparer les réponses, Madame Cho se fait aider par des assistants d'intelligence artificielle : Claude (Anthropic) et ChatGPT (OpenAI). Ces assistants ne décident de rien et n'envoient aucun email : Madame Cho relit et répond elle-même. Aucun autre destinataire.",
+ ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande, puis le suivi de votre commande (étapes, montant, paiement, notes de préparation). N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
+ ("Qui les reçoit", ["Madame Cho. Prestataires techniques : OVH (hébergement du site, envoi du formulaire et outil de suivi des commandes, en France) et Google (messagerie).",
+   "Votre demande est enregistrée dans l'outil de suivi des commandes de Madame Cho, hébergé avec le site chez OVH en France et réservé à Madame Cho.",
+   "Pour classer les emails, suivre les commandes et préparer les réponses, Madame Cho se fait aider par des assistants d'intelligence artificielle : Claude (Anthropic) et ChatGPT (OpenAI). Ces assistants ne décident de rien et n'envoient aucun email : Madame Cho relit et répond elle-même. Aucun autre destinataire.",
    "Google, Anthropic et OpenAI peuvent traiter des données hors de l'Union européenne, notamment aux États-Unis, avec les garanties prévues par leurs conditions (cadre de protection des données UE–États-Unis ou clauses contractuelles types de la Commission européenne)."]),
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
- ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les factures sont conservées 10 ans, comme la loi l'exige."]),
+ ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les informations d'un client sont effacées 3 ans après sa dernière commande ou son dernier échange avec Madame Cho. Les factures sont conservées 10 ans, comme la loi l'exige."]),
  ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à <a href=\"mailto:{EMAIL}\">{EMAIL}</a>. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
  ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante."]),
 ] + ([("Mesure d'audience", [
@@ -552,6 +553,15 @@ def catalogue():
         prods[p["id"]] = d
     return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO}
 
+def catalogue_gestion():
+    """Carte pour l'espace de gestion : la même, plus les textes publics des fiches (comparaison des allergènes, R-39)."""
+    cat = catalogue()
+    for p in PRODUITS:
+        cat["produits"][p["id"]].update(phrase=p["phrase"], compo=list(p["compo"]), allergenes=p["allergenes"], conservation=p["conservation"],
+                                        delai_txt=p["delai_txt"])
+    cat["traces"] = TRACES
+    return cat
+
 def php_val(v):
     if isinstance(v, bool): return "true" if v else "false"
     if isinstance(v, int): return str(v)
@@ -593,7 +603,7 @@ if not APERCU:
     ecrire(".htaccess", htaccess())
 images_partage()
 ecrire("mentions-legales/index.html", legale("mentions-legales", "Mentions légales", "Mentions légales du site de Madame Cho, pâtisserie à Meudon.", MENTIONS))
-ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID))
+ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID, maj="6 novembre 2026"))
 ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, acompte, retrait, paiement.", CONDITIONS, maj="4 novembre 2026"))
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
@@ -605,6 +615,21 @@ for f in ("envoyer.php", "dkim.php", "menage.php", "cle-dkim.php"):
 ecrire("ma-demande/.htaccess", "# Le dossier des limites d'envoi, la carte, la signature, le ménage et la page de préparation DKIM ne sont pas servis\n"
        "# (cle-dkim.php a servi une fois, le 03/11/2026 ; pour la rouvrir, retirer « cle-dkim » de la liste)\nRedirectMatch 404 /ma-demande/\\.limites\n"
        "<FilesMatch \"^(catalogue|dkim|menage|cle-dkim)\\.php$|\\.pem$\">\n  Require all denied\n</FilesMatch>\n")
+if not APERCU:
+    # Espace de gestion (clients, commandes, produits), spécification du 06/11/2026 : PHP et SQLite chez OVH, réservé à Madame Cho.
+    # Les données (base, comptes) vivent sur le serveur hors du dossier du site, jamais dans ce dépôt (R-08).
+    src = os.path.join(ICI, "gestion")
+    for racine, _, fichiers in os.walk(src):
+        rel = os.path.relpath(racine, src)
+        for f in fichiers:
+            if f.endswith((".php", ".css", ".js", ".webmanifest")) and f != "catalogue.php":
+                os.makedirs(os.path.join(OUT, "gestion", rel), exist_ok=True)
+                shutil.copy(os.path.join(racine, f), os.path.join(OUT, "gestion", rel, f))
+    ecrire("gestion/inc/catalogue.php", "<?php\n// Carte de Madame Cho pour l'espace de gestion, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(catalogue_gestion()) + ";\n")
+    ecrire("gestion/.htaccess", "# Espace de gestion de Madame Cho : réservé (connexion), jamais indexé ; seule la page index.php est servie, avec son habillage\n"
+           "DirectoryIndex index.php\n<IfModule mod_headers.c>\n  Header always set X-Robots-Tag \"noindex, nofollow, noarchive\"\n</IfModule>\n"
+           "<FilesMatch \"\\.php$\">\n  Require all denied\n</FilesMatch>\n<Files \"index.php\">\n  Require all granted\n</Files>\n")
+    ecrire("gestion/inc/.htaccess", "# Code et carte de l'espace de gestion : jamais servis\nRequire all denied\n")
 os.makedirs(os.path.join(OUT, "assets/polices"), exist_ok=True)
 for f in ("jost-latin-400-normal.woff2", "jost-latin-500-normal.woff2", "OFL-Jost.txt"):
     shutil.copy(os.path.join(COMMUN, "polices", f), os.path.join(OUT, "assets/polices", f))

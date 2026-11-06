@@ -5,6 +5,8 @@
  * Inclus par envoyer.php, qui le fait à chaque appel. Lancé aussi chaque jour par une tâche planifiée
  * de l'hébergement OVH (« Tâches planifiées - Cron »), pour que l'effacement ne dépende pas des visites :
  * 2 heures + 24 heures, toujours moins de 48 heures (audit du site du 03/11/2026, C07). Jamais servi par le site (.htaccess).
+ * La même tâche applique les durées de conservation de l'espace de gestion (06/11/2026) : demandes sans suite 12 mois,
+ * clients 3 ans, journal des connexions 6 mois (politique de confidentialité).
  */
 declare(strict_types=1);
 
@@ -31,5 +33,16 @@ function sel_empreintes(string $dossier): ?string {
 }
 
 if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
-    exit(menage_empreintes(__DIR__ . '/.limites', 7200) ? 1 : 0);
+    $restes = menage_empreintes(__DIR__ . '/.limites', 7200);
+    $gestion = dirname(__DIR__) . '/gestion/inc/conservation.php';
+    if (PHP_VERSION_ID >= 80000 && is_file($gestion)) {
+        try {
+            require_once $gestion;
+            \MadameCho\Gestion\tache_de_nuit();
+        } catch (\Throwable $e) {
+            error_log('madamecho ménage : espace de gestion : ' . get_class($e) . ' : ' . $e->getMessage());
+            $restes++;
+        }
+    }
+    exit($restes ? 1 : 0);
 }
