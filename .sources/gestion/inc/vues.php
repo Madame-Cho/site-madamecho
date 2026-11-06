@@ -36,6 +36,7 @@ function icone(string $n): string {
         'stats' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
         'reglages' => '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
         'sortir' => '<path d="M10 4H4v16h6"/><path d="M14 8l4 4-4 4M18 12H9"/>',
+        'crayon' => '<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"/><path d="M14 7l3 3"/>',
         default => '',
     };
     return '<svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';
@@ -65,7 +66,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
     $f = '';
     if ($flash) $f = '<div class="flash flash-' . h($flash[0]) . '" role="status">' . nl2br(h($flash[1])) . '</div>';
     $essai = GESTION_ESSAI ? '<div class="bandeau-essai" role="note">Essai en local : aucun email ne part, les données sont fictives.</div>' : '';
-    echo '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+    $page = '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
        . '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
        . '<meta name="robots" content="noindex, nofollow, noarchive">'
        . '<title>' . h($titre) . ' · Gestion Madame Cho</title>'
@@ -78,13 +79,15 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '</head><body class="' . h(trim(($u ? 'connecte ' : 'deconnecte ') . $classe)) . '">' . $essai
        . '<a class="aller" href="#contenu">Aller au contenu</a>'
        . '<header class="barre"><a class="marque" href="' . h($u ? u('accueil') : u('connexion')) . '"><img src="../assets/logo-chocolat.svg" alt="Madame Cho" width="112" height="33"><span>' . h(GESTION_NOM) . '</span></a>'
-       . ($u ? '<nav class="nav-haut" aria-label="Menu">' . $nav . '</nav>'
-             . '<a class="nouvelle" href="' . h(u('commande-edition')) . '" aria-label="Nouvelle commande">' . icone('ajouter') . '<span>Nouvelle commande</span></a>' : '')
+       . ($u ? '<nav class="nav-haut" aria-label="Menu">' . $nav . '</nav>' : '')
+       . bouton_langue()
+       . ($u ? '<a class="nouvelle" href="' . h(u('commande-edition')) . '" aria-label="Nouvelle commande">' . icone('ajouter') . '<span>Nouvelle commande</span></a>' : '')
        . '</header>'
-       . '<main id="contenu" class="page">' . $f . $corps . '</main>'
+       . '<main id="contenu" class="page">' . $f . rappel_francais($corps) . $corps . '</main>'
        . ($u ? '<nav class="onglets" aria-label="Menu principal">' . $onglets . '</nav>' : '')
        . '<script src="' . h(fichier_versionne('gestion.js')) . '"></script>'
        . '</body></html>';
+    echo traduire_page($page);
     exit;
 }
 
@@ -94,7 +97,9 @@ function page_indisponible(): void {
     echo '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
        . '<meta name="robots" content="noindex, nofollow"><title>Indisponible · Gestion Madame Cho</title><link rel="stylesheet" href="' . h(fichier_versionne('gestion.css')) . '"></head>'
        . '<body class="deconnecte"><main class="page etroite"><h1>La gestion est momentanément indisponible</h1>'
-       . '<p>La base de données ne répond pas. Les demandes du site continuent d\'arriver par email à contact@madamecho.com. Prévenez Olivier.</p></main></body></html>';
+       . '<p>La base de données ne répond pas. Les demandes du site continuent d\'arriver par email à contact@madamecho.com. Prévenez Olivier.</p>'
+       . '<h2 lang="ko">관리 화면을 잠시 쓸 수 없어요</h2>'
+       . '<p lang="ko">데이터베이스가 응답하지 않아요. 사이트 문의는 계속 contact@madamecho.com으로 이메일이 와요. Olivier에게 알려 주세요.</p></main></body></html>';
     exit;
 }
 
@@ -114,7 +119,7 @@ function chip_paiement(string $p, int $acompte = 0): string {
     return '<span class="paiement p-' . h(str_replace('_', '-', $p)) . '">' . h($l) . '</span>';
 }
 function drapeau(string $note = ''): string {
-    return '<span class="drapeau"' . ($note !== '' ? ' title="' . h($note) . '"' : '') . '>' . icone('alerte') . 'Problème</span>';
+    return '<span class="drapeau" translate="no"' . ($note !== '' ? ' title="' . h($note) . '"' : '') . '>' . icone('alerte') . h(fr_ko('Problème', '문제')) . '</span>';
 }
 function retrait_texte(array $k, bool $court = false): string {
     $livraison = ($k['mode'] ?? 'retrait') === 'livraison';
@@ -135,7 +140,7 @@ function carte_commande(array $k, bool $avecClient = true): string {
     if (!empty($k['probleme'])) $alertes .= drapeau((string)$k['probleme_note']);
     if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . heures_depuis($k['recue_le']) . ' h</span>';
     elseif (commande_dormante($k)) $alertes .= '<span class="dormant">Rien depuis ' . jours_depuis($k['dernier_echange']) . ' j</span>';
-    $nom = $avecClient ? '<b>' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(TYPES_COMMANDE[$k['type']] ?? 'Commande') . '</b>';
+    $nom = $avecClient ? '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(TYPES_COMMANDE[$k['type']] ?? 'Commande') . '</b>';
     $montant = montant_commande($k);
     return '<a class="carte-cmd" href="' . h(u('commande', ['id' => $k['id']])) . '">'
          . '<span class="l1">' . $nom . chip_statut($k['statut']) . '</span>'
@@ -222,7 +227,7 @@ function fil_historique(array $evs, bool $avecReference = false): string {
         $cl = $type === 'commentaire' ? 'ev-commentaire' : ($type === 'probleme' ? 'ev-probleme' : 'ev-systeme');
         $ref = $avecReference && !empty($e['reference']) ? ' · <a href="' . h(u('commande', ['id' => $e['commande_id']])) . '">' . h($e['reference']) . '</a>' : '';
         $txt = $type === 'statut' && isset(STATUTS[$e['nouveau']]) ? chip_statut($e['nouveau'], false) . (($p = mb_strpos($e['texte'], ' : ')) !== false ? ' ' . h(mb_substr($e['texte'], $p + 3)) : '') : nl2br(h($e['texte']));
-        $s .= '<li class="' . $cl . '"><div class="ev-texte">' . $txt . '</div><div class="ev-meta">' . h($e['auteur']) . ' · ' . h(date_fr($e['le'], 'heure')) . $ref . '</div></li>';
+        $s .= '<li class="' . $cl . '"><div class="ev-texte"' . ($type === 'commentaire' ? ' translate="no" lang="fr"' : '') . '>' . $txt . '</div><div class="ev-meta">' . h($e['auteur']) . ' · ' . h(date_fr($e['le'], 'heure')) . $ref . '</div></li>';
     }
     return '<ol class="fil">' . $s . '</ol>';
 }
@@ -285,7 +290,7 @@ function bloc_email(string $id, string $titre, array $e, string $a): string {
     $ouvrir = $a !== '' ? lien_bouton(mailto($a, $e), icone('email') . 'Ouvrir dans ma messagerie', 'principal') : '<p class="aide">Pas d\'email pour ce client : copiez le texte dans un message.</p>';
     return '<details class="email-pret" id="' . h($id) . '"><summary>' . icone('email') . h($titre) . '</summary>'
          . '<p class="aide">Relisez et complétez avant d\'envoyer : c\'est vous qui envoyez, depuis contact@madamecho.com.</p>'
-         . '<p class="sujet"><b>Objet :</b> ' . h($e['sujet']) . '</p><pre class="corps" id="' . h($id) . '-texte">' . h($e['corps']) . '</pre>'
+         . '<p class="sujet"><b>Objet :</b> <span translate="no" lang="fr">' . h($e['sujet']) . '</span></p><pre class="corps" id="' . h($id) . '-texte" translate="no" lang="fr">' . h($e['corps']) . '</pre>'
          . '<div class="actions">' . $ouvrir . '<button type="button" class="btn" data-copier="' . h($id) . '-texte">' . icone('copier') . 'Copier le texte</button></div></details>';
 }
 

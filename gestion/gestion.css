@@ -42,6 +42,13 @@ code{font-size:13px;background:var(--ivoire);padding:2px 6px;border-radius:6px;w
 .marque span{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--doux);padding-left:10px;border-left:1px solid var(--ligne)}
 .nav-haut{display:none}
 .nouvelle{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:20px;background:var(--chocolat);color:#fff;text-decoration:none;font-weight:500;font-size:14px}
+.langue{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;padding:0 10px;border:1px solid var(--fort);border-radius:20px;color:var(--texte);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:.04em}
+.langue:hover{border-color:var(--chocolat)}
+/* L'écran en coréen : polices du téléphone pour le hangeul, et les mots coréens ne se coupent pas au milieu */
+html:lang(ko){--police:"Jost","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+html:lang(ko) body{word-break:keep-all}
+.rappel-fr{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--ambre-f);color:var(--ambre);font-size:14px;line-height:1.45}
+.rappel-fr .ic{margin-top:1px}
 .nouvelle span{display:none}
 
 /* Menu du bas (téléphone) */

@@ -53,11 +53,11 @@ function page_produits(): void {
         $alerte = '';
         if ($avecRecette) {
             $cmp = allergenes_comparer($p, $rec);
-            if ($cmp['manquants']) $alerte = '<span class="l5"><span class="drapeau">' . icone('alerte') . 'Allergène absent du site : ' . h(allergenes_texte($cmp['manquants'])) . '</span></span>';
+            if ($cmp['manquants']) $alerte = '<span class="l5"><span class="drapeau">' . icone('alerte') . 'Allergène absent du site : ' . h(allergenes_affiches($cmp['manquants'])) . '</span></span>';
         }
         $vendu = isset($ventes[$p['id']]) ? $ventes[$p['id']]['q'] . ' vendu(s) en 12 mois · ' . euros($ventes[$p['id']]['ca']) : 'Aucune vente remise en 12 mois';
         $cartes .= '<a class="carte-cmd carte-produit" href="' . h(u('produit', ['id' => $p['id']])) . '">'
-                 . '<span class="l1"><b>' . h($p['nom']) . '</b><span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? $p['statut']) . '</span></span>'
+                 . '<span class="l1"><b translate="no">' . h($p['nom']) . '</b><span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? $p['statut']) . '</span></span>'
                  . '<span class="l2">' . h($offre) . '</span><span class="l3">' . h(implode(' · ', $etat)) . '</span><span class="l4">' . h($vendu) . '</span>' . $alerte . '</a>';
     }
     $c .= $cartes !== '' ? '<div class="liste">' . $cartes . '</div>' : '<p class="vide">La carte du site n\'est pas encore chargée.</p>';
@@ -135,12 +135,13 @@ function page_produit(): void {
     $cat = $p['cat'];
     $rec = recette($p);
     $ventes = ventes_par_produit(date('Y-m-d', strtotime('-12 months')))[$id] ?? ['q' => 0, 'ca' => 0, 'variantes' => []];
-    $c = titre_page(h($p['nom']), '<span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? '') . '</span> · <a href="../' . h($cat['url'] ?? ('carte/' . $id . '/')) . '" target="_blank" rel="noopener">Voir sur le site</a>', '', u('produits'));
+    $c = titre_page('<span translate="no">' . h($p['nom']) . '</span>', '<span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? '') . '</span> · <a href="../' . h($cat['url'] ?? ('carte/' . $id . '/')) . '" target="_blank" rel="noopener">Voir sur le site</a>', '', u('produits'));
     // Ce que le site affiche
     $prix = '';
-    foreach ($vars as $code => $v) $prix .= '<li>' . h($v['libelle']) . ' · <b>' . h(euros($v['prix'])) . '</b>' . ($cat['mode'] !== 'taille' ? ' la pièce' : '') . '</li>';
-    $site = definition(['Présentation' => h($cat['phrase'] ?? ''), 'Composition' => !empty($cat['compo']) ? h(implode(' · ', $cat['compo'])) : '',
-                        'Allergènes' => h($cat['allergenes'] ?? ''), 'Conservation' => h($cat['conservation'] ?? ''),
+    foreach ($vars as $code => $v) $prix .= '<li><span translate="no">' . h($v['libelle']) . '</span> · <b>' . h(euros($v['prix'])) . '</b>' . ($cat['mode'] !== 'taille' ? ' la pièce' : '') . '</li>';
+    $tel_quel = fn(string $t): string => $t !== '' ? '<span translate="no" lang="fr">' . h($t) . '</span>' : '';   // le texte du site, tel que le lisent les clients
+    $site = definition(['Présentation' => $tel_quel($cat['phrase'] ?? ''), 'Composition' => !empty($cat['compo']) ? $tel_quel(implode(' · ', $cat['compo'])) : '',
+                        'Allergènes' => $tel_quel($cat['allergenes'] ?? ''), 'Conservation' => $tel_quel($cat['conservation'] ?? ''),
                         'À commander' => h(isset($cat['delai']) ? $cat['delai'] . ' jour(s) avant le retrait' : '') . (!empty($cat['minimum']) ? h(' · au moins ' . $cat['minimum'] . ' pièces') : '')])
           . '<ul class="puces">' . $prix . '</ul><p class="aide">Ces textes et ces prix viennent du site : pour les changer, demandez la modification du site (ils engagent Madame Cho, R-39).</p>';
     $c .= bloc('Sur le site', $site);
@@ -148,11 +149,13 @@ function page_produit(): void {
     $avecRecette = array_filter($rec, fn($r) => $r['lignes']);
     if ($avecRecette) {
         $cmp = allergenes_comparer($p, $rec);
-        $t = '<p>D\'après la recette : <b>' . h($cmp['deduits'] ? allergenes_texte($cmp['deduits']) : 'aucun allergène') . '</b>.</p>';
-        if ($cmp['manquants']) $t .= '<p class="erreur">' . icone('alerte') . ' La recette contient <b>' . h(allergenes_texte($cmp['manquants'])) . '</b>, que le site n\'indique pas. À corriger sur le site avant de vendre ce gâteau, et à faire confirmer par Youngmi.</p>';
-        if ($cmp['en_trop']) $t .= '<p class="aide">Le site indique aussi ' . h(allergenes_texte($cmp['en_trop'])) . ' : une mention de précaution à garder, ou un ingrédient pas encore saisi dans la recette.</p>';
+        $t = '<p>D\'après la recette : <b>' . h($cmp['deduits'] ? allergenes_affiches($cmp['deduits']) : 'aucun allergène') . '</b>.</p>';
+        if ($cmp['manquants']) $t .= '<p class="erreur">' . icone('alerte') . ' ' . fr_ko('La recette contient <b>' . h(allergenes_affiches($cmp['manquants'])) . '</b>, que le site n\'indique pas. À corriger sur le site avant de vendre ce gâteau, et à faire confirmer par Youngmi.',
+            '레시피에는 <b>' . h(allergenes_affiches($cmp['manquants'])) . '</b>이(가) 들어 있는데 사이트에는 적혀 있지 않아요. 이 케이크를 팔기 전에 사이트를 고치고 Youngmi에게 확인을 받으세요.') . '</p>';
+        if ($cmp['en_trop']) $t .= '<p class="aide">Le site indique aussi ' . h(allergenes_affiches($cmp['en_trop'])) . ' : une mention de précaution à garder, ou un ingrédient pas encore saisi dans la recette.</p>';
         if (!$cmp['manquants'] && !$cmp['en_trop']) $t .= '<p class="ok">La recette et le site disent la même chose.</p>';
-        $t .= '<p class="aide">La comparaison lit les mots du site (« lait », « noisette »…) : elle aide, mais c\'est Youngmi qui tranche un doute (R-39). Les allergènes de chaque ingrédient se règlent dans <a href="' . h(u('ingredients')) . '">Ingrédients</a>.</p>';
+        $t .= '<p class="aide">' . fr_ko('La comparaison lit les mots du site (« lait », « noisette »…) : elle aide, mais c\'est Youngmi qui tranche un doute (R-39). Les allergènes de chaque ingrédient se règlent dans <a href="' . h(u('ingredients')) . '">Ingrédients</a>.',
+            '비교는 사이트에 적힌 단어(« lait », « noisette »…)를 읽어서 해요. 참고용이고, 애매하면 Youngmi가 정해요 (R-39). 재료별 알레르기 유발 성분은 <a href="' . h(u('ingredients')) . '">재료</a>에서 정해요.') . '</p>';
         $c .= bloc('Allergènes', $t, $cmp['manquants'] ? 'alerte' : '');
     }
     // Recettes par taille ou parfum
@@ -167,7 +170,7 @@ function page_produit(): void {
     foreach ($rec as $code => $v) {
         $rows = '';
         foreach ($v['lignes'] as $l) {
-            $rows .= '<tr><td>' . h($l['nom']) . ($l['note'] !== '' ? '<br><span class="petit">' . h($l['note']) . '</span>' : '') . '</td>'
+            $rows .= '<tr><td translate="no">' . h($l['nom']) . ($l['note'] !== '' ? '<br><span class="petit">' . h($l['note']) . '</span>' : '') . '</td>'
                    . '<td class="nombre">' . h(nombre_fr((float)$l['quantite'])) . ' ' . h(unite_texte($l['unite'], (float)$l['quantite'])) . '</td>'
                    . '<td class="nombre">' . h((int)$l['prix_unite'] ? euros((int)$l['cout']) : 'prix ?') . '</td>'
                    . '<td class="actions-ligne"><details class="mini"><summary aria-label="Modifier ' . h($l['nom']) . '">Modifier</summary>'
@@ -192,7 +195,7 @@ function page_produit(): void {
             . liste_choix('nouveau_unite', 'Compté en', UNITES, 'g', ['id' => 'nu-' . $code]) . champ('nouveau_prix', 'Prix (€ le kg, le litre ou la pièce)', '', ['inputmode' => 'decimal', 'id' => 'np-' . $code]) . '</div></div>'
             . champ('note', 'Note (facultatif)', '', ['maxlength' => '120', 'id' => 'na-' . $code, 'placeholder' => 'pour la crème, pour le décor…']) . bouton('Ajouter à la recette', 'secondaire'), ['class' => 'form-ajout']);
         $vendus = (int)($ventes['variantes'][$code] ?? 0);
-        $r .= '<details class="variante" id="v-' . h($code) . '"' . ($vOuvert === (string)$code || count($rec) === 1 ? ' open' : '') . '><summary><b>' . h($v['libelle']) . '</b><span class="petit">'
+        $r .= '<details class="variante" id="v-' . h($code) . '"' . ($vOuvert === (string)$code || count($rec) === 1 ? ' open' : '') . '><summary><b translate="no">' . h($v['libelle']) . '</b><span class="petit">'
             . h(euros($v['prix'])) . ' · ' . ($v['lignes'] ? count($v['lignes']) . ' ingrédient(s), coût ' . euros($v['cout']) : 'recette vide') . ($vendus ? ' · ' . $vendus . ' vendu(s)' : '') . '</span></summary>'
             . ($rows !== '' ? '<table class="tableau recette"><thead><tr><th>Ingrédient</th><th class="nombre">Quantité</th><th class="nombre">Coût</th><th><span class="sr">Actions</span></th></tr></thead><tbody>' . $rows . '</tbody>' . $tot . '</table>' : '')
             . $marge . $ajout . '</details>';
@@ -217,7 +220,7 @@ function page_produit(): void {
     $c .= bloc('Fiche technique', ($p['fiche_lien'] !== '' ? '<p>' . lien_bouton($p['fiche_lien'], 'Ouvrir la fiche technique', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</p>' : '') . formulaire('fiche', $f));
     // Ventes
     $vt = '';
-    foreach ($vars as $code => $v) if (!empty($ventes['variantes'][$code])) $vt .= '<tr><td>' . h($v['libelle']) . '</td><td class="nombre">' . (int)$ventes['variantes'][$code] . '</td></tr>';
+    foreach ($vars as $code => $v) if (!empty($ventes['variantes'][$code])) $vt .= '<tr><td translate="no">' . h($v['libelle']) . '</td><td class="nombre">' . (int)$ventes['variantes'][$code] . '</td></tr>';
     $c .= bloc('Ventes des 12 derniers mois', $vt !== '' ? '<table class="tableau"><tbody>' . $vt . '</tbody><tfoot><tr><td>Total</td><td class="nombre">' . (int)$ventes['q'] . ' · ' . h(euros((int)$ventes['ca'])) . '</td></tr></tfoot></table>'
         . '<p>' . lien_bouton(u('commandes', ['vue' => 'toutes', 'r' => $p['nom']]), 'Voir les commandes', 'discret') . '</p>' : '<p class="vide">Aucune commande remise.</p>');
     $c .= bloc('Historique', fil_historique(historique(null, null, $id)));
@@ -233,7 +236,7 @@ function ingredient_depuis_post(): array {
 function formulaire_ingredient(?array $i): string {
     $all = $i ? array_filter(explode(',', $i['allergenes'])) : [];
     $cases = '';
-    foreach (ALLERGENES as $k => $l) $cases .= '<label class="case"><input type="checkbox" name="allergenes[]" value="' . h($k) . '"' . (in_array($k, $all, true) ? ' checked' : '') . '><span>' . h($l) . '</span></label>';
+    foreach (ALLERGENES as $k => $l) $cases .= '<label class="case"><input type="checkbox" name="allergenes[]" value="' . h($k) . '"' . (in_array($k, $all, true) ? ' checked' : '') . '><span>' . h(allergene_libelle($k)) . '</span></label>';
     return champ('nom', 'Nom', $i['nom'] ?? '', ['required' => true, 'maxlength' => '80', 'placeholder' => 'Chocolat noir 70 %'])
          . '<div class="ligne-champs">' . liste_choix('unite', 'Compté en', UNITES, $i['unite'] ?? 'g', [], 'Grammes pour le sec, millilitres pour les liquides, pièces pour les œufs, gousses, boîtes…')
          . champ('prix', 'Prix d\'achat TTC (€ le kg, le litre ou la pièce)', $i && (int)$i['prix'] ? number_format((int)$i['prix'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal', 'placeholder' => '12,50']) . '</div>'
@@ -257,9 +260,9 @@ function page_ingredients(): void {
     $c = titre_page('Ingrédients', count($is) . ' ingrédient(s), avec leur prix et leurs allergènes', '', u('produits'));
     $rows = '';
     foreach ($is as $i) {
-        $rows .= '<tr' . ($i['actif'] ? '' : ' class="retire"') . '><td><a href="' . h(u('ingredient', ['id' => $i['id']])) . '">' . h($i['nom']) . '</a>' . ($i['fournisseur'] !== '' ? '<br><span class="petit">' . h($i['fournisseur']) . '</span>' : '') . '</td>'
+        $rows .= '<tr' . ($i['actif'] ? '' : ' class="retire"') . '><td translate="no"><a href="' . h(u('ingredient', ['id' => $i['id']])) . '">' . h($i['nom']) . '</a>' . ($i['fournisseur'] !== '' ? '<br><span class="petit">' . h($i['fournisseur']) . '</span>' : '') . '</td>'
                . '<td class="nombre">' . ((int)$i['prix'] ? h(euros((int)$i['prix'])) . '<br><span class="petit">' . h(prix_unite_texte($i['unite'])) . '</span>' : '<span class="retard">prix ?</span>') . '</td>'
-               . '<td>' . h(allergenes_texte(array_filter(explode(',', $i['allergenes'])))) . '</td><td class="nombre">' . ($usage[(int)$i['id']] ?? 0) . '</td></tr>';
+               . '<td>' . h(allergenes_affiches(array_filter(explode(',', $i['allergenes'])))) . '</td><td class="nombre">' . ($usage[(int)$i['id']] ?? 0) . '</td></tr>';
     }
     $c .= bloc('', $rows !== '' ? '<div class="defile"><table class="tableau"><thead><tr><th>Ingrédient</th><th class="nombre">Prix</th><th>Allergènes</th><th class="nombre">Produits</th></tr></thead><tbody>' . $rows . '</tbody></table></div>'
         . '<p>' . ($tous ? '<a href="' . h(u('ingredients')) . '">Cacher les ingrédients retirés</a>' : '<a href="' . h(u('ingredients', ['tous' => 1])) . '">Voir aussi les ingrédients retirés</a>') . '</p>'
@@ -286,12 +289,12 @@ function page_ingredient(): void {
         }
         rediriger('ingredient', ['id' => $id]);
     }
-    $c = titre_page(h($i['nom']), h((int)$i['prix'] ? euros((int)$i['prix']) . ' ' . prix_unite_texte($i['unite']) : 'Prix à indiquer'), '', u('ingredients'));
+    $c = titre_page('<span translate="no">' . h($i['nom']) . '</span>', h((int)$i['prix'] ? euros((int)$i['prix']) . ' ' . prix_unite_texte($i['unite']) : 'Prix à indiquer'), '', u('ingredients'));
     $us = lignes("SELECT r.produit_id, r.variante, r.quantite, p.nom, p.catalogue FROM recettes r JOIN produits p ON p.id = r.produit_id WHERE r.ingredient_id = ? ORDER BY p.nom", [$id]);
     $l = '';
     foreach ($us as $x) {
         $pv = produit_variantes(['cat' => json_decode($x['catalogue'], true) ?: []]);
-        $l .= '<li><a href="' . h(u('produit', ['id' => $x['produit_id'], 'v' => $x['variante']])) . '">' . h($x['nom']) . '</a>, ' . h($pv[$x['variante']]['libelle'] ?? $x['variante']) . ' : ' . h(nombre_fr((float)$x['quantite']) . ' ' . unite_texte($i['unite'], (float)$x['quantite'])) . '</li>';
+        $l .= '<li><span translate="no"><a href="' . h(u('produit', ['id' => $x['produit_id'], 'v' => $x['variante']])) . '">' . h($x['nom']) . '</a>, ' . h($pv[$x['variante']]['libelle'] ?? $x['variante']) . '</span> : <span>' . h(nombre_fr((float)$x['quantite']) . ' ' . unite_texte($i['unite'], (float)$x['quantite'])) . '</span></li>';
     }
     $c .= bloc('Utilisé dans', $l !== '' ? '<ul class="puces">' . $l . '</ul>' : '<p class="vide">Dans aucune recette.</p>');
     $c .= bloc('Modifier', formulaire('enregistrer', formulaire_ingredient($i) . case_a_cocher('retire', 'Retiré (n\'est plus acheté ; reste dans les anciennes recettes)', !$i['actif']) . bouton('Enregistrer', 'principal')));

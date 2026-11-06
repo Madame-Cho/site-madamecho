@@ -155,15 +155,15 @@ function page_commande(): void {
     $client = client((int)$k['client_id']);
     $nom = commande_client_nom($k);
     $chips = chip_statut($k['statut'], false) . chip_paiement($k['paiement'], (int)$k['acompte']) . ($k['probleme'] ? drapeau() : '');
-    $c = titre_page(h($nom), h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>', '', u('commandes'));
+    $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>', '', u('commandes'));
     $c .= etape_suivante($k);
     // Client
     $tel = $k['client_tel'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $k['client_tel'])) . '">' . h($k['client_tel']) . '</a>' : '';
     $mail = $k['client_email'] !== '' ? '<a href="mailto:' . h($k['client_email']) . '">' . h($k['client_email']) . '</a>' : '';
     $ch = client_chiffres((int)$k['client_id']);
     $c .= '<div class="grille-2">';
-    $c .= bloc('Client', definition(['Nom' => '<a href="' . h(u('client', ['id' => $k['client_id']])) . '">' . h($nom) . '</a> <span class="petit">' . h($k['client_numero']) . '</span>',
-                                     'Email' => $mail, 'Téléphone' => $tel, 'Ville' => h($k['client_ville']),
+    $c .= bloc('Client', definition(['Nom' => '<a href="' . h(u('client', ['id' => $k['client_id']])) . '" translate="no">' . h($nom) . '</a> <span class="petit">' . h($k['client_numero']) . '</span>',
+                                     'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $k['client_ville'] !== '' ? '<span translate="no">' . h($k['client_ville']) . '</span>' : '',
                                      'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . euros($ch['total']) : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
                      . '<p>' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret') . '</p>');
     $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
@@ -175,12 +175,12 @@ function page_commande(): void {
     $rows = ''; $V = variantes(); $carte = true;
     foreach ($k['lignes_tab'] as $l) {
         if (!isset($V[$l['v'] ?? ''])) $carte = false;
-        $rows .= '<tr><td>' . (int)$l['q'] . ' ×</td><td><b>' . h($l['nom']) . '</b>' . (($l['libelle'] ?? '') !== '' ? '<br><span class="petit">' . h($l['libelle']) . '</span>' : '')
+        $rows .= '<tr><td>' . (int)$l['q'] . ' ×</td><td><b translate="no">' . h($l['nom']) . '</b>' . (($l['libelle'] ?? '') !== '' ? '<br><span class="petit" translate="no">' . h($l['libelle']) . '</span>' : '')
                . (($l['plaque'] ?? '') !== '' ? '<br><span class="plaque">Plaque : « ' . h($l['plaque']) . ' »</span>' : '') . '</td><td class="nombre">' . h(euros((int)$l['prix'] * (int)$l['q'])) . '</td></tr>';
     }
     $contenu = $rows !== '' ? '<table class="tableau lignes-cmd"><tbody>' . $rows . '</tbody><tfoot><tr><td></td><td>' . ($carte ? 'Total indicatif (prix de la carte)' : 'Total des lignes') . '</td><td class="nombre">' . h(euros((int)$k['total_indicatif'])) . '</td></tr></tfoot></table>' : '';
-    if ($k['perso'] !== '') $contenu .= '<div class="texte-client"><h3>Gâteau personnalisé</h3><p>' . nl2br(h($k['perso'])) . '</p></div>';
-    if ($k['besoin'] !== '') $contenu .= '<div class="texte-client"><h3>Demande d\'un professionnel</h3><p>' . nl2br(h($k['besoin'])) . '</p></div>';
+    if ($k['perso'] !== '') $contenu .= '<div class="texte-client"><h3>Gâteau personnalisé</h3><p translate="no" lang="fr">' . nl2br(h($k['perso'])) . '</p></div>';
+    if ($k['besoin'] !== '') $contenu .= '<div class="texte-client"><h3>Demande d\'un professionnel</h3><p translate="no" lang="fr">' . nl2br(h($k['besoin'])) . '</p></div>';
     if ($contenu === '') $contenu = '<p class="vide">Aucun gâteau noté.</p>';
     $c .= bloc('Contenu', $contenu . '<p>' . lien_bouton(u('commande-edition', ['id' => $id]), 'Modifier la commande', 'discret') . '</p>');
     // Montants et paiement
@@ -197,7 +197,7 @@ function page_commande(): void {
         . '</details>');
     // Problème
     if ($k['probleme']) {
-        $c .= bloc(icone('alerte') . ' Problème', '<p class="probleme-note">' . nl2br(h($k['probleme_note'] !== '' ? $k['probleme_note'] : 'Problème signalé.')) . '</p>'
+        $c .= bloc(icone('alerte') . ' Problème', '<p class="probleme-note"' . ($k['probleme_note'] !== '' ? ' translate="no" lang="fr"' : '') . '>' . nl2br(h($k['probleme_note'] !== '' ? $k['probleme_note'] : 'Problème signalé.')) . '</p>'
             . formulaire('resolu', zone('note', 'Comment il a été résolu', '', ['rows' => '2', 'maxlength' => '1000']) . bouton('Marquer résolu', 'secondaire')), 'alerte');
     }
     // Historique et commentaires
@@ -272,7 +272,8 @@ function etape_suivante(array $k): string {
             if ($c && $c['statut'] !== 'efface') {
                 if ($c['avis_recu_le']) $avis = '<p>Avis Google reçu le ' . h(date_fr($c['avis_recu_le'], 'longue')) . '. Merci !</p>';
                 elseif ($c['avis_demande_le']) $avis = '<p>Avis Google demandé le ' . h(date_fr($c['avis_demande_le'], 'longue')) . '.</p>' . formulaire('avis_recu', bouton(icone('avis') . 'L\'avis est arrivé', 'secondaire'));
-                elseif ($lien === '') $avis = '<p class="aide">Pour demander un avis Google, ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.</p>';
+                elseif ($lien === '') $avis = '<p class="aide">' . fr_ko('Pour demander un avis Google, ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
+                    '구글 리뷰를 부탁하려면 먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>';
                 else $avis = '<p class="aide">Seulement à un client content, sans contrepartie et sans demander de note (règles de Google).</p>' . bloc_email('email-avis', 'Demander un avis Google', email_avis($k, $lien), $email)
                             . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
             }
@@ -354,19 +355,19 @@ function page_commande_edition(): void {
     $src = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : [];
     $val = fn(string $n, $def = '') => isset($src[$n]) && is_string($src[$n]) ? $src[$n] : $def;
     $titre = $k ? 'Modifier ' . $k['reference'] : 'Nouvelle commande';
-    $c = titre_page(h($titre), $k ? h(commande_client_nom($k)) : 'Une demande reçue par Instagram, téléphone, email, sur un marché… ou une vente déjà faite', '', $k ? u('commande', ['id' => $k['id']]) : u('commandes'));
+    $c = titre_page(h($titre), $k ? '<span translate="no">' . h(commande_client_nom($k)) . '</span>' : 'Une demande reçue par Instagram, téléphone, email, sur un marché… ou une vente déjà faite', '', $k ? u('commande', ['id' => $k['id']]) : u('commandes'));
     if ($erreurs) $c .= '<div class="erreur" role="alert">' . implode('<br>', array_map(fn($e) => h($e), $erreurs)) . '</div>';
     $f = '';
     // Client
     if ($clientFixe) {
-        $f .= bloc('Client', '<p><b>' . h(client_nom($clientFixe)) . '</b> <span class="petit">' . h($clientFixe['numero']) . '</span></p>');
+        $f .= bloc('Client', '<p><b translate="no">' . h(client_nom($clientFixe)) . '</b> <span class="petit">' . h($clientFixe['numero']) . '</span></p>');
     } else {
         $opts = '';
         foreach (clients_lister('', 'actifs') as $cl) $opts .= '<option value="' . h($cl['numero'] . ' · ' . client_nom($cl)) . '">';
         $f .= bloc('Client', champ('client_ref', 'Client déjà connu', $val('client_ref'), ['list' => 'liste-clients', 'placeholder' => 'Tapez un nom ou CL-…', 'autocomplete' => 'off']) . '<datalist id="liste-clients">' . $opts . '</datalist>'
             . '<details class="replie"' . ($val('c_nom') !== '' || $val('c_societe') !== '' ? ' open' : '') . '><summary>Ou un nouveau client</summary>'
             . liste_choix('c_type', 'Type', TYPES_CLIENT, $val('c_type', 'particulier'))
-            . '<div class="ligne-champs">' . champ('c_prenom', 'Prénom', $val('c_prenom'), ['autocomplete' => 'off']) . champ('c_nom', 'Nom', $val('c_nom'), ['autocomplete' => 'off']) . '</div>'
+            . '<div class="ligne-champs">' . champ('c_prenom', 'Prénom', $val('c_prenom'), ['autocomplete' => 'off']) . champ('c_nom', 'Nom de famille', $val('c_nom'), ['autocomplete' => 'off']) . '</div>'
             . champ('c_societe', 'Entreprise ou restaurant', $val('c_societe'), ['autocomplete' => 'off'])
             . '<div class="ligne-champs">' . champ('c_email', 'Email', $val('c_email'), ['type' => 'email', 'autocomplete' => 'off']) . champ('c_telephone', 'Téléphone', $val('c_telephone'), ['type' => 'tel', 'autocomplete' => 'off']) . '</div>'
             . champ('c_ville', 'Ville', $val('c_ville'), ['autocomplete' => 'off']) . '</details>');
@@ -469,20 +470,20 @@ function page_production(): void {
     $c .= '<h2 class="imprime-titre">' . h($periode) . '</h2>';
     if (!$ks) { $c .= '<p class="vide">Aucune commande confirmée sur cette période.</p>'; mise_en_page('Production', $c, 'production', 'page-production'); }
     $t = '';
-    foreach ($total as $l => $q) $t .= '<tr><td class="nombre">' . $q . '</td><td>' . h($l) . '</td></tr>';
+    foreach ($total as $l => $q) $t .= '<tr><td class="nombre">' . $q . '</td><td translate="no">' . h($l) . '</td></tr>';
     $c .= bloc('À préparer en tout', '<table class="tableau"><tbody>' . $t . '</tbody></table>');
     foreach ($parJour as $d => $liste) {
         $s = '';
         foreach ($liste as $k) {
             $lg = '';
-            foreach ($k['lignes_tab'] as $l) $lg .= '<li><b>' . (int)$l['q'] . ' ×</b> ' . h($l['nom']) . (($l['libelle'] ?? '') !== '' ? ', ' . h($l['libelle']) : '') . (($l['plaque'] ?? '') !== '' ? ' · <span class="plaque">plaque « ' . h($l['plaque']) . ' »</span>' : '') . '</li>';
-            if ($k['perso'] !== '') $lg .= '<li><b>Personnalisé :</b> ' . nl2br(h($k['perso'])) . '</li>';
-            if ($k['besoin'] !== '') $lg .= '<li><b>Pro :</b> ' . nl2br(h($k['besoin'])) . '</li>';
+            foreach ($k['lignes_tab'] as $l) $lg .= '<li><b>' . (int)$l['q'] . ' ×</b> <span translate="no">' . h($l['nom']) . (($l['libelle'] ?? '') !== '' ? ', ' . h($l['libelle']) : '') . '</span>' . (($l['plaque'] ?? '') !== '' ? ' · <span class="plaque">plaque « ' . h($l['plaque']) . ' »</span>' : '') . '</li>';
+            if ($k['perso'] !== '') $lg .= '<li><b>Personnalisé :</b> <span translate="no" lang="fr">' . nl2br(h($k['perso'])) . '</span></li>';
+            if ($k['besoin'] !== '') $lg .= '<li><b>Pro :</b> <span translate="no" lang="fr">' . nl2br(h($k['besoin'])) . '</span></li>';
             $reste = montant_commande($k) - ($k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : 0);
             $pay = $k['paiement'] === 'paye' ? 'payé' : 'à encaisser : ' . euros($reste);
             $quand = $k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : (MOMENTS_COURTS[$k['retrait_moment']] ?? '');
-            $s .= '<article class="fiche-prod"><header><span class="heure">' . h($quand) . '</span><b>' . h(commande_client_nom($k)) . '</b><span class="petit">' . h($k['reference']) . ' · ' . h($pay) . '</span></header><ul>' . $lg . '</ul>'
-                . ($k['probleme'] ? '<p class="probleme-note">Problème : ' . h($k['probleme_note']) . '</p>' : '') . '</article>';
+            $s .= '<article class="fiche-prod"><header><span class="heure">' . h($quand) . '</span><b translate="no">' . h(commande_client_nom($k)) . '</b><span class="petit">' . h($k['reference']) . ' · ' . h($pay) . '</span></header><ul>' . $lg . '</ul>'
+                . ($k['probleme'] ? '<p class="probleme-note">' . h(fr_ko('Problème : ', '문제: ')) . '<span translate="no" lang="fr">' . h($k['probleme_note']) . '</span></p>' : '') . '</article>';
         }
         $c .= bloc(h(ucfirst(date_fr($d, 'jour'))), $s, 'jour-prod');
     }

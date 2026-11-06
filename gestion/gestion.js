@@ -3,6 +3,8 @@
 (function () {
   "use strict";
   var d = document;
+  // L'écran en coréen (page traduite par la gestion) : les quelques mots écrits ici suivent
+  var ko = (d.documentElement.getAttribute("lang") || "").indexOf("ko") === 0;
 
   // Copier le texte d'un email préparé
   d.addEventListener("click", function (e) {
@@ -13,7 +15,7 @@
     var texte = el.innerText || el.textContent || "";
     var fini = function (ok) {
       var avant = b.innerHTML;
-      b.textContent = ok ? "Copié" : "Sélectionnez le texte et copiez-le";
+      b.textContent = ok ? (ko ? "복사했어요" : "Copié") : (ko ? "텍스트를 선택해서 복사하세요" : "Sélectionnez le texte et copiez-le");
       setTimeout(function () { b.innerHTML = avant; }, 1800);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -94,7 +96,7 @@
     var l = d.createElement("label"), c = d.createElement("input"), t = d.createElement("span");
     l.className = "case voir-mdp";
     c.type = "checkbox";
-    t.textContent = champs.length > 1 ? "Afficher les mots de passe" : "Afficher le mot de passe";
+    t.textContent = ko ? "비밀번호 보기" : (champs.length > 1 ? "Afficher les mots de passe" : "Afficher le mot de passe");
     l.appendChild(c); l.appendChild(t);
     apres.insertAdjacentElement("afterend", l);
     c.addEventListener("change", function () {

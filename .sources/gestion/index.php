@@ -10,6 +10,7 @@ namespace MadameCho\Gestion;
 require_once __DIR__ . '/inc/base.php';
 require_once __DIR__ . '/inc/modele.php';
 require_once __DIR__ . '/inc/vues.php';
+require_once __DIR__ . '/inc/langue.php';
 require_once __DIR__ . '/inc/email.php';
 require_once __DIR__ . '/inc/matomo.php';
 require_once __DIR__ . '/inc/pages-connexion.php';
@@ -18,7 +19,7 @@ require_once __DIR__ . '/inc/pages-clients.php';
 require_once __DIR__ . '/inc/pages-produits.php';
 require_once __DIR__ . '/inc/pages-autres.php';
 
-$pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'mot-de-passe' => 'page_mot_de_passe', 'deconnexion' => 'page_deconnexion', 'miroir' => 'page_miroir'];
+$pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'mot-de-passe' => 'page_mot_de_passe', 'deconnexion' => 'page_deconnexion', 'miroir' => 'page_miroir', 'langue' => 'page_langue'];
 $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition',
           'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition',
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',

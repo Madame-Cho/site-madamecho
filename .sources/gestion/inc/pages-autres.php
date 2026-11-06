@@ -80,7 +80,7 @@ function page_statistiques(): void {
     if ($rows !== '') $c .= bloc('D\'où viennent les commandes', '<div class="defile"><table class="tableau"><thead><tr><th>Canal</th><th class="nombre">Demandes</th><th class="nombre">Remises</th><th class="nombre">Abouties</th><th class="nombre">TTC</th></tr></thead><tbody>' . $rows . '</tbody></table></div>');
     // Produits
     $rows = '';
-    foreach ($s['produits'] as $p) $rows .= '<tr><td>' . h($p['nom']) . '</td><td class="nombre">' . (int)$p['q'] . '</td><td class="nombre">' . h(euros((int)$p['ca'])) . '</td></tr>';
+    foreach ($s['produits'] as $p) $rows .= '<tr><td translate="no">' . h($p['nom']) . '</td><td class="nombre">' . (int)$p['q'] . '</td><td class="nombre">' . h(euros((int)$p['ca'])) . '</td></tr>';
     if ($rows !== '') $c .= bloc('Gâteaux vendus', '<table class="tableau"><thead><tr><th>Gâteau</th><th class="nombre">Quantité</th><th class="nombre">Montant TTC</th></tr></thead><tbody>' . $rows . '</tbody></table>'
         . '<p class="aide">Les gâteaux personnalisés et les commandes professionnelles sans ligne de la carte ne sont comptés que dans le chiffre d\'affaires.</p>');
     // Étapes
@@ -132,9 +132,11 @@ function page_statistiques_site(): void {
     $actions = fn() => '<div class="actions">' . lien_bouton(u('statistiques', ['vue' => 'site', 'actualiser' => '1']), 'Actualiser', 'discret')
         . lien_bouton(GESTION_MATOMO, 'Ouvrir Matomo', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>';
     if (($m['etat'] ?? '') === 'non-relie') {
-        $c .= bloc('Les visites du site', '<p>Les visites de madamecho.com sont mesurées par Matomo, sans cookie. Pour les voir ici, '
-            . ($admin ? 'collez une clé d\'accès de Matomo dans <a href="' . h(u('reglages')) . '#matomo">Réglages</a> : la marche à suivre y est, elle prend deux minutes.'
-                      : 'demandez à Youngmi de relier Matomo dans Réglages.') . '</p>');
+        $reglages = '<a href="' . h(u('reglages')) . '#matomo">' . h(fr_ko('Réglages', '설정')) . '</a>';
+        $c .= bloc('Les visites du site', '<p>' . fr_ko('Les visites de madamecho.com sont mesurées par Matomo, sans cookie. Pour les voir ici, '
+            . ($admin ? 'collez une clé d\'accès de Matomo dans ' . $reglages . ' : la marche à suivre y est, elle prend deux minutes.' : 'demandez à Youngmi de relier Matomo dans Réglages.'),
+              'madamecho.com 방문은 Matomo가 쿠키 없이 측정해요. 여기에서 보려면 '
+            . ($admin ? $reglages . '에 Matomo 접근 키를 붙여 넣으세요. 방법이 거기 적혀 있고, 2분이면 돼요.' : 'Youngmi에게 설정에서 Matomo를 연결해 달라고 하세요.')) . '</p>');
         mise_en_page('Statistiques', $c, 'statistiques');
         return;
     }
@@ -165,7 +167,7 @@ function page_statistiques_site(): void {
         $v = (int)matomo_val($x, 'nb_visits');
         $jour = date('Y-m-d', $t);
         if ($premier === '') $premier = $jour;
-        $pts[] = [(int)date('N', $t) === 1 ? date('j/n', $t) : '', $v, ucfirst(date_fr($jour, 'jour')) . ' : ' . visites_texte($v)];
+        $pts[] = [(int)date('N', $t) === 1 ? fr_ko(date('j/n', $t), date('n/j', $t)) : '', $v, ucfirst(date_fr($jour, 'jour')) . ' : ' . visites_texte($v)];
         if ($v > 0 && ($meilleur === null || $v >= $meilleur[1])) $meilleur = [$jour, $v];
     }
     $phrase = [];
@@ -182,11 +184,11 @@ function page_statistiques_site(): void {
     // Pages les plus vues
     $rows = '';
     foreach (array_slice(array_values(array_filter(is_array($m['pages'] ?? null) ? $m['pages'] : [], fn($x) => is_array($x) && matomo_val($x, 'nb_hits') > 0)), 0, 10) as $x) {
-        $rows .= '<tr><td>' . h(titre_page_site((string)($x['label'] ?? ''))) . '</td><td class="nombre">' . h(entier_fr(matomo_val($x, 'nb_hits'))) . '</td></tr>';
+        $rows .= '<tr><td translate="no">' . h(titre_page_site((string)($x['label'] ?? ''))) . '</td><td class="nombre">' . h(entier_fr(matomo_val($x, 'nb_hits'))) . '</td></tr>';
     }
     $c .= bloc('Pages les plus vues', $rows !== '' ? '<table class="tableau"><thead><tr><th>Page</th><th class="nombre">Vues</th></tr></thead><tbody>' . $rows . '</tbody></table>' : '<p class="vide">Pas encore de page vue.</p>');
     // Appareils
-    $c .= bloc('Téléphone ou ordinateur', tableau_parts($m['appareils'] ?? [], 'Appareil', 8, ['Smartphone' => 'Téléphone', 'Phablette' => 'Grand téléphone']));
+    $c .= bloc('Téléphone ou ordinateur', tableau_parts($m['appareils'] ?? [], 'Appareil', 8, ['Smartphone' => 'Téléphone portable', 'Phablette' => 'Grand téléphone']));
     $le = (int)($m['le'] ?? time());
     $c .= (!empty($m['erreur']) ? '<p class="erreur">Lecture impossible pour l\'instant (' . h((string)$m['erreur']) . ') : voici les chiffres lus à ' . date('H \\h i', $le) . '.</p>' : '')
         . '<div class="site-maj"><p class="aide">Chiffres de Matomo, lus à ' . date('H \\h i', $le) . ' et gardés un quart d\'heure. Mesure sans cookie : les visiteurs qui refusent la mesure ne sont pas comptés.</p>' . $actions() . '</div>';
@@ -199,7 +201,7 @@ function page_plus(): void {
     $l = [[u('statistiques'), 'stats', 'Statistiques', 'Ventes, canaux, délais de réponse, avis'],
           [u('production'), 'imprimer', 'Fiche de production', 'Ce qu\'il faut préparer, jour par jour'],
           [u('ingredients'), 'produits', 'Ingrédients', 'Prix d\'achat et allergènes des recettes'],
-          [u('reglages'), 'reglages', 'Réglages', 'Mot de passe, signature des emails, lien d\'avis, données'],
+          [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, signature des emails, lien d\'avis, données'],
           [u('aide'), 'avis', 'Comment ça marche', 'Le parcours d\'une commande, en bref']];
     $s = '';
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
@@ -220,10 +222,15 @@ function page_aide(): void {
     foreach ($etapes as $i => [$t, $d]) $s .= '<li><b>' . ($i + 1) . '. ' . h($t) . '</b><p>' . h($d) . '</p></li>';
     $c = titre_page('Comment ça marche', 'Le parcours d\'une commande', '', u('plus'))
        . bloc('Les étapes', '<ol class="etapes">' . $s . '</ol>')
-       . bloc('Bon à savoir', '<ul class="puces"><li>Un <b>problème</b> (retard, réclamation, paiement) se signale dans la commande : il reste visible partout jusqu\'à ce qu\'il soit résolu.</li>'
-            . '<li>Les <b>commentaires</b> se mettent sur la commande ou sur la fiche du client. Jamais d\'information de santé : pour une allergie, seulement l\'ingrédient à éviter.</li>'
+       . bloc('Bon à savoir', '<ul class="puces"><li>' . fr_ko('Un <b>problème</b> (retard, réclamation, paiement) se signale dans la commande : il reste visible partout jusqu\'à ce qu\'il soit résolu.',
+                                                         '<b>문제</b>(지연, 불만, 결제)는 주문 화면에서 신고해요. 해결될 때까지 어디서나 보여요.') . '</li>'
+            . '<li>' . fr_ko('Les <b>commentaires</b> se mettent sur la commande ou sur la fiche du client. Jamais d\'information de santé : pour une allergie, seulement l\'ingrédient à éviter.',
+                             '<b>메모</b>는 주문이나 고객 정보에 적어요. 건강 정보는 적지 마세요. 알레르기는 피해야 할 재료만 적어요.') . '</li>'
             . '<li>Aucun email ne part tout seul : la gestion prépare les textes, c\'est vous qui les envoyez.</li>'
-            . '<li>La <b>fiche de production</b> (menu Plus) liste ce qu\'il faut préparer, sans les coordonnées des clients.</li>'
+            . '<li>' . fr_ko('La <b>fiche de production</b> (menu Plus) liste ce qu\'il faut préparer, sans les coordonnées des clients.',
+                             '<b>생산 시트</b>(더보기 메뉴)에는 준비할 것이 고객 연락처 없이 나와요.') . '</li>'
+            . '<li>' . fr_ko('L\'écran s\'affiche en coréen ou en français (bouton en haut, ou Réglages). Ce que vous écrivez reste en <b>français</b> : il part tel quel dans les emails, les factures et l\'historique.',
+                             '화면은 한국어나 프랑스어로 볼 수 있어요 (위쪽 버튼 또는 설정). 직접 적는 내용은 <b>프랑스어</b>로 써 주세요. 이메일, 청구서, 기록에 그대로 쓰여요.') . '</li>'
             . '<li>Mathieu fait le point des commandes avec vous le mardi et le vendredi.</li></ul>');
     mise_en_page('Aide', $c, 'plus');
 }
@@ -383,6 +390,11 @@ function page_reglages(): void {
         rediriger('reglages', [], $ancre);
     }
     $c = titre_page('Réglages', h($u['nom']) . ' · ' . h($u['email']), '', u('plus'));
+    // Langue de l'écran (gardée sur cet appareil)
+    $ko = coreen_actif();
+    $c .= bloc('Langue de l\'écran', '<p class="aide">Le choix est gardé sur cet appareil. Ce qu\'on écrit (commentaires, clients, recettes) et les emails préparés restent en français.</p>'
+        . '<div class="actions">' . lien_bouton(lien_langue('ko'), '한국어', $ko ? 'principal' : 'discret', ['lang' => 'ko', 'translate' => 'no', 'aria-current' => $ko ? 'true' : null])
+        . lien_bouton(lien_langue('fr'), 'Français', $ko ? 'discret' : 'principal', ['lang' => 'fr', 'translate' => 'no', 'aria-current' => $ko ? null : 'true']) . '</div>', '', 'langue');
     // Mon compte
     $c .= bloc('Mon mot de passe', formulaire('mdp', '<input type="text" name="username" value="' . h($u['email']) . '" autocomplete="username" hidden>'
         . champ('ancien', 'Mot de passe actuel', '', ['type' => 'password', 'autocomplete' => 'current-password', 'required' => true])
@@ -412,8 +424,10 @@ function page_reglages(): void {
     // Demandes du site
     if ($admin) {
         $on = parametre('demandes_site') === '1';
-        $c .= bloc('Demandes du site', '<p>' . ($on ? '<span class="ok">Activé</span> : chaque demande envoyée par le formulaire du site s\'ajoute ici toute seule, avec son client, une fois l\'email parti à contact@.'
-                : '<span class="dormant">Pas encore activé</span> : les demandes du site arrivent seulement par email ; le lien « Dans la gestion » de l\'email permet de les créer ici.') . '</p>'
+        $c .= bloc('Demandes du site', '<p>' . ($on ? '<span class="ok">' . fr_ko('Activé', '켜짐') . '</span> ' . fr_ko(': chaque demande envoyée par le formulaire du site s\'ajoute ici toute seule, avec son client, une fois l\'email parti à contact@.',
+                                                                                           ': 사이트 문의 양식으로 온 문의가 contact@로 이메일이 간 뒤, 고객 정보와 함께 여기에 자동으로 추가돼요.')
+                : '<span class="dormant">' . fr_ko('Pas encore activé', '아직 꺼져 있음') . '</span> ' . fr_ko(': les demandes du site arrivent seulement par email ; le lien « Dans la gestion » de l\'email permet de les créer ici.',
+                                                                                           ': 사이트 문의는 이메일로만 와요. 이메일에 있는 « Dans la gestion » 링크로 여기에 만들 수 있어요.')) . '</p>'
             . formulaire('demandes_site', bouton($on ? 'Arrêter l\'enregistrement' : 'Activer l\'enregistrement des demandes du site', $on ? 'discret' : 'secondaire')), '', 'demandes-site');
     }
     // Statistiques du site (Matomo)
@@ -425,7 +439,8 @@ function page_reglages(): void {
            . definition(['État' => $relie ? '<span class="ok">relié</span>' : '<span class="dormant">pas encore relié</span>', 'Dernière lecture' => $relie ? h($lu) : '']);
         $t .= '<details class="replie"' . ($relie ? '' : ' open') . '><summary>' . ($relie ? 'Remplacer la clé' : 'Relier Matomo') . '</summary>'
             . '<ol class="aide marche">'
-            . '<li>Ouvrez <a href="' . h(GESTION_MATOMO) . '" target="_blank" rel="noopener">stats.madamecho.com</a> et connectez-vous (compte YoungmiCho, dans Bitwarden).</li>'
+            . '<li>' . fr_ko('Ouvrez <a href="' . h(GESTION_MATOMO) . '" target="_blank" rel="noopener">stats.madamecho.com</a> et connectez-vous (compte YoungmiCho, dans Bitwarden).',
+                             '<a href="' . h(GESTION_MATOMO) . '" target="_blank" rel="noopener">stats.madamecho.com</a>을 열고 로그인하세요 (YoungmiCho 계정, Bitwarden에 있어요).') . '</li>'
             . '<li>Roue dentée « Administration », puis « Personnel » › « Sécurité ».</li>'
             . '<li>En bas, « Jetons d\'authentification » : « Créer un nouveau jeton ». Matomo redemande le mot de passe.</li>'
             . '<li>Description : « Gestion Madame Cho ». Copiez le jeton affiché et collez-le ici.</li></ol>'

@@ -364,7 +364,10 @@ function csrf(): string {
 function csrf_champ(): string { return '<input type="hidden" name="_jeton" value="' . h(csrf()) . '">'; }
 function csrf_verifier(): void {
     $j = $_POST['_jeton'] ?? '';
-    if (!is_string($j) || !hash_equals(csrf(), $j)) { http_response_code(400); exit('Formulaire expiré : revenez en arrière et recommencez.'); }
+    if (!is_string($j) || !hash_equals(csrf(), $j)) {
+        http_response_code(400);
+        exit(function_exists(__NAMESPACE__ . '\\coreen_actif') && coreen_actif() ? '입력 시간이 지났어요. 뒤로 가서 다시 해 주세요. (Formulaire expiré)' : 'Formulaire expiré : revenez en arrière et recommencez.');
+    }
 }
 function flash(string $type, string $texte): void { session_ouvrir(); $_SESSION['flash'] = [$type, $texte]; }
 function flash_lire(): ?array { session_ouvrir(); $f = $_SESSION['flash'] ?? null; unset($_SESSION['flash']); return $f; }

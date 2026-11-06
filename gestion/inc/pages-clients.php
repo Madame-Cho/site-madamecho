@@ -12,9 +12,9 @@ function carte_client(array $c): string {
     $chiffres = (int)$c['remises'] ? (int)$c['remises'] . ' commande' . ((int)$c['remises'] > 1 ? 's' : '') . ' · ' . euros((int)$c['total']) . ($c['derniere'] ? ' · dernière le ' . date_fr($c['derniere']) : '') : 'Pas encore de commande remise';
     $enCours = (int)$c['en_cours'] ? '<span class="compte">' . (int)$c['en_cours'] . ' en cours</span>' : '';
     return '<a class="carte-cmd carte-client" href="' . h(u('client', ['id' => $c['id']])) . '">'
-         . '<span class="l1"><b>' . h(client_nom($c)) . '</b>' . $pro . $etat . $enCours . '</span>'
+         . '<span class="l1"><b translate="no">' . h(client_nom($c)) . '</b>' . $pro . $etat . $enCours . '</span>'
          . '<span class="l2">' . h($chiffres) . '</span>'
-         . '<span class="l4">' . h($c['numero']) . ($c['ville'] !== '' ? ' · ' . h($c['ville']) : '') . ' · ' . h(CANAUX[$c['canal']] ?? $c['canal']) . ' · dernier échange ' . h(date_fr($c['dernier_echange'], 'relative')) . '</span>'
+         . '<span class="l4">' . h($c['numero']) . ($c['ville'] !== '' ? ' · <span translate="no">' . h($c['ville']) . '</span>' : '') . ' · ' . h(CANAUX[$c['canal']] ?? $c['canal']) . ' · dernier échange ' . h(date_fr($c['dernier_echange'], 'relative')) . '</span>'
          . ($avis !== '' ? '<span class="l5">' . $avis . '</span>' : '')
          . '</a>';
 }
@@ -91,7 +91,7 @@ function page_client(): void {
     $ch = client_chiffres($id);
     $efface = $cl['statut'] === 'efface';
     $chips = ($cl['type'] === 'professionnel' ? '<span class="statut s-pro">Pro</span>' : '') . ($efface ? '<span class="statut s-efface">Effacé</span>' : ($cl['statut'] === 'inactif' ? '<span class="statut s-inactif">Inactif</span>' : ''));
-    $c = titre_page(h(client_nom($cl)), h($cl['numero']) . ' · client depuis le ' . h(date_fr($cl['premier_contact'], 'longue')) . '<span class="chips">' . $chips . '</span>',
+    $c = titre_page('<span translate="no">' . h(client_nom($cl)) . '</span>', h($cl['numero']) . ' · client depuis le ' . h(date_fr($cl['premier_contact'], 'longue')) . '<span class="chips">' . $chips . '</span>',
         $efface ? '' : lien_bouton(u('commande-edition', ['client' => $id]), icone('ajouter') . 'Nouvelle commande', 'principal'), u('clients'));
     $c .= '<div class="tuiles">' . tuile('Commandes remises', (string)$ch['remises'], $ch['commandes'] > $ch['remises'] ? ($ch['commandes'] - $ch['remises']) . ' autre(s) demande(s)' : '')
         . tuile('Total', $ch['total'] ? euros($ch['total']) : '—', 'TTC') . tuile('Panier moyen', $ch['panier'] ? euros($ch['panier']) : '—')
@@ -100,7 +100,8 @@ function page_client(): void {
     if (!$efface) {
         $tel = $cl['telephone'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $cl['telephone'])) . '">' . icone('tel') . h($cl['telephone']) . '</a>' : '';
         $mail = $cl['email'] !== '' ? '<a href="mailto:' . h($cl['email']) . '">' . icone('email') . h($cl['email']) . '</a>' : '';
-        $c .= bloc('Coordonnées', definition(['Entreprise' => h($cl['societe']), 'Contact' => h($cl['contact']), 'Email' => $mail, 'Téléphone' => $tel, 'Ville' => h($cl['ville']),
+        $tel_quel = fn(string $t): string => $t !== '' ? '<span translate="no">' . h($t) . '</span>' : '';   // noms et ville : jamais traduits
+        $c .= bloc('Coordonnées', definition(['Entreprise' => $tel_quel($cl['societe']), 'Contact' => $tel_quel($cl['contact']), 'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $tel_quel($cl['ville']),
                                                'Premier contact' => h(CANAUX[$cl['canal']] ?? $cl['canal']) . ', le ' . h(date_fr($cl['premier_contact'], 'longue')),
                                                'Dernier échange' => h(date_fr($cl['dernier_echange'], 'heure')), 'Dans Qonto' => $cl['qonto'] !== '' ? 'Oui' : ''])
              . '<p>' . lien_bouton(u('client-edition', ['id' => $id]), 'Modifier', 'discret') . '</p>');
@@ -121,7 +122,8 @@ function page_client(): void {
         else {
             $dk = $ks[0] ?? null;
             foreach ($ks as $k) if ($k['statut'] === 'remise') { $dk = $k; break; }
-            $av = $lien === '' ? '<p class="aide">Ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.</p>'
+            $av = $lien === '' ? '<p class="aide">' . fr_ko('Ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
+                    '먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>'
                 : '<p class="aide">Seulement à un client content, sans contrepartie et sans demander de note (règles de Google).</p>'
                   . bloc_email('email-avis', 'Demander un avis Google', email_avis($dk + ['client_prenom' => $cl['prenom'], 'client_nom' => $cl['nom'], 'client_type' => $cl['type'], 'client_contact' => $cl['contact']], $lien), $cl['email'])
                   . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
@@ -162,7 +164,9 @@ function page_client_edition(): void {
         if ($d['nom'] === '' && $d['societe'] === '') $erreurs[] = 'Indiquez au moins un nom ou une entreprise.';
         if ($d['email'] !== '' && !email_valide($d['email'])) $erreurs[] = 'L\'email n\'est pas valide.';
         if ($d['email'] !== '' && ($e = ligne("SELECT id, numero FROM clients WHERE email = ? AND statut <> 'efface' AND id <> ?", [$d['email'], $id]))) {
-            $erreurs[] = 'Cet email est déjà celui du client <a href="' . h(u('client', ['id' => $e['id']])) . '">' . h($e['numero']) . '</a> : ouvrez sa fiche, ou fusionnez les deux fiches.';
+            $lienDoublon = '<a href="' . h(u('client', ['id' => $e['id']])) . '">' . h($e['numero']) . '</a>';
+            $erreurs[] = fr_ko('Cet email est déjà celui du client ' . $lienDoublon . ' : ouvrez sa fiche, ou fusionnez les deux fiches.',
+                               '이 이메일은 이미 ' . $lienDoublon . ' 고객의 이메일이에요. 그 고객 정보를 열거나, 두 고객 정보를 합치세요.');
         }
         if (!$erreurs) {
             if ($cl) { client_modifier($id, $d); flash('ok', 'Fiche enregistrée.'); }
@@ -174,7 +178,7 @@ function page_client_edition(): void {
     $c = titre_page(h($titre), $cl ? h($cl['numero']) : 'Seulement ce qui sert à préparer et remettre les commandes', '', $cl ? u('client', ['id' => $id]) : u('clients'));
     if ($erreurs) $c .= '<div class="erreur" role="alert">' . implode('<br>', $erreurs) . '</div>';
     $f = liste_choix('type', 'Type', TYPES_CLIENT, $d['type'])
-       . '<div class="ligne-champs">' . champ('prenom', 'Prénom', $d['prenom'], ['autocomplete' => 'off']) . champ('nom', 'Nom', $d['nom'], ['autocomplete' => 'off']) . '</div>'
+       . '<div class="ligne-champs">' . champ('prenom', 'Prénom', $d['prenom'], ['autocomplete' => 'off']) . champ('nom', 'Nom de famille', $d['nom'], ['autocomplete' => 'off']) . '</div>'
        . champ('societe', 'Entreprise ou restaurant (professionnels)', $d['societe'], ['autocomplete' => 'off'])
        . champ('contact', 'Personne à contacter (professionnels)', $d['contact'], ['autocomplete' => 'off'])
        . '<div class="ligne-champs">' . champ('email', 'Email', $d['email'], ['type' => 'email', 'autocomplete' => 'off']) . champ('telephone', 'Téléphone', $d['telephone'], ['type' => 'tel', 'autocomplete' => 'off']) . '</div>'
