@@ -101,7 +101,8 @@ def pied(prof):
  <img class="logo-pied" src="{r}assets/logo-chocolat.svg" alt="Madame Cho" width="150" height="45" loading="lazy">
  <p class="activite">{E(ACTIVITE).replace("Hauts-de-Seine", '<span class="insecable">Hauts-de-Seine</span>')}</p>
  <address>{E(ADRESSE)}<br>Retrait sur rendez-vous, tous les jours de 9 h à 19 h<br>
- {tel_ou_wa()} <span class="insecable">· <a href="mailto:{EMAIL}">{EMAIL}</a></span><br>
+ {tel_ou_wa()}<br>
+ <a href="mailto:{EMAIL}">{EMAIL}</a><br>
  </address>
  {bouton_insta("insta-pied")}
  <nav class="liens-pied" aria-label="Informations légales">
