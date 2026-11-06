@@ -15,11 +15,11 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-04-evenements"
+VERSION = "2026-11-06-mesure"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
-MATOMO = ""               # ex. "https://stats.madamecho.com/" (avec la barre finale)
+MATOMO = "https://stats.madamecho.com/"   # Matomo installé le 06/11/2026 (avec la barre finale)
 MATOMO_SITE = 1           # numéro du site dans Matomo
 MESURE = bool(MATOMO) and EN_LIGNE
 BASE = "/atelier-site/site/" if ESSAI else "/"   # chemin absolu du site sur le serveur (page 404, servie à n'importe quelle adresse)

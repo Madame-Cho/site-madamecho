@@ -378,7 +378,11 @@
         .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
         .then(function (j) {
           clearTimeout(minuterie);
-          if (j && j.ok && j.ref) fini(j.ref);
+          if (j && j.ok && j.ref) {
+            // Mesure d'audience : la demande envoyée est comptée, sans aucune donnée de la demande (ni référence, ni contenu)
+            if (window._paq) window._paq.push(['trackEvent', 'Demande', 'Envoyée']);
+            fini(j.ref);
+          }
           else echec((j && j.erreurs && j.erreurs.length) ? j.erreurs.join(' ') : 'L’envoi n’a pas abouti.');
         })
         .catch(function () { clearTimeout(minuterie); echec('L’envoi n’a pas abouti (connexion interrompue\u00a0?).'); });
