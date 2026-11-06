@@ -326,7 +326,7 @@
       else if (f.date.value.slice(5) === '12-24') err(f.date, 'Pas de retrait le 24 décembre\u00a0: choisissez une autre date.');
       else if (f.date.value > dateIn.max) err(f.date, 'Choisissez une date dans les six prochains mois.');
       if (f.nom.value.trim().length < 2) err(f.nom, 'Indiquez votre prénom et votre nom.');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) err(f.email, 'Indiquez une adresse email valide, pour recevoir la réponse de Youngmi.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) err(f.email, 'Indiquez une adresse email valide, pour recevoir la réponse de Madame Cho.');
       if (f.pro.checked && !f.societe.value.trim()) err(f.societe, 'Indiquez le nom de l’entreprise.');
       return out;
     }
