@@ -10,6 +10,7 @@ Les pages, `.htaccess`, `robots.txt`, `sitemap.xml`, `assets/catalogue.js` et `m
 - `gen.py` : la structure des pages, les mentions légales, la confidentialité, les conditions de commande, `.htaccess`, le plan du site. La constante `VERSION` est à changer quand `site.css` ou `site.js` changent (les navigateurs gardent ces fichiers un an).
 - `site.css` et `site.js` : l'apparence et le panier.
 - `envoyer.php`, `dkim.php`, `menage.php`, `cle-dkim.php` : le formulaire « Ma demande » (email signé DKIM vers contact@madamecho.com). La clé privée DKIM n'est jamais dans le dépôt : elle reste sur le serveur OVH, hors du dossier du site.
+- `mesure.js` : la mesure d'audience Matomo (sans cookie, exemption CNIL, refus possible sur la page Confidentialité). Elle n'est active que si `MATOMO` est rempli dans `gen.py` ; vide, le site ne mesure rien et ses textes le disent.
 - `favicon/`, `commun/` : icônes, police Jost (licence OFL) et logo.
 - `photos.json` : la taille de chaque photo de `assets/photos`. Une nouvelle photo s'ajoute en WebP (`nom-grand.webp`, 1 200 px, et `nom-600.webp`), avec sa ligne dans `photos.json`. Le script qui a préparé les photos actuelles est rangé dans le Drive (15/04), avec une copie de ces sources.
 

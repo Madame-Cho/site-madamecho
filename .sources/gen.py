@@ -17,6 +17,11 @@ DEMANDE_PRO = True        # offre, devis et demande des professionnels (décisio
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
 VERSION = "2026-11-04-evenements"
 SITE = "https://madamecho.com/"
+# Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
+# Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
+MATOMO = ""               # ex. "https://stats.madamecho.com/" (avec la barre finale)
+MATOMO_SITE = 1           # numéro du site dans Matomo
+MESURE = bool(MATOMO) and EN_LIGNE
 BASE = "/atelier-site/site/" if ESSAI else "/"   # chemin absolu du site sur le serveur (page 404, servie à n'importe quelle adresse)
 MAJ = VERSION[:10]        # date de mise à jour annoncée au plan du site
 ICI = os.path.dirname(os.path.abspath(__file__))
@@ -121,6 +126,7 @@ def page(chemin, titre, desc, corps, prof, script_page="", jsonld=None, classe="
     tp = titre_partage or titre
     ld = f'<script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>\n' if jsonld else ""
     cfg = '<script>window.MC_APERCU=true;</script>\n' if APERCU else ""
+    mesure = f'<script src="{r}assets/mesure.js?v={VERSION}" data-matomo="{E(MATOMO)}" data-site="{MATOMO_SITE}"></script>\n' if MESURE else ""
     return f'''<!doctype html>
 <html lang="fr">
 <head>
@@ -155,7 +161,7 @@ def page(chemin, titre, desc, corps, prof, script_page="", jsonld=None, classe="
 {pied(prof)}
 {cfg}<script src="{r}assets/catalogue.js?v={VERSION}"></script>
 <script src="{r}assets/site.js?v={VERSION}"></script>
-{script_page}<!-- test -->
+{mesure}{script_page}<!-- test -->
 </body>
 </html>
 '''
@@ -402,7 +408,7 @@ MENTIONS = [
  ("Médiation de la consommation", [MEDIATION]),
  ("Photos et textes", ["Les photos et les textes du site appartiennent à Madame Cho ; ils ne peuvent pas être repris sans son accord.",
    "Le logo Madame Cho utilise la police Jost, sous licence SIL Open Font License."]),
- ("Cookies", ["Ce site ne dépose aucun cookie et ne mesure pas l'audience. Votre demande en cours (gâteaux, tailles et quantités) est gardée dans votre navigateur, pour ne pas la perdre : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Vous pouvez la vider à tout moment en retirant les gâteaux."]),
+ ("Cookies", [("Ce site ne dépose aucun cookie. Il compte ses visites de façon anonyme, sans cookie, avec Matomo installé chez son hébergeur ; vous pouvez refuser cette mesure sur la page <a href=\"../confidentialite/#mesure\">Confidentialité</a>." if MESURE else "Ce site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités) est gardée dans votre navigateur, pour ne pas la perdre : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Vous pouvez la vider à tout moment en retirant les gâteaux."]),
 ]
 CONFID = [
  ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
@@ -414,8 +420,12 @@ CONFID = [
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
  ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les factures sont conservées 10 ans, comme la loi l'exige."]),
  ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à <a href=\"mailto:{EMAIL}\">{EMAIL}</a>. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
- ("Navigateur", ["Le site ne dépose aucun cookie et ne mesure pas l'audience. Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante."]),
-]
+ ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante."]),
+] + ([("Mesure d'audience", [
+   "Pour savoir quelles pages sont lues et améliorer le site, Madame Cho compte les visites avec Matomo, un outil installé sur son propre hébergement chez OVH, en France. "
+   "Aucun cookie n'est déposé, l'adresse IP est tronquée avant d'être enregistrée, les données ne sont ni croisées avec d'autres ni transmises à quiconque, et elles servent seulement à produire des statistiques anonymes. "
+   "Elles sont conservées 13 mois au plus. Cette mesure est exemptée de consentement, selon les recommandations de la CNIL ; si votre navigateur demande de ne pas être suivi, le site n'est pas mesuré.",
+   '<p class="choix-mesure" id="mesure"><label><input type="checkbox" id="mesure-choix" checked> Compter mes visites de façon anonyme</label> <span id="mesure-etat" class="petit" aria-live="polite"></span></p>'])] if MESURE else [])
 CONDITIONS = [
  ("Madame Cho", [f"MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
  ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau."]),
@@ -509,7 +519,8 @@ def htaccess():
           "</IfModule>", ""]
     return "\n".join(l)
 
-CSP = ("default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; "
+_M = (" " + MATOMO.rstrip("/")) if MESURE else ""   # Matomo autorisé seulement quand la mesure est active
+CSP = (f"default-src 'self'; img-src 'self' data:{_M}; style-src 'self'; script-src 'self'{_M}; font-src 'self'; connect-src 'self'{_M}; "
        "manifest-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'")
 
 # Images de partage (1200 x 630) de chaque gâteau, recadrées au centre de sa photo carrée
@@ -588,7 +599,7 @@ ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Co
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
 ecrire("ma-demande/catalogue.php", "<?php\n// Carte de Madame Cho, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(cat) + ";\n")
-for f in ("site.css", "site.js"):
+for f in ("site.css", "site.js") + (("mesure.js",) if MESURE else ()):
     shutil.copy(os.path.join(ICI, f), os.path.join(OUT, "assets", f))
 for f in ("envoyer.php", "dkim.php", "menage.php", "cle-dkim.php"):
     shutil.copy(os.path.join(ICI, f), os.path.join(OUT, "ma-demande", f))
