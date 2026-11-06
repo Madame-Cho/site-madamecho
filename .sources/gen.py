@@ -609,6 +609,8 @@ os.makedirs(os.path.join(OUT, "assets/polices"), exist_ok=True)
 for f in ("jost-latin-400-normal.woff2", "jost-latin-500-normal.woff2", "OFL-Jost.txt"):
     shutil.copy(os.path.join(COMMUN, "polices", f), os.path.join(OUT, "assets/polices", f))
 shutil.copy(os.path.join(COMMUN, "logo-chocolat.svg"), os.path.join(OUT, "assets/logo-chocolat.svg"))
+# Logo de la signature email de contact@madamecho.com (PNG sur fond blanc : Gmail n'affiche pas le SVG), 06/11/2026
+shutil.copy(os.path.join(COMMUN, "logo-email.png"), os.path.join(OUT, "assets/logo-email.png"))
 # Favicon B choisi par Olivier le 03/11/2026 : le 조 du logo, ivoire sur chocolat (gen_fav.py)
 for f in ("favicon.ico", "favicon.svg", "apple-touch-icon.png", "icone-192.png", "icone-512.png", "site.webmanifest"):
     shutil.copy(os.path.join(ICI, "favicon", f), os.path.join(OUT, "assets", f))
