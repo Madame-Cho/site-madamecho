@@ -11,6 +11,7 @@ require_once __DIR__ . '/inc/base.php';
 require_once __DIR__ . '/inc/modele.php';
 require_once __DIR__ . '/inc/vues.php';
 require_once __DIR__ . '/inc/email.php';
+require_once __DIR__ . '/inc/matomo.php';
 require_once __DIR__ . '/inc/pages-connexion.php';
 require_once __DIR__ . '/inc/pages-commandes.php';
 require_once __DIR__ . '/inc/pages-clients.php';

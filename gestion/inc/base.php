@@ -34,6 +34,11 @@ const GESTION_PURGE_CLIENTS_ANS = 3;       // client sans commande ni échange d
 const GESTION_JOURNAL_MOIS = 6;            // journal des connexions : 6 mois
 // Essai en local seulement (serveur intégré de PHP et MC_ESSAI=1) : aucun email ne part, les liens s'affichent à l'écran.
 define('GESTION_ESSAI', PHP_SAPI === 'cli-server' && getenv('MC_ESSAI') === '1');
+// Matomo, la mesure d'audience du site (T-06) : adresse publique ; la clé d'accès est dans la base (Réglages), jamais dans ce dépôt
+define('GESTION_MATOMO', GESTION_ESSAI && getenv('MC_MATOMO') ? (string)getenv('MC_MATOMO') : 'https://stats.madamecho.com/');
+const GESTION_MATOMO_SITE = 1;             // madamecho.com dans Matomo
+const GESTION_MATOMO_CACHE = 900;          // chiffres de Matomo gardés 15 minutes
+define('GESTION_MATOMO_DEBUT', GESTION_ESSAI && getenv('MC_MATOMO_DEBUT') ? (string)getenv('MC_MATOMO_DEBUT') : '2026-11-06');   // mesure du site en ligne depuis le 06/11/2026 (T-06)
 
 const STATUTS = ['demande' => 'Demande reçue', 'proposition' => 'Proposition envoyée', 'confirmee' => 'Confirmée',
                  'remise' => 'Remise', 'sans_suite' => 'Sans suite', 'annulee' => 'Annulée'];

@@ -8,7 +8,7 @@ namespace MadameCho\Gestion;
 
 /* ---------- Statistiques ---------- */
 /** Petit graphique en barres (SVG, une seule série) : $points = [[étiquette, valeur, infobulle]]. */
-function barres(array $points, string $titre): string {
+function barres(array $points, string $titre, bool $valeurs = true): string {
     $max = max(1, ...array_map(fn($p) => (int)$p[1], $points));
     $n = count($points);
     $l = 100 / max(1, $n);
@@ -22,21 +22,31 @@ function barres(array $points, string $titre): string {
     $etiquettes = '';
     $dernier = $n - 1;
     foreach ($points as $i => [$etiq, $v]) {
-        $valeur = $v > 0 && ($v === $max || $i === $dernier) ? '<b>' . h($v >= 100000 ? number_format($v / 100000, 1, ',', '') . ' k€' : euros($v)) . '</b>' : '';
+        $valeur = $valeurs && $v > 0 && ($v === $max || $i === $dernier) ? '<b>' . h($v >= 100000 ? number_format($v / 100000, 1, ',', '') . ' k€' : euros($v)) . '</b>' : '';
         $etiquettes .= '<span>' . h($etiq) . $valeur . '</span>';
     }
     return '<figure class="graphique"><svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="' . h($titre) . '">' . $s . '<line class="axe" x1="0" y1="100" x2="100" y2="100"/></svg>'
          . '<div class="etiquettes n' . $n . '">' . $etiquettes . '</div></figure>';
 }
 
+/** Onglets de Statistiques : les ventes de la gestion, et les visites du site (Matomo). */
+function onglets_statistiques(string $vue): string {
+    $s = '';
+    foreach (['ventes' => [u('statistiques'), 'Ventes'], 'site' => [u('statistiques', ['vue' => 'site']), 'Site internet']] as $k => [$href, $nom]) {
+        $s .= '<a href="' . h($href) . '"' . ($k === $vue ? ' aria-current="page"' : '') . '>' . h($nom) . '</a>';
+    }
+    return '<nav class="sous-onglets" aria-label="Statistiques">' . $s . '</nav>';
+}
+
 function page_statistiques(): void {
+    if (($_GET['vue'] ?? '') === 'site') { page_statistiques_site(); return; }
     $s = statistiques();
     $t = $s['total'];
     $ca = array_sum(array_map(fn($m) => (int)$m['ca'], $s['mois']));
     $transfo = ($t['remises'] + $t['perdues']) ? $t['remises'] / ($t['remises'] + $t['perdues']) : null;
     $rep = $s['reponse'];
     $avis = ligne("SELECT SUM(CASE WHEN avis_demande_le IS NOT NULL THEN 1 ELSE 0 END) AS demandes, SUM(CASE WHEN avis_recu_le IS NOT NULL THEN 1 ELSE 0 END) AS recus FROM clients WHERE statut <> 'efface'") ?? [];
-    $c = titre_page('Statistiques', 'Depuis le début de la gestion · montants TTC des commandes remises', '', u('plus'));
+    $c = titre_page('Statistiques', 'Depuis le début de la gestion · montants TTC des commandes remises', '', u('plus')) . onglets_statistiques('ventes');
     $c .= '<div class="tuiles">'
         . tuile('Commandes remises', (string)$t['remises'], $t['n'] . ' demande(s) en tout')
         . tuile('Chiffre d\'affaires', euros($ca), 'TTC, 24 derniers mois')
@@ -80,6 +90,106 @@ function page_statistiques(): void {
     if ($rows !== '') $c .= bloc('Où en sont les demandes', '<table class="tableau"><tbody>' . $rows . '</tbody></table>');
     $c .= bloc('Exporter', '<p class="aide">Pour un tableur : sans email ni téléphone. Le fichier contient des noms de clients : à ranger dans le Drive de Madame Cho, pas ailleurs.</p><div class="actions">'
         . lien_bouton(u('export', ['jeu' => 'commandes']), 'Commandes (CSV)', 'discret') . lien_bouton(u('export', ['jeu' => 'clients']), 'Clients (CSV)', 'discret') . '</div>');
+    mise_en_page('Statistiques', $c, 'statistiques');
+}
+
+/* ---------- Statistiques du site (Matomo) ---------- */
+function entier_fr(float $n): string { return number_format($n, 0, ',', "\u{202F}"); }
+function visites_texte(int $v): string { return entier_fr($v) . ' visite' . ($v > 1 ? 's' : ''); }
+/** Durée lisible : 75 s → « 1 min 15 s ». */
+function duree_lisible(float $s): string {
+    $s = (int)round($s);
+    if ($s < 60) return $s . ' s';
+    return intdiv($s, 60) . ' min' . ($s % 60 ? ' ' . ($s % 60) . ' s' : '');
+}
+/** Titre d'une page du site, sans la fin commune « · Madame Cho ». */
+function titre_page_site(string $t): string {
+    $t = trim(html_entity_decode($t, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    if (preg_match('/^Madame Cho, pâtisserie/u', $t)) return 'Accueil';
+    $t = preg_replace(['/\s*·\s*Madame Cho$/u', '/ sur commande à Meudon$/u'], '', $t) ?? $t;
+    return $t !== '' ? $t : 'Page sans titre';
+}
+/** Tableau de parts (origine des visites, appareils) : libellé et petite jauge, visites, part. */
+function tableau_parts(mixed $lignes, string $entete, int $max = 8, array $noms = []): string {
+    $lignes = array_values(array_filter(is_array($lignes) ? $lignes : [], fn($x) => is_array($x) && matomo_val($x, 'nb_visits') > 0));
+    if (!$lignes) return '<p class="vide">Pas encore de visite sur cette période.</p>';
+    $total = array_sum(array_map(fn($x) => matomo_val($x, 'nb_visits'), $lignes));
+    $rows = '';
+    foreach (array_slice($lignes, 0, $max) as $x) {
+        $v = matomo_val($x, 'nb_visits');
+        $part = $total > 0 ? $v / $total * 100 : 0;
+        $nom = trim((string)($x['label'] ?? ''));
+        $rows .= '<tr><td>' . h($noms[$nom] ?? $nom) . '<svg class="jauge" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true"><rect class="fond" width="100" height="6" rx="3"/>'
+               . '<rect class="plein" width="' . round(max(2, $part), 1) . '" height="6" rx="3"/></svg></td><td class="nombre">' . h(entier_fr($v)) . '</td><td class="nombre">' . h(number_format($part, 0, ',', ' ') . ' %') . '</td></tr>';
+    }
+    return '<table class="tableau"><thead><tr><th>' . h($entete) . '</th><th class="nombre">Visites</th><th class="nombre">Part</th></tr></thead><tbody>' . $rows . '</tbody></table>';
+}
+
+function page_statistiques_site(): void {
+    $admin = est_admin();
+    $m = matomo_chiffres(isset($_GET['actualiser']));
+    $c = titre_page('Statistiques', 'Le site madamecho.com · 30 derniers jours, d\'après Matomo', '', u('plus')) . onglets_statistiques('site');
+    $actions = fn() => '<div class="actions">' . lien_bouton(u('statistiques', ['vue' => 'site', 'actualiser' => '1']), 'Actualiser', 'discret')
+        . lien_bouton(GESTION_MATOMO, 'Ouvrir Matomo', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>';
+    if (($m['etat'] ?? '') === 'non-relie') {
+        $c .= bloc('Les visites du site', '<p>Les visites de madamecho.com sont mesurées par Matomo, sans cookie. Pour les voir ici, '
+            . ($admin ? 'collez une clé d\'accès de Matomo dans <a href="' . h(u('reglages')) . '#matomo">Réglages</a> : la marche à suivre y est, elle prend deux minutes.'
+                      : 'demandez à Youngmi de relier Matomo dans Réglages.') . '</p>');
+        mise_en_page('Statistiques', $c, 'statistiques');
+        return;
+    }
+    if (($m['etat'] ?? '') !== 'ok') {
+        $cle = $admin && str_contains((string)($m['erreur'] ?? ''), 'clé') ? ' <a href="' . h(u('reglages')) . '#matomo">Remplacer la clé dans Réglages</a>.' : ' Réessayez dans quelques minutes.';
+        $c .= bloc('Les visites du site', '<p class="erreur">Lecture impossible pour l\'instant : ' . h((string)($m['erreur'] ?? '')) . '.' . $cle . '</p>' . $actions());
+        mise_en_page('Statistiques', $c, 'statistiques');
+        return;
+    }
+    $s7 = $m['j7'] ?? []; $s30 = $m['j30'] ?? [];
+    $v30 = matomo_val($s30, 'nb_visits');
+    $d30 = matomo_val($m['buts30'] ?? [], 'nb_conversions');
+    $c .= '<div class="tuiles">'
+        . tuile('Visites aujourd\'hui', entier_fr(matomo_val($m['aujourdhui'] ?? [], 'nb_visits')), 'depuis minuit')
+        . tuile('Visites sur 7 jours', entier_fr(matomo_val($s7, 'nb_visits')), entier_fr(matomo_val($m['buts7'] ?? [], 'nb_conversions')) . ' demande(s) envoyée(s)')
+        . tuile('Visites sur 30 jours', entier_fr($v30), entier_fr(matomo_val($m['actions'] ?? [], 'nb_pageviews')) . ' pages vues')
+        . tuile('Demandes envoyées', entier_fr($d30), $v30 > 0 ? number_format($d30 / $v30 * 100, 1, ',', ' ') . ' % des visites, 30 jours' : '30 derniers jours')
+        . tuile('Temps moyen', duree_lisible(matomo_val($s30, 'avg_time_on_site')), 'par visite, 30 jours')
+        . tuile('Visites d\'une seule page', number_format(matomo_val($s30, 'bounce_rate'), 0, ',', ' ') . ' %', 'repartent sans voir d\'autre page')
+        . '</div>';
+    // Visites par jour (les lundis sont datés)
+    $jours = is_array($m['jours'] ?? null) ? $m['jours'] : [];
+    ksort($jours);
+    $pts = []; $meilleur = null; $premier = '';
+    foreach ($jours as $date => $x) {
+        $t = strtotime((string)$date);
+        if ($t === false) continue;
+        $v = (int)matomo_val($x, 'nb_visits');
+        $jour = date('Y-m-d', $t);
+        if ($premier === '') $premier = $jour;
+        $pts[] = [(int)date('N', $t) === 1 ? date('j/n', $t) : '', $v, ucfirst(date_fr($jour, 'jour')) . ' : ' . visites_texte($v)];
+        if ($v > 0 && ($meilleur === null || $v >= $meilleur[1])) $meilleur = [$jour, $v];
+    }
+    $phrase = [];
+    if ($meilleur) $phrase[] = 'Meilleur jour : ' . date_fr($meilleur[0], 'jour') . ', ' . visites_texte($meilleur[1]) . '.';
+    if ($pts) $phrase[] = 'Aujourd\'hui : ' . visites_texte((int)end($pts)[1]) . '.';
+    if ($premier !== '' && $premier < GESTION_MATOMO_DEBUT) $phrase[] = 'Matomo mesure le site depuis le ' . date_fr(GESTION_MATOMO_DEBUT, 'jour') . ' : les jours d\'avant sont vides.';
+    $c .= bloc('Visites par jour', $pts && $v30 > 0 ? barres($pts, 'Visites par jour, 30 derniers jours', false) . '<p class="aide">' . h(implode(' ', $phrase)) . '</p><p class="aide">Les dates sous le graphique sont des lundis.</p>'
+                                                    : '<p class="vide">Pas encore de visite sur les 30 derniers jours.</p>');
+    // D'où viennent les visiteurs
+    $src = array_values(array_filter(is_array($m['sources'] ?? null) ? $m['sources'] : [], fn($x) => is_array($x) && matomo_val($x, 'nb_visits') > 0));
+    usort($src, fn($a, $b) => matomo_val($b, 'nb_visits') <=> matomo_val($a, 'nb_visits'));
+    $c .= bloc('D\'où viennent les visiteurs', tableau_parts($m['types'] ?? [], 'Origine')
+        . ($src ? '<p class="aide">En détail : ' . h(implode(' · ', array_map(fn($x) => trim((string)($x['label'] ?? '')) . ' (' . entier_fr(matomo_val($x, 'nb_visits')) . ')', array_slice($src, 0, 8)))) . '</p>' : ''));
+    // Pages les plus vues
+    $rows = '';
+    foreach (array_slice(array_values(array_filter(is_array($m['pages'] ?? null) ? $m['pages'] : [], fn($x) => is_array($x) && matomo_val($x, 'nb_hits') > 0)), 0, 10) as $x) {
+        $rows .= '<tr><td>' . h(titre_page_site((string)($x['label'] ?? ''))) . '</td><td class="nombre">' . h(entier_fr(matomo_val($x, 'nb_hits'))) . '</td></tr>';
+    }
+    $c .= bloc('Pages les plus vues', $rows !== '' ? '<table class="tableau"><thead><tr><th>Page</th><th class="nombre">Vues</th></tr></thead><tbody>' . $rows . '</tbody></table>' : '<p class="vide">Pas encore de page vue.</p>');
+    // Appareils
+    $c .= bloc('Téléphone ou ordinateur', tableau_parts($m['appareils'] ?? [], 'Appareil', 8, ['Smartphone' => 'Téléphone', 'Phablette' => 'Grand téléphone']));
+    $le = (int)($m['le'] ?? time());
+    $c .= (!empty($m['erreur']) ? '<p class="erreur">Lecture impossible pour l\'instant (' . h((string)$m['erreur']) . ') : voici les chiffres lus à ' . date('H \\h i', $le) . '.</p>' : '')
+        . '<div class="site-maj"><p class="aide">Chiffres de Matomo, lus à ' . date('H \\h i', $le) . ' et gardés un quart d\'heure. Mesure sans cookie : les visiteurs qui refusent la mesure ne sont pas comptés.</p>' . $actions() . '</div>';
     mise_en_page('Statistiques', $c, 'statistiques');
 }
 
@@ -241,6 +351,22 @@ function page_reglages(): void {
                 session_ouvrir();
                 $_SESSION['cle_miroir'] = $cle;   // montrée une seule fois
                 break;
+            case 'matomo':
+                if (!$admin) break;
+                $ancre = 'matomo';
+                if (!empty($_POST['retirer'])) {
+                    parametre_ecrire('matomo_jeton', ''); parametre_ecrire('matomo_cache', '');
+                    evenement('reglage', 'Clé de Matomo retirée (statistiques du site)');
+                    flash('ok', 'Matomo n\'est plus relié : les chiffres du site ne s\'affichent plus ici.');
+                    break;
+                }
+                $jeton = preg_replace('/\s+/', '', texte('matomo_jeton', 200)) ?? '';
+                if (!preg_match('/^[A-Za-z0-9]{20,100}$/', $jeton)) { flash('erreur', 'Collez la clé telle que Matomo l\'affiche : une suite de lettres et de chiffres, sans espace.'); break; }
+                if (($pb = matomo_essayer_cle($jeton)) !== '') { flash('erreur', 'Clé non enregistrée : ' . $pb . '.'); break; }
+                parametre_ecrire('matomo_jeton', $jeton); parametre_ecrire('matomo_cache', '');
+                evenement('reglage', 'Matomo relié (statistiques du site)');
+                flash('ok', 'Matomo est relié : les visites du site sont dans Statistiques › Site internet.');
+                break;
             case 'importer':
                 if (!$admin) break;
                 $ancre = 'reprise';
@@ -290,6 +416,26 @@ function page_reglages(): void {
                 : '<span class="dormant">Pas encore activé</span> : les demandes du site arrivent seulement par email ; le lien « Dans la gestion » de l\'email permet de les créer ici.') . '</p>'
             . formulaire('demandes_site', bouton($on ? 'Arrêter l\'enregistrement' : 'Activer l\'enregistrement des demandes du site', $on ? 'discret' : 'secondaire')), '', 'demandes-site');
     }
+    // Statistiques du site (Matomo)
+    if ($admin) {
+        $relie = matomo_relie();
+        $cache = json_decode((string)parametre('matomo_cache', ''), true);
+        $lu = is_array($cache) && !empty($cache['le']) ? date_fr(date('Y-m-d H:i:s', (int)$cache['le']), 'heure') : 'pas encore';
+        $t = '<p>Les visites du site viennent de Matomo (stats.madamecho.com). Avec une clé d\'accès, la gestion les montre dans Statistiques › Site internet, à côté des ventes.</p>'
+           . definition(['État' => $relie ? '<span class="ok">relié</span>' : '<span class="dormant">pas encore relié</span>', 'Dernière lecture' => $relie ? h($lu) : '']);
+        $t .= '<details class="replie"' . ($relie ? '' : ' open') . '><summary>' . ($relie ? 'Remplacer la clé' : 'Relier Matomo') . '</summary>'
+            . '<ol class="aide marche">'
+            . '<li>Ouvrez <a href="' . h(GESTION_MATOMO) . '" target="_blank" rel="noopener">stats.madamecho.com</a> et connectez-vous (compte YoungmiCho, dans Bitwarden).</li>'
+            . '<li>Roue dentée « Administration », puis « Personnel » › « Sécurité ».</li>'
+            . '<li>En bas, « Jetons d\'authentification » : « Créer un nouveau jeton ». Matomo redemande le mot de passe.</li>'
+            . '<li>Description : « Gestion Madame Cho ». Copiez le jeton affiché et collez-le ici.</li></ol>'
+            . formulaire('matomo', champ('matomo_jeton', 'Clé d\'accès de Matomo', '', ['autocomplete' => 'off', 'spellcheck' => 'false', 'autocapitalize' => 'off', 'required' => true, 'maxlength' => '200'],
+                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans la sauvegarde.')
+                . bouton('Vérifier et enregistrer', 'secondaire'))
+            . '</details>';
+        if ($relie) $t .= formulaire('matomo', '<input type="hidden" name="retirer" value="1">' . bouton('Retirer la clé', 'discret'), ['data-confirmer' => 'Retirer la clé de Matomo ? Les visites du site ne s\'afficheront plus dans la gestion.']);
+        $c .= bloc('Statistiques du site (Matomo)', $t, '', 'matomo');
+    }
     // Conservation et RGPD
     if ($admin) {
         $ap = conservation_apercu();
@@ -334,6 +480,7 @@ function page_reglages(): void {
         'Emails signés (DKIM)' => $ok($dkim, 'signature du site présente', 'dkim.php absent'),
         'Carte du site' => $ok(count($cat['produits']) > 0, count($cat['produits']) . ' produits · version ' . ($cat['version'] ?? '?'), 'carte absente'),
         'Demandes du site' => h(((int)($site['n'] ?? 0)) . ' enregistrée(s)' . (!empty($site['d']) ? ', dernière le ' . date_fr($site['d'], 'heure') : '')),
+        'Statistiques du site' => h(matomo_relie() ? 'Matomo relié' : 'Matomo pas encore relié'),
     ]));
     // Journal des connexions
     if ($admin) {

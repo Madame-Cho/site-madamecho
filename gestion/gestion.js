@@ -79,4 +79,30 @@
     var s = cible.lastElementChild && cible.lastElementChild.querySelector("select");
     if (s) s.focus();
   });
+
+  // « Afficher le mot de passe » : une case sous les champs de mot de passe de chaque formulaire,
+  // pour relire ce qu'on a tapé en cas de doute (demande d'Olivier, 06/11/2026)
+  d.querySelectorAll("form").forEach(function (f) {
+    var champs = Array.prototype.slice.call(f.querySelectorAll("input[type=password]"));
+    if (!champs.length) return;
+    champs.forEach(function (x) {
+      // En clair, le téléphone ne doit ni corriger ni mettre de majuscule
+      x.setAttribute("autocapitalize", "off"); x.setAttribute("autocorrect", "off"); x.spellcheck = false;
+    });
+    var dernier = champs[champs.length - 1];
+    var apres = dernier.closest(".ligne-champs") || dernier.closest(".champ") || dernier;
+    var l = d.createElement("label"), c = d.createElement("input"), t = d.createElement("span");
+    l.className = "case voir-mdp";
+    c.type = "checkbox";
+    t.textContent = champs.length > 1 ? "Afficher les mots de passe" : "Afficher le mot de passe";
+    l.appendChild(c); l.appendChild(t);
+    apres.insertAdjacentElement("afterend", l);
+    c.addEventListener("change", function () {
+      champs.forEach(function (x) { x.type = c.checked ? "text" : "password"; });
+    });
+    // À l'envoi, les champs redeviennent des mots de passe : le navigateur peut proposer de l'enregistrer
+    f.addEventListener("submit", function () {
+      champs.forEach(function (x) { x.type = "password"; });
+    });
+  });
 })();
