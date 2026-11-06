@@ -17,6 +17,7 @@ const EXPEDITEUR = 'site@madamecho.com';
 const MAX_PAR_HEURE = 5;
 const DUREE_EMPREINTES = 7200;   // 2 heures suffisent à la limite horaire ; avec le ménage quotidien d'OVH, jamais plus de 48 heures (politique de confidentialité)
 const INDISPONIBLE = 'Le formulaire est momentanément indisponible, et votre demande n\'est pas partie.';
+const GESTION_ENREGISTRER = __DIR__ . '/../gestion/inc/enregistrer.php';   // espace de gestion des commandes (06/11/2026)
 
 $CAT = require __DIR__ . '/catalogue.php';
 require __DIR__ . '/dkim.php';
@@ -118,7 +119,7 @@ foreach ($brut as $l) {
         $parProduit[$pid] = ($parProduit[$pid] ?? 0) + $q;
     }
     $plaque = ($p['plaque'] && isset($l['plaque']) && is_string($l['plaque'])) ? uneLigne(mb_substr($l['plaque'], 0, 60)) : '';
-    $lignes[] = ['nom' => $p['nom'], 'libelle' => $libelle, 'q' => $q, 'prix' => $prix, 'plaque' => $plaque];
+    $lignes[] = ['nom' => $p['nom'], 'libelle' => $libelle, 'q' => $q, 'prix' => $prix, 'plaque' => $plaque, 'p' => $pid, 'c' => $p['mode'] === 'taille' ? $tid : $vid];
     $total += $prix; $delai = max($delai, $p['delai']);
 }
 foreach ($parProduit as $id => $n) {
@@ -220,6 +221,8 @@ $t[] = 'Email : ' . $email;
 if ($tel !== '') $t[] = 'Téléphone : ' . $tel;
 $t[] = '';
 $t[] = 'Répondre à cet email écrit directement au client. Rappel : une proposition écrite (prix TTC total, jour et heure du retrait, acompte éventuel), son accord écrit, puis votre confirmation.';
+// Espace de gestion : la demande y est aussi enregistrée (voir plus bas) ; le lien ouvre sa fiche, ou propose de la créer
+if (is_file(GESTION_ENREGISTRER)) { $t[] = ''; $t[] = 'Dans la gestion : https://' . DKIM_DOMAINE . '/gestion/?p=commande&ref=' . $ref; }
 $corps = implode("\r\n", $t);
 
 $sujet = 'Demande ' . $ref . ' : ' . $nom . ', retrait le ' . $jour->format('d/m');
@@ -259,5 +262,16 @@ if (!$envoye) {
     error_log('madamecho formulaire : mail() a échoué');
     http_response_code(503);
     repondre(false, ['erreurs' => ['L\'envoi n\'a pas abouti de notre côté, et votre demande n\'est pas partie.']], $enJson);
+}
+// Enregistrement dans l'espace de gestion, seulement une fois l'email parti, et sans jamais gêner le visiteur :
+// en cas d'échec, l'email suffit (Youngmi crée la commande depuis son lien) et l'incident est noté dans le journal du serveur.
+if (PHP_VERSION_ID >= 80000 && is_file(GESTION_ENREGISTRER)) {   // l'espace de gestion demande PHP 8
+    try {
+        require_once GESTION_ENREGISTRER;
+        \MadameCho\Gestion\enregistrer_demande(['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
+            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin]);
+    } catch (\Throwable $e) {
+        error_log('madamecho formulaire : demande ' . $ref . ' non enregistrée dans la gestion (' . get_class($e) . ')');
+    }
 }
 repondre(true, ['ref' => $ref], $enJson);

@@ -13,6 +13,7 @@ Code source du site web de Madame Cho (madamecho.com), pâtisserie de Youngmi Ch
 - Pages : accueil (`index.html`), la carte (`carte/` et une fiche par gâteau), la demande de commande (`ma-demande/`), conditions de commande, confidentialité, mentions légales, page introuvable (`404.html`).
 - `assets/` : feuille de style, scripts, logo, icônes, police Jost (licence OFL) et photos.
 - `ma-demande/` : le formulaire envoie la demande par email à contact@madamecho.com (PHP d'OVH, email signé DKIM avec le sélecteur « site »). La clé privée DKIM et le sel des limites d'envoi restent sur le serveur, hors du dépôt. `menage.php` efface les limites d'envoi périmées (tâche planifiée OVH).
+- `gestion/` : l'espace de gestion de Madame Cho (clients, commandes, produits), réservé (connexion), jamais indexé. Ses données vivent sur le serveur, hors du dossier du site, jamais dans ce dépôt.
 - Les pages, `.htaccess`, `robots.txt` et `sitemap.xml` sont générés par `.sources/gen.py`. Le dossier caché `.sources/` contient toutes les sources du site et n'est jamais servi ; son mode d'emploi est `.sources/LISEZMOI.md`. Une correction se fait dans les sources, puis le site est régénéré (`python3 -I -B .sources/gen.py . --en-ligne`) ; ne pas modifier les pages à la main.
 - Les anciennes pages de travail (`atelier-logo/`, `atelier-site/`) ont été retirées à la mise en ligne du 3 novembre 2026 ; elles restent dans l'historique Git.
 

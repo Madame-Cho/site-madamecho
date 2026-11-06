@@ -3,3 +3,7 @@
 
 # Cache de Python créé par la génération du site
 __pycache__/
+
+# Base de l espace de gestion en essai local (sur le serveur, elle est hors du dossier du site), jamais dans le depot
+.donnees/
+.madamecho-donnees/
