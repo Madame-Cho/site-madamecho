@@ -117,7 +117,13 @@ function drapeau(string $note = ''): string {
     return '<span class="drapeau"' . ($note !== '' ? ' title="' . h($note) . '"' : '') . '>' . icone('alerte') . 'Problème</span>';
 }
 function retrait_texte(array $k, bool $court = false): string {
-    if (!$k['retrait_date']) return 'Date de retrait à fixer';
+    $livraison = ($k['mode'] ?? 'retrait') === 'livraison';
+    if (!$k['retrait_date']) {
+        $statut = $k['statut'] ?? '';
+        if ($statut === 'remise' && !empty($k['remise_le'])) return ($livraison ? 'Livrée le ' : 'Remise le ') . date_fr(substr((string)$k['remise_le'], 0, 10), $court ? 'courte' : 'jour');
+        if ($statut === 'annulee' || $statut === 'sans_suite') return 'Sans date';
+        return $livraison ? 'Date de livraison à fixer' : 'Date de retrait à fixer';
+    }
     $d = date_fr($k['retrait_date'], $court ? 'courte' : 'jour');
     if ($court) { $t = strtotime($k['retrait_date']); $d = mb_substr(JOURS[(int)date('w', $t)], 0, 3) . '. ' . $d; }
     $m = $k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : (MOMENTS_COURTS[$k['retrait_moment']] ?? '');

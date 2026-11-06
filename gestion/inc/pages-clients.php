@@ -102,7 +102,7 @@ function page_client(): void {
         $mail = $cl['email'] !== '' ? '<a href="mailto:' . h($cl['email']) . '">' . icone('email') . h($cl['email']) . '</a>' : '';
         $c .= bloc('Coordonnées', definition(['Entreprise' => h($cl['societe']), 'Contact' => h($cl['contact']), 'Email' => $mail, 'Téléphone' => $tel, 'Ville' => h($cl['ville']),
                                                'Premier contact' => h(CANAUX[$cl['canal']] ?? $cl['canal']) . ', le ' . h(date_fr($cl['premier_contact'], 'longue')),
-                                               'Dernier échange' => h(date_fr($cl['dernier_echange'], 'heure')), 'Client Qonto' => h($cl['qonto'])])
+                                               'Dernier échange' => h(date_fr($cl['dernier_echange'], 'heure')), 'Dans Qonto' => $cl['qonto'] !== '' ? 'Oui' : ''])
              . '<p>' . lien_bouton(u('client-edition', ['id' => $id]), 'Modifier', 'discret') . '</p>');
     } else {
         $c .= bloc('Coordonnées', '<p class="aide">Données personnelles effacées le ' . h(date_fr($cl['efface_le'], 'longue')) . '. Il ne reste que le numéro, les dates et les montants des commandes.</p>');

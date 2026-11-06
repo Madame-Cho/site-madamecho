@@ -80,7 +80,7 @@ function client_echange(int $id, string $quand): void {
 function client_chiffres(int $id): array {
     $r = ligne("SELECT COUNT(*) AS n, SUM(CASE WHEN statut = 'remise' THEN 1 ELSE 0 END) AS remises,
                        SUM(CASE WHEN statut = 'remise' THEN COALESCE(prix_final, total_indicatif) ELSE 0 END) AS total,
-                       MAX(CASE WHEN statut = 'remise' THEN retrait_date END) AS derniere
+                       MAX(CASE WHEN statut = 'remise' THEN COALESCE(retrait_date, substr(remise_le, 1, 10)) END) AS derniere
                 FROM commandes WHERE client_id = ?", [$id]) ?? [];
     $n = (int)($r['remises'] ?? 0); $t = (int)($r['total'] ?? 0);
     return ['commandes' => (int)($r['n'] ?? 0), 'remises' => $n, 'total' => $t, 'panier' => $n ? intdiv($t, $n) : 0, 'derniere' => $r['derniere'] ?? null];
@@ -97,7 +97,7 @@ function clients_lister(string $recherche = '', string $filtre = 'actifs'): arra
     return lignes("SELECT c.*, (SELECT COUNT(*) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS remises,
                            (SELECT COUNT(*) FROM commandes k WHERE k.client_id = c.id AND k.statut IN ('demande','proposition','confirmee')) AS en_cours,
                            (SELECT SUM(COALESCE(prix_final, total_indicatif)) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS total,
-                           (SELECT MAX(retrait_date) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS derniere
+                           (SELECT MAX(COALESCE(retrait_date, substr(remise_le, 1, 10))) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS derniere
                     FROM clients c WHERE " . implode(' AND ', $w) . " ORDER BY c.dernier_echange DESC, c.id DESC LIMIT 500", $p);
 }
 /** Fusionne le doublon $source dans $cible : commandes, historique, puis le doublon est marqué effacé. */
@@ -182,7 +182,7 @@ function lignes_total(array $lignes): int { $t = 0; foreach ($lignes as $l) $t +
 function commande_contenu_texte(array $k, bool $court = false): string {
     $l = isset($k['lignes_tab']) ? $k['lignes_tab'] : (json_decode($k['lignes'] ?? '[]', true) ?: []);
     $parts = [];
-    foreach ($l as $x) $parts[] = $x['q'] . ' × ' . $x['nom'] . ($court ? '' : ', ' . $x['libelle']) . (($x['plaque'] ?? '') !== '' && !$court ? ' (plaque « ' . $x['plaque'] . ' »)' : '');
+    foreach ($l as $x) $parts[] = $x['q'] . ' × ' . $x['nom'] . ($court || ($x['libelle'] ?? '') === '' ? '' : ', ' . $x['libelle']) . (($x['plaque'] ?? '') !== '' && !$court ? ' (plaque « ' . $x['plaque'] . ' »)' : '');
     if (($k['perso'] ?? '') !== '') $parts[] = $court ? 'Personnalisé' : 'Personnalisé : ' . $k['perso'];
     if (($k['besoin'] ?? '') !== '') $parts[] = $court ? 'Demande pro' : 'Pro : ' . $k['besoin'];
     return implode($court ? ' · ' : "\n", $parts) ?: '(sans contenu)';
@@ -284,7 +284,7 @@ function commandes_lister(string $vue = 'en_cours', string $recherche = '', ?str
     switch ($vue) {
         case 'en_cours': $w[] = "k.statut IN ('demande', 'proposition', 'confirmee')"; $ordre = "CASE k.statut WHEN 'demande' THEN 0 WHEN 'proposition' THEN 1 ELSE 2 END, COALESCE(k.retrait_date, '9999') ASC, k.recue_le ASC"; break;
         case 'a_venir': $w[] = "k.statut = 'confirmee' AND k.retrait_date >= :auj"; $p['auj'] = aujourdhui(); $ordre = "k.retrait_date ASC, k.retrait_heure ASC, k.retrait_moment ASC"; break;
-        case 'terminees': $w[] = "k.statut IN ('remise', 'annulee', 'sans_suite')"; $ordre = "k.maj_le DESC"; break;
+        case 'terminees': $w[] = "k.statut IN ('remise', 'annulee', 'sans_suite')"; $ordre = "COALESCE(k.remise_le, k.annulee_le, k.sans_suite_le, k.maj_le) DESC, k.id DESC"; break;
         case 'problemes': $w[] = "k.probleme = 1"; break;
         case 'a_repondre': $w[] = "k.statut = 'demande'"; $ordre = "k.recue_le ASC"; break;
     }

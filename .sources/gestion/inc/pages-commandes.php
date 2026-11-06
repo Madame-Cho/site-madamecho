@@ -166,17 +166,19 @@ function page_commande(): void {
                                      'Email' => $mail, 'Téléphone' => $tel, 'Ville' => h($k['client_ville']),
                                      'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . euros($ch['total']) : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
                      . '<p>' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret') . '</p>');
-    $c .= bloc('Retrait', definition(['Quand' => h(retrait_texte($k)), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
+    $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
+    $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h(retrait_texte($k))]) : definition(['Quand' => h(retrait_texte($k)), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
                                      'Où' => h(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Au 4 avenue du Château, 92190 Meudon')])
                       . agenda_boutons($k));
     $c .= '</div>';
     // Contenu
-    $rows = '';
+    $rows = ''; $V = variantes(); $carte = true;
     foreach ($k['lignes_tab'] as $l) {
-        $rows .= '<tr><td>' . (int)$l['q'] . ' ×</td><td><b>' . h($l['nom']) . '</b><br><span class="petit">' . h($l['libelle']) . '</span>'
+        if (!isset($V[$l['v'] ?? ''])) $carte = false;
+        $rows .= '<tr><td>' . (int)$l['q'] . ' ×</td><td><b>' . h($l['nom']) . '</b>' . (($l['libelle'] ?? '') !== '' ? '<br><span class="petit">' . h($l['libelle']) . '</span>' : '')
                . (($l['plaque'] ?? '') !== '' ? '<br><span class="plaque">Plaque : « ' . h($l['plaque']) . ' »</span>' : '') . '</td><td class="nombre">' . h(euros((int)$l['prix'] * (int)$l['q'])) . '</td></tr>';
     }
-    $contenu = $rows !== '' ? '<table class="tableau lignes-cmd"><tbody>' . $rows . '</tbody><tfoot><tr><td></td><td>Total indicatif (prix de la carte)</td><td class="nombre">' . h(euros((int)$k['total_indicatif'])) . '</td></tr></tfoot></table>' : '';
+    $contenu = $rows !== '' ? '<table class="tableau lignes-cmd"><tbody>' . $rows . '</tbody><tfoot><tr><td></td><td>' . ($carte ? 'Total indicatif (prix de la carte)' : 'Total des lignes') . '</td><td class="nombre">' . h(euros((int)$k['total_indicatif'])) . '</td></tr></tfoot></table>' : '';
     if ($k['perso'] !== '') $contenu .= '<div class="texte-client"><h3>Gâteau personnalisé</h3><p>' . nl2br(h($k['perso'])) . '</p></div>';
     if ($k['besoin'] !== '') $contenu .= '<div class="texte-client"><h3>Demande d\'un professionnel</h3><p>' . nl2br(h($k['besoin'])) . '</p></div>';
     if ($contenu === '') $contenu = '<p class="vide">Aucun gâteau noté.</p>';
@@ -389,7 +391,7 @@ function page_commande_edition(): void {
     foreach ($existantes as $l) {
         $v = (string)($l['v'] ?? '');
         $extra = [];
-        if (!isset($V[$v])) { $v = 'ancien:' . md5(json_encode($l)); $extra = [$v => $l['nom'] . ', ' . $l['libelle'] . ' (hors carte)']; }
+        if (!isset($V[$v])) { $v = 'ancien:' . md5(json_encode($l)); $extra = [$v => $l['nom'] . (($l['libelle'] ?? '') !== '' ? ', ' . $l['libelle'] : '') . ' (hors carte)']; }
         $rows .= $ligne($i++, $v, (string)$l['q'], (string)($l['plaque'] ?? ''), $extra);
     }
     if ($src && is_array($src['lignes'] ?? null)) foreach ($src['lignes'] as $l) if (is_array($l)) $rows .= $ligne($i++, (string)($l['v'] ?? ''), (string)($l['q'] ?? ''), (string)($l['plaque'] ?? ''));
@@ -473,7 +475,7 @@ function page_production(): void {
         $s = '';
         foreach ($liste as $k) {
             $lg = '';
-            foreach ($k['lignes_tab'] as $l) $lg .= '<li><b>' . (int)$l['q'] . ' ×</b> ' . h($l['nom']) . ', ' . h($l['libelle']) . (($l['plaque'] ?? '') !== '' ? ' · <span class="plaque">plaque « ' . h($l['plaque']) . ' »</span>' : '') . '</li>';
+            foreach ($k['lignes_tab'] as $l) $lg .= '<li><b>' . (int)$l['q'] . ' ×</b> ' . h($l['nom']) . (($l['libelle'] ?? '') !== '' ? ', ' . h($l['libelle']) : '') . (($l['plaque'] ?? '') !== '' ? ' · <span class="plaque">plaque « ' . h($l['plaque']) . ' »</span>' : '') . '</li>';
             if ($k['perso'] !== '') $lg .= '<li><b>Personnalisé :</b> ' . nl2br(h($k['perso'])) . '</li>';
             if ($k['besoin'] !== '') $lg .= '<li><b>Pro :</b> ' . nl2br(h($k['besoin'])) . '</li>';
             $reste = montant_commande($k) - ($k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : 0);

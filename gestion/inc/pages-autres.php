@@ -60,18 +60,18 @@ function page_statistiques(): void {
     $rows = '';
     foreach ($s['mois'] as $m) {
         $mo = (int)substr($m['mois'], 5, 2);
-        $rows .= '<tr><td>' . h(ucfirst(MOIS[$mo]) . ' ' . substr($m['mois'], 0, 4)) . '</td><td class="nombre">' . (int)$m['n'] . '</td><td class="nombre">' . h(euros((int)$m['ca'])) . '</td><td class="nombre">' . h(euros((int)$m['panier'])) . '</td></tr>';
+        $rows .= '<tr><td>' . h(ucfirst(MOIS[$mo]) . ' ' . substr($m['mois'], 0, 4)) . '</td><td class="nombre">' . (int)$m['n'] . '</td><td class="nombre">' . h(euros_ronds((int)$m['ca'])) . '</td><td class="nombre">' . h(euros_ronds((int)$m['panier'])) . '</td></tr>';
     }
     $c .= bloc('Chiffre d\'affaires par mois', ($ca ? barres($pts, 'Chiffre d\'affaires des 12 derniers mois') : '')
         . ($rows !== '' ? '<details class="replie"' . ($ca ? '' : ' open') . '><summary>Le tableau</summary><table class="tableau"><thead><tr><th>Mois</th><th class="nombre">Commandes</th><th class="nombre">TTC</th><th class="nombre">Panier</th></tr></thead><tbody>' . $rows . '</tbody></table></details>' : '<p class="vide">Pas encore de commande remise.</p>'));
     // Canaux
     $rows = '';
-    foreach ($s['canaux'] as $k) $rows .= '<tr><td>' . h(CANAUX[$k['canal']] ?? $k['canal']) . '</td><td class="nombre">' . (int)$k['n'] . '</td><td class="nombre">' . (int)$k['remises'] . '</td><td class="nombre">' . h(pourcent((int)$k['remises'], (int)$k['n'])) . '</td><td class="nombre">' . h(euros((int)$k['ca'])) . '</td></tr>';
+    foreach ($s['canaux'] as $k) $rows .= '<tr><td>' . h(CANAUX[$k['canal']] ?? $k['canal']) . '</td><td class="nombre">' . (int)$k['n'] . '</td><td class="nombre">' . (int)$k['remises'] . '</td><td class="nombre">' . h(pourcent((int)$k['remises'], (int)$k['n'])) . '</td><td class="nombre">' . h(euros_ronds((int)$k['ca'])) . '</td></tr>';
     if ($rows !== '') $c .= bloc('D\'où viennent les commandes', '<div class="defile"><table class="tableau"><thead><tr><th>Canal</th><th class="nombre">Demandes</th><th class="nombre">Remises</th><th class="nombre">Abouties</th><th class="nombre">TTC</th></tr></thead><tbody>' . $rows . '</tbody></table></div>');
     // Produits
     $rows = '';
     foreach ($s['produits'] as $p) $rows .= '<tr><td>' . h($p['nom']) . '</td><td class="nombre">' . (int)$p['q'] . '</td><td class="nombre">' . h(euros((int)$p['ca'])) . '</td></tr>';
-    if ($rows !== '') $c .= bloc('Gâteaux vendus', '<table class="tableau"><thead><tr><th>Gâteau</th><th class="nombre">Quantité</th><th class="nombre">TTC (prix de la carte)</th></tr></thead><tbody>' . $rows . '</tbody></table>'
+    if ($rows !== '') $c .= bloc('Gâteaux vendus', '<table class="tableau"><thead><tr><th>Gâteau</th><th class="nombre">Quantité</th><th class="nombre">Montant TTC</th></tr></thead><tbody>' . $rows . '</tbody></table>'
         . '<p class="aide">Les gâteaux personnalisés et les commandes professionnelles sans ligne de la carte ne sont comptés que dans le chiffre d\'affaires.</p>');
     // Étapes
     $rows = '';

@@ -70,6 +70,8 @@ const ALLERGENES_MOTS = ['gluten' => ['gluten', 'blé'], 'crustaces' => ['crusta
 function h(mixed $s): string { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 function maintenant(): string { return date('Y-m-d H:i:s'); }
 function aujourdhui(): string { return date('Y-m-d'); }
+/** Montant arrondi à l'euro, avec séparateur de milliers (tableaux de statistiques, lisibles sur téléphone). */
+function euros_ronds(int $c): string { return number_format((int)round($c / 100), 0, ',', "\u{202F}") . ' €'; }
 function euros(?int $c, string $vide = '—'): string {
     if ($c === null) return $vide;
     $neg = $c < 0 ? '−' : ''; $c = abs($c);
