@@ -220,6 +220,7 @@ $t[] = 'Email : ' . $email;
 if ($tel !== '') $t[] = 'Téléphone : ' . $tel;
 $t[] = '';
 $t[] = 'Répondre à cet email écrit directement au client. Rappel : une proposition écrite (prix TTC total, jour et heure du retrait, acompte éventuel), son accord écrit, puis votre confirmation.';
+if (!empty($CAT['rdv'])) $t[] = 'Dans votre confirmation, donnez le lien pour choisir le créneau de retrait : ' . $CAT['rdv'] . ' (le client y indique son numéro de demande).';
 $corps = implode("\r\n", $t);
 
 $sujet = 'Demande ' . $ref . ' : ' . $nom . ', retrait le ' . $jour->format('d/m');

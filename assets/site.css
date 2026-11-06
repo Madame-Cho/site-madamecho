@@ -220,6 +220,11 @@ button,input,select,textarea{font:inherit;color:inherit}
 .wa{white-space:nowrap}
 .wa svg{width:17px;height:17px;vertical-align:-3px;margin-right:4px}
 .contact-pratique{margin:28px 0 0;text-align:center;font-size:15px;color:var(--doux)}
+/* Page Retrait (06/11/2026) : calendrier de rendez-vous Google dans un cadre, chargé au clic */
+.rdv-avant{margin-top:32px}
+.rdv-zone{margin-top:28px}
+.cadre-rdv{display:block;width:100%;height:760px;border:1px solid var(--ligne);background:#fff}
+@media (max-width:600px){.cadre-rdv{height:900px}}
 
 /* Événements et atelier : sections approuvées par Youngmi. */
 .evenements-photos{display:grid;gap:24px;margin:32px 0}

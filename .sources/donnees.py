@@ -131,6 +131,9 @@ TEL = "06 61 31 17 79"
 TEL_LIEN = "+33661311779"
 EMAIL = "contact@madamecho.com"
 INSTAGRAM = "https://www.instagram.com/madamecho.fr/"
+# Rendez-vous de retrait (décision d'Olivier du 06/11/2026) : page de réservation de l'agenda de rendez-vous Google de contact@
+# (créneaux de 15 min, 5 min de battement, 9 h à 19 h, un créneau pris n'est plus proposé). Vide : pas de page Retrait ni de lien vers elle.
+RDV = ""
 WHATSAPP = "https://wa.me/33661311779"  # même numéro que le téléphone (demande d'Olivier du 06/11/2026) ; wa.me ouvre la conversation
 
 # ---------- Référencement (passe SEO du 03/11/2026) ----------

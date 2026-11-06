@@ -193,7 +193,7 @@ def accueil(prof=0):
     anniv = "".join(f"<p>{E(x)}</p>" for x in ANNIV)
     rep = "".join(f"<li>{E(x)}</li>" for x in REPERES)
     etapes = "".join(f'<li><span class="num">{i}</span><b>{E(t)}</b><span>{E(d)}</span></li>' for i, (t, d) in enumerate(ETAPES, 1))
-    prat = "".join(f"<div><dt>{E(t)}</dt><dd>{E(d)}</dd></div>" for t, d in PRATIQUE)
+    prat = "".join(f"<div><dt>{E(t)}</dt><dd>{E(d)}" + (f' Commande confirmée : <a href="{lien("retrait/", prof)}">choisissez votre créneau</a>.' if RDV and t == "Retrait" else "") + "</dd></div>" for t, d in PRATIQUE)
     pros = ""
     if AVEC_PROS:
         rs = "".join(f'<li><a href="{E(u)}" rel="noopener" target="_blank">{E(x)}</a></li>' for x, u in RESTOS)
@@ -356,7 +356,7 @@ def demande():
   <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, contactez Madame Cho au {tel_ou_wa()}.</p>
 
   <h2 class="sous-titre">Le retrait</h2>
-  <p class="aide">Au {E(ADRESSE)}, sur rendez-vous. Madame Cho confirme l'heure dans sa réponse.</p>
+  <p class="aide">Au {E(ADRESSE)}, sur rendez-vous. {(f"Une fois votre commande confirmée, vous choisissez votre créneau de 15 minutes sur la page <a href=\"{lien('retrait/', prof)}\">Retrait</a>." if RDV else "Madame Cho confirme l'heure dans sa réponse.")}</p>
   <div class="deux-champs">
    <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date aria-describedby="aide-date"></label>
    <label class="champ"><span>Moment</span><select name="moment" required>{moments}</select></label>
@@ -382,7 +382,7 @@ def demande():
  <div class="recu" data-recu hidden tabindex="-1">
   <div class="etiquette">Demande envoyée</div>
   <h2 class="titre">Merci, Madame Cho vous répond sous 24 heures</h2>
-  <p>Votre demande n'est pas encore une commande : Madame Cho vous envoie une proposition écrite (prix, jour et heure du retrait), que vous acceptez par écrit.</p>
+  <p>Votre demande n'est pas encore une commande : Madame Cho vous envoie une proposition écrite (prix{"" if RDV else ", jour et heure du retrait"}{", jour du retrait" if RDV else ""}), que vous acceptez par écrit.{(f" Une fois la commande confirmée, vous choisissez votre créneau de retrait sur la page <a href=\"{lien('retrait/', prof)}\">Retrait</a>." if RDV else "")}</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>
   <p class="aide">Gardez ce récapitulatif. <button type="button" class="lien-bouton" data-copier>Copier le récapitulatif</button></p>
@@ -419,7 +419,7 @@ MENTIONS = [
  ("Médiation de la consommation", [MEDIATION]),
  ("Photos et textes", ["Les photos et les textes du site appartiennent à Madame Cho ; ils ne peuvent pas être repris sans son accord.",
    "Le logo Madame Cho utilise la police Jost, sous licence SIL Open Font License."]),
- ("Cookies", [("Ce site ne dépose aucun cookie. Il compte ses visites de façon anonyme, sans cookie, avec Matomo installé chez son hébergeur ; vous pouvez refuser cette mesure sur la page <a href=\"../confidentialite/#mesure\">Confidentialité</a>." if MESURE else "Ce site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités) est gardée dans votre navigateur, pour ne pas la perdre : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Vous pouvez la vider à tout moment en retirant les gâteaux."]),
+ ("Cookies", [("Ce site ne dépose aucun cookie" + (" par lui-même ; seul le calendrier de rendez-vous de Google, sur la page Retrait, peut en déposer après votre clic." if RDV else ".") + " Il compte ses visites de façon anonyme, sans cookie, avec Matomo installé chez son hébergeur ; vous pouvez refuser cette mesure sur la page <a href=\"../confidentialite/#mesure\">Confidentialité</a>." if MESURE else "Ce site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités) est gardée dans votre navigateur, pour ne pas la perdre : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Vous pouvez la vider à tout moment en retirant les gâteaux."]),
 ]
 CONFID = [
  ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
@@ -431,8 +431,11 @@ CONFID = [
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
  ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les factures sont conservées 10 ans, comme la loi l'exige."]),
  ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à <a href=\"mailto:{EMAIL}\">{EMAIL}</a>. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
- ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante."]),
-] + ([("Mesure d'audience", [
+ ("Navigateur", [("Le site ne dépose aucun cookie" + (" par lui-même ; seul le calendrier de rendez-vous de la page Retrait, un service de Google, peut en déposer, et seulement après votre clic (voir plus bas)." if RDV else ".") if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante."]),
+] + ([("Rendez-vous de retrait", [
+   '<p id="rendez-vous">Pour choisir le créneau de retrait d\'une commande confirmée, la page Retrait affiche, quand vous cliquez sur « Choisir mon créneau », le calendrier de rendez-vous de Madame Cho : un service de Google Agenda, chargé depuis les serveurs de Google. '
+   "Les données que vous y saisissez (prénom, nom, email, téléphone, numéro de votre demande, créneau choisi) sont enregistrées dans l'agenda de Madame Cho chez Google, qui vous envoie la confirmation et le lien pour modifier ou annuler. "
+   "Google peut alors déposer ses propres cookies et traiter des données hors de l'Union européenne (voir « Qui les reçoit »). Base légale : le contrat. Le rendez-vous est effacé de l'agenda au plus tard 12 mois après le retrait.</p>"])] if RDV else []) + ([("Mesure d'audience", [
    "Pour savoir quelles pages sont lues et améliorer le site, Madame Cho compte les visites avec Matomo, un outil installé sur son propre hébergement chez OVH, en France. "
    "Aucun cookie n'est déposé, l'adresse IP est tronquée avant d'être enregistrée, les données ne sont ni croisées avec d'autres ni transmises à quiconque, et elles servent seulement à produire des statistiques anonymes. "
    "Elles sont conservées 13 mois au plus. Cette mesure est exemptée de consentement, selon les recommandations de la CNIL ; si votre navigateur demande de ne pas être suivi, le site n'est pas mesuré.",
@@ -440,10 +443,10 @@ CONFID = [
 CONDITIONS = [
  ("Madame Cho", [f"MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
  ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau."]),
- ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et heure du retrait, acompte éventuel. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
+ ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour " + ("du retrait" if RDV else "et heure du retrait") + ", acompte éventuel. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
  ("3. Les prix", ["Les prix sont indiqués en euros TTC. Le prix de la carte est celui de la proposition ; une personnalisation au-delà de la plaque en chocolat (comprise) est chiffrée dans la proposition."]),
  ("4. L'acompte", ["Pour un gâteau personnalisé au-delà de la plaque, un acompte de 30 % du prix est demandé à l'acceptation de la proposition ; il est déduit du prix au retrait."]),
- ("5. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, sur rendez-vous, à l'heure convenue, tous les jours de 9 h à 19 h (pas de retrait le 24 décembre). Le client vérifie sa commande au retrait."]),
+ ("5. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, sur rendez-vous, " + (f"au créneau de 15 minutes choisi par le client sur la page <a href=\"../retrait/\">Retrait</a> du site une fois la commande confirmée (ou convenu avec Madame Cho), " if RDV else "à l'heure convenue, ") + "tous les jours de 9 h à 19 h (pas de retrait le 24 décembre). Le client vérifie sa commande au retrait."]),
  ("6. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces, déduction faite de l'acompte éventuel."]),
  # Délai d'annulation fixé par Youngmi le 04/11/2026 (réponse au mail du 03/11) : 24 heures avant le retrait
  ("7. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait. Passé ce délai, l'acompte versé, s'il y en a un, reste acquis à Madame Cho."]),
@@ -453,6 +456,26 @@ CONDITIONS = [
  ("11. Garanties légales", ["Le client consommateur bénéficie des garanties légales rappelées ci-dessous.", GARANTIES]),
  ("12. Médiation", [MEDIATION]),
 ]
+
+# ---------- Retrait : choisir son créneau (décision d'Olivier du 06/11/2026 : la prise de rendez-vous reste sur le site) ----------
+def retrait():
+    prof = 1
+    etapes = [("Le jour convenu", "Choisissez le jour fixé avec Madame Cho dans sa confirmation, puis l'heure qui vous arrange : un créneau de 15 minutes, entre 9 h et 19 h."),
+              ("Vos coordonnées", "Prénom, nom, email, téléphone et le numéro de votre demande (MC-…), pour que Madame Cho retrouve votre commande."),
+              ("La confirmation", "Vous la recevez par email, avec un lien pour changer ou annuler le rendez-vous, jusqu'à 24 heures avant.")]
+    li = "".join(f'<li><span class="num">{i}</span><b>{E(t)}</b><span>{E(d)}</span></li>' for i, (t, d) in enumerate(etapes, 1))
+    corps = f'''<section class="bloc premier" aria-labelledby="t-rdv"><div class="etroit">
+ <h1 class="titre" id="t-rdv"><span class="etiquette">Retrait</span> Choisir mon créneau de retrait</h1>
+ <p class="chapo">Pour une commande confirmée par Madame Cho. Le retrait a lieu au {E(ADRESSE)}, tous les jours de 9 h à 19 h.</p>
+ <ol class="etapes">{li}</ol>
+ <div class="rdv-avant" data-rdv-avant>
+  <p class="centre"><button class="bouton plein" type="button" data-rdv data-src="{E(RDV)}?gv=true">Choisir mon créneau</button></p>
+  <p class="aide">Le calendrier est un service de Google Agenda : il ne se charge que lorsque vous cliquez, et Google peut alors déposer ses propres cookies (voir <a href="{lien('confidentialite/', prof)}#rendez-vous">Confidentialité</a>). Vous pouvez aussi <a href="{E(RDV)}" rel="noopener" target="_blank">l'ouvrir dans un nouvel onglet</a>.</p>
+ </div>
+ <div class="rdv-zone" data-rdv-zone hidden></div>
+ <p class="aide">Pas de demande confirmée, ou aucun créneau ne convient ? Contactez Madame Cho au {tel_ou_wa()} ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+</div></section>'''
+    return page("retrait/index.html", "Choisir mon créneau de retrait · Madame Cho", "Choisir le créneau de retrait d'une commande confirmée chez Madame Cho, à Meudon.", corps, prof, indexer=False)
 
 # ---------- Page introuvable (404) ----------
 def introuvable():
@@ -532,7 +555,8 @@ def htaccess():
 
 _M = (" " + MATOMO.rstrip("/")) if MESURE else ""   # Matomo autorisé seulement quand la mesure est active
 CSP = (f"default-src 'self'; img-src 'self' data:{_M}; style-src 'self'; script-src 'self'{_M}; font-src 'self'; connect-src 'self'{_M}; "
-       "manifest-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'")
+       "manifest-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
+       + ("; frame-src https://calendar.google.com" if RDV else ""))   # page Retrait : calendrier de rendez-vous Google, chargé au clic
 
 # Images de partage (1200 x 630) de chaque gâteau, recadrées au centre de sa photo carrée
 def images_partage():
@@ -562,7 +586,7 @@ def catalogue():
             d["parfums"] = {c: {"libelle": l} for c, l, _ in p["parfums"]}
             d.update(unite=p["unite"], minimum=p["minimum"], pas=p["pas"])
         prods[p["id"]] = d
-    return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO}
+    return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO, "rdv": SITE + "retrait/" if RDV else ""}
 
 def php_val(v):
     if isinstance(v, bool): return "true" if v else "false"
@@ -594,6 +618,8 @@ def ecrire(chemin, texte):
         h.write(texte)
 
 ecrire("index.html", accueil())
+if RDV:
+    ecrire("retrait/index.html", retrait())
 if APERCU:
     ecrire("accueil/index.html", accueil(1))
 ecrire("carte/index.html", carte())

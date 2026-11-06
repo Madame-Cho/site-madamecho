@@ -389,6 +389,19 @@
     });
   }
 
+  // Page Retrait (06/11/2026) : le calendrier de rendez-vous Google (un cadre) ne se charge qu'au clic, pour que le site reste sans cookie par défaut
+  var rdv = document.querySelector('[data-rdv]');
+  if (rdv) {
+    rdv.addEventListener('click', function () {
+      var zone = document.querySelector('[data-rdv-zone]'), avant = document.querySelector('[data-rdv-avant]');
+      var cadre = document.createElement('iframe');
+      cadre.src = rdv.getAttribute('data-src'); cadre.title = 'Calendrier de rendez-vous de Madame Cho (Google Agenda)';
+      cadre.className = 'cadre-rdv'; cadre.setAttribute('allow', '');
+      zone.innerHTML = ''; zone.appendChild(cadre); zone.hidden = false; if (avant) avant.hidden = true;
+      cadre.focus();
+    });
+  }
+
   var rendreDemande = null;
   compteur();
   pageGateau();
