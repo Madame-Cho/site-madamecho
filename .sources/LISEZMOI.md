@@ -24,6 +24,8 @@ python3 -I -B .sources/gen.py . --en-ligne
 
 Puis vérifier les pages modifiées dans un navigateur, sur ordinateur et sur téléphone.
 
+Les fichiers texte du dépôt sont enregistrés avec des fins de ligne LF (`.gitattributes`, `* text=auto`) : Git convertit tout seul, sous Windows comme sous Linux, et une régénération ne change que les lignes modifiées.
+
 ## Publier
 
 Jamais sans le feu vert explicite d'Olivier ou de Youngmi sur la version exacte (R-19 et P-15 du Rulebook Madame Cho). Ensuite : pousser sur `main` et `production`, vérifier le site en ligne, puis noter la publication dans le journal des publications (Drive, 15/04) et au Registre. Si le site n'a pas changé au bout de 5 minutes, faire « Déployer Git » dans l'espace client OVH (procédure pas à pas dans P-15).
