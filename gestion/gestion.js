@@ -38,7 +38,12 @@
     var q = f.getAttribute("data-confirmer");
     if (q && !window.confirm(q)) { e.preventDefault(); return; }
     var b = f.querySelector("button[type=submit]");
-    if (b && f.method.toLowerCase() === "post") setTimeout(function () { b.disabled = true; }, 0);
+    if (b && f.method.toLowerCase() === "post") setTimeout(function () {
+      b.disabled = true;
+      // « L'assistant réfléchit… » : le bouton le dit pendant l'attente
+      var attente = b.getAttribute("data-attente");
+      if (attente) b.textContent = attente;
+    }, 0);
   });
 
   // Filtres qui s'appliquent dès qu'on change une valeur

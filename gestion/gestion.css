@@ -311,16 +311,29 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 @media (min-width:900px){
  body.connecte{padding-bottom:0}
  .onglets{display:none}
- .nav-haut{display:flex;gap:2px;margin-right:8px}
- .nav-haut a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:20px;text-decoration:none;font-size:15px;color:var(--doux)}
+ .nav-haut{display:flex;gap:2px;margin-right:8px;flex-shrink:0}
+ .nav-haut a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:20px;text-decoration:none;font-size:15px;color:var(--doux);white-space:nowrap}
  .nav-haut a:hover{color:var(--texte)}
  .nav-haut a[aria-current]{background:var(--ivoire);color:var(--chocolat);font-weight:500}
+ .nav-haut a.secondaire{display:none}
+ .marque{flex-shrink:0}
  .marque img{width:112px}
+ .nouvelle{white-space:nowrap}
  .page{padding-top:28px}
  .tete h1{font-size:28px}
  .grille-2{grid-template-columns:repeat(2,minmax(0,1fr))}
  .barre-enregistrer{bottom:12px}
+ .form-assistant{bottom:12px}
  .page-commande .page{max-width:1040px}
+}
+/* Barre du haut : le mot « Gestion » s'efface quand la place manque, les cinq pages du menu Plus
+   apparaissent en liens directs à partir de 1200 px */
+@media (min-width:900px) and (max-width:959px),(min-width:1200px) and (max-width:1319px){
+ .marque span{display:none}
+}
+@media (min-width:1200px){
+ .nav-haut a.secondaire{display:inline-flex}
+ .nav-haut a.plus{display:none}
 }
 
 /* Impression (fiche de production) */
@@ -335,3 +348,32 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 @media (prefers-reduced-motion:no-preference){
  .btn,.carte-cmd,.sous-onglets a{transition:border-color .15s,background-color .15s}
 }
+
+/* Manuel (menu Plus) : sommaire en pastilles, une section par bloc */
+.sommaire{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.sommaire a{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--fort);background:var(--carte);text-decoration:none;font-size:14px}
+.sommaire a:hover{border-color:var(--chocolat)}
+.bloc.manuel p+p,.bloc.manuel ul+p,.bloc.manuel p+ul{margin-top:10px}
+.bloc.manuel .puces li{margin:6px 0}
+
+/* Assistant : une conversation, le formulaire qui reste en bas, les rapports */
+.chat{display:grid;gap:10px;margin-bottom:16px}
+.bulle{max-width:92%;padding:10px 14px;border-radius:16px;font-size:15px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.bulle-moi{justify-self:end;background:var(--chocolat);color:#fff;border-bottom-right-radius:4px}
+.bulle-ia{justify-self:start;background:var(--carte);border:1px solid var(--ligne);border-bottom-left-radius:4px}
+.bulle p+p,.bulle ul+p,.bulle ol+p,.bulle p+ul,.bulle p+ol{margin-top:8px}
+.bulle ul{padding-left:18px;list-style:disc}
+.bulle ol{padding-left:20px;list-style:decimal}
+.bulle li{margin:3px 0}
+.rapport{border:1px solid #E7C2B8;background:#FFFBFA;border-radius:var(--r);padding:14px;max-width:92%;justify-self:start}
+.rapport h3{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:500 16px/1.35 var(--police)}
+.rapport>*+*{margin-top:10px}
+.rapport pre{white-space:pre-wrap;font:400 14px/1.5 var(--police);margin:6px 0 0}
+.rapport details.mini[open]{background:#fff}
+.s-rapport-probleme{background:var(--rouge-f);color:var(--erreur)}
+.s-rapport-amelioration{background:var(--vert-f);color:var(--vert)}
+.s-rapport-question{background:var(--bleu-f);color:var(--bleu)}
+.form-assistant{position:sticky;bottom:calc(var(--bas) + 8px);z-index:5;background:var(--fond);padding:8px 0 4px;margin-bottom:14px;box-shadow:0 -12px 12px -8px var(--fond)}
+.form-assistant .champ{margin-bottom:8px}
+.form-assistant textarea{background:#fff}
+.page-assistant .tete-actions form{margin:0}

@@ -13,6 +13,8 @@ require_once __DIR__ . '/inc/vues.php';
 require_once __DIR__ . '/inc/langue.php';
 require_once __DIR__ . '/inc/email.php';
 require_once __DIR__ . '/inc/matomo.php';
+require_once __DIR__ . '/inc/manuel.php';
+require_once __DIR__ . '/inc/assistant.php';
 require_once __DIR__ . '/inc/pages-connexion.php';
 require_once __DIR__ . '/inc/pages-commandes.php';
 require_once __DIR__ . '/inc/pages-clients.php';
@@ -23,7 +25,7 @@ $pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'm
 $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition',
           'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition', 'releve' => 'page_releve',
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',
-          'statistiques' => 'page_statistiques', 'plus' => 'page_plus', 'aide' => 'page_aide', 'reglages' => 'page_reglages', 'export' => 'page_export'];
+          'statistiques' => 'page_statistiques', 'plus' => 'page_plus', 'manuel' => 'page_manuel', 'aide' => 'page_manuel', 'assistant' => 'page_assistant', 'reglages' => 'page_reglages', 'export' => 'page_export'];
 
 $p = is_string($_GET['p'] ?? null) ? $_GET['p'] : 'accueil';
 try {

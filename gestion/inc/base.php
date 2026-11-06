@@ -18,7 +18,7 @@ if (!defined('GESTION')) define('GESTION', '1');
 mb_internal_encoding('UTF-8');
 date_default_timezone_set('Europe/Paris');
 
-const GESTION_VERSION = '2026-11-06';
+const GESTION_VERSION = '2026-11-07';
 const GESTION_NOM = 'Gestion';
 const GESTION_EXPEDITEUR = 'site@madamecho.com';
 const GESTION_DOMAINE = 'madamecho.com';
@@ -176,8 +176,8 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 1) return;
-    $pdo->exec("
+    if ($v >= 2) return;
+    if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
 CREATE TABLE IF NOT EXISTS jetons (id INTEGER PRIMARY KEY, utilisateur_id INTEGER NOT NULL REFERENCES utilisateurs(id) ON DELETE CASCADE,
@@ -218,13 +218,22 @@ CREATE TABLE IF NOT EXISTS recettes (id INTEGER PRIMARY KEY, produit_id TEXT NOT
   variante TEXT NOT NULL, ingredient_id INTEGER NOT NULL REFERENCES ingredients(id), quantite REAL NOT NULL, note TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS recettes_produit ON recettes(produit_id, variante);
 ");
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '1')");
+    // Version 2 (07/11/2026) : l'assistant de Youngmi (conversations) et ses rapports pour Olivier
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS assistant_messages (id INTEGER PRIMARY KEY, utilisateur_id INTEGER NOT NULL, fil INTEGER NOT NULL, le TEXT NOT NULL,
+  role TEXT NOT NULL, contenu TEXT NOT NULL, question INTEGER NOT NULL DEFAULT 0, usage TEXT NOT NULL DEFAULT '', rapport_id INTEGER);
+CREATE INDEX IF NOT EXISTS assistant_messages_fil ON assistant_messages(utilisateur_id, fil);
+CREATE TABLE IF NOT EXISTS rapports (id INTEGER PRIMARY KEY, utilisateur_id INTEGER NOT NULL, fil INTEGER NOT NULL, le TEXT NOT NULL,
+  type TEXT NOT NULL, titre TEXT NOT NULL, resume TEXT NOT NULL DEFAULT '', detail TEXT NOT NULL DEFAULT '', ecran TEXT NOT NULL DEFAULT '',
+  attendu TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT 'propose', envoye_le TEXT);
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '2')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
 const COLONNES_ENTIERES = ['id' => 1, 'client_id' => 1, 'commande_id' => 1, 'utilisateur_id' => 1, 'ingredient_id' => 1, 'probleme' => 1, 'total_indicatif' => 1,
     'prix_final' => 1, 'acompte' => 1, 'prix' => 1, 'prix_unite' => 1, 'actif' => 1, 'emballage' => 1, 'tva' => 1, 'ok' => 1, 'n' => 1, 'remises' => 1,
-    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1];
+    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1, 'fil' => 1, 'question' => 1, 'rapport_id' => 1];
 function entiers(array $r): array {
     foreach ($r as $k => $v) if (is_string($v) && isset(COLONNES_ENTIERES[$k]) && preg_match('/^-?\d+$/', $v)) $r[$k] = (int)$v;
     return $r;

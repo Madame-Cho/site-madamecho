@@ -61,6 +61,7 @@ function bouton_langue(): string {
 /** Rappel, en coréen, que ce qu'on remplit s'écrit en français (sur les pages qui ont une zone de texte). */
 function rappel_francais(string $corps): string {
     if (!coreen_actif()) return '';
+    if (str_contains($corps, 'data-langue-libre')) return '';   // l'assistant : on peut lui écrire en coréen
     if (!preg_match('/<textarea\b|<input type="text" (?![^>]*\bhidden\b)/', $corps)) return '';
     return '<p class="rappel-fr" translate="no">' . icone('crayon') . '<span><b>입력은 프랑스어로 해 주세요.</b> 적은 내용은 이메일, 청구서, 기록에 그대로 쓰여요.</span></p>';
 }

@@ -37,6 +37,8 @@ function icone(string $n): string {
         'reglages' => '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
         'sortir' => '<path d="M10 4H4v16h6"/><path d="M14 8l4 4-4 4M18 12H9"/>',
         'crayon' => '<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"/><path d="M14 7l3 3"/>',
+        'livre' => '<path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>',
+        'assistant' => '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
         default => '',
     };
     return '<svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';
@@ -58,10 +60,14 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
             $nav .= '<a href="' . h(u($p)) . '"' . $a . '>' . h($l) . '</a>';
             $onglets .= '<a href="' . h(u($p)) . '"' . $a . '>' . icone($i) . '<span>' . h($l) . '</span></a>';
         }
-        $nav .= '<a href="' . h(u('statistiques')) . '"' . ($actif === 'statistiques' ? ' aria-current="page"' : '') . '>Statistiques</a>'
-              . '<a href="' . h(u('production')) . '"' . ($actif === 'production' ? ' aria-current="page"' : '') . '>Production</a>'
-              . '<a href="' . h(u('reglages')) . '"' . ($actif === 'reglages' ? ' aria-current="page"' : '') . '>Réglages</a>';
-        $onglets .= '<a href="' . h(u('plus')) . '"' . (in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients'], true) ? ' aria-current="page"' : '') . '>' . icone('plus') . '<span>Plus</span></a>';
+        // Sur ordinateur : les cinq pages du menu Plus en liens directs quand l'écran est large (≥ 1200 px),
+        // un seul lien « Plus » sinon, pour que la barre reste sur une ligne
+        $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant'], true);
+        foreach ([['statistiques', 'Statistiques'], ['production', 'Production'], ['manuel', 'Manuel'], ['assistant', 'Assistant'], ['reglages', 'Réglages']] as [$p, $l]) {
+            $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . h($l) . '</a>';
+        }
+        $nav .= '<a class="plus" href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>Plus</a>';
+        $onglets .= '<a href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . '<span>Plus</span></a>';
     }
     $f = '';
     if ($flash) $f = '<div class="flash flash-' . h($flash[0]) . '" role="status">' . nl2br(h($flash[1])) . '</div>';

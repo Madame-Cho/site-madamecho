@@ -630,27 +630,57 @@ Matomo ne répond pas, connexion impossible | Matomo가 응답하지 않아요 (
 réponse illisible de Matomo | Matomo 응답을 읽을 수 없어요
 erreur de Matomo | Matomo 오류
 
-# Plus et aide
+# Plus, manuel et assistant
+Sommaire | 차례
 Statistiques du site | 사이트 통계
 Ventes, canaux, délais de réponse, avis | 판매, 경로, 답장 시간, 리뷰
 Ce qu'il faut préparer, jour par jour | 날짜별로 준비할 것
 Prix d'achat et allergènes des recettes | 재료 구입 가격과 알레르기 유발 성분
 Langue, mot de passe, signature des emails, lien d'avis, données | 화면 언어, 비밀번호, 이메일 서명, 리뷰 링크, 데이터
-Comment ça marche | 사용 방법
-Le parcours d'une commande, en bref | 주문 진행 과정 요약
 Se déconnecter | 로그아웃
-Aide | 도움말
-Le parcours d'une commande | 주문 진행 과정
-Les étapes | 단계
-Sans suite ou annulée | 진행 안 됨 또는 취소
-Une demande arrive par le site (elle s'ajoute toute seule) ou vous la saisissez avec « Nouvelle commande » (Instagram, téléphone, marché…). Le site promet une réponse sous 24 heures. | 문의는 사이트로 들어오거나(자동으로 추가돼요) « 새 주문 »으로 직접 입력해요 (인스타그램, 전화, 마켓…). 사이트는 24시간 안에 답장한다고 약속해요.
-Dans la commande, « Préparer la proposition » donne un email prêt : vous le relisez, vous l'envoyez depuis contact@, puis vous appuyez sur « J'ai envoyé la proposition ». | 주문 화면에서 « 견적 이메일 준비 »를 누르면 이메일이 준비돼요. 다시 읽고 contact@에서 보낸 다음 « 견적을 보냈어요 »를 누르세요.
-Quand le client accepte par écrit, « Confirmer la commande » avec le jour et l'heure du retrait. Ajoutez le retrait à votre agenda en un geste. | 고객이 글로 수락하면 픽업 날짜와 시간을 넣고 « 주문 확정 »을 누르세요. 픽업 일정은 한 번에 캘린더에 넣을 수 있어요.
-Le jour du retrait, « Commande remise au client », avec le paiement. Un client content ? Demandez-lui un avis Google. | 픽업 날에는 결제 내용과 함께 « 고객에게 전달 완료 »를 누르세요. 만족한 고객이면 구글 리뷰를 부탁하세요.
-Pas de réponse du client, ou une annulation : la demande sort des listes. Les demandes sans suite sont effacées au bout de 12 mois. | 고객이 답이 없거나 취소하면 문의가 목록에서 빠져요. 진행 안 된 문의는 12개월 뒤에 삭제돼요.
-Bon à savoir | 알아 두면 좋은 것
-Aucun email ne part tout seul : la gestion prépare les textes, c'est vous qui les envoyez. | 이메일은 저절로 나가지 않아요. 관리 화면이 글을 준비하고, 보내는 건 직접 해요.
-Mathieu fait le point des commandes avec vous le mardi et le vendredi. | 화요일과 금요일에 Mathieu가 함께 주문을 점검해요.
+Manuel | 설명서
+Comment fonctionne la gestion, écran par écran | 관리 시스템 사용법, 화면별로
+Assistant | 어시스턴트
+Questions, problèmes, idées d'amélioration | 질문, 문제, 개선 아이디어
+Nouvelle conversation | 새 대화
+Pas encore relié | 아직 연결되지 않음
+Relier l'assistant dans Réglages | 설정에서 어시스턴트 연결
+Votre message | 메시지
+Envoyer | 보내기
+Envoyer le rapport à Olivier | Olivier에게 보고서 보내기
+Pas maintenant | 나중에
+Non envoyé | 보내지 않음
+Remplacé par le rapport suivant | 다음 보고서로 대체됨
+Rapports envoyés | 보낸 보고서
+Relier l'assistant | 어시스턴트 연결
+Clé d'accès Anthropic | Anthropic 접근 키
+Modèle | 모델
+Ce mois-ci | 이번 달
+Nom : « Gestion Madame Cho ». Copiez la clé affichée (elle commence par sk-ant-) : Anthropic ne la montre qu'une fois. | 이름: « Gestion Madame Cho ». 표시된 키(sk-ant-로 시작)를 복사하세요. Anthropic은 한 번만 보여 줘요.
+Collez-la ici. La gestion vérifie qu'elle marche avant de l'enregistrer. | 여기에 붙여 넣으세요. 저장하기 전에 작동하는지 확인해요.
+Retirer la clé de l'assistant ? Il ne répondra plus. | 어시스턴트 키를 삭제할까요? 더 이상 답하지 않아요.
+L'assistant n'est plus relié. | 어시스턴트 연결을 해제했어요.
+L'assistant est relié : il répond dans Plus › Assistant. | 어시스턴트를 연결했어요. 더보기 › 어시스턴트에서 답해요.
+Collez la clé telle qu'Anthropic l'affiche : elle commence par sk-ant-, sans espace. | Anthropic이 보여 주는 그대로 키를 붙여 넣으세요. sk-ant-로 시작하고 공백이 없어야 해요.
+L'assistant n'est pas encore relié : demandez à Olivier de coller la clé dans Réglages. | 어시스턴트가 아직 연결되지 않았어요. Olivier에게 설정에서 키를 붙여 넣어 달라고 하세요.
+L'email n'est pas parti : réessayez, ou prévenez Olivier. | 이메일이 나가지 않았어요. 다시 해 보거나 Olivier에게 알려 주세요.
+Rapport envoyé à contact@madamecho.com. | 보고서를 contact@madamecho.com으로 보냈어요.
+clé refusée par Anthropic | Anthropic이 키를 거부했어요
+cette clé n'a pas le droit d'utiliser ce modèle | 이 키는 이 모델을 쓸 권한이 없어요
+modèle introuvable chez Anthropic | Anthropic에 그 모델이 없어요
+trop de demandes à la fois, réessayez dans une minute | 요청이 너무 많아요. 1분 뒤에 다시 해 보세요
+l'assistant est surchargé, réessayez dans un moment | 어시스턴트가 지금 바빠요. 잠시 뒤에 다시 해 보세요
+l'assistant a un souci de son côté, réessayez | 어시스턴트 쪽에 문제가 있어요. 다시 해 보세요
+l'assistant met trop de temps à répondre | 어시스턴트 응답이 너무 오래 걸려요
+impossible de joindre l'assistant | 어시스턴트에 연결할 수 없어요
+l'assistant n'a pas pu répondre à ce message | 어시스턴트가 이 메시지에는 답할 수 없었어요
+l'assistant n'est pas relié | 어시스턴트가 연결되어 있지 않아요
+cURL manque sur ce serveur | 이 서버에 cURL이 없어요
+Clé de l'assistant retirée | 어시스턴트 키 삭제
+Assistant relié (clé Anthropic) | 어시스턴트 연결 (Anthropic 키)
+Problème | 문제
+Amélioration | 개선
+Question | 질문
 
 # Réglages
 Langue de l'écran | 화면 언어
@@ -1084,6 +1114,17 @@ function coreen_motifs(): array {
             fn($m) => '가져오기: 고객 ' . $m[1] . '명 생성, ' . $m[2] . '명은 이미 있음, 주문 ' . $m[3] . '건 생성, ' . $m[4] . '건은 이미 있음.'],
         ['/^À revoir : (.+)$/u', fn($m) => '다시 볼 것: ' . $m[1]],
         ['/^La reprise a échoué : rien n\'a été enregistré\.(.*)$/u', fn($m) => '가져오기에 실패했어요. 아무것도 저장되지 않았어요.' . $m[1]],
+        // Assistant et rapports
+        ['/^Pas de réponse : (.+)\.$/u', fn($m) => '답이 없어요: ' . $t($m[1]) . '.'],
+        ['/^demande refusée par l\'API(?: \((.+)\))?$/u', fn($m) => 'API가 요청을 거부했어요' . (isset($m[1]) ? ' (' . $m[1] . ')' : '')],
+        ['/^réponse inattendue de l\'API \(code (\d+)\)$/u', fn($m) => 'API에서 뜻밖의 응답이 왔어요 (코드 ' . $m[1] . ')'],
+        ['/^le nombre de questions du jour est atteint \((\d+)\) : à demain, ou prévenez Olivier$/u', fn($m) => '오늘 질문 한도(' . $m[1] . '개)에 도달했어요. 내일 다시 하거나 Olivier에게 알려 주세요'],
+        ['/^Envoyé le (.+) à contact@madamecho\.com$/u', fn($m) => ($d = $date($m[1])) ? $d . ' contact@madamecho.com으로 보냄' : null],
+        ['/^Ce mois-ci : (\d+) question\(s\) · ≈ (.+) \$$/u', fn($m) => '이번 달: 질문 ' . $m[1] . '건 · ≈ ' . $m[2] . ' $'],
+        ['/^Ce mois-ci : (\d+) question\(s\)$/u', fn($m) => '이번 달: 질문 ' . $m[1] . '건'],
+        ['/^(\d+) question\(s\)$/u', fn($m) => '질문 ' . $m[1] . '건'],
+        ['/^(\d+) question\(s\) · ≈ (.+) \$$/u', fn($m) => '질문 ' . $m[1] . '건 · ≈ ' . $m[2] . ' $'],
+        ['/^Rapport envoyé à Olivier : (.+)$/u', fn($m) => 'Olivier에게 보고서 보냄: ' . $m[1]],
         // Historique
         ['/^Fiche modifiée : (.+)$/u', fn($m) => '고객 정보 수정: ' . coreen_champs($m[1])],
         ['/^Commande modifiée : (.+)$/u', fn($m) => '주문 수정: ' . coreen_champs($m[1])],

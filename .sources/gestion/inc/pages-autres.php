@@ -201,38 +201,14 @@ function page_plus(): void {
     $l = [[u('statistiques'), 'stats', 'Statistiques', 'Ventes, canaux, délais de réponse, avis'],
           [u('production'), 'imprimer', 'Fiche de production', 'Ce qu\'il faut préparer, jour par jour'],
           [u('ingredients'), 'produits', 'Ingrédients', 'Prix d\'achat et allergènes des recettes'],
-          [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, signature des emails, lien d\'avis, données'],
-          [u('aide'), 'avis', 'Comment ça marche', 'Le parcours d\'une commande, en bref']];
+          [u('manuel'), 'livre', 'Manuel', 'Comment fonctionne la gestion, écran par écran'],
+          [u('assistant'), 'assistant', 'Assistant', 'Questions, problèmes, idées d\'amélioration'],
+          [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, signature des emails, lien d\'avis, données']];
     $s = '';
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';
     $c = titre_page('Plus', '') . '<nav class="menu" aria-label="Plus">' . $s . '</nav><p class="aide centre">Gestion Madame Cho · version du ' . h(date_fr(GESTION_VERSION, 'longue')) . '</p>';
     mise_en_page('Plus', $c, 'plus');
-}
-
-function page_aide(): void {
-    $etapes = [
-        ['À répondre', 'Une demande arrive par le site (elle s\'ajoute toute seule) ou vous la saisissez avec « Nouvelle commande » (Instagram, téléphone, marché…). Le site promet une réponse sous 24 heures.'],
-        ['Proposition', 'Dans la commande, « Préparer la proposition » donne un email prêt : vous le relisez, vous l\'envoyez depuis contact@, puis vous appuyez sur « J\'ai envoyé la proposition ».'],
-        ['Confirmée', 'Quand le client accepte par écrit, « Confirmer la commande » avec le jour et l\'heure du retrait. Ajoutez le retrait à votre agenda en un geste.'],
-        ['Remise', 'Le jour du retrait, « Commande remise au client », avec le paiement. Un client content ? Demandez-lui un avis Google.'],
-        ['Sans suite ou annulée', 'Pas de réponse du client, ou une annulation : la demande sort des listes. Les demandes sans suite sont effacées au bout de 12 mois.'],
-    ];
-    $s = '';
-    foreach ($etapes as $i => [$t, $d]) $s .= '<li><b>' . ($i + 1) . '. ' . h($t) . '</b><p>' . h($d) . '</p></li>';
-    $c = titre_page('Comment ça marche', 'Le parcours d\'une commande', '', u('plus'))
-       . bloc('Les étapes', '<ol class="etapes">' . $s . '</ol>')
-       . bloc('Bon à savoir', '<ul class="puces"><li>' . fr_ko('Un <b>problème</b> (retard, réclamation, paiement) se signale dans la commande : il reste visible partout jusqu\'à ce qu\'il soit résolu.',
-                                                         '<b>문제</b>(지연, 불만, 결제)는 주문 화면에서 신고해요. 해결될 때까지 어디서나 보여요.') . '</li>'
-            . '<li>' . fr_ko('Les <b>commentaires</b> se mettent sur la commande ou sur la fiche du client. Jamais d\'information de santé : pour une allergie, seulement l\'ingrédient à éviter.',
-                             '<b>메모</b>는 주문이나 고객 정보에 적어요. 건강 정보는 적지 마세요. 알레르기는 피해야 할 재료만 적어요.') . '</li>'
-            . '<li>Aucun email ne part tout seul : la gestion prépare les textes, c\'est vous qui les envoyez.</li>'
-            . '<li>' . fr_ko('La <b>fiche de production</b> (menu Plus) liste ce qu\'il faut préparer, sans les coordonnées des clients.',
-                             '<b>생산 시트</b>(더보기 메뉴)에는 준비할 것이 고객 연락처 없이 나와요.') . '</li>'
-            . '<li>' . fr_ko('L\'écran s\'affiche en coréen ou en français (bouton en haut, ou Réglages). Ce que vous écrivez reste en <b>français</b> : il part tel quel dans les emails, les factures et l\'historique.',
-                             '화면은 한국어나 프랑스어로 볼 수 있어요 (위쪽 버튼 또는 설정). 직접 적는 내용은 <b>프랑스어</b>로 써 주세요. 이메일, 청구서, 기록에 그대로 쓰여요.') . '</li>'
-            . '<li>Mathieu fait le point des commandes avec vous le mardi et le vendredi.</li></ul>');
-    mise_en_page('Aide', $c, 'plus');
 }
 
 /* ---------- Exports ---------- */
@@ -374,6 +350,22 @@ function page_reglages(): void {
                 evenement('reglage', 'Matomo relié (statistiques du site)');
                 flash('ok', 'Matomo est relié : les visites du site sont dans Statistiques › Site internet.');
                 break;
+            case 'assistant':
+                if (!$admin) break;
+                $ancre = 'assistant';
+                if (!empty($_POST['retirer'])) {
+                    parametre_ecrire('assistant_cle', '');
+                    evenement('reglage', 'Clé de l\'assistant retirée');
+                    flash('ok', 'L\'assistant n\'est plus relié.');
+                    break;
+                }
+                $cle = preg_replace('/\s+/', '', texte('assistant_cle', 300)) ?? '';
+                if (!preg_match('/^sk-ant-[A-Za-z0-9_\-]{30,250}$/', $cle)) { flash('erreur', 'Collez la clé telle qu\'Anthropic l\'affiche : elle commence par sk-ant-, sans espace.'); break; }
+                if (($pb = assistant_essayer_cle($cle)) !== '') { flash('erreur', 'Clé non enregistrée : ' . $pb . '.'); break; }
+                parametre_ecrire('assistant_cle', $cle);
+                evenement('reglage', 'Assistant relié (clé Anthropic)');
+                flash('ok', 'L\'assistant est relié : il répond dans Plus › Assistant.');
+                break;
             case 'importer':
                 if (!$admin) break;
                 $ancre = 'reprise';
@@ -452,6 +444,26 @@ function page_reglages(): void {
             . '</details>';
         if ($relie) $t .= formulaire('matomo', '<input type="hidden" name="retirer" value="1">' . bouton('Retirer la clé', 'discret'), ['data-confirmer' => 'Retirer la clé de Matomo ? Les visites du site ne s\'afficheront plus dans la gestion.']);
         $c .= bloc('Statistiques du site (Matomo)', $t, '', 'matomo');
+    }
+    // L'assistant de Youngmi (clé Anthropic)
+    if ($admin) {
+        $relie = assistant_relie();
+        $t = '<p>' . fr_ko('L\'assistant (menu Plus) répond aux questions sur la gestion à partir du manuel et prépare des rapports pour Olivier. Il marche avec Claude, le modèle d\'Anthropic : il faut une clé d\'accès, créée par Olivier et payée comme les autres outils informatiques. Chaque question coûte quelques centimes.',
+                           '어시스턴트(더보기 메뉴)는 설명서를 바탕으로 관리 시스템에 대한 질문에 답하고 Olivier에게 보낼 보고서를 준비해요. Anthropic의 모델 Claude로 작동해요. Olivier가 만들고 다른 IT 도구처럼 결제하는 접근 키가 필요해요. 질문 하나에 몇 센트가 들어요.') . '</p>'
+           . definition(['État' => $relie ? '<span class="ok">relié</span>' : '<span class="dormant">pas encore relié</span>', 'Modèle' => '<span translate="no">' . h(GESTION_ASSISTANT_MODELE) . '</span>',
+                         'Ce mois-ci' => $relie ? h(mb_substr(assistant_mois_texte(), mb_strlen('Ce mois-ci : '))) : '']);
+        $t .= '<details class="replie"' . ($relie ? '' : ' open') . '><summary>' . ($relie ? 'Remplacer la clé' : 'Relier l\'assistant') . '</summary>'
+            . '<ol class="aide marche">'
+            . '<li>' . fr_ko('Ouvrez <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> avec le compte d\'Olivier, puis « API keys » › « Create key ».',
+                             'Olivier의 계정으로 <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>을 열고 « API keys » › « Create key ».') . '</li>'
+            . '<li>Nom : « Gestion Madame Cho ». Copiez la clé affichée (elle commence par sk-ant-) : Anthropic ne la montre qu\'une fois.</li>'
+            . '<li>Collez-la ici. La gestion vérifie qu\'elle marche avant de l\'enregistrer.</li></ol>'
+            . formulaire('assistant', champ('assistant_cle', 'Clé d\'accès Anthropic', '', ['autocomplete' => 'off', 'spellcheck' => 'false', 'autocapitalize' => 'off', 'required' => true, 'maxlength' => '300'],
+                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans la sauvegarde.')
+                . bouton('Vérifier et enregistrer', 'secondaire'))
+            . '</details>';
+        if ($relie) $t .= formulaire('assistant', '<input type="hidden" name="retirer" value="1">' . bouton('Retirer la clé', 'discret'), ['data-confirmer' => 'Retirer la clé de l\'assistant ? Il ne répondra plus.']);
+        $c .= bloc('Assistant', $t, '', 'assistant');
     }
     // Conservation et RGPD
     if ($admin) {
