@@ -71,6 +71,15 @@ html:lang(ko) body{word-break:keep-all}
 .bloc>*+*{margin-top:12px}
 .bloc>h2+*{margin-top:0}
 .bloc.alerte{border-color:#E7C2B8;background:#FFFBFA}
+.titre-section{font-size:18px;font-weight:500;margin:32px 0 12px}
+.nav-mois{display:flex;justify-content:space-between;gap:12px;margin:0 0 14px;font-size:14px}
+.nav-mois a:only-child{margin-right:auto}
+ul.doublons{list-style:none;margin:8px 0 0;padding:0}
+ul.doublons li{padding:12px 0;border-top:1px solid var(--ligne)}
+ul.doublons li p{margin:0 0 8px}
+ul.doublons .raisons{color:var(--erreur);font-size:14px}
+.doublon-possible{display:flex;gap:6px;align-items:flex-start;margin:8px 0 0;color:var(--erreur);font-size:14px}
+.doublon-possible .ic{flex:none;margin-top:1px}
 .grille-2{display:grid;gap:0 14px}
 h3.jour{font:500 14px/1.3 var(--police);letter-spacing:.06em;text-transform:uppercase;color:var(--doux);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
 h3.jour:first-of-type{margin-top:0}
@@ -105,7 +114,7 @@ h3.jour:first-of-type{margin-top:0}
 .s-confirmee{background:var(--vert-f);color:var(--vert)}
 .s-remise{background:var(--ivoire);color:var(--chocolat)}
 .s-sans-suite,.s-annulee,.s-inactif,.s-efface,.s-produit-retire{background:var(--gris-f);color:var(--gris)}
-.s-pro{background:var(--chocolat);color:#fff}
+.s-pro,.s-produit-pro{background:var(--chocolat);color:#fff}
 .s-produit-carte{background:var(--vert-f);color:var(--vert)}
 .s-produit-demande{background:var(--bleu-f);color:var(--bleu)}
 .paiement{background:transparent;border:1px solid var(--fort);color:var(--doux);font-weight:400}

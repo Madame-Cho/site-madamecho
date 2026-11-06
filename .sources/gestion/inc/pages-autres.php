@@ -384,6 +384,8 @@ function page_reglages(): void {
                 try { $cr = importer($data); }
                 catch (\Throwable $e) { error_log('madamecho gestion import : ' . $e->getMessage()); flash('erreur', 'La reprise a échoué : rien n\'a été enregistré.' . (GESTION_ESSAI ? ' ' . $e->getMessage() : '')); break; }
                 flash($cr['erreurs'] ? 'erreur' : 'ok', 'Reprise : ' . $cr['clients_crees'] . ' client(s) créé(s), ' . $cr['clients_repris'] . ' déjà connu(s), ' . $cr['commandes_creees'] . ' commande(s) créée(s), ' . $cr['commandes_sautees'] . ' déjà présente(s).'
+                      . ($cr['produits_crees'] || $cr['produits_maj'] ? ' Gamme pro : ' . $cr['produits_crees'] . ' produit(s) ajouté(s), ' . $cr['produits_maj'] . ' prix mis à jour.' : '')
+                      . ($cr['lignes_reliees'] ? ' ' . $cr['lignes_reliees'] . ' ligne(s) de livraison rattachée(s) à la gamme pro.' : '')
                       . ($cr['erreurs'] ? "\nÀ revoir : " . implode(' ; ', array_slice($cr['erreurs'], 0, 10)) : ''));
                 break;
         }

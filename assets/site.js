@@ -301,7 +301,7 @@
       if (ls.length) t.push('Total indicatif\u00a0: ' + euros(total) + ' TTC');
       if (f.perso.value.trim()) t.push('Personnalisation\u00a0: ' + f.perso.value.trim());
       if (f.date.value) t.push('Retrait souhaité\u00a0: ' + dateFr(f.date.value) + ', ' + (CAT.moments[f.moment.value] || '').toLowerCase());
-      t.push('Nom\u00a0: ' + f.nom.value.trim());
+      t.push('Nom\u00a0: ' + (f.prenom ? f.prenom.value.trim() + ' ' : '') + f.nom.value.trim());
       t.push('Email\u00a0: ' + f.email.value.trim() + (f.telephone.value.trim() ? ' · Téléphone\u00a0: ' + f.telephone.value.trim() : ''));
       if (f.pro && f.pro.checked) t.push('Entreprise\u00a0: ' + f.societe.value.trim() + (f.besoin.value.trim() ? ' · Besoin\u00a0: ' + f.besoin.value.trim() : ''));
       return t.join('\n');
@@ -325,7 +325,8 @@
       else if (f.date.value < dateIn.min) err(f.date, 'La date de retrait doit être au plus tôt le ' + dateFr(dateIn.min) + '.');
       else if (f.date.value.slice(5) === '12-24') err(f.date, 'Pas de retrait le 24 décembre\u00a0: choisissez une autre date.');
       else if (f.date.value > dateIn.max) err(f.date, 'Choisissez une date dans les six prochains mois.');
-      if (f.nom.value.trim().length < 2) err(f.nom, 'Indiquez votre prénom et votre nom.');
+      if (f.prenom && !f.prenom.value.trim()) err(f.prenom, 'Indiquez votre prénom.');
+      if (!f.nom.value.trim()) err(f.nom, 'Indiquez votre nom.');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) err(f.email, 'Indiquez une adresse email valide, pour recevoir la réponse de Madame Cho.');
       if (f.pro.checked && !f.societe.value.trim()) err(f.societe, 'Indiquez le nom de l’entreprise.');
       return out;

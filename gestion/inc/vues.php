@@ -108,8 +108,8 @@ function titre_page(string $titre, string $sous = '', string $actions = '', stri
     return '<div class="tete">' . $r . '<div class="tete-texte"><h1>' . $titre . '</h1>' . ($sous !== '' ? '<p class="sous">' . $sous . '</p>' : '') . '</div>'
          . ($actions !== '' ? '<div class="tete-actions">' . $actions . '</div>' : '') . '</div>';
 }
-function chip_statut(string $s, bool $court = true): string {
-    $l = ($court ? STATUTS_COURTS : STATUTS)[$s] ?? $s;
+function chip_statut(string $s, bool $court = true, bool $livraison = false): string {
+    $l = $livraison && $s === 'remise' ? 'Livrée' : (($court ? STATUTS_COURTS : STATUTS)[$s] ?? $s);   // une livraison à un restaurant est « livrée », pas « remise »
     return '<span class="statut s-' . h(str_replace('_', '-', $s)) . '">' . h($l) . '</span>';
 }
 function chip_paiement(string $p, int $acompte = 0): string {
@@ -120,6 +120,28 @@ function chip_paiement(string $p, int $acompte = 0): string {
 }
 function drapeau(string $note = ''): string {
     return '<span class="drapeau" translate="no"' . ($note !== '' ? ' title="' . h($note) . '"' : '') . '>' . icone('alerte') . h(fr_ko('Problème', '문제')) . '</span>';
+}
+/** « TVA 5,5 % » à partir des dixièmes de pour cent de la base (55). */
+function nombre_tva(int $t): string { return str_replace('.', ',', rtrim(rtrim(number_format($t / 10, 1, '.', ''), '0'), '.')) . ' %'; }
+/** « 2026-11 » → « novembre 2026 ». */
+function mois_texte(string $mois): string {
+    return preg_match('/^(\d{4})-(\d{2})$/', $mois, $x) && isset(MOIS[(int)$x[2]]) && (int)$x[2] ? MOIS[(int)$x[2]] . ' ' . $x[1] : $mois;
+}
+/** « Même téléphone, mêmes prénom et nom » (en coréen sur l'écran de Youngmi). */
+function doublon_raisons(array $r): string {
+    $ko = ['même téléphone' => '같은 전화번호', 'mêmes prénom et nom' => '같은 이름', 'même entreprise' => '같은 회사'];
+    $t = implode(', ', array_map(fn($x) => fr_ko($x, $ko[$x] ?? $x), $r));
+    return coreen_actif() ? $t : mb_strtoupper(mb_substr($t, 0, 1)) . mb_substr($t, 1);
+}
+/** Sous le nom du client d'une commande : l'avertissement d'un doublon possible, avec le lien vers sa fiche. */
+function avertissement_doublon(int $clientId): string {
+    $cl = client($clientId);
+    $dbl = $cl ? client_doublons($cl) : [];
+    if (!$dbl) return '';
+    $autres = implode(', ', array_map(fn($o) => h($o['numero']) . ' (' . h(doublon_raisons($o['raisons'])) . ')', $dbl));
+    $lien = h(u('client', ['id' => $clientId])) . '#doublon';
+    return '<p class="doublon-possible">' . icone('alerte') . '<span>' . fr_ko('Doublon possible : ' . $autres . '. <a href="' . $lien . '">Vérifier sur la fiche du client</a>',
+                                                                         '중복 가능성: ' . $autres . '. <a href="' . $lien . '">고객 정보에서 확인하기</a>') . '</span></p>';
 }
 function retrait_texte(array $k, bool $court = false): string {
     $livraison = ($k['mode'] ?? 'retrait') === 'livraison';
@@ -140,10 +162,10 @@ function carte_commande(array $k, bool $avecClient = true): string {
     if (!empty($k['probleme'])) $alertes .= drapeau((string)$k['probleme_note']);
     if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . heures_depuis($k['recue_le']) . ' h</span>';
     elseif (commande_dormante($k)) $alertes .= '<span class="dormant">Rien depuis ' . jours_depuis($k['dernier_echange']) . ' j</span>';
-    $nom = $avecClient ? '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(TYPES_COMMANDE[$k['type']] ?? 'Commande') . '</b>';
+    $nom = $avecClient ? '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(livraison_pro($k) ? 'Livraison' : (TYPES_COMMANDE[$k['type']] ?? 'Commande')) . '</b>';
     $montant = montant_commande($k);
     return '<a class="carte-cmd" href="' . h(u('commande', ['id' => $k['id']])) . '">'
-         . '<span class="l1">' . $nom . chip_statut($k['statut']) . '</span>'
+         . '<span class="l1">' . $nom . chip_statut($k['statut'], true, livraison_pro($k)) . '</span>'
          . '<span class="l2">' . h(retrait_texte($k, true)) . ($montant ? ' · ' . h(euros($montant)) : '') . chip_paiement($k['paiement'], (int)$k['acompte']) . '</span>'
          . '<span class="l3">' . h(commande_contenu_texte($k, true)) . '</span>'
          . '<span class="l4">' . h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · reçue ' . h(date_fr($k['recue_le'], 'relative')) . '</span>'

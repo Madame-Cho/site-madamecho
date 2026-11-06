@@ -35,12 +35,26 @@ function allergenes_texte(array $codes): string { return implode(', ', array_map
 
 /* ---------- Liste ---------- */
 function page_produits(): void {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        csrf_verifier();
+        if (texte('_action', 40) === 'pro_ajouter') {
+            $nom = une_ligne(texte('nom', 80)); $ht = centimes(texte('prix_ht', 12)); $tva = (int)texte('tva', 3);
+            if ($nom === '' || $ht === null || $ht <= 0) flash('erreur', 'Indiquez le nom et le prix HT (par exemple 3,50).');
+            else {
+                $pid = produit_pro_enregistrer(null, $nom, une_ligne(texte('unite', 40)), $ht, isset(TVA[$tva]) ? $tva : 55);
+                flash('ok', 'Ajouté à la gamme pro.');
+                rediriger('produit', ['id' => $pid]);
+            }
+        }
+        rediriger('produits');
+    }
     $ps = produits_lister();
     $ventes = ventes_par_produit(date('Y-m-d', strtotime('-12 months')));
     $c = titre_page('Produits', 'La carte du site, avec les recettes, les coûts et les ventes', lien_bouton(u('ingredients'), 'Ingrédients', 'discret'));
-    $cartes = '';
+    $cartes = ''; $pros = '';
     foreach ($ps as $p) {
         $vars = produit_variantes($p);
+        if (est_pro($p)) { $pros .= carte_produit_pro($p, $vars, $ventes); continue; }
         $rec = recette($p);
         $avecRecette = count(array_filter($rec, fn($r) => $r['lignes']));
         $prixMin = $vars ? min(array_column($vars, 'prix')) : 0;
@@ -62,7 +76,26 @@ function page_produits(): void {
     }
     $c .= $cartes !== '' ? '<div class="liste">' . $cartes . '</div>' : '<p class="vide">La carte du site n\'est pas encore chargée.</p>';
     $c .= '<p class="aide centre">La liste suit la carte du site. Un nouveau gâteau, un prix ou un texte se change dans le site, pas ici.</p>';
+    // Gamme pro : ce que les restaurants commandent, aux prix HT de Qonto Facturation ; jamais sur le site
+    $ajout = '<details class="replie"><summary>' . icone('ajouter') . 'Ajouter un produit à la gamme pro</summary>'
+        . formulaire('pro_ajouter', champ('nom', 'Nom (comme dans Qonto)', '', ['maxlength' => '80', 'required' => true, 'id' => 'pro-nom'])
+            . '<div class="ligne-champs">' . champ('prix_ht', 'Prix HT (€)', '', ['inputmode' => 'decimal', 'placeholder' => '3,50', 'required' => true, 'id' => 'pro-ht'])
+            . champ('unite', 'Vendu', 'la pièce', ['maxlength' => '40', 'placeholder' => 'la pièce, le kg, la plaque…', 'id' => 'pro-unite']) . '</div>'
+            . liste_choix('tva', 'TVA', TVA, '55', ['id' => 'pro-tva']) . bouton('Ajouter', 'secondaire'), [], u('produits')) . '</details>';
+    $c .= '<h2 class="titre-section" id="gamme-pro">Gamme pro (restaurants)</h2>'
+        . ($pros !== '' ? '<div class="liste">' . $pros . '</div>' : '<p class="vide">Pas encore de produit pro : ajoutez-les, ou importez le catalogue de Qonto Facturation.</p>')
+        . $ajout . '<p class="aide centre">Prix HT, comme sur les factures Qonto. Ils restent dans la gestion et ne vont jamais sur le site.</p>';
     mise_en_page('Produits', $c, 'produits');
+}
+/** La carte d'un produit de la gamme pro dans la liste : prix HT, recette, ventes. */
+function carte_produit_pro(array $p, array $vars, array $ventes): string {
+    $v = $vars['u'] ?? ['libelle' => '', 'ht' => 0];
+    $rec = recette($p)['u'] ?? null;
+    $etat = $rec && $rec['lignes'] ? 'Recette · coût ' . euros($rec['cout']) . ($rec['marge'] !== null && $rec['ht'] ? ' · marge ' . number_format($rec['marge'] / $rec['ht'] * 100, 0) . ' %' : '') : 'Recette à saisir';
+    $vendu = isset($ventes[$p['id']]) ? $ventes[$p['id']]['q'] . ' vendu(s) en 12 mois' : 'Aucune livraison en 12 mois';
+    return '<a class="carte-cmd carte-produit" href="' . h(u('produit', ['id' => $p['id']])) . '">'
+         . '<span class="l1"><b translate="no">' . h($p['nom']) . '</b><span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? $p['statut']) . '</span></span>'
+         . '<span class="l2">' . h(euros((int)$v['ht'])) . ' HT · <span translate="no">' . h($v['libelle']) . '</span></span><span class="l3">' . h($etat) . '</span><span class="l4">' . h($vendu) . '</span></a>';
 }
 
 /* ---------- Un produit ---------- */
@@ -75,11 +108,19 @@ function page_produit(): void {
         csrf_verifier();
         $a = texte('_action', 40);
         switch ($a) {
+            case 'pro':
+                if (!est_pro($p)) break;
+                $nom = une_ligne(texte('nom', 80)); $ht = centimes(texte('prix_ht', 12)); $tva = (int)texte('tva', 3);
+                if ($nom === '' || $ht === null || $ht <= 0) { flash('erreur', 'Indiquez le nom et le prix HT (par exemple 3,50).'); break; }
+                produit_pro_enregistrer($id, $nom, une_ligne(texte('unite', 40)), $ht, isset(TVA[$tva]) ? $tva : (int)$p['tva'], (string)($p['cat']['qonto'] ?? ''));
+                produit_modifier($id, ['statut' => choix('statut', ['pro' => 1, 'retire' => 1], $p['statut'])]);
+                flash('ok', 'Gamme pro enregistrée.');
+                break;
             case 'fiche':
                 $lien = une_ligne(texte('fiche_lien', 300));
                 if ($lien !== '' && !preg_match('#^https://#', $lien)) { flash('erreur', 'Le lien de la fiche technique doit commencer par https://'); break; }
-                $tva = (int)texte('tva', 3);
-                produit_modifier($id, ['statut' => choix('statut', STATUTS_PRODUIT, $p['statut']), 'fiche_lien' => $lien, 'valide_le' => date_valide(texte('valide_le', 10)) ?? '',
+                $tva = isset($_POST['tva']) ? (int)texte('tva', 3) : (int)$p['tva'];
+                produit_modifier($id, ['statut' => est_pro($p) ? $p['statut'] : choix('statut', array_diff_key(STATUTS_PRODUIT, ['pro' => 1]), $p['statut']), 'fiche_lien' => $lien, 'valide_le' => date_valide(texte('valide_le', 10)) ?? '',
                                        'valide_par' => une_ligne(texte('valide_par', 60)), 'emballage' => centimes(texte('emballage', 12)) ?? 0,
                                        'tva' => isset(TVA[$tva]) ? $tva : 55, 'notes' => texte('notes', 3000), 'recette' => texte('recette', 8000)]);
                 flash('ok', 'Fiche enregistrée.');
@@ -135,7 +176,22 @@ function page_produit(): void {
     $cat = $p['cat'];
     $rec = recette($p);
     $ventes = ventes_par_produit(date('Y-m-d', strtotime('-12 months')))[$id] ?? ['q' => 0, 'ca' => 0, 'variantes' => []];
-    $c = titre_page('<span translate="no">' . h($p['nom']) . '</span>', '<span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? '') . '</span> · <a href="../' . h($cat['url'] ?? ('carte/' . $id . '/')) . '" target="_blank" rel="noopener">Voir sur le site</a>', '', u('produits'));
+    $pro = est_pro($p);
+    $c = titre_page('<span translate="no">' . h($p['nom']) . '</span>', '<span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? '') . '</span> · '
+        . ($pro ? 'restaurants, prix HT' : '<a href="../' . h($cat['url'] ?? ('carte/' . $id . '/')) . '" target="_blank" rel="noopener">Voir sur le site</a>'), '', $pro ? u('produits') . '#gamme-pro' : u('produits'));
+    if ($pro) {
+        // Gamme pro : le prix HT des factures Qonto, l'unité, la TVA
+        $v = $vars['u'];
+        $f = champ('nom', 'Nom (comme dans Qonto)', $p['nom'], ['maxlength' => '80', 'required' => true])
+           . '<div class="ligne-champs">' . champ('prix_ht', 'Prix HT (€)', number_format((int)$v['ht'] / 100, 2, ',', ''), ['inputmode' => 'decimal', 'required' => true])
+           . champ('unite', 'Vendu', $v['libelle'], ['maxlength' => '40', 'placeholder' => 'la pièce, le kg, la plaque…']) . '</div>'
+           . '<div class="ligne-champs">' . liste_choix('tva', 'TVA', TVA, (string)$p['tva']) . liste_choix('statut', 'Dans la gamme', ['pro' => 'Gamme pro', 'retire' => 'Retiré'], $p['statut']) . '</div>'
+           . bouton('Enregistrer', 'secondaire');
+        $c .= bloc('Gamme pro', definition(['Prix HT' => '<b>' . h(euros((int)$v['ht'])) . '</b> · <span translate="no">' . h($v['libelle']) . '</span>', 'TVA' => h(nombre_tva((int)$p['tva'])),
+                                            'Prix TTC' => h(euros((int)$v['prix'])), 'Dans Qonto' => !empty($cat['qonto']) ? 'Oui' : ''])
+            . '<p class="aide">Le prix doit rester le même que dans Qonto Facturation. Un changement vaut pour les prochaines livraisons ; celles déjà notées gardent leur prix.</p>'
+            . '<details class="replie"><summary>Modifier le prix, l\'unité ou la TVA</summary>' . formulaire('pro', $f) . '</details>');
+    }
     // Ce que le site affiche
     $prix = '';
     foreach ($vars as $code => $v) $prix .= '<li><span translate="no">' . h($v['libelle']) . '</span> · <b>' . h(euros($v['prix'])) . '</b>' . ($cat['mode'] !== 'taille' ? ' la pièce' : '') . '</li>';
@@ -144,10 +200,14 @@ function page_produit(): void {
                         'Allergènes' => $tel_quel($cat['allergenes'] ?? ''), 'Conservation' => $tel_quel($cat['conservation'] ?? ''),
                         'À commander' => h(isset($cat['delai']) ? $cat['delai'] . ' jour(s) avant le retrait' : '') . (!empty($cat['minimum']) ? h(' · au moins ' . $cat['minimum'] . ' pièces') : '')])
           . '<ul class="puces">' . $prix . '</ul><p class="aide">Ces textes et ces prix viennent du site : pour les changer, demandez la modification du site (ils engagent Madame Cho, R-39).</p>';
-    $c .= bloc('Sur le site', $site);
-    // Allergènes : recette contre site
+    if (!$pro) $c .= bloc('Sur le site', $site);
+    // Allergènes : recette contre site (gamme pro : la recette seule, à donner au restaurant)
     $avecRecette = array_filter($rec, fn($r) => $r['lignes']);
-    if ($avecRecette) {
+    if ($avecRecette && $pro) {
+        $cmp = allergenes_comparer($p, $rec);
+        $c .= bloc('Allergènes', '<p>D\'après la recette : <b>' . h($cmp['deduits'] ? allergenes_affiches($cmp['deduits']) : 'aucun allergène') . '</b>.</p>'
+            . '<p class="aide">À donner au restaurant avec la livraison : il doit pouvoir les indiquer à ses clients. C\'est Youngmi qui tranche un doute (R-39).</p>');
+    } elseif ($avecRecette) {
         $cmp = allergenes_comparer($p, $rec);
         $t = '<p>D\'après la recette : <b>' . h($cmp['deduits'] ? allergenes_affiches($cmp['deduits']) : 'aucun allergène') . '</b>.</p>';
         if ($cmp['manquants']) $t .= '<p class="erreur">' . icone('alerte') . ' ' . fr_ko('La recette contient <b>' . h(allergenes_affiches($cmp['manquants'])) . '</b>, que le site n\'indique pas. À corriger sur le site avant de vendre ce gâteau, et à faire confirmer par Youngmi.',
@@ -166,7 +226,7 @@ function page_produit(): void {
     $optVars = [];
     foreach ($vars as $code => $v) $optVars[$code] = $v['libelle'];
     $vOuvert = is_string($_GET['v'] ?? null) ? $_GET['v'] : '';
-    $r = '<p class="aide">Pour ' . ($cat['mode'] === 'taille' ? 'un gâteau entier de chaque taille' : 'une pièce de chaque parfum') . '. Quantités en grammes, millilitres ou pièces. Le coût utilise le prix de chaque ingrédient.</p>';
+    $r = '<p class="aide">Pour ' . ($pro ? 'une unité vendue' : (($cat['mode'] ?? '') === 'taille' ? 'un gâteau entier de chaque taille' : 'une pièce de chaque parfum')) . '. Quantités en grammes, millilitres ou pièces. Le coût utilise le prix de chaque ingrédient.</p>';
     foreach ($rec as $code => $v) {
         $rows = '';
         foreach ($v['lignes'] as $l) {
@@ -210,7 +270,7 @@ function page_produit(): void {
     }
     $c .= bloc('Recettes, coûts et marges', $r);
     // Fiche technique et validation
-    $f = '<div class="ligne-champs">' . liste_choix('statut', 'Sur la carte', STATUTS_PRODUIT, $p['statut']) . liste_choix('tva', 'TVA', TVA, (string)$p['tva']) . '</div>'
+    $f = ($pro ? '' : '<div class="ligne-champs">' . liste_choix('statut', 'Sur la carte', array_diff_key(STATUTS_PRODUIT, ['pro' => 1]), $p['statut']) . liste_choix('tva', 'TVA', TVA, (string)$p['tva']) . '</div>')
        . champ('fiche_lien', 'Lien de la fiche technique (dossier 10 du Drive)', $p['fiche_lien'], ['type' => 'url', 'placeholder' => 'https://docs.google.com/…'])
        . '<div class="ligne-champs">' . champ('valide_le', 'Fiche validée par Youngmi le', (string)$p['valide_le'], ['type' => 'date']) . champ('valide_par', 'Validée par', $p['valide_par'] !== '' ? $p['valide_par'] : '', ['placeholder' => 'Youngmi Cho']) . '</div>'
        . champ('emballage', 'Coût de l\'emballage (€ par gâteau ou par pièce)', (int)$p['emballage'] ? number_format((int)$p['emballage'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal', 'placeholder' => '1,20'])

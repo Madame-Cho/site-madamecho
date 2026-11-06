@@ -33,6 +33,14 @@ function page_accueil(): void {
     $c .= bloc('Retraits des 7 prochains jours', $r !== '' ? $r : '<p class="vide">Aucun retrait confirmé cette semaine.</p>');
     if ($t['propositions']) $c .= bloc('Propositions en attente de réponse du client', liste_commandes($t['propositions'], ''));
     if ($t['acomptes']) $c .= bloc('Acomptes attendus', liste_commandes($t['acomptes'], ''));
+    // Restaurants : les mois passés à facturer dans Qonto
+    $af = releves_a_facturer();
+    if ($af) {
+        $l = '';
+        foreach ($af as $r) $l .= '<a class="carte-cmd" href="' . h(u('releve', ['id' => $r['client_id'], 'mois' => $r['mois']])) . '"><span class="l1"><b translate="no">' . h(client_nom($r)) . '</b>'
+            . '<span class="statut s-demande">À facturer</span></span><span class="l2">' . h(ucfirst(mois_texte($r['mois']))) . ' · ' . h($r['n'] . ' livraison(s)') . '</span></a>';
+        $c .= bloc('Relevés à facturer', '<p class="aide">Restaurants livrés le mois dernier ou avant : faites la facture dans Qonto à partir du relevé, puis notez son numéro.</p><div class="liste">' . $l . '</div>');
+    }
     $c .= '<p class="aide centre">' . (int)$t['demandes_mois'] . ' demande(s) reçue(s) en ' . h($moisNom) . '. ' . '<a href="' . h(u('statistiques')) . '">Voir les statistiques</a></p>';
     mise_en_page('Aujourd\'hui', $c, 'accueil');
 }
@@ -99,7 +107,7 @@ function page_commande(): void {
                 commande_statut($id, 'remise', $prix !== null ? ['prix_final' => $prix] : []);
                 $p = choix('paiement', PAIEMENTS, 'paye');
                 commande_paiement($id, $p, choix('moyen', MOYENS, ''), null, une_ligne(texte('facture', 40)));
-                flash('ok', 'Commande remise. Pensez à demander un avis Google si le client était content.');
+                flash('ok', livraison_pro($k) ? 'Livraison notée : elle est dans le relevé du mois du restaurant.' : 'Commande remise. Pensez à demander un avis Google si le client était content.');
                 break;
             case 'statut':
                 $s = choix('statut', STATUTS, '');
@@ -154,7 +162,7 @@ function page_commande(): void {
     $k = commande($id);
     $client = client((int)$k['client_id']);
     $nom = commande_client_nom($k);
-    $chips = chip_statut($k['statut'], false) . chip_paiement($k['paiement'], (int)$k['acompte']) . ($k['probleme'] ? drapeau() : '');
+    $chips = chip_statut($k['statut'], false, livraison_pro($k)) . chip_paiement($k['paiement'], (int)$k['acompte']) . ($k['probleme'] ? drapeau() : '');
     $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>', '', u('commandes'));
     $c .= etape_suivante($k);
     // Client
@@ -165,6 +173,7 @@ function page_commande(): void {
     $c .= bloc('Client', definition(['Nom' => '<a href="' . h(u('client', ['id' => $k['client_id']])) . '" translate="no">' . h($nom) . '</a> <span class="petit">' . h($k['client_numero']) . '</span>',
                                      'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $k['client_ville'] !== '' ? '<span translate="no">' . h($k['client_ville']) . '</span>' : '',
                                      'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . euros($ch['total']) : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
+                     . avertissement_doublon((int)$k['client_id'])
                      . '<p>' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret') . '</p>');
     $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
     $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h(retrait_texte($k))]) : definition(['Quand' => h(retrait_texte($k)), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
@@ -172,13 +181,22 @@ function page_commande(): void {
                       . agenda_boutons($k));
     $c .= '</div>';
     // Contenu
-    $rows = ''; $V = variantes(); $carte = true;
+    $rows = ''; $V = variantes_toutes(); $carte = true; $ht = 0; $pro = false;
     foreach ($k['lignes_tab'] as $l) {
         if (!isset($V[$l['v'] ?? ''])) $carte = false;
-        $rows .= '<tr><td>' . (int)$l['q'] . ' ×</td><td><b translate="no">' . h($l['nom']) . '</b>' . (($l['libelle'] ?? '') !== '' ? '<br><span class="petit" translate="no">' . h($l['libelle']) . '</span>' : '')
-               . (($l['plaque'] ?? '') !== '' ? '<br><span class="plaque">Plaque : « ' . h($l['plaque']) . ' »</span>' : '') . '</td><td class="nombre">' . h(euros((int)$l['prix'] * (int)$l['q'])) . '</td></tr>';
+        if (isset($l['ht'])) { $pro = true; $ht += (int)$l['ht'] * (int)$l['q']; }
+        $montant = isset($l['ht']) ? euros((int)$l['ht'] * (int)$l['q']) . ' HT' : euros((int)$l['prix'] * (int)$l['q']);
+        $rows .= '<tr><td>' . (int)$l['q'] . ' ×</td><td><b translate="no">' . h($l['nom']) . '</b>' . (($l['libelle'] ?? '') !== '' ? '<br><span class="petit"><span translate="no">' . h($l['libelle']) . '</span>' . (isset($l['ht']) ? ' · ' . h(euros((int)$l['ht'])) . ' HT' : '') . '</span>' : '')
+               . (($l['plaque'] ?? '') !== '' ? '<br><span class="plaque">Plaque : « ' . h($l['plaque']) . ' »</span>' : '') . '</td><td class="nombre">' . h($montant) . '</td></tr>';
     }
-    $contenu = $rows !== '' ? '<table class="tableau lignes-cmd"><tbody>' . $rows . '</tbody><tfoot><tr><td></td><td>' . ($carte ? 'Total indicatif (prix de la carte)' : 'Total des lignes') . '</td><td class="nombre">' . h(euros((int)$k['total_indicatif'])) . '</td></tr></tfoot></table>' : '';
+    $pied = $pro ? '<tr><td></td><td>Total HT</td><td class="nombre">' . h(euros($ht)) . '</td></tr><tr><td></td><td>Total TTC (TVA comprise)</td><td class="nombre">' . h(euros((int)$k['total_indicatif'])) . '</td></tr>'
+                 : '<tr><td></td><td>' . ($carte ? 'Total indicatif (prix de la carte)' : 'Total des lignes') . '</td><td class="nombre">' . h(euros((int)$k['total_indicatif'])) . '</td></tr>';
+    $contenu = $rows !== '' ? '<table class="tableau lignes-cmd"><tbody>' . $rows . '</tbody><tfoot>' . $pied . '</tfoot></table>' : '';
+    if (livraison_pro($k)) {
+        $lien = h(u('releve', ['id' => $k['client_id'], 'mois' => substr((string)($k['retrait_date'] ?? $k['recue_le']), 0, 7)]));
+        $contenu .= '<p class="aide">' . fr_ko('Livraison à un restaurant : elle compte dans le <a href="' . $lien . '">relevé du mois</a>, facturé en fin de mois dans Qonto.',
+                                              '레스토랑 배달이에요. <a href="' . $lien . '">월별 내역서</a>에 들어가고, 월말에 Qonto로 청구해요.') . '</p>';
+    }
     if ($k['perso'] !== '') $contenu .= '<div class="texte-client"><h3>Gâteau personnalisé</h3><p translate="no" lang="fr">' . nl2br(h($k['perso'])) . '</p></div>';
     if ($k['besoin'] !== '') $contenu .= '<div class="texte-client"><h3>Demande d\'un professionnel</h3><p translate="no" lang="fr">' . nl2br(h($k['besoin'])) . '</p></div>';
     if ($contenu === '') $contenu = '<p class="vide">Aucun gâteau noté.</p>';
@@ -255,6 +273,13 @@ function etape_suivante(array $k): string {
                  . formulaire('statut', '<input type="hidden" name="statut" value="sans_suite">' . bouton('Classer sans suite', 'discret'), ['class' => 'form-secondaire'])
                  . '</section>';
         case 'confirmee':
+            if (livraison_pro($k)) {
+                $passe = $k['retrait_date'] && $k['retrait_date'] < aujourdhui();
+                return '<section class="etape' . ($passe ? ' etape-alerte' : '') . '"><h2>' . ($passe ? 'Livraison passée : elle a été faite ?' : 'Livraison prévue : ' . h(retrait_texte($k))) . '</h2>'
+                     . '<p class="aide">Pas de paiement à la livraison : le restaurant paie la facture Qonto du mois, faite à partir du relevé.</p>'
+                     . formulaire('remise', '<input type="hidden" name="paiement" value="aucun"><input type="hidden" name="facture" value="' . h($k['facture']) . '">' . bouton('Livrée', 'principal'), ['class' => 'form-etape'])
+                     . '</section>';
+            }
             $passe = $k['retrait_date'] && $k['retrait_date'] < aujourdhui();
             return '<section class="etape' . ($passe ? ' etape-alerte' : '') . '"><h2>' . ($passe ? 'Retrait passé : la commande a été remise ?' : 'Retrait programmé : ' . h(retrait_texte($k))) . '</h2>'
                  . bloc_email('email-conf', 'Envoyer la confirmation au client', email_confirmation($k), $email)
@@ -266,6 +291,12 @@ function etape_suivante(array $k): string {
                       . bouton('Commande remise au client', 'principal'), ['class' => 'form-etape'])
                  . '</section>';
         case 'remise':
+            if (livraison_pro($k)) {
+                $mois = substr((string)($k['retrait_date'] ?? $k['remise_le'] ?? $k['recue_le']), 0, 7);
+                return '<section class="etape etape-finie"><h2>Livrée le ' . h(date_fr($k['remise_le'] ?? $k['maj_le'], 'longue')) . '</h2>'
+                     . '<p>' . ($k['facture'] !== '' ? 'Facture ' . h($k['facture']) . ($k['paiement'] === 'paye' ? ', payée.' : ', pas encore payée.') : 'Pas encore facturée.') . ' '
+                     . '<a href="' . h(u('releve', ['id' => $k['client_id'], 'mois' => $mois])) . '">Voir le relevé de ' . h(mois_texte($mois)) . '</a></p></section>';
+            }
             $c = client((int)$k['client_id']);
             $lien = (string)parametre('lien_avis', '');
             $avis = '';
@@ -291,7 +322,9 @@ function page_commande_edition(): void {
     if ($id && !$k) rediriger('commandes');
     $clientFixe = $k ? client((int)$k['client_id']) : (entier('client', 1) ? client(entier('client', 1)) : null);
     $erreurs = [];
-    $V = variantes();
+    $V = variantes_toutes();
+    // « Nouvelle livraison » d'un restaurant : type pro, livraison, confirmée, et les quantités de la dernière livraison
+    $livraison = !$k && $clientFixe && $clientFixe['type'] === 'professionnel' && !empty($_GET['livraison']);
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         csrf_verifier();
         // Le client
@@ -303,9 +336,10 @@ function page_commande_edition(): void {
                 $nc = ['type' => choix('c_type', TYPES_CLIENT, 'particulier'), 'prenom' => une_ligne(texte('c_prenom', 60)), 'nom' => une_ligne(texte('c_nom', 80)),
                        'societe' => une_ligne(texte('c_societe', 100)), 'email' => mb_strtolower(une_ligne(texte('c_email', 120))), 'telephone' => une_ligne(texte('c_telephone', 30)),
                        'ville' => une_ligne(texte('c_ville', 60)), 'canal' => choix('canal', CANAUX, 'autre')];
-                if ($nc['nom'] === '' && $nc['societe'] === '') $erreurs[] = 'Choisissez un client existant, ou indiquez au moins le nom du nouveau client.';
                 if ($nc['email'] !== '' && !email_valide($nc['email'])) $erreurs[] = 'L\'email du client n\'est pas valide.';
-                if ($nc['email'] !== '' && ($e = ligne("SELECT id, numero FROM clients WHERE email = ? AND statut <> 'efface'", [$nc['email']]))) $cid = (int)$e['id'];   // déjà connu : on le reprend
+                // Déjà connu (même email, ou même téléphone sans autre email) : on le reprend, même si son nom n'est pas retapé
+                if (!$erreurs && ($e = client_connu($nc['email'], $nc['telephone']))) { $cid = (int)$e['id']; $repris = $e + ['nc' => $nc]; }
+                elseif ($nc['nom'] === '' && $nc['societe'] === '') $erreurs[] = 'Choisissez un client existant, ou indiquez au moins le nom du nouveau client.';
                 elseif (!$erreurs) $nouveauClient = $nc;
             }
         }
@@ -322,7 +356,8 @@ function page_commande_edition(): void {
                 if ($ancien) { $ancien['q'] = $q; $ancien['plaque'] = mb_substr(une_ligne((string)($l['plaque'] ?? '')), 0, 60); $lignes[] = $ancien; }
                 continue;
             }
-            $lignes[] = ['v' => $v, 'q' => $q, 'prix' => $V[$v]['prix'], 'plaque' => $V[$v]['plaque'] ? mb_substr(une_ligne(is_string($l['plaque'] ?? null) ? $l['plaque'] : ''), 0, 60) : ''];
+            $lignes[] = ['v' => $v, 'q' => $q, 'prix' => $V[$v]['prix'], 'plaque' => $V[$v]['plaque'] ? mb_substr(une_ligne(is_string($l['plaque'] ?? null) ? $l['plaque'] : ''), 0, 60) : '']
+                      + (isset($V[$v]['ht']) ? ['ht' => $V[$v]['ht'], 'tva' => $V[$v]['tva']] : []);
         }
         $d = ['canal' => choix('canal', CANAUX, $k['canal'] ?? 'autre'), 'type' => choix('type', TYPES_COMMANDE, $k['type'] ?? 'carte'),
               'retrait_date' => date_valide(texte('retrait_date', 10)), 'retrait_moment' => choix('retrait_moment', ['' => ''] + MOMENTS, ''),
@@ -331,6 +366,7 @@ function page_commande_edition(): void {
         if (!$lignes && $d['perso'] === '' && $d['besoin'] === '') $erreurs[] = 'Ajoutez au moins un gâteau, ou décrivez la demande.';
         if (!$erreurs) {
             if (!empty($nouveauClient)) $cid = client_creer($nouveauClient + ['premier_contact' => maintenant(), 'dernier_echange' => maintenant()]);
+            if (!empty($repris)) client_completer($repris, $repris['nc']['email'], $repris['nc']['telephone'], maintenant(), $repris['nc']['type'] === 'professionnel', $repris['nc']['societe']);
             $prix = centimes(texte('prix_final', 12));
             $acompte = centimes(texte('acompte', 12));
             if ($k) {
@@ -339,14 +375,16 @@ function page_commande_edition(): void {
             } else {
                 $ref = strtoupper(une_ligne(texte('reference', 20)));
                 $statut = choix('statut', STATUTS, 'demande');
+                if ($d['type'] === 'pro' && $d['mode'] === 'livraison' && in_array($statut, ['confirmee', 'remise'], true) && !$d['retrait_date']) $d['retrait_date'] = aujourdhui();
                 $id = commande_creer($d + ['client_id' => $cid, 'statut' => 'demande', 'origine' => 'Commande saisie à la main (' . (CANAUX[$d['canal']] ?? '') . ')']
                                      + (preg_match('/^MC-\d{6}-[0-9A-F]{4}$/', $ref) && !val("SELECT 1 FROM commandes WHERE reference = ?", [$ref]) ? ['reference' => $ref] : []));
                 if ($prix !== null || $acompte) commande_modifier($id, ['prix_final' => $prix, 'acompte' => $acompte ?? 0]);
                 if ($statut !== 'demande') commande_statut($id, $statut);
-                if ($statut === 'remise') commande_paiement($id, choix('paiement', PAIEMENTS, 'paye'), choix('moyen', MOYENS, ''), null, '');
+                if ($statut === 'remise') commande_paiement($id, choix('paiement', PAIEMENTS, $d['type'] === 'pro' && $d['mode'] === 'livraison' ? 'aucun' : 'paye'), choix('moyen', MOYENS, ''), null, '');
                 $note = texte('note', 2000);
                 if ($note !== '') commentaire($note, $id, $cid);
-                flash('ok', 'Commande créée.');
+                if ($livraison && empty($repris)) flash('ok', 'Livraison enregistrée.');
+                else flash('ok', !empty($repris) ? 'Commande créée, sur la fiche de ' . client_nom($repris) . ' (' . $repris['numero'] . '), retrouvée par son ' . ($repris['par'] === 'email' ? 'email' : 'téléphone') . '.' : 'Commande créée.');
             }
             rediriger('commande', ['id' => $id]);
         }
@@ -354,8 +392,10 @@ function page_commande_edition(): void {
     // Le formulaire
     $src = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : [];
     $val = fn(string $n, $def = '') => isset($src[$n]) && is_string($src[$n]) ? $src[$n] : $def;
-    $titre = $k ? 'Modifier ' . $k['reference'] : 'Nouvelle commande';
-    $c = titre_page(h($titre), $k ? '<span translate="no">' . h(commande_client_nom($k)) . '</span>' : 'Une demande reçue par Instagram, téléphone, email, sur un marché… ou une vente déjà faite', '', $k ? u('commande', ['id' => $k['id']]) : u('commandes'));
+    $titre = $k ? 'Modifier ' . $k['reference'] : ($livraison ? 'Nouvelle livraison' : 'Nouvelle commande');
+    $c = titre_page(h($titre), $k ? '<span translate="no">' . h(commande_client_nom($k)) . '</span>'
+                    : ($livraison ? '<span translate="no">' . h(client_nom($clientFixe)) . '</span> · prix HT de la gamme pro, facturés en fin de mois' : 'Une demande reçue par Instagram, téléphone, email, sur un marché… ou une vente déjà faite'), '',
+                    $k ? u('commande', ['id' => $k['id']]) : ($clientFixe ? u('client', ['id' => $clientFixe['id']]) : u('commandes')));
     if ($erreurs) $c .= '<div class="erreur" role="alert">' . implode('<br>', array_map(fn($e) => h($e), $erreurs)) . '</div>';
     $f = '';
     // Client
@@ -373,21 +413,27 @@ function page_commande_edition(): void {
             . champ('c_ville', 'Ville', $val('c_ville'), ['autocomplete' => 'off']) . '</details>');
     }
     // Demande
-    $f .= bloc('La demande', '<div class="ligne-champs">' . liste_choix('canal', 'Reçue par', CANAUX, $val('canal', $k['canal'] ?? (is_string($_GET['ref'] ?? null) ? 'site' : 'instagram')))
-        . liste_choix('type', 'Type', TYPES_COMMANDE, $val('type', $k['type'] ?? 'carte')) . '</div>'
+    $f .= bloc($livraison ? 'La livraison' : 'La demande', '<div class="ligne-champs">' . liste_choix('canal', 'Reçue par', CANAUX, $val('canal', $k['canal'] ?? ($livraison ? 'restaurant' : (is_string($_GET['ref'] ?? null) ? 'site' : 'instagram'))))
+        . liste_choix('type', 'Type', TYPES_COMMANDE, $val('type', $k['type'] ?? ($livraison ? 'pro' : 'carte'))) . '</div>'
         . ($k ? '' : champ('reference', 'Référence MC-… (si elle existe déjà, sinon laissez vide)', $val('reference', is_string($_GET['ref'] ?? null) ? strtoupper($_GET['ref']) : ''), ['placeholder' => 'MC-261106-1A2B', 'pattern' => 'MC-[0-9]{6}-[0-9A-Fa-f]{4}'])));
     // Gâteaux
-    $groupes = [];
-    foreach ($V as $cle => $v) $groupes[$v['nom']][$cle] = $v['libelle'] . ' · ' . euros($v['prix']) . ($v['plaque'] ? '' : ' la pièce');
-    $existantes = $k ? $k['lignes_tab'] : [];
+    $groupes = []; $gpro = [];
+    foreach ($V as $cle => $v) {
+        if (!empty($v['pro'])) $gpro[$cle] = $v['nom'] . ' · ' . euros($v['ht']) . ' HT ' . $v['libelle'];
+        else $groupes[$v['nom']][$cle] = $v['libelle'] . ' · ' . euros($v['prix']) . ($v['plaque'] ? '' : ' la pièce');
+    }
+    $proDabord = $livraison || ($k && $k['type'] === 'pro') || ($clientFixe && $clientFixe['type'] === 'professionnel');
+    $gl = fr_ko('Gamme pro (restaurants, prix HT)', '업체용 제품 (레스토랑, 부가세 별도)');   // étiquette d'un groupe de la liste : pas traduite après coup
+    if ($gpro) $groupes = $proDabord ? [$gl => $gpro] + $groupes : $groupes + [$gl => $gpro];
+    $existantes = $k ? $k['lignes_tab'] : ($livraison ? derniere_livraison((int)$clientFixe['id'], $V) : []);
     if ($src) $existantes = [];
     $rows = '';
     $i = 0;
-    $ligne = function (int $i, string $v, string $q, string $plaque, array $extra = []) use ($groupes): string {
-        $opts = ['' => '— Choisir un gâteau —'] + $extra + $groupes;
-        return '<div class="ligne-gateau">' . liste_choix('lignes[' . $i . '][v]', 'Gâteau', $opts, $v, ['id' => 'l' . $i . 'v'])
+    $ligne = function (int $i, string $v, string $q, string $plaque, array $extra = []) use ($groupes, $livraison): string {
+        $opts = ['' => $livraison ? '— Choisir un produit —' : '— Choisir un gâteau —'] + $extra + $groupes;
+        return '<div class="ligne-gateau">' . liste_choix('lignes[' . $i . '][v]', $livraison ? 'Produit' : 'Gâteau', $opts, $v, ['id' => 'l' . $i . 'v'])
              . champ('lignes[' . $i . '][q]', 'Quantité', $q, ['type' => 'number', 'min' => '1', 'max' => '999', 'inputmode' => 'numeric', 'id' => 'l' . $i . 'q'])
-             . champ('lignes[' . $i . '][plaque]', 'Plaque en chocolat', $plaque, ['maxlength' => '60', 'id' => 'l' . $i . 'p', 'placeholder' => 'Prénom, message (gâteaux entiers)']) . '</div>';
+             . ($livraison ? '' : champ('lignes[' . $i . '][plaque]', 'Plaque en chocolat', $plaque, ['maxlength' => '60', 'id' => 'l' . $i . 'p', 'placeholder' => 'Prénom, message (gâteaux entiers)'])) . '</div>';
     };
     foreach ($existantes as $l) {
         $v = (string)($l['v'] ?? '');
@@ -398,27 +444,31 @@ function page_commande_edition(): void {
     if ($src && is_array($src['lignes'] ?? null)) foreach ($src['lignes'] as $l) if (is_array($l)) $rows .= $ligne($i++, (string)($l['v'] ?? ''), (string)($l['q'] ?? ''), (string)($l['plaque'] ?? ''));
     $vides = $i ? 0 : 1;
     for ($n = 0; $n < $vides; $n++) $rows .= $ligne($i++, '', '', '');
-    $f .= bloc('Les gâteaux', '<div id="lignes" data-prochain="' . $i . '">' . $rows . '</div>'
+    $f .= bloc($livraison ? 'Les produits' : 'Les gâteaux', '<div id="lignes" data-prochain="' . $i . '">' . $rows . '</div>'
         . '<template id="modele-ligne">' . $ligne(999, '', '', '') . '</template>'
         . '<button type="button" class="btn discret" data-ajouter-ligne="modele-ligne" data-cible="lignes">' . icone('ajouter') . 'Une ligne de plus</button>'
         . zone('perso', 'Gâteau personnalisé', $val('perso', $k['perso'] ?? ''), ['rows' => '3', 'maxlength' => '2000'], 'Nombre de personnes, saveurs, couleurs, décoration. Pas d\'information de santé : pour une allergie, seulement l\'ingrédient à éviter.')
         . zone('besoin', 'Demande d\'un professionnel', $val('besoin', $k['besoin'] ?? ''), ['rows' => '2', 'maxlength' => '2000']));
     // Retrait
-    $f .= bloc('Le retrait', '<div class="ligne-champs">' . champ('retrait_date', 'Jour', $val('retrait_date', (string)($k['retrait_date'] ?? '')), ['type' => 'date'])
+    $f .= bloc($livraison ? 'Le jour' : 'Le retrait', '<div class="ligne-champs">' . champ('retrait_date', 'Jour', $val('retrait_date', (string)($k['retrait_date'] ?? ($livraison ? aujourdhui() : ''))), ['type' => 'date'])
         . liste_choix('retrait_moment', 'Moment', ['' => '—'] + MOMENTS, $val('retrait_moment', $k['retrait_moment'] ?? '')) . '</div>'
         . '<div class="ligne-champs">' . champ('retrait_heure', 'Heure convenue', $val('retrait_heure', $k['retrait_heure'] ?? ''), ['type' => 'time', 'step' => '900'])
-        . liste_choix('mode', 'Mode', MODES, $val('mode', $k['mode'] ?? 'retrait')) . '</div>');
+        . liste_choix('mode', 'Mode', MODES, $val('mode', $k['mode'] ?? ($livraison ? 'livraison' : 'retrait'))) . '</div>');
     // Montants et étape
     $pf = $k && $k['prix_final'] !== null ? number_format((int)$k['prix_final'] / 100, 2, ',', '') : '';
     $ac = $k && (int)$k['acompte'] ? number_format((int)$k['acompte'] / 100, 2, ',', '') : '';
-    $m = '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $val('prix_final', $pf), ['inputmode' => 'decimal'], 'Vide : le prix de la carte.') . champ('acompte', 'Acompte (€)', $val('acompte', $ac), ['inputmode' => 'decimal']) . '</div>';
-    if (!$k) {
+    $m = $livraison ? '' : '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $val('prix_final', $pf), ['inputmode' => 'decimal'], 'Vide : le total des gâteaux.') . champ('acompte', 'Acompte (€)', $val('acompte', $ac), ['inputmode' => 'decimal']) . '</div>';
+    if ($livraison) {
+        $m .= liste_choix('statut', 'Où en est-elle ?', ['confirmee' => 'À livrer', 'remise' => 'Déjà livrée'], $val('statut', 'confirmee'))
+            . '<input type="hidden" name="paiement" value="aucun">'
+            . zone('note', 'Commentaire (facultatif)', $val('note'), ['rows' => '2', 'maxlength' => '2000']);
+    } elseif (!$k) {
         $m .= liste_choix('statut', 'Où en est-elle ?', ['demande' => 'Demande reçue, à répondre', 'proposition' => 'Proposition déjà envoyée', 'confirmee' => 'Déjà confirmée', 'remise' => 'Déjà remise (vente faite)'], $val('statut', 'demande'))
             . '<div class="ligne-champs" data-si="f-statut=remise">' . liste_choix('paiement', 'Paiement', ['paye' => 'Payé', 'aucun' => 'Pas encore payé'], $val('paiement', 'paye')) . liste_choix('moyen', 'Payé par', MOYENS, $val('moyen', 'carte')) . '</div>'
             . zone('note', 'Commentaire (facultatif)', $val('note'), ['rows' => '2', 'maxlength' => '2000']);
     }
-    $f .= bloc('Montant', $m);
-    $f .= '<div class="barre-enregistrer">' . bouton($k ? 'Enregistrer les changements' : 'Créer la commande', 'principal large') . '</div>';
+    $f .= bloc($livraison ? 'Où en est-elle ?' : 'Montant', $m);
+    $f .= '<div class="barre-enregistrer">' . bouton($k ? 'Enregistrer les changements' : ($livraison ? 'Enregistrer la livraison' : 'Créer la commande'), 'principal large') . '</div>';
     $c .= formulaire('enregistrer', $f, ['class' => 'form-commande']);
     mise_en_page($titre, $c, 'commandes');
 }
@@ -480,7 +530,7 @@ function page_production(): void {
             if ($k['perso'] !== '') $lg .= '<li><b>Personnalisé :</b> <span translate="no" lang="fr">' . nl2br(h($k['perso'])) . '</span></li>';
             if ($k['besoin'] !== '') $lg .= '<li><b>Pro :</b> <span translate="no" lang="fr">' . nl2br(h($k['besoin'])) . '</span></li>';
             $reste = montant_commande($k) - ($k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : 0);
-            $pay = $k['paiement'] === 'paye' ? 'payé' : 'à encaisser : ' . euros($reste);
+            $pay = $k['paiement'] === 'paye' ? 'payé' : (livraison_pro($k) ? 'livraison, facture du mois' : 'à encaisser : ' . euros($reste));
             $quand = $k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : (MOMENTS_COURTS[$k['retrait_moment']] ?? '');
             $s .= '<article class="fiche-prod"><header><span class="heure">' . h($quand) . '</span><b translate="no">' . h(commande_client_nom($k)) . '</b><span class="petit">' . h($k['reference']) . ' · ' . h($pay) . '</span></header><ul>' . $lg . '</ul>'
                 . ($k['probleme'] ? '<p class="probleme-note">' . h(fr_ko('Problème : ', '문제: ')) . '<span translate="no" lang="fr">' . h($k['probleme_note']) . '</span></p>' : '') . '</article>';

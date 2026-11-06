@@ -18,12 +18,12 @@
 <meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#ffffff">
-<link rel="icon" href="../assets/favicon.ico?v=2026-11-06-gestion" sizes="48x48">
-<link rel="icon" href="../assets/favicon.svg?v=2026-11-06-gestion" type="image/svg+xml">
-<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=2026-11-06-gestion">
-<link rel="manifest" href="../assets/site.webmanifest?v=2026-11-06-gestion">
+<link rel="icon" href="../assets/favicon.ico?v=2026-11-07-clients" sizes="48x48">
+<link rel="icon" href="../assets/favicon.svg?v=2026-11-07-clients" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=2026-11-07-clients">
+<link rel="manifest" href="../assets/site.webmanifest?v=2026-11-07-clients">
 <link rel="preload" href="../assets/polices/jost-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../assets/site.css?v=2026-11-06-gestion">
+<link rel="stylesheet" href="../assets/site.css?v=2026-11-07-clients">
 </head>
 <body class="page-demande">
 <a class="aller" href="#contenu">Aller au contenu</a>
@@ -63,7 +63,10 @@
   <p class="aide" id="aide-date" data-date-aide></p>
 
   <h2 class="sous-titre" id="coordonnees">Vos coordonnées</h2>
-  <label class="champ"><span>Prénom et nom</span><input type="text" name="nom" autocomplete="name" required maxlength="80"></label>
+  <div class="deux-champs">
+   <label class="champ"><span>Prénom</span><input type="text" name="prenom" autocomplete="given-name" required maxlength="60"></label>
+   <label class="champ"><span>Nom</span><input type="text" name="nom" autocomplete="family-name" required maxlength="80"></label>
+  </div>
   <label class="champ"><span>Email</span><input type="email" name="email" autocomplete="email" required maxlength="120"></label>
   <label class="champ"><span>Téléphone <i>(facultatif)</i></span><input type="tel" name="telephone" autocomplete="tel" maxlength="30"></label>
   <label class="case" data-pro-case ><input type="checkbox" name="pro" value="1" data-pro> Je fais cette demande pour une entreprise ou un restaurant</label>
@@ -103,9 +106,9 @@
   <a href="../confidentialite/">Confidentialité</a>
  </nav>
 </footer>
-<script src="../assets/catalogue.js?v=2026-11-06-gestion"></script>
-<script src="../assets/site.js?v=2026-11-06-gestion"></script>
-<script src="../assets/mesure.js?v=2026-11-06-gestion" data-matomo="https://stats.madamecho.com/" data-site="1"></script>
+<script src="../assets/catalogue.js?v=2026-11-07-clients"></script>
+<script src="../assets/site.js?v=2026-11-07-clients"></script>
+<script src="../assets/mesure.js?v=2026-11-07-clients" data-matomo="https://stats.madamecho.com/" data-site="1"></script>
 <!-- test -->
 </body>
 </html>

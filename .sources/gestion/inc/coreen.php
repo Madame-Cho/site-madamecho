@@ -368,6 +368,72 @@ Un doublon ? Fusionner une autre fiche dans celle-ci | 중복인가요? 다른 �
 Numéro de l'autre fiche (elle sera vidée) | 다른 고객 번호 (그쪽 정보는 비워져요)
 Fusionner | 합치기
 Fusionner l'autre fiche dans celle-ci ? Ses commandes passent ici. | 다른 고객 정보를 여기에 합칠까요? 그 고객의 주문이 이쪽으로 옮겨져요.
+Doublon possible | 중복 가능성
+Une autre fiche ressemble à celle-ci. Si c'est la même personne, fusionnez : on garde la fiche la plus ancienne, avec toutes les commandes. Rien n'est fusionné tout seul. | 이 고객과 비슷한 고객 정보가 있어요. 같은 사람이면 합치세요. 더 오래된 고객 정보를 남기고 주문을 모두 옮겨요. 저절로 합쳐지지는 않아요.
+Fusionner les deux fiches | 두 고객 정보 합치기
+Ce n'est pas la même personne | 같은 사람이 아니에요
+Cette autre fiche n'existe plus. | 그 고객 정보는 이제 없어요.
+Noté : ces deux fiches ne seront plus signalées comme doublon. | 저장했어요. 이 두 고객 정보는 더 이상 중복으로 표시하지 않아요.
+Gamme pro | 업체용 제품
+Gamme pro (restaurants) | 업체용 제품 (레스토랑)
+Ajouter un produit à la gamme pro | 업체용 제품 추가
+Ajouté à la gamme pro. | 업체용 제품에 추가했어요.
+Gamme pro enregistrée. | 업체용 제품을 저장했어요.
+Indiquez le nom et le prix HT (par exemple 3,50). | 이름과 부가세 별도 가격을 적어 주세요 (예: 3,50).
+Pas encore de produit pro : ajoutez-les, ou importez le catalogue de Qonto Facturation. | 아직 업체용 제품이 없어요. 직접 추가하거나 Qonto Facturation의 제품 목록을 가져오세요.
+Prix HT, comme sur les factures Qonto. Ils restent dans la gestion et ne vont jamais sur le site. | Qonto 청구서처럼 부가세 별도 가격이에요. 관리 화면에만 있고 사이트에는 절대 나오지 않아요.
+Nom (comme dans Qonto) | 이름 (Qonto와 똑같이)
+Prix HT (€) | 부가세 별도 가격 (€)
+Vendu | 판매 단위
+Dans la gamme | 판매 여부
+restaurants, prix HT | 레스토랑용, 부가세 별도 가격
+Modifier le prix, l'unité ou la TVA | 가격, 판매 단위, 부가세 수정
+Le prix doit rester le même que dans Qonto Facturation. Un changement vaut pour les prochaines livraisons ; celles déjà notées gardent leur prix. | 가격은 Qonto Facturation과 같아야 해요. 바꾸면 다음 배달부터 적용되고, 이미 적은 배달은 원래 가격 그대로예요.
+Pour une unité vendue. Quantités en grammes, millilitres ou pièces. Le coût utilise le prix de chaque ingrédient. | 판매 단위 1개 기준이에요. 수량은 g, ml 또는 개로 적어요. 원가는 재료별 가격으로 계산해요.
+À donner au restaurant avec la livraison : il doit pouvoir les indiquer à ses clients. C'est Youngmi qui tranche un doute (R-39). | 배달할 때 레스토랑에 알려 주세요. 레스토랑은 손님에게 알릴 수 있어야 해요. 애매하면 Youngmi가 정해요 (R-39).
+Recette | 레시피
+Aucune livraison en 12 mois | 최근 12개월 배달 없음
+Nouvelle livraison | 새 배달
+Les produits | 제품
+— Choisir un produit — | — 제품 선택 —
+Autre commande | 다른 주문
+La livraison | 배달
+Le jour | 날짜
+À livrer | 배달 예정
+Déjà livrée | 이미 배달함
+Enregistrer la livraison | 배달 저장
+Livraison enregistrée. | 배달을 저장했어요.
+prix HT de la gamme pro, facturés en fin de mois | 업체용 제품의 부가세 별도 가격, 월말 청구
+Vide : le total des gâteaux. | 비워 두면 케이크 합계로 해요.
+Livraison passée : elle a été faite ? | 배달 날짜가 지났어요. 배달했나요?
+Pas de paiement à la livraison : le restaurant paie la facture Qonto du mois, faite à partir du relevé. | 배달할 때는 결제하지 않아요. 레스토랑은 월별 내역서로 만든 Qonto 청구서를 결제해요.
+Livrée | 배달 완료
+Livraison notée : elle est dans le relevé du mois du restaurant. | 배달을 적었어요. 레스토랑의 월별 내역서에 들어가요.
+Pas encore facturée. | 아직 청구 안 함.
+Pas encore facturé. | 아직 청구 안 함.
+pas encore facturé | 아직 청구 안 함
+facturé en partie | 일부 청구함
+livraison, facture du mois | 배달, 월말 청구
+Total HT | 합계 (부가세 별도)
+Total TTC | 합계 (부가세 포함)
+Total TTC (TVA comprise) | 합계 (부가세 포함)
+Relevés du mois | 월별 내역서
+Une livraison = une commande. En fin de mois, le relevé donne les lignes et le total à recopier dans la facture Qonto. | 배달 1건이 주문 1건이에요. 월말에 내역서의 항목과 합계를 Qonto 청구서에 옮겨 적어요.
+À facturer | 청구 전
+Facturé | 청구함
+Livraisons | 배달
+Produit | 제품
+À recopier dans la facture Qonto | Qonto 청구서에 옮겨 적기
+Les prix HT viennent de la gamme pro (Produits). La TVA est calculée sur le total HT, comme dans Qonto : la facture doit arriver au même total TTC, sinon un prix a changé. | 부가세 별도 가격은 업체용 제품(제품 메뉴)에서 가져와요. 부가세는 Qonto처럼 부가세 별도 합계로 계산해요. 청구서의 부가세 포함 합계가 같아야 해요. 다르면 가격이 바뀐 거예요.
+Facture et paiement | 청구서와 결제
+Numéro de la facture Qonto | Qonto 청구서 번호
+Facture payée | 청구서 결제됨
+Une fois la facture faite dans Qonto, notez son numéro ici ; cochez « Facture payée » quand le virement arrive. | Qonto에서 청구서를 만들면 번호를 여기에 적으세요. 이체가 들어오면 « 청구서 결제됨 »에 체크하세요.
+Aucune livraison ce mois-là. | 그달에는 배달이 없어요.
+Payée par | 결제 수단
+Relevés à facturer | 청구할 내역서
+Restaurants livrés le mois dernier ou avant : faites la facture dans Qonto à partir du relevé, puis notez son numéro. | 지난달이나 그 전에 배달한 레스토랑이에요. 내역서를 보고 Qonto에서 청구서를 만든 뒤 번호를 적으세요.
+Indiquez le numéro de la facture Qonto, ou cochez « Facture payée ». | Qonto 청구서 번호를 적거나 « 청구서 결제됨 »에 체크하세요.
 Le client demande ses données (droit d'accès) | 고객이 자기 정보를 요청했어요 (열람권)
 Le fichier contient tout ce que la gestion garde sur lui : à lui envoyer depuis contact@ dans le mois. | 이 파일에는 관리 화면에 있는 이 고객의 정보가 모두 들어 있어요. 한 달 안에 contact@에서 고객에게 보내세요.
 Télécharger ses données | 고객 정보 다운로드
@@ -978,6 +1044,35 @@ function coreen_motifs(): array {
         ['/^Étape changée : (.*)\.$/u', fn($m) => '단계를 바꿨어요: ' . $t($m[1]) . '.'],
         ['/^Le numéro (.+) ne correspond à aucun autre client\.$/u', fn($m) => $m[1] . ' 번호의 다른 고객이 없어요.'],
         ['/^Le doublon (.+) est fusionné dans cette fiche\.$/u', fn($m) => '중복 고객 ' . $m[1] . '을(를) 이 고객 정보에 합쳤어요.'],
+        ['/^C\'est la même personne \? On garde la fiche (CL-\d+), la plus ancienne, avec les commandes et l\'historique des deux\.$/u',
+            fn($m) => '같은 사람인가요? 더 오래된 ' . $m[1] . ' 고객 정보를 남기고, 두 고객의 주문과 기록을 모두 옮겨요.'],
+        ['/^Les deux fiches sont fusionnées dans (CL-\d+)\.$/u', fn($m) => '두 고객 정보를 ' . $m[1] . '에 합쳤어요.'],
+        // Restaurants : livraisons, relevé du mois, gamme pro
+        ['/^(' . $E . ') HT$/u', fn($m) => $m[1] . ' (부가세 별도)'],
+        ['/^(' . $E . ') HT ·$/u', fn($m) => $m[1] . ' (부가세 별도) ·'],
+        ['/^· (' . $E . ') HT$/u', fn($m) => '· ' . $m[1] . ' (부가세 별도)'],
+        ['/^Recette · coût (' . $E . ')(?: · marge (\d+) %)?$/u', fn($m) => '레시피 · 원가 ' . $m[1] . (isset($m[2]) ? ' · 마진 ' . $m[2] . ' %' : '')],
+        ['/^(\d+) livrée\(s\)$/', fn($m) => '배달 완료 ' . $m[1] . '건'],
+        ['/^(\d+) livraison\(s\) pas encore marquée\(s\) « Livrée » : vérifiez-les avant de faire la facture\.$/u',
+            fn($m) => '아직 ‘배달 완료’로 표시하지 않은 배달이 ' . $m[1] . '건 있어요. 청구서를 만들기 전에 확인하세요.'],
+        ['/^(\d+) livraison\(s\) sur (\d+) facturée\(s\)\.$/u', fn($m) => '배달 ' . $m[2] . '건 중 ' . $m[1] . '건 청구함.'],
+        ['/^(\d+) livraison\(s\) · (' . $E . ') HT · (' . $E . ') TTC$/u', fn($m) => '배달 ' . $m[1] . '건 · ' . $m[2] . ' (부가세 별도) · ' . $m[3] . ' (부가세 포함)'],
+        ['/^Les livraisons \((\d+)\)$/', fn($m) => '배달 (' . $m[1] . ')'],
+        ['/^(\d+) livraison\(s\)$/', fn($m) => '배달 ' . $m[1] . '건'],
+        ['/^Noter sur les (\d+) livraison\(s\)$/', fn($m) => '배달 ' . $m[1] . '건에 적기'],
+        ['/^(\d+) livraison\(s\) notée\(s\)(?: avec la facture (.+?))?(, payée\(s\))?\.$/u',
+            fn($m) => '배달 ' . $m[1] . '건에 적었어요' . (($m[2] ?? '') !== '' ? ': 청구서 ' . $m[2] : '') . (!empty($m[3]) ? ', 결제 완료' : '') . '.'],
+        ['/^[Ff]acture (.+), payée\.?$/u', fn($m) => '청구서 ' . $m[1] . ', 결제 완료'],
+        ['/^[Ff]acture (.+), pas encore payée\.?$/u', fn($m) => '청구서 ' . $m[1] . ', 아직 결제 안 됨'],
+        ['/^Relevé de (' . $ML . ') (\d{4})$/u', fn($m) => $m[2] . '년 ' . coreen_mois($m[1]) . ' 내역서'],
+        ['/^Voir le relevé de (' . $ML . ') (\d{4})$/u', fn($m) => $m[2] . '년 ' . coreen_mois($m[1]) . ' 내역서 보기'],
+        ['/^Aucune livraison en (' . $ML . ') (\d{4})\.$/u', fn($m) => $m[2] . '년 ' . coreen_mois($m[1]) . '에는 배달이 없어요.'],
+        ['/^‹ (' . $ML . ') (\d{4})$/u', fn($m) => '‹ ' . $m[2] . '년 ' . coreen_mois($m[1])],
+        ['/^(' . $ML . ') (\d{4}) ›$/u', fn($m) => $m[2] . '년 ' . coreen_mois($m[1]) . ' ›'],
+        ['/^Livraison prévue : (.+)$/u', fn($m) => ($r = coreen_retrait($m[1])) ? '배달 예정: ' . $r : null],
+        ['/^Livrée le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 배달 완료' : null],
+        ['/^Commande créée, sur la fiche de (.+) \((CL-\d+)\), retrouvée par son (email|téléphone)\.$/u',
+            fn($m) => '주문을 만들었어요. ' . ($m[3] === 'email' ? '이메일' : '전화번호') . '로 이미 아는 고객이라 ' . $m[1] . ' (' . $m[2] . ') 고객 정보에 넣었어요.'],
         ['/^Ce client a encore (\d+) commande\(s\) en cours : terminez-les ou annulez-les avant d\'effacer\.$/u', fn($m) => '이 고객은 아직 진행 중인 주문이 ' . $m[1] . '건 있어요. 삭제하기 전에 끝내거나 취소하세요.'],
         ['/^La recette « (.*) » est vide\.$/u', fn($m) => '« ' . $m[1] . ' » 레시피가 비어 있어요.'],
         ['/^« (.*) » existe déjà\.$/u', fn($m) => '« ' . $m[1] . ' »은(는) 이미 있어요.'],
@@ -994,6 +1089,9 @@ function coreen_motifs(): array {
         ['/^Commande modifiée : (.+)$/u', fn($m) => '주문 수정: ' . coreen_champs($m[1])],
         ['/^Fiche produit modifiée : (.+)$/u', fn($m) => '제품 시트 수정: ' . coreen_champs($m[1])],
         ['/^Doublon (.+) fusionné dans cette fiche$/u', fn($m) => '중복 고객 ' . $m[1] . ' 합침'],
+        ['/^Pas la même personne que (CL-\d+)$/u', fn($m) => $m[1] . ' 고객과 다른 사람'],
+        ['/^Gamme pro : (.+)$/u', fn($m) => '업체용 제품: ' . str_replace([' ajouté, ', ' HT', 'prix ', '(ancien nom : '], [' 추가, ', ' (부가세 별도)', '가격 ', '(이전 이름: '], $m[1])],
+        ['/^Ajouté à la fiche : (.+)$/u', fn($m) => '고객 정보에 추가: ' . preg_replace(['/(^|, )email /u', '/(^|, )téléphone /u'], ['$1이메일 ', '$1전화번호 '], $m[1])],
         ['/^Données personnelles effacées : (.+)$/u', fn($m) => '개인 정보 삭제: ' . $t($m[1])],
         ['/^Commande saisie à la main \((.*)\)$/u', fn($m) => '직접 입력한 주문 (' . $t($m[1]) . ')'],
         ['/^Copie de (.+)$/u', fn($m) => $m[1] . ' 복사본'],

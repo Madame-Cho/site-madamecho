@@ -13,7 +13,7 @@ require_once __DIR__ . '/base.php';
 require_once __DIR__ . '/modele.php';
 
 /**
- * $d : ref, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
+ * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
  * perso, pro (bool), societe, besoin. Renvoie le numéro interne de la commande (0 : rien d'enregistré).
  * Ne fait rien tant que l'espace n'est pas ouvert, ni avant que l'enregistrement soit activé dans Réglages (mise en ligne en deux temps).
  */
@@ -24,7 +24,9 @@ function enregistrer_demande(array $d): int {
     $quand = maintenant();
     $pdo->beginTransaction();
     try {
-        $cid = client_trouver_ou_creer((string)$d['email'], (string)$d['nom'], (string)$d['telephone'], 'site', (bool)$d['pro'], (string)$d['societe'], $quand);
+        // Prénom et nom séparés depuis le 07/11/2026 ; une page du formulaire restée ouverte avant envoie encore « Prénom et nom » en un seul champ
+        [$prenom, $nom] = isset($d['prenom']) ? [(string)$d['prenom'], (string)$d['nom']] : prenom_nom((string)$d['nom']);
+        $cid = client_trouver_ou_creer((string)$d['email'], $prenom, $nom, (string)$d['telephone'], 'site', (bool)$d['pro'], (string)$d['societe'], $quand);
         $lignes = [];
         foreach ($d['lignes'] as $l) {
             $q = max(1, (int)$l['q']);

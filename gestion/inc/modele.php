@@ -27,24 +27,90 @@ function prenom_nom(string $complet): array {
     $nom = array_pop($parts);
     return [implode(' ', $parts), $nom];
 }
-/** Retrouve un client par email (le plus récent non effacé), ou le crée. */
-function client_trouver_ou_creer(string $email, string $nomComplet, string $tel, string $canal, bool $pro, string $societe, string $quand): int {
+/* ---------- Retrouver un client qui revient : par email, puis par téléphone ; jamais par le nom (Olivier, 06/11/2026) ---------- */
+/** Le téléphone réduit à ses chiffres, au format français : « 06 61 31 17 79 », « +33 6 61 31 17 79 », « 0033 (0)6… » donnent « 0661311779 ». */
+function telephone_cle(string $t): string {
+    $c = (string)preg_replace('/\D+/', '', $t);
+    if (str_starts_with($c, '00')) $c = substr($c, 2);                               // 0033…, 0082… : indicatif international
+    if (str_starts_with($c, '330') && strlen($c) === 12) $c = substr($c, 2);         // +33 (0)6…
+    elseif (str_starts_with($c, '33') && strlen($c) === 11) $c = '0' . substr($c, 2); // +33 6…
+    return strlen($c) >= 8 ? $c : '';
+}
+/** Prénom et nom sans accents ni majuscules, dans n'importe quel ordre (« Kim Hana » = « Hana KIM ») ; vide s'il manque l'un des deux. */
+function nom_cle(string $prenom, string $nom): string {
+    $mots = array_values(array_filter(explode('-', identifiant_texte($prenom . ' ' . $nom))));
+    if (count($mots) < 2) return '';
+    sort($mots);
+    return implode(' ', $mots);
+}
+/** La fiche (la plus récente, non effacée) qui porte ce numéro de téléphone, écrit de n'importe quelle façon. */
+function client_par_telephone(string $tel): ?array {
+    $cle = telephone_cle($tel);
+    if ($cle === '') return null;
+    foreach (lignes("SELECT * FROM clients WHERE telephone <> '' AND statut <> 'efface' ORDER BY id DESC") as $c) if (telephone_cle($c['telephone']) === $cle) return $c;
+    return null;
+}
+/**
+ * Le client déjà connu : même email ; sinon même téléphone, si sa fiche n'a pas un autre email.
+ * Le nom ne suffit jamais (une faute de frappe, un homonyme) : un même prénom et nom est seulement signalé sur la fiche (client_doublons).
+ * 'par' dit comment il a été reconnu : email ou telephone.
+ */
+function client_connu(string $email, string $tel): ?array {
     $email = mb_strtolower(trim($email));
-    if ($email !== '') {
-        $c = ligne("SELECT * FROM clients WHERE email = ? AND statut <> 'efface' ORDER BY id DESC LIMIT 1", [$email]);
-        if ($c) {
-            $maj = ['dernier_echange' => max($c['dernier_echange'], $quand), 'maj_le' => maintenant()];
-            if ($tel !== '' && $c['telephone'] === '') $maj['telephone'] = $tel;
-            if ($pro && $societe !== '' && $c['societe'] === '') { $maj['societe'] = $societe; $maj['type'] = 'professionnel'; }
-            if ($c['statut'] === 'inactif') $maj['statut'] = 'actif';
-            $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($maj)));
-            q("UPDATE clients SET $set WHERE id = :id", $maj + ['id' => $c['id']]);
-            return (int)$c['id'];
-        }
+    if ($email !== '' && ($c = ligne("SELECT * FROM clients WHERE email = ? AND statut <> 'efface' ORDER BY id DESC LIMIT 1", [$email]))) return $c + ['par' => 'email'];
+    $c = client_par_telephone($tel);
+    if ($c && ($c['email'] === '' || $email === '')) return $c + ['par' => 'telephone'];
+    return null;
+}
+/** Complète la fiche d'un client qui revient : email ou téléphone qui manquaient, entreprise, dernier échange ; une fiche inactive redevient active. */
+function client_completer(array $c, string $email, string $tel, string $quand, bool $pro = false, string $societe = ''): void {
+    $email = mb_strtolower(trim($email));
+    $maj = ['dernier_echange' => max($c['dernier_echange'], $quand), 'maj_le' => maintenant()];
+    if ($tel !== '' && $c['telephone'] === '') $maj['telephone'] = $tel;
+    if ($email !== '' && $c['email'] === '' && !val("SELECT 1 FROM clients WHERE email = ? AND statut <> 'efface'", [$email])) $maj['email'] = $email;
+    if ($pro && $societe !== '' && $c['societe'] === '') { $maj['societe'] = $societe; $maj['type'] = 'professionnel'; }
+    if ($c['statut'] === 'inactif') $maj['statut'] = 'actif';
+    $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($maj)));
+    q("UPDATE clients SET $set WHERE id = :id", $maj + ['id' => $c['id']]);
+    $ajouts = array_intersect_key($maj, ['telephone' => 1, 'email' => 1]);
+    if ($ajouts) evenement('modification', 'Ajouté à la fiche : ' . implode(', ', array_map(fn($k) => ($k === 'email' ? 'email ' : 'téléphone ') . $ajouts[$k], array_keys($ajouts))), ['client' => (int)$c['id']]);
+}
+/** Retrouve le client d'une demande du site (client_connu), ou crée sa fiche. */
+function client_trouver_ou_creer(string $email, string $prenom, string $nom, string $tel, string $canal, bool $pro, string $societe, string $quand): int {
+    if ($c = client_connu($email, $tel)) {
+        client_completer($c, $email, $tel, $quand, $pro, $societe);
+        return (int)$c['id'];
     }
-    [$prenom, $nom] = prenom_nom($nomComplet);
     return client_creer(['type' => $pro ? 'professionnel' : 'particulier', 'nom' => $nom, 'prenom' => $prenom, 'societe' => $pro ? $societe : '',
-                         'email' => $email, 'telephone' => $tel, 'canal' => $canal, 'premier_contact' => $quand, 'dernier_echange' => $quand]);
+                         'email' => mb_strtolower(trim($email)), 'telephone' => $tel, 'canal' => $canal, 'premier_contact' => $quand, 'dernier_echange' => $quand]);
+}
+/**
+ * Les autres fiches qui ressemblent à celle-ci, à vérifier par Youngmi : même téléphone, mêmes prénom et nom (dans n'importe quel ordre),
+ * ou même entreprise. Sauf celles qu'on a déjà écartées (« Ce n'est pas la même personne »).
+ */
+function client_doublons(array $cl): array {
+    if ($cl['statut'] === 'efface') return [];
+    $tel = telephone_cle($cl['telephone']); $nom = nom_cle($cl['prenom'], $cl['nom']);
+    $soc = $cl['type'] === 'professionnel' ? identifiant_texte($cl['societe']) : '';
+    if ($tel === '' && $nom === '' && $soc === '') return [];
+    $ecartes = array_map('intval', array_column(lignes("SELECT nouveau FROM evenements WHERE type = 'doublon_ecarte' AND client_id = ?", [(int)$cl['id']]), 'nouveau'));
+    $out = [];
+    foreach (lignes("SELECT * FROM clients WHERE id <> ? AND statut <> 'efface' ORDER BY id", [(int)$cl['id']]) as $c) {
+        if (in_array((int)$c['id'], $ecartes, true)) continue;
+        $raisons = [];
+        if ($tel !== '' && telephone_cle($c['telephone']) === $tel) $raisons[] = 'même téléphone';
+        if ($nom !== '' && nom_cle($c['prenom'], $c['nom']) === $nom) $raisons[] = 'mêmes prénom et nom';
+        if ($soc !== '' && $c['type'] === 'professionnel' && identifiant_texte($c['societe']) === $soc) $raisons[] = 'même entreprise';
+        if ($raisons) $out[] = $c + ['raisons' => $raisons];
+    }
+    return $out;
+}
+/** « Ce n'est pas la même personne » : noté sur les deux fiches, elles ne sont plus signalées l'une pour l'autre. */
+function client_doublon_ecarter(int $a, int $b): void {
+    $ca = client($a); $cb = client($b);
+    if (!$ca || !$cb || $a === $b) return;
+    evenement('doublon_ecarte', 'Pas la même personne que ' . $cb['numero'], ['client' => $a], '', (string)$b);
+    evenement('doublon_ecarte', 'Pas la même personne que ' . $ca['numero'], ['client' => $b], '', (string)$a);
 }
 function client_creer(array $d): int {
     $now = maintenant();
@@ -165,20 +231,39 @@ function commande_par_reference(string $ref): ?array { $id = val("SELECT id FROM
 function commande_client_nom(array $k): string {
     return client_nom(['statut' => $k['client_statut'], 'societe' => $k['client_societe'], 'prenom' => $k['client_prenom'], 'nom' => $k['client_nom'], 'type' => $k['client_type'], 'numero' => $k['client_numero']]);
 }
-/** Lignes normalisées : [['v' => 'produit|code', 'nom', 'libelle', 'q', 'prix' (unitaire), 'plaque']]. */
+/** Lignes normalisées : [['v' => 'produit|code', 'nom', 'libelle', 'q', 'prix' (unitaire TTC), 'plaque']], plus 'ht' et 'tva' pour la gamme pro. */
 function lignes_normaliser(array $brut): array {
-    $V = variantes(); $out = [];
+    $V = variantes_toutes(); $out = [];
     foreach ($brut as $l) {
         if (!is_array($l)) continue;
         $v = (string)($l['v'] ?? ''); $q = (int)($l['q'] ?? 0);
         if ($q < 1) continue;
-        if (isset($V[$v])) $d = $V[$v]; else { $d = ['nom' => (string)($l['nom'] ?? 'Gâteau'), 'libelle' => (string)($l['libelle'] ?? ''), 'prix' => (int)($l['prix'] ?? 0), 'plaque' => true]; }
-        $out[] = ['v' => $v, 'nom' => $d['nom'], 'libelle' => $d['libelle'], 'q' => min($q, 999), 'prix' => isset($l['prix']) && isset($V[$v]) ? (int)$l['prix'] : $d['prix'],
-                  'plaque' => mb_substr(une_ligne((string)($l['plaque'] ?? '')), 0, 60)];
+        if (isset($V[$v])) $d = $V[$v];
+        else {
+            $d = ['nom' => (string)($l['nom'] ?? 'Gâteau'), 'libelle' => (string)($l['libelle'] ?? ''), 'prix' => (int)($l['prix'] ?? 0), 'plaque' => true];
+            if (isset($l['ht'])) $d += ['ht' => (int)$l['ht'], 'tva' => (int)($l['tva'] ?? 55)];
+        }
+        $x = ['v' => $v, 'nom' => $d['nom'], 'libelle' => $d['libelle'], 'q' => min($q, 999), 'prix' => isset($l['prix']) && isset($V[$v]) ? (int)$l['prix'] : $d['prix'],
+              'plaque' => mb_substr(une_ligne((string)($l['plaque'] ?? '')), 0, 60)];
+        if (isset($d['ht'])) {   // gamme pro : le prix qui compte est le HT ; le TTC unitaire n'est qu'indicatif
+            $x['ht'] = isset($l['ht']) && isset($V[$v]) ? (int)$l['ht'] : (int)$d['ht'];
+            $x['tva'] = (int)($d['tva'] ?? 55);
+            $x['prix'] = ttc_de_ht($x['ht'], $x['tva']);
+        }
+        $out[] = $x;
     }
     return $out;
 }
-function lignes_total(array $lignes): int { $t = 0; foreach ($lignes as $l) $t += $l['prix'] * $l['q']; return $t; }
+/** Total TTC des lignes ; pour la gamme pro, la TVA se calcule sur le total HT, comme sur une facture Qonto. */
+function lignes_total(array $lignes): int {
+    $t = 0; $ht = [];
+    foreach ($lignes as $l) {
+        if (isset($l['ht'])) { $tva = (int)($l['tva'] ?? 55); $ht[$tva] = ($ht[$tva] ?? 0) + (int)$l['ht'] * (int)$l['q']; }
+        else $t += (int)$l['prix'] * (int)$l['q'];
+    }
+    foreach ($ht as $tva => $somme) $t += ttc_de_ht($somme, (int)$tva);
+    return $t;
+}
 function commande_contenu_texte(array $k, bool $court = false): string {
     $l = isset($k['lignes_tab']) ? $k['lignes_tab'] : (json_decode($k['lignes'] ?? '[]', true) ?: []);
     $parts = [];
@@ -355,7 +440,7 @@ function produits_synchroniser(): void {
 }
 function produits_lister(): array {
     produits_synchroniser();
-    $r = lignes("SELECT p.*, (SELECT COUNT(*) FROM recettes r WHERE r.produit_id = p.id) AS lignes_recette FROM produits p ORDER BY CASE statut WHEN 'carte' THEN 0 WHEN 'demande' THEN 1 ELSE 2 END, nom");
+    $r = lignes("SELECT p.*, (SELECT COUNT(*) FROM recettes r WHERE r.produit_id = p.id) AS lignes_recette FROM produits p ORDER BY CASE statut WHEN 'carte' THEN 0 WHEN 'demande' THEN 1 WHEN 'pro' THEN 2 ELSE 3 END, nom");
     foreach ($r as &$p) $p['cat'] = json_decode($p['catalogue'], true) ?: [];
     return $r;
 }
@@ -367,6 +452,7 @@ function produit(string $id): ?array {
 }
 function produit_variantes(array $p): array {
     $c = $p['cat']; $v = [];
+    if (($c['mode'] ?? '') === 'pro') return ['u' => ['libelle' => (string)($c['unite'] ?? 'la pièce'), 'prix' => ttc_de_ht((int)($c['prix_ht'] ?? 0), (int)$p['tva']), 'ht' => (int)($c['prix_ht'] ?? 0)]];
     if (($c['mode'] ?? '') === 'taille') foreach ($c['tailles'] ?? [] as $code => $t) $v[$code] = ['libelle' => $t['libelle'], 'prix' => (int)$t['prix']];
     else foreach ($c['parfums'] ?? [] as $code => $t) $v[$code] = ['libelle' => $t['libelle'], 'prix' => (int)($c['unite'] ?? 0)];
     return $v;
@@ -384,6 +470,126 @@ function produit_modifier(string $id, array $d): void {
     unset($diff['maj_le']);
     evenement('modification', 'Fiche produit modifiée : ' . implode(', ', array_keys($diff)), ['produit' => $id]);
 }
+/* ---------- Gamme pro (restaurants) : prix HT gardés dans la base seulement, jamais dans le dépôt public (R-08) ---------- */
+function ttc_de_ht(int $ht, int $tva): int { return $ht + (int)round($ht * $tva / 1000); }
+function ht_de_ttc(int $ttc, int $tva): int { return (int)round($ttc * 1000 / (1000 + $tva)); }
+function est_pro(array $p): bool { return (($p['cat'] ?? json_decode((string)($p['catalogue'] ?? ''), true) ?: [])['mode'] ?? '') === 'pro'; }
+/** Les variantes de la gamme pro : « pro-…|u » => [nom, libelle (unité), prix TTC, ht, tva]. Les produits retirés seulement si $retires. */
+function variantes_pro(bool $retires = false): array {
+    $v = [];
+    foreach (lignes("SELECT id, nom, statut, tva, catalogue FROM produits WHERE id LIKE 'pro-%' ORDER BY nom") as $p) {
+        $c = json_decode($p['catalogue'], true) ?: [];
+        if (($c['mode'] ?? '') !== 'pro' || (!$retires && $p['statut'] !== 'pro')) continue;
+        $ht = (int)($c['prix_ht'] ?? 0); $tva = (int)$p['tva'];
+        $v[$p['id'] . '|u'] = ['produit' => $p['id'], 'code' => 'u', 'nom' => $p['nom'], 'libelle' => (string)($c['unite'] ?? 'la pièce'),
+                               'prix' => ttc_de_ht($ht, $tva), 'ht' => $ht, 'tva' => $tva, 'plaque' => false, 'pro' => true];
+    }
+    return $v;
+}
+/** Tout ce qui peut faire une ligne de commande : la gamme pro, puis la carte du site. */
+function variantes_toutes(): array { return variantes_pro() + variantes(); }
+function identifiant_texte(string $s): string {
+    $s = strtr(mb_strtolower(trim($s)), ['à' => 'a', 'â' => 'a', 'ä' => 'a', 'ç' => 'c', 'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e', 'î' => 'i', 'ï' => 'i',
+                                         'ô' => 'o', 'ö' => 'o', 'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ÿ' => 'y', 'œ' => 'oe', 'æ' => 'ae']);
+    return trim((string)preg_replace('/[^a-z0-9]+/', '-', $s), '-');
+}
+/** Crée ou modifie un produit de la gamme pro. Renvoie son identifiant (« pro-… »). */
+function produit_pro_enregistrer(?string $id, string $nom, string $unite, int $ht, int $tva = 55, string $qonto = ''): string {
+    $now = maintenant();
+    $unite = $unite !== '' ? $unite : 'la pièce';
+    $p = $id !== null ? ligne("SELECT * FROM produits WHERE id = ?", [$id]) : null;
+    if (!$p) {
+        $base = 'pro-' . mb_substr(identifiant_texte($nom) ?: 'produit', 0, 50); $id = $base; $n = 2;
+        while (val("SELECT 1 FROM produits WHERE id = ?", [$id])) $id = $base . '-' . $n++;
+        $cat = ['mode' => 'pro', 'unite' => $unite, 'prix_ht' => $ht] + ($qonto !== '' ? ['qonto' => $qonto] : []);
+        q("INSERT INTO produits (id, nom, statut, tva, catalogue, cree_le, maj_le) VALUES (?, ?, 'pro', ?, ?, ?, ?)", [$id, $nom, $tva, json_encode($cat, JSON_UNESCAPED_UNICODE), $now, $now]);
+        evenement('modification', 'Gamme pro : ' . $nom . ' ajouté, ' . euros($ht) . ' HT ' . $unite, ['produit' => $id]);
+        return $id;
+    }
+    $ancien = json_decode($p['catalogue'], true) ?: [];
+    $cat = ['mode' => 'pro', 'unite' => $unite, 'prix_ht' => $ht] + ($qonto !== '' ? ['qonto' => $qonto] : []) + $ancien;
+    if ($p['nom'] === $nom && (int)$p['tva'] === $tva && $cat == $ancien) return $id;
+    q("UPDATE produits SET nom = ?, tva = ?, catalogue = ?, maj_le = ? WHERE id = ?", [$nom, $tva, json_encode($cat, JSON_UNESCAPED_UNICODE), $now, $id]);
+    $avant = (int)($ancien['prix_ht'] ?? 0);
+    evenement('modification', 'Gamme pro : ' . $nom . ($avant !== $ht ? ', prix HT ' . euros($avant) . ' → ' . euros($ht) : '') . ($p['nom'] !== $nom ? ' (ancien nom : ' . $p['nom'] . ')' : '')
+              . (($ancien['unite'] ?? '') !== $unite ? ', ' . $unite : ''), ['produit' => $id], (string)$avant, (string)$ht);
+    return $id;
+}
+/** La variante pro qui porte ce nom (pour retrouver les lignes reprises de Qonto, écrites en toutes lettres). */
+function variante_pro_par_nom(string $nom, array $V): ?string {
+    $cle = identifiant_texte($nom);
+    foreach ($V as $k => $v) if (!empty($v['pro']) && identifiant_texte($v['nom']) === $cle) return $k;
+    return null;
+}
+
+/** Une livraison à un restaurant : commande professionnelle livrée, facturée en fin de mois avec les autres (relevé du mois). */
+function livraison_pro(array $k): bool { return ($k['type'] ?? '') === 'pro' && ($k['mode'] ?? '') === 'livraison'; }
+/** Les lignes de la dernière livraison d'un restaurant, pour la refaire : mêmes produits et quantités, aux prix d'aujourd'hui. */
+function derniere_livraison(int $clientId, array $V): array {
+    $k = ligne("SELECT lignes FROM commandes WHERE client_id = ? AND type = 'pro' AND statut IN ('confirmee', 'remise')
+                ORDER BY COALESCE(retrait_date, substr(remise_le, 1, 10), substr(recue_le, 1, 10)) DESC, id DESC LIMIT 1", [$clientId]);
+    $out = [];
+    foreach ($k ? (json_decode($k['lignes'], true) ?: []) : [] as $l) {
+        $v = (string)($l['v'] ?? '');
+        if (!isset($V[$v])) $v = (string)variante_pro_par_nom((string)($l['nom'] ?? ''), $V);
+        if ($v !== '' && isset($V[$v])) $out[] = ['v' => $v, 'q' => (int)$l['q'], 'plaque' => ''];
+    }
+    return $out;
+}
+/** Les mois où un restaurant a des livraisons (confirmées ou livrées), du plus récent au plus ancien : [mois, n, ttc, facturées, payées]. */
+function releves_du_client(int $clientId, int $max = 12): array {
+    $jour = "COALESCE(retrait_date, substr(remise_le, 1, 10), substr(recue_le, 1, 10))";
+    $mois = lignes("SELECT DISTINCT substr($jour, 1, 7) AS mois FROM commandes WHERE client_id = ? AND type = 'pro' AND statut IN ('confirmee', 'remise') ORDER BY mois DESC LIMIT " . (int)$max, [$clientId]);
+    return array_map(fn($m) => releve($clientId, (string)$m['mois']), $mois);
+}
+
+/** Les relevés des mois passés qui ont encore des livraisons sans facture : la fiche du restaurant, le mois et le nombre de livraisons. */
+function releves_a_facturer(): array {
+    $jour = "COALESCE(k.retrait_date, substr(k.remise_le, 1, 10), substr(k.recue_le, 1, 10))";
+    return lignes("SELECT c.*, k.client_id, substr($jour, 1, 7) AS mois, COUNT(*) AS n FROM commandes k JOIN clients c ON c.id = k.client_id
+                   WHERE k.type = 'pro' AND k.mode = 'livraison' AND k.statut IN ('confirmee', 'remise') AND k.facture = '' AND substr($jour, 1, 7) < ?
+                   GROUP BY k.client_id, mois ORDER BY mois, c.societe", [date('Y-m')]);
+}
+
+/* ---------- Relevé du mois d'un restaurant : les livraisons, à recopier dans la facture Qonto ---------- */
+/** Les livraisons pro d'un client sur un mois (AAAA-MM), les lignes regroupées comme sur une facture, et les totaux HT, TVA, TTC. */
+function releve(int $clientId, string $mois): array {
+    $jour = "COALESCE(retrait_date, substr(remise_le, 1, 10), substr(recue_le, 1, 10))";
+    $ks = lignes("SELECT *, $jour AS jour FROM commandes WHERE client_id = ? AND type = 'pro' AND statut IN ('confirmee', 'remise') AND substr($jour, 1, 7) = ? ORDER BY jour, id", [$clientId, $mois]);
+    $groupes = []; $ht = []; $factures = []; $payees = 0; $livrees = 0;
+    foreach ($ks as &$k) {
+        $k['lignes_tab'] = json_decode($k['lignes'], true) ?: [];
+        foreach ($k['lignes_tab'] as $l) {
+            $tva = (int)($l['tva'] ?? 55);
+            $pu = isset($l['ht']) ? (int)$l['ht'] : ht_de_ttc((int)$l['prix'], $tva);   // lignes reprises : HT retrouvé depuis le TTC arrondi
+            $g = $l['nom'] . '|' . $pu . '|' . $tva;
+            $groupes[$g] ??= ['nom' => (string)$l['nom'], 'libelle' => (string)($l['libelle'] ?? ''), 'q' => 0, 'ht' => $pu, 'tva' => $tva];
+            $groupes[$g]['q'] += (int)$l['q'];
+            $ht[$tva] = ($ht[$tva] ?? 0) + $pu * (int)$l['q'];
+        }
+        if ($k['facture'] !== '') $factures[$k['facture']] = true;
+        if ($k['paiement'] === 'paye') $payees++;
+        if ($k['statut'] === 'remise') $livrees++;
+    }
+    unset($k);
+    $totalHt = array_sum($ht); $totalTva = 0;
+    foreach ($ht as $tva => $somme) $totalTva += ttc_de_ht($somme, (int)$tva) - $somme;
+    uasort($groupes, fn($a, $b) => strcmp($a['nom'], $b['nom']));
+    $n = count($ks);
+    return ['mois' => $mois, 'livraisons' => $ks, 'lignes' => array_values($groupes), 'ht' => $totalHt, 'tva' => $totalTva, 'ttc' => $totalHt + $totalTva,
+            'factures' => array_keys($factures), 'facturees' => count(array_filter($ks, fn($k) => $k['facture'] !== '')), 'payees' => $payees, 'livrees' => $livrees, 'n' => $n];
+}
+/** Note la facture Qonto (et, si $paye, le paiement) sur toutes les livraisons du relevé. */
+function releve_noter(array $r, string $facture, bool $paye, string $moyen = 'virement'): int {
+    $n = 0;
+    foreach ($r['livraisons'] as $k) {
+        $p = $paye ? 'paye' : ($k['paiement'] === 'paye' ? 'paye' : 'aucun');
+        commande_paiement((int)$k['id'], $p, $paye ? $moyen : (string)$k['moyen'], null, $facture !== '' ? $facture : (string)$k['facture']);
+        $n++;
+    }
+    return $n;
+}
+
 function ingredients_lister(bool $tous = false): array { return lignes("SELECT * FROM ingredients" . ($tous ? '' : ' WHERE actif = 1') . " ORDER BY nom"); }
 function ingredient(int $id): ?array { return ligne("SELECT * FROM ingredients WHERE id = ?", [$id]); }
 function ingredient_enregistrer(?int $id, array $d): int {
@@ -401,7 +607,7 @@ function ingredient_enregistrer(?int $id, array $d): int {
 /** Recette d'un produit : [variante => [lignes avec ingrédient, quantité, coût]] et totaux. */
 function recette(array $p): array {
     $r = [];
-    foreach (produit_variantes($p) as $code => $v) $r[$code] = ['libelle' => $v['libelle'], 'prix' => $v['prix'], 'lignes' => [], 'cout' => 0, 'allergenes' => []];
+    foreach (produit_variantes($p) as $code => $v) $r[$code] = ['libelle' => $v['libelle'], 'prix' => $v['prix'], 'lignes' => [], 'cout' => 0, 'allergenes' => [], 'ht_exact' => $v['ht'] ?? null];
     $lignes = lignes("SELECT r.*, i.nom, i.unite, i.prix AS prix_unite, i.allergenes FROM recettes r JOIN ingredients i ON i.id = r.ingredient_id WHERE r.produit_id = ? ORDER BY r.id", [$p['id']]);
     foreach ($lignes as $l) {
         if (!isset($r[$l['variante']])) $r[$l['variante']] = ['libelle' => $l['variante'] . ' (variante retirée)', 'prix' => 0, 'lignes' => [], 'cout' => 0, 'allergenes' => []];
@@ -413,7 +619,7 @@ function recette(array $p): array {
     }
     foreach ($r as &$v) {
         $v['cout'] += (int)$p['emballage'];
-        $v['ht'] = (int)round($v['prix'] / (1 + (int)$p['tva'] / 1000));
+        $v['ht'] = $v['ht_exact'] ?? (int)round($v['prix'] / (1 + (int)$p['tva'] / 1000));
         $v['marge'] = $v['lignes'] ? $v['ht'] - $v['cout'] : null;
         $v['allergenes'] = array_keys($v['allergenes']);
     }
@@ -544,10 +750,27 @@ const MIROIR_CLIENTS_ENTETES = ['N°', 'Type', 'Nom', 'Société', 'Ville', 'Can
  * Sans risque à relancer : une référence déjà présente est sautée, un client déjà connu (email, Qonto, ou même nom) est repris.
  */
 function importer(array $data): array {
-    $cr = ['clients_crees' => 0, 'clients_repris' => 0, 'commandes_creees' => 0, 'commandes_sautees' => 0, 'erreurs' => []];
+    $cr = ['clients_crees' => 0, 'clients_repris' => 0, 'commandes_creees' => 0, 'commandes_sautees' => 0, 'produits_crees' => 0, 'produits_maj' => 0, 'lignes_reliees' => 0, 'erreurs' => []];
     $pdo = db();
     $pdo->beginTransaction();
     try {
+        // Gamme pro (catalogue de Qonto Facturation) : ajoutée, ou prix mis à jour ; reconnue par l'identifiant Qonto ou par le nom
+        foreach ($data['produits_pro'] ?? [] as $i => $pp) {
+            $nom = is_array($pp) ? une_ligne((string)($pp['nom'] ?? '')) : '';
+            $ht = is_array($pp) && is_numeric($pp['prix_ht'] ?? null) ? (int)$pp['prix_ht'] : -1;
+            if ($nom === '' || $ht < 0) { $cr['erreurs'][] = 'Produit pro n° ' . ($i + 1) . ' : nom ou prix HT absent'; continue; }
+            $qonto = (string)($pp['qonto'] ?? '');
+            $id = null;
+            foreach (lignes("SELECT id, nom, catalogue FROM produits WHERE id LIKE 'pro-%'") as $e) {
+                $c = json_decode($e['catalogue'], true) ?: [];
+                if (($qonto !== '' && ($c['qonto'] ?? '') === $qonto) || identifiant_texte($e['nom']) === identifiant_texte($nom)) { $id = $e['id']; break; }
+            }
+            $tva = isset($pp['tva']) && in_array((int)$pp['tva'], [55, 100, 200], true) ? (int)$pp['tva'] : 55;
+            $avant = $id ? (string)val("SELECT maj_le FROM produits WHERE id = ?", [$id]) : '';
+            $id2 = produit_pro_enregistrer($id, $nom, une_ligne((string)($pp['unite'] ?? 'la pièce')), $ht, $tva, $qonto);
+            if (!$id) $cr['produits_crees']++;
+            elseif ((string)val("SELECT maj_le FROM produits WHERE id = ?", [$id2]) !== $avant) $cr['produits_maj']++;
+        }
         $cles = [];
         foreach ($data['clients'] ?? [] as $i => $c) {
             if (!is_array($c) || empty($c['cle'])) { $cr['erreurs'][] = 'Client n° ' . ($i + 1) . ' sans clé'; continue; }
@@ -597,11 +820,30 @@ function importer(array $data): array {
             if (!empty($k['commentaire'])) evenement('commentaire', (string)$k['commentaire'], ['commande' => $id, 'client' => $cid]);
             $cr['commandes_creees']++;
         }
+        // Lignes pro reprises en toutes lettres (« Tarte aux pignons ») : rattachées à la gamme pro, pour les ventes par produit et les relevés
+        if (!empty($data['relier_lignes'])) {
+            $V = variantes_pro(true);
+            foreach (lignes("SELECT id, lignes FROM commandes WHERE type = 'pro'") as $k) {
+                $ls = json_decode($k['lignes'], true) ?: []; $change = false;
+                foreach ($ls as &$l) {
+                    if (isset($V[$l['v'] ?? ''])) continue;
+                    $v = variante_pro_par_nom((string)($l['nom'] ?? ''), $V);
+                    if ($v === null) continue;
+                    $tva = (int)$V[$v]['tva'];
+                    $ht = ttc_de_ht((int)$V[$v]['ht'], $tva) === (int)($l['prix'] ?? -1) ? (int)$V[$v]['ht'] : ht_de_ttc((int)($l['prix'] ?? 0), $tva);
+                    $l = ['v' => $v, 'nom' => $V[$v]['nom'], 'libelle' => $V[$v]['libelle'], 'q' => (int)$l['q'], 'prix' => ttc_de_ht($ht, $tva), 'ht' => $ht, 'tva' => $tva, 'plaque' => ''];
+                    $change = true; $cr['lignes_reliees']++;
+                }
+                unset($l);
+                if ($change) q("UPDATE commandes SET lignes = ?, maj_le = ? WHERE id = ?", [json_encode($ls, JSON_UNESCAPED_UNICODE), maintenant(), (int)$k['id']]);
+            }
+        }
         $pdo->commit();
     } catch (\Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
     }
-    evenement('import', 'Reprise : ' . $cr['clients_crees'] . ' client(s) créé(s), ' . $cr['clients_repris'] . ' repris, ' . $cr['commandes_creees'] . ' commande(s) créée(s), ' . $cr['commandes_sautees'] . ' déjà présente(s)');
+    evenement('import', 'Reprise : ' . $cr['clients_crees'] . ' client(s) créé(s), ' . $cr['clients_repris'] . ' repris, ' . $cr['commandes_creees'] . ' commande(s) créée(s), ' . $cr['commandes_sautees'] . ' déjà présente(s)'
+        . ($cr['produits_crees'] || $cr['produits_maj'] ? ', gamme pro : ' . $cr['produits_crees'] . ' produit(s) ajouté(s), ' . $cr['produits_maj'] . ' mis à jour' : '') . ($cr['lignes_reliees'] ? ', ' . $cr['lignes_reliees'] . ' ligne(s) rattachée(s)' : ''));
     return $cr;
 }

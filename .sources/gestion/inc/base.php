@@ -57,7 +57,7 @@ const MOMENTS = ['matin' => 'Le matin, de 9 h à 12 h', 'midi' => 'À midi, de 1
 const MOMENTS_COURTS = ['matin' => 'matin', 'midi' => 'midi', 'apres-midi' => 'après-midi', 'soir' => 'soir'];
 const MODES = ['retrait' => 'Retrait à Meudon', 'livraison' => 'Livraison'];
 const STATUTS_CLIENT = ['actif' => 'Actif', 'inactif' => 'Inactif', 'efface' => 'Effacé'];
-const STATUTS_PRODUIT = ['carte' => 'À la carte', 'demande' => 'Sur demande seulement', 'retire' => 'Retiré'];
+const STATUTS_PRODUIT = ['carte' => 'À la carte', 'demande' => 'Sur demande seulement', 'pro' => 'Gamme pro', 'retire' => 'Retiré'];
 const UNITES = ['g' => 'g', 'ml' => 'ml', 'piece' => 'pièce'];
 // Les 14 allergènes à déclaration obligatoire (règlement UE 1169/2011, annexe II)
 const ALLERGENES = ['gluten' => 'Gluten', 'crustaces' => 'Crustacés', 'oeufs' => 'Œufs', 'poissons' => 'Poissons',

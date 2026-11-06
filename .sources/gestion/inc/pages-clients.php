@@ -77,6 +77,17 @@ function page_client(): void {
                 client_fusionner($id, $src);
                 flash('ok', 'Le doublon ' . $num . ' est fusionné dans cette fiche.');
                 break;
+            case 'fusionner_doublon':   // on garde la fiche la plus ancienne, avec les commandes et l'historique des deux
+                $autre = client(entier('autre', 1));
+                if (!$autre || $autre['statut'] === 'efface' || (int)$autre['id'] === $id) { flash('erreur', 'Cette autre fiche n\'existe plus.'); break; }
+                [$garde, $vide] = (int)$autre['id'] < $id ? [(int)$autre['id'], $id] : [$id, (int)$autre['id']];
+                client_fusionner($garde, $vide);
+                flash('ok', 'Les deux fiches sont fusionnées dans ' . client($garde)['numero'] . '.');
+                rediriger('client', ['id' => $garde]);
+            case 'doublon_ecarte':
+                client_doublon_ecarter($id, entier('autre', 1));
+                flash('ok', 'Noté : ces deux fiches ne seront plus signalées comme doublon.');
+                break;
             case 'effacer':
                 if (texte('confirmation', 10) !== 'EFFACER') { flash('erreur', 'Pour effacer, tapez EFFACER en majuscules.'); break; }
                 $enCours = (int)val("SELECT COUNT(*) FROM commandes WHERE client_id = ? AND statut IN ('demande','proposition','confirmee')", [$id]);
@@ -92,10 +103,30 @@ function page_client(): void {
     $efface = $cl['statut'] === 'efface';
     $chips = ($cl['type'] === 'professionnel' ? '<span class="statut s-pro">Pro</span>' : '') . ($efface ? '<span class="statut s-efface">Effacé</span>' : ($cl['statut'] === 'inactif' ? '<span class="statut s-inactif">Inactif</span>' : ''));
     $c = titre_page('<span translate="no">' . h(client_nom($cl)) . '</span>', h($cl['numero']) . ' · client depuis le ' . h(date_fr($cl['premier_contact'], 'longue')) . '<span class="chips">' . $chips . '</span>',
-        $efface ? '' : lien_bouton(u('commande-edition', ['client' => $id]), icone('ajouter') . 'Nouvelle commande', 'principal'), u('clients'));
+        $efface ? '' : ($cl['type'] === 'professionnel'
+            ? lien_bouton(u('commande-edition', ['client' => $id, 'livraison' => 1]), icone('ajouter') . 'Nouvelle livraison', 'principal') . lien_bouton(u('commande-edition', ['client' => $id]), 'Autre commande', 'discret')
+            : lien_bouton(u('commande-edition', ['client' => $id]), icone('ajouter') . 'Nouvelle commande', 'principal')), u('clients'));
     $c .= '<div class="tuiles">' . tuile('Commandes remises', (string)$ch['remises'], $ch['commandes'] > $ch['remises'] ? ($ch['commandes'] - $ch['remises']) . ' autre(s) demande(s)' : '')
         . tuile('Total', $ch['total'] ? euros($ch['total']) : '—', 'TTC') . tuile('Panier moyen', $ch['panier'] ? euros($ch['panier']) : '—')
         . tuile('Dernière commande', $ch['derniere'] ? date_fr($ch['derniere']) : '—', $ch['derniere'] ? date_fr($ch['derniere'], 'relative') : '') . '</div>';
+    // Doublon possible : même téléphone, mêmes prénom et nom, ou même entreprise ; rien n'est fusionné sans Youngmi
+    $dbl = $efface ? [] : client_doublons($cl);
+    if ($dbl) {
+        $t = '';
+        foreach ($dbl as $o) {
+            $garde = (int)$o['id'] < $id ? $o : $cl;
+            $coord = implode(' · ', array_filter([$o['email'], $o['telephone']]));
+            $t .= '<li><p><a href="' . h(u('client', ['id' => $o['id']])) . '"><b translate="no">' . h(client_nom($o)) . '</b></a> <span class="petit">' . h($o['numero']) . '</span>'
+                . ($coord !== '' ? '<br><span class="petit" translate="no">' . h($coord) . '</span>' : '') . '<br><span class="raisons">' . h(doublon_raisons($o['raisons'])) . '</span></p>'
+                . '<div class="actions">'
+                . formulaire('fusionner_doublon', '<input type="hidden" name="autre" value="' . (int)$o['id'] . '">' . bouton('Fusionner les deux fiches', 'secondaire'),
+                             ['data-confirmer' => 'C\'est la même personne ? On garde la fiche ' . $garde['numero'] . ', la plus ancienne, avec les commandes et l\'historique des deux.'])
+                . formulaire('doublon_ecarte', '<input type="hidden" name="autre" value="' . (int)$o['id'] . '">' . bouton('Ce n\'est pas la même personne', 'discret'))
+                . '</div></li>';
+        }
+        $c .= bloc('Doublon possible', '<p class="aide">Une autre fiche ressemble à celle-ci. Si c\'est la même personne, fusionnez : on garde la fiche la plus ancienne, avec toutes les commandes. Rien n\'est fusionné tout seul.</p>'
+            . '<ul class="doublons">' . $t . '</ul>', 'alerte', 'doublon');
+    }
     // Coordonnées
     if (!$efface) {
         $tel = $cl['telephone'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $cl['telephone'])) . '">' . icone('tel') . h($cl['telephone']) . '</a>' : '';
@@ -107,6 +138,18 @@ function page_client(): void {
              . '<p>' . lien_bouton(u('client-edition', ['id' => $id]), 'Modifier', 'discret') . '</p>');
     } else {
         $c .= bloc('Coordonnées', '<p class="aide">Données personnelles effacées le ' . h(date_fr($cl['efface_le'], 'longue')) . '. Il ne reste que le numéro, les dates et les montants des commandes.</p>');
+    }
+    // Restaurant : les relevés du mois, pour la facture Qonto de fin de mois
+    if ($cl['type'] === 'professionnel' && !$efface) {
+        $rel = '';
+        foreach (releves_du_client($id) as $r) {
+            $etat = $r['facturees'] === $r['n'] ? 'facture ' . implode(', ', $r['factures']) . ($r['payees'] === $r['n'] ? ', payée' : ', pas encore payée') : ($r['facturees'] ? 'facturé en partie' : 'pas encore facturé');
+            $rel .= '<a class="carte-cmd" href="' . h(u('releve', ['id' => $id, 'mois' => $r['mois']])) . '"><span class="l1"><b>' . h(ucfirst(mois_texte($r['mois']))) . '</b>'
+                  . '<span class="statut ' . ($r['payees'] === $r['n'] ? 's-confirmee' : ($r['facturees'] === $r['n'] ? 's-proposition' : 's-demande')) . '">' . h($r['payees'] === $r['n'] ? 'Payé' : ($r['facturees'] === $r['n'] ? 'Facturé' : 'À facturer')) . '</span></span>'
+                  . '<span class="l2">' . h($r['n'] . ' livraison(s) · ' . euros($r['ht']) . ' HT · ' . euros($r['ttc']) . ' TTC') . '</span><span class="l3">' . h($etat) . '</span></a>';
+        }
+        $c .= bloc('Relevés du mois', ($rel !== '' ? '<div class="liste">' . $rel . '</div>' : '<p class="vide">Aucune livraison notée.</p>')
+            . '<p class="aide">Une livraison = une commande. En fin de mois, le relevé donne les lignes et le total à recopier dans la facture Qonto.</p>');
     }
     // Commandes
     $ks = commandes_du_client($id);
@@ -148,6 +191,68 @@ function page_client(): void {
         $c .= bloc('Fiche et droits du client', $d);
     }
     mise_en_page(client_nom($cl), $c, 'clients');
+}
+
+/* ---------- Relevé du mois d'un restaurant : les livraisons à facturer ensemble dans Qonto ---------- */
+function page_releve(): void {
+    $id = entier('id', 1);
+    $cl = $id ? client($id) : null;
+    if (!$cl) rediriger('clients');
+    $mois = is_string($_GET['mois'] ?? null) && preg_match('/^20\d{2}-(0[1-9]|1[0-2])$/', $_GET['mois']) ? $_GET['mois'] : date('Y-m');
+    $r = releve($id, $mois);
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        csrf_verifier();
+        if (texte('_action', 40) === 'facture') {
+            $facture = strtoupper(une_ligne(texte('facture', 40)));
+            $paye = ($_POST['paye'] ?? '') === '1';
+            if (!$r['n']) flash('erreur', 'Aucune livraison ce mois-là.');
+            elseif ($facture === '' && !$paye) flash('erreur', 'Indiquez le numéro de la facture Qonto, ou cochez « Facture payée ».');
+            else {
+                $n = releve_noter($r, $facture, $paye, choix('moyen', MOYENS, 'virement'));
+                flash('ok', $n . ' livraison(s) notée(s)' . ($facture !== '' ? ' avec la facture ' . $facture : '') . ($paye ? ', payée(s)' : '') . '.');
+            }
+        }
+        rediriger('releve', ['id' => $id, 'mois' => $mois]);
+    }
+    $t = strtotime($mois . '-01');
+    $avant = date('Y-m', strtotime('-1 month', $t)); $apres = date('Y-m', strtotime('+1 month', $t));
+    $nav = '<p class="nav-mois"><a href="' . h(u('releve', ['id' => $id, 'mois' => $avant])) . '">‹ ' . h(mois_texte($avant)) . '</a>'
+         . ($apres <= date('Y-m') ? '<a href="' . h(u('releve', ['id' => $id, 'mois' => $apres])) . '">' . h(mois_texte($apres)) . ' ›</a>' : '') . '</p>';
+    $c = titre_page('Relevé de ' . h(mois_texte($mois)), '<span translate="no">' . h(client_nom($cl)) . '</span> · ' . h($cl['numero']),
+        lien_bouton(u('commande-edition', ['client' => $id, 'livraison' => 1]), icone('ajouter') . 'Nouvelle livraison', 'discret'), u('client', ['id' => $id])) . $nav;
+    if (!$r['n']) {
+        $c .= '<p class="vide">Aucune livraison en ' . h(mois_texte($mois)) . '.</p>';
+        mise_en_page('Relevé de ' . mois_texte($mois), $c, 'clients');
+    }
+    $tvas = array_unique(array_column($r['lignes'], 'tva'));
+    $c .= '<div class="tuiles">' . tuile('Livraisons', (string)$r['n'], $r['livrees'] . ' livrée(s)') . tuile('Total HT', euros($r['ht']))
+        . tuile('TVA', euros($r['tva']), count($tvas) === 1 ? nombre_tva((int)reset($tvas)) : '') . tuile('Total TTC', euros($r['ttc'])) . '</div>';
+    if ($r['livrees'] < $r['n']) $c .= '<p class="erreur">' . icone('alerte') . ' ' . ($r['n'] - $r['livrees']) . ' livraison(s) pas encore marquée(s) « Livrée » : vérifiez-les avant de faire la facture.</p>';
+    // Les lignes, regroupées comme sur la facture
+    $rows = '';
+    foreach ($r['lignes'] as $l) {
+        $rows .= '<tr><td><b translate="no">' . h($l['nom']) . '</b>' . ($l['libelle'] !== '' ? '<br><span class="petit" translate="no">' . h($l['libelle']) . '</span>' : '') . '</td>'
+               . '<td class="nombre">' . (int)$l['q'] . '</td><td class="nombre">' . h(euros((int)$l['ht'])) . '</td><td class="nombre">' . h(euros((int)$l['ht'] * (int)$l['q'])) . '</td></tr>';
+    }
+    $pied = '<tr><td colspan="3">Total HT</td><td class="nombre">' . h(euros($r['ht'])) . '</td></tr>'
+          . '<tr><td colspan="3">TVA' . (count($tvas) === 1 ? ' ' . h(nombre_tva((int)reset($tvas))) : '') . '</td><td class="nombre">' . h(euros($r['tva'])) . '</td></tr>'
+          . '<tr><td colspan="3"><b>Total TTC</b></td><td class="nombre"><b>' . h(euros($r['ttc'])) . '</b></td></tr>';
+    $c .= bloc('À recopier dans la facture Qonto', '<table class="tableau releve"><thead><tr><th>Produit</th><th class="nombre">Quantité</th><th class="nombre">Prix HT</th><th class="nombre">Total HT</th></tr></thead><tbody>' . $rows . '</tbody><tfoot>' . $pied . '</tfoot></table>'
+        . '<p class="aide">Les prix HT viennent de la gamme pro (Produits). La TVA est calculée sur le total HT, comme dans Qonto : la facture doit arriver au même total TTC, sinon un prix a changé.</p>');
+    // Les livraisons du mois
+    foreach ($r['livraisons'] as &$k) { $k['client_statut'] = $cl['statut']; $k['client_societe'] = $cl['societe']; $k['client_prenom'] = $cl['prenom']; $k['client_nom'] = $cl['nom']; $k['client_type'] = $cl['type']; $k['client_numero'] = $cl['numero']; }
+    unset($k);
+    $c .= bloc('Les livraisons (' . $r['n'] . ')', liste_commandes($r['livraisons'], '', false));
+    // Facture et paiement, notés sur toutes les livraisons du mois
+    $etat = $r['facturees'] === $r['n'] ? 'Facture ' . implode(', ', $r['factures']) . ($r['payees'] === $r['n'] ? ', payée.' : ', pas encore payée.')
+          : ($r['facturees'] ? $r['facturees'] . ' livraison(s) sur ' . $r['n'] . ' facturée(s).' : 'Pas encore facturé.');
+    $c .= bloc('Facture et paiement', '<p><b>' . h($etat) . '</b></p>'
+        . formulaire('facture', '<div class="ligne-champs">' . champ('facture', 'Numéro de la facture Qonto', count($r['factures']) === 1 ? $r['factures'][0] : '', ['placeholder' => 'F-2026-013', 'maxlength' => '40', 'autocomplete' => 'off'])
+            . liste_choix('moyen', 'Payée par', MOYENS, 'virement') . '</div>'
+            . case_a_cocher('paye', 'Facture payée', $r['payees'] === $r['n'] && $r['n'] > 0)
+            . bouton('Noter sur les ' . $r['n'] . ' livraison(s)', 'secondaire'))
+        . '<p class="aide">Une fois la facture faite dans Qonto, notez son numéro ici ; cochez « Facture payée » quand le virement arrive.</p>');
+    mise_en_page('Relevé de ' . mois_texte($mois), $c, 'clients');
 }
 
 function page_client_edition(): void {

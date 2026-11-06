@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-06-gestion"
+VERSION = "2026-11-07-clients"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -352,7 +352,10 @@ def demande():
   <p class="aide" id="aide-date" data-date-aide></p>
 
   <h2 class="sous-titre" id="coordonnees">Vos coordonnées</h2>
-  <label class="champ"><span>Prénom et nom</span><input type="text" name="nom" autocomplete="name" required maxlength="80"></label>
+  <div class="deux-champs">
+   <label class="champ"><span>Prénom</span><input type="text" name="prenom" autocomplete="given-name" required maxlength="60"></label>
+   <label class="champ"><span>Nom</span><input type="text" name="nom" autocomplete="family-name" required maxlength="80"></label>
+  </div>
   <label class="champ"><span>Email</span><input type="email" name="email" autocomplete="email" required maxlength="120"></label>
   <label class="champ"><span>Téléphone <i>(facultatif)</i></span><input type="tel" name="telephone" autocomplete="tel" maxlength="30"></label>
   <label class="case" data-pro-case {'hidden' if not DEMANDE_PRO else ''}><input type="checkbox" name="pro" value="1" data-pro> Je fais cette demande pour une entreprise ou un restaurant</label>

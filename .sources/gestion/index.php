@@ -21,7 +21,7 @@ require_once __DIR__ . '/inc/pages-autres.php';
 
 $pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'mot-de-passe' => 'page_mot_de_passe', 'deconnexion' => 'page_deconnexion', 'miroir' => 'page_miroir', 'langue' => 'page_langue'];
 $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition',
-          'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition',
+          'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition', 'releve' => 'page_releve',
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',
           'statistiques' => 'page_statistiques', 'plus' => 'page_plus', 'aide' => 'page_aide', 'reglages' => 'page_reglages', 'export' => 'page_export'];
 

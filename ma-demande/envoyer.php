@@ -73,7 +73,11 @@ if (champ('site_web', 200) !== '') {
 }
 
 $erreurs = [];
+// Prénom et nom en deux champs depuis le 07/11/2026 ; une page du formulaire restée ouverte avant envoie encore « Prénom et nom » en un seul champ
+$deuxChamps = isset($_POST['prenom']);
+$prenom = $deuxChamps ? uneLigne(champ('prenom', 60)) : '';
 $nom = uneLigne(champ('nom', 80));
+$nomComplet = trim($prenom . ' ' . $nom);
 $email = uneLigne(champ('email', 120));
 $tel = uneLigne(champ('telephone', 30));
 $perso = champ('perso', 1200);
@@ -83,7 +87,10 @@ $pro = champ('pro', 1) === '1';
 $societe = $pro ? uneLigne(champ('societe', 100)) : '';
 $besoin = $pro ? champ('besoin', 1200) : '';
 
-if (mb_strlen($nom) < 2) $erreurs[] = 'Indiquez votre prénom et votre nom.';
+if ($deuxChamps) {
+    if ($prenom === '') $erreurs[] = 'Indiquez votre prénom.';
+    if ($nom === '') $erreurs[] = 'Indiquez votre nom.';
+} elseif (mb_strlen($nom) < 2) $erreurs[] = 'Indiquez votre prénom et votre nom.';
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || preg_match('/[\r\n,;]/', $email)) $erreurs[] = 'Indiquez une adresse email valide.';
 if ($tel !== '' && !preg_match('/^[0-9 +().\-]{6,30}$/', $tel)) $erreurs[] = 'Le numéro de téléphone n\'est pas valide.';
 if (!isset($CAT['moments'][$moment])) $erreurs[] = 'Choisissez un moment de retrait.';
@@ -161,7 +168,7 @@ if ($sel === null) indisponible('clé des empreintes illisible', $enJson);
 // Empreinte pseudonymisée de l'adresse IP : HMAC avec une clé secrète du serveur, jamais l'adresse elle-même.
 // Sans date dans l'empreinte, la limite de 5 envois est bien glissante sur une heure, même à minuit.
 $ipHash = hash_hmac('sha256', (string)($_SERVER['REMOTE_ADDR'] ?? ''), $sel);
-$empreinte = hash('sha256', (string)json_encode([$nom, $email, $date, $moment, $lignes, $perso, $besoin]));
+$empreinte = hash('sha256', (string)json_encode([$nomComplet, $email, $date, $moment, $lignes, $perso, $besoin]));
 $fichier = $dossier . '/' . substr($ipHash, 0, 32) . '.json';
 $etat = ['envois' => [], 'dernier' => null];
 $fh = @fopen($fichier, 'c+');
@@ -216,7 +223,7 @@ if ($lignes) {
 if ($perso !== '') { $t[] = 'GÂTEAU PERSONNALISÉ'; $t[] = $perso; $t[] = ''; }
 if ($pro) { $t[] = 'DEMANDE D\'UN PROFESSIONNEL'; $t[] = 'Entreprise : ' . $societe; if ($besoin !== '') $t[] = $besoin; $t[] = ''; }
 $t[] = 'CLIENT';
-$t[] = 'Nom : ' . $nom;
+if ($deuxChamps) { $t[] = 'Prénom : ' . $prenom; $t[] = 'Nom : ' . $nom; } else $t[] = 'Nom : ' . $nom;
 $t[] = 'Email : ' . $email;
 if ($tel !== '') $t[] = 'Téléphone : ' . $tel;
 $t[] = '';
@@ -225,7 +232,7 @@ $t[] = 'Répondre à cet email écrit directement au client. Rappel : une propos
 if (is_file(GESTION_ENREGISTRER)) { $t[] = ''; $t[] = 'Dans la gestion : https://' . DKIM_DOMAINE . '/gestion/?p=commande&ref=' . $ref; }
 $corps = implode("\r\n", $t);
 
-$sujet = 'Demande ' . $ref . ' : ' . $nom . ', retrait le ' . $jour->format('d/m');
+$sujet = 'Demande ' . $ref . ' : ' . $nomComplet . ', retrait le ' . $jour->format('d/m');
 $sujetEnc = mb_encode_mimeheader($sujet, 'UTF-8', 'B');
 // Corps en base64 : rien ne peut le modifier en chemin, la signature DKIM reste valable.
 $corpsEnc = rtrim(chunk_split(base64_encode($corps), 76, "\r\n"), "\r\n") . "\r\n";
@@ -268,7 +275,7 @@ if (!$envoye) {
 if (PHP_VERSION_ID >= 80000 && is_file(GESTION_ENREGISTRER)) {   // l'espace de gestion demande PHP 8
     try {
         require_once GESTION_ENREGISTRER;
-        \MadameCho\Gestion\enregistrer_demande(['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
+        \MadameCho\Gestion\enregistrer_demande(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
             'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin]);
     } catch (\Throwable $e) {
         error_log('madamecho formulaire : demande ' . $ref . ' non enregistrée dans la gestion (' . get_class($e) . ')');
