@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-06-mesure"
+VERSION = "2026-11-06-contact"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -84,13 +84,24 @@ def bouton_insta(classe=""):
             '<circle cx="17.2" cy="6.8" r="1.15" fill="currentColor"/></svg>'
             f'<span>Suivre sur Instagram</span><span class="insta-pseudo">{E(pseudo)}</span></a>')
 
+# Contact par téléphone ou WhatsApp, même numéro (demande d'Olivier du 06/11/2026). Pictogramme WhatsApp : Simple Icons (CC0).
+ICONE_WA = ('<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="17" height="17">'
+            '<path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>')
+
+def lien_wa(texte="WhatsApp"):
+    return f'<a class="wa" href="{E(WHATSAPP)}" rel="noopener" target="_blank">{ICONE_WA}{texte}</a>'
+
+def tel_ou_wa():
+    """« 06 61 31 17 79 (téléphone ou WhatsApp) », avec les deux liens."""
+    return f'<a href="tel:{TEL_LIEN}">{TEL}</a> <span class="insecable">(téléphone ou {lien_wa()})</span>'
+
 def pied(prof):
     r = R(prof)
     return f'''<footer class="pied">
  <img class="logo-pied" src="{r}assets/logo-chocolat.svg" alt="Madame Cho" width="150" height="45" loading="lazy">
  <p class="activite">{E(ACTIVITE).replace("Hauts-de-Seine", '<span class="insecable">Hauts-de-Seine</span>')}</p>
  <address>{E(ADRESSE)}<br>Retrait sur rendez-vous, tous les jours de 9 h à 19 h<br>
- <a href="tel:{TEL_LIEN}">{TEL}</a> · <a href="mailto:{EMAIL}">{EMAIL}</a><br>
+ {tel_ou_wa()} <span class="insecable">· <a href="mailto:{EMAIL}">{EMAIL}</a></span><br>
  </address>
  {bouton_insta("insta-pied")}
  <nav class="liens-pied" aria-label="Informations légales">
@@ -230,6 +241,7 @@ def accueil(prof=0):
  <h2 class="titre" id="t-cmd"><span class="etiquette">Commander</span> Comment ça marche</h2>
  <ol class="etapes">{etapes}</ol>
  <dl class="pratique">{prat}</dl>
+ <p class="contact-pratique">Une question avant de commander ? Madame Cho répond au {tel_ou_wa()} ou à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
  <div class="centre"><a class="bouton plein" href="#carte">Choisir les gâteaux</a></div>
 </div></section>'''
     ld = {"@context": "https://schema.org", "@graph": [
@@ -341,7 +353,7 @@ def demande():
   <p class="aide">Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
   <label class="champ"><span>Votre envie <i>(facultatif)</i></span>
    <textarea name="perso" rows="4" maxlength="1200" data-perso aria-describedby="aide-sante"></textarea></label>
-  <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a>.</p>
+  <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, contactez Madame Cho au {tel_ou_wa()}.</p>
 
   <h2 class="sous-titre">Le retrait</h2>
   <p class="aide">Au {E(ADRESSE)}, sur rendez-vous. Madame Cho confirme l'heure dans sa réponse.</p>
@@ -364,7 +376,7 @@ def demande():
   <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
   <p class="aide" data-sans-stockage hidden>Votre navigateur ne garde pas la demande d'une page à l'autre. Si vous voulez d'autres gâteaux, ajoutez-les depuis leur page juste avant d'envoyer, ou écrivez-les dans « Votre envie ».</p>
   <button class="bouton plein envoyer" type="submit" data-envoyer>Envoyer ma demande, sans engagement</button>
-  <p class="aide centre">Un souci ? Appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+  <p class="aide centre">Un souci ? Contactez Madame Cho au {tel_ou_wa()} ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
  </form>
 
  <div class="recu" data-recu hidden tabindex="-1">
@@ -401,7 +413,7 @@ GARANTIES = '<div class="encadre" role="note" aria-label="Garanties légales"><p
 
 MENTIONS = [
  ("Éditeur du site", ["MADAME CHO, société par actions simplifiée unipersonnelle au capital de 1 000 €, immatriculée au RCS de Nanterre sous le numéro 941 761 918. TVA intracommunautaire : FR37941761918.",
-   f"Siège : {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : <a href=\"mailto:{EMAIL}\">{EMAIL}</a>.",
+   f"Siège : {E(ADRESSE)}. Téléphone (et WhatsApp) : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : <a href=\"mailto:{EMAIL}\">{EMAIL}</a>.",
    "Directrice de la publication : Youngmi Cho, présidente."]),
  ("Hébergeur", ["OVH SAS, 2 rue Kellermann, 59100 Roubaix, France. Téléphone : 1007."]),
  ("Médiation de la consommation", [MEDIATION]),
@@ -437,7 +449,7 @@ CONDITIONS = [
  ("7. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait. Passé ce délai, l'acompte versé, s'il y en a un, reste acquis à Madame Cho."]),
  ("8. Droit de rétractation", ["Les gâteaux de la carte sont des denrées fraîches, à consommer dans les 3 jours : le droit de rétractation ne s'applique pas à eux, car ils sont susceptibles de se détériorer rapidement (code de la consommation, article L221-28, 4°). Il ne s'applique pas non plus à un gâteau confectionné selon les choix du client, comme un gâteau personnalisé (même article, 3°)."]),
  ("9. Allergènes", ["Les allergènes de chaque gâteau sont indiqués sur sa page et rappelés au retrait. Tous les gâteaux sont préparés dans un atelier qui utilise aussi des fruits à coque et des arachides."]),
- ("10. Réclamations", [f"Une réclamation s'adresse à <a href=\"mailto:{EMAIL}\">{EMAIL}</a> ou au {TEL}, de préférence le jour du retrait."]),
+ ("10. Réclamations", [f"Une réclamation s'adresse à <a href=\"mailto:{EMAIL}\">{EMAIL}</a> ou au {TEL} (téléphone ou WhatsApp), de préférence le jour du retrait."]),
  ("11. Garanties légales", ["Le client consommateur bénéficie des garanties légales rappelées ci-dessous.", GARANTIES]),
  ("12. Médiation", [MEDIATION]),
 ]
@@ -447,7 +459,7 @@ def introuvable():
     prof = -1
     corps = f'''<section class="bloc premier" aria-labelledby="t-404"><div class="etroit">
  <h1 class="titre" id="t-404"><span class="etiquette">Page introuvable</span> Cette page n'existe pas, ou plus.</h1>
- <p>Les gâteaux de Madame Cho sont sur la carte. Pour une question, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+ <p>Les gâteaux de Madame Cho sont sur la carte. Pour une question, contactez Madame Cho au {tel_ou_wa()} ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
  <p class="liens-404"><a class="bouton plein" href="{lien('carte/', prof)}">Voir la carte</a> <a class="bouton" href="{lien('', prof)}">Retour à l'accueil</a></p>
 </div></section>'''
     return page("404.html", "Page introuvable · Madame Cho", "Cette page n'existe pas sur le site de Madame Cho.", corps, prof, indexer=False)
@@ -594,7 +606,7 @@ if not APERCU:
 images_partage()
 ecrire("mentions-legales/index.html", legale("mentions-legales", "Mentions légales", "Mentions légales du site de Madame Cho, pâtisserie à Meudon.", MENTIONS))
 ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID))
-ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, acompte, retrait, paiement.", CONDITIONS, maj="4 novembre 2026"))
+ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, acompte, retrait, paiement.", CONDITIONS, maj="6 novembre 2026"))
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
 ecrire("ma-demande/catalogue.php", "<?php\n// Carte de Madame Cho, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(cat) + ";\n")
@@ -611,6 +623,10 @@ for f in ("jost-latin-400-normal.woff2", "jost-latin-500-normal.woff2", "OFL-Jos
 shutil.copy(os.path.join(COMMUN, "logo-chocolat.svg"), os.path.join(OUT, "assets/logo-chocolat.svg"))
 # Logo de la signature email de contact@madamecho.com (PNG sur fond blanc : Gmail n'affiche pas le SVG), 06/11/2026
 shutil.copy(os.path.join(COMMUN, "logo-email.png"), os.path.join(OUT, "assets/logo-email.png"))
+# Icônes de la signature email (32 px, affichées en 16 px ; WhatsApp : Simple Icons, CC0), 06/11/2026
+os.makedirs(os.path.join(OUT, "assets/email"), exist_ok=True)
+for f in ("telephone.png", "email.png", "site.png", "instagram.png", "whatsapp.png"):
+    shutil.copy(os.path.join(COMMUN, "email", f), os.path.join(OUT, "assets/email", f))
 # Favicon B choisi par Olivier le 03/11/2026 : le 조 du logo, ivoire sur chocolat (gen_fav.py)
 for f in ("favicon.ico", "favicon.svg", "apple-touch-icon.png", "icone-192.png", "icone-512.png", "site.webmanifest"):
     shutil.copy(os.path.join(ICI, "favicon", f), os.path.join(OUT, "assets", f))

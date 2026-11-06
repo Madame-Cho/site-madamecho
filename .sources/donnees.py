@@ -131,6 +131,7 @@ TEL = "06 61 31 17 79"
 TEL_LIEN = "+33661311779"
 EMAIL = "contact@madamecho.com"
 INSTAGRAM = "https://www.instagram.com/madamecho.fr/"
+WHATSAPP = "https://wa.me/33661311779"  # même numéro que le téléphone (demande d'Olivier du 06/11/2026) ; wa.me ouvre la conversation
 
 # ---------- Référencement (passe SEO du 03/11/2026) ----------
 # Titres et descriptions pour les moteurs de recherche et le partage : tirés des textes validés, sans nouvelle promesse.
