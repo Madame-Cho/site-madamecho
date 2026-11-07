@@ -36,6 +36,23 @@
     d.querySelectorAll("details.menu-compte[open]").forEach(function (m) { m.removeAttribute("open"); var s = m.querySelector("summary"); if (s) s.focus(); });
   });
 
+  // Aperçu du mail au client, mis à jour pendant la saisie (phrase d'accueil, petit mot) : rien n'est enregistré
+  var minuteur = null;
+  d.addEventListener("input", function (e) {
+    var z = e.target.closest("[data-apercu]");
+    if (!z) return;
+    var cadre = d.getElementById(z.getAttribute("data-apercu"));
+    if (!cadre || !z.form) return;
+    clearTimeout(minuteur);
+    minuteur = setTimeout(function () {
+      var donnees = new FormData(z.form);
+      fetch(cadre.getAttribute("data-source"), { method: "POST", body: donnees, credentials: "same-origin" })
+        .then(function (r) { return r.ok ? r.text() : null; })
+        .then(function (h) { if (h) cadre.innerHTML = h; })
+        .catch(function () {});
+    }, 400);
+  });
+
   // Imprimer (fiche de production)
   d.addEventListener("click", function (e) {
     if (e.target.closest("[data-imprimer]")) window.print();

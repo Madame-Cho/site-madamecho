@@ -221,6 +221,29 @@ Moyen de l'acompte | 선금 결제 수단
 Confirmer la commande | 주문 확정
 Retrait passé : la commande a été remise ? | 픽업 날짜가 지났어요. 주문을 전달했나요?
 Envoyer la confirmation au client | 고객에게 확정 이메일 보내기
+Déjà envoyée | 이미 보냈어요
+envoyée | 보냄
+Modifiez la phrase d'accueil si vous voulez, ajoutez un petit mot, vérifiez l'aperçu, puis envoyez. Le reste vient de la commande : pour le changer, modifiez la commande. | 원하면 인사말을 고치고 짧은 메모를 더한 뒤, 미리보기를 확인하고 보내세요. 나머지는 주문에서 가져와요. 바꾸려면 주문을 수정하세요.
+Phrase d'accueil | 인사말
+Petit mot (facultatif) | 짧은 메모(선택)
+Il s'ajoute sous le récapitulatif. | 주문 요약 아래에 들어가요.
+Par exemple : la plaque sera bien prête, à vendredi ! | 예: 플레이트 잘 준비해 둘게요, 금요일에 봬요!
+Aperçu du mail (tel que le client le recevra) | 이메일 미리보기(고객이 받는 그대로)
+Envoyer à | 보내기:
+Renvoyer à | 다시 보내기:
+Autre façon : ouvrir dans ma messagerie | 다른 방법: 메일 앱에서 열기
+Texte simple, à envoyer vous-même | 일반 텍스트, 직접 보내기
+Voir le mail | 이메일 보기
+Écrire au client | 고객에게 이메일 쓰기
+Objet | 제목
+Message | 메시지
+Le numéro de commande reste toujours dans l'objet. | 주문 번호는 항상 제목에 남아요.
+Email envoyé au client. Une copie arrive dans contact@madamecho.com. | 고객에게 이메일을 보냈어요. 사본이 contact@madamecho.com으로 와요.
+L'email n'est pas parti. Réessayez dans un moment. | 이메일이 가지 않았어요. 잠시 뒤에 다시 해 보세요.
+Écrivez le message (et vérifiez l'email du client). | 메시지를 쓰세요(고객 이메일도 확인하세요).
+Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com. | 고객에게 확정 이메일을 보냈어요. 사본이 contact@madamecho.com으로 와요.
+L'email n'est pas parti. Réessayez, ou utilisez « Ouvrir dans ma messagerie » plus bas. | 이메일이 가지 않았어요. 다시 해 보거나 아래 ‘메일 앱에서 열기’를 쓰세요.
+Pas d'email pour ce client, ou la commande n'est pas confirmée. | 이 고객의 이메일이 없거나 주문이 확정되지 않았어요.
 Ajouter à Google Agenda | 구글 캘린더에 추가
 Fichier agenda (.ics) | 캘린더 파일 (.ics)
 Payé par | 결제 수단

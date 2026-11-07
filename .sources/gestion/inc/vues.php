@@ -298,9 +298,11 @@ function fil_historique(array $evs, bool $avecReference = false): string {
     $s = '';
     foreach ($evs as $e) {
         $type = $e['type'];
-        $cl = $type === 'commentaire' ? 'ev-commentaire' : ($type === 'probleme' ? 'ev-probleme' : 'ev-systeme');
+        $cl = $type === 'commentaire' ? 'ev-commentaire' : ($type === 'probleme' ? 'ev-probleme' : ($type === 'email_client' ? 'ev-email' : 'ev-systeme'));
         $ref = $avecReference && !empty($e['reference']) ? ' · <a href="' . h(u('commande', ['id' => $e['commande_id']])) . '">' . h($e['reference']) . '</a>' : '';
         $txt = $type === 'statut' && isset(STATUTS[$e['nouveau']]) ? chip_statut($e['nouveau'], false) . (($p = mb_strpos($e['texte'], ' : ')) !== false ? ' ' . h(mb_substr($e['texte'], $p + 3)) : '') : nl2br(h($e['texte']));
+        // Un email envoyé depuis la gestion : son texte exact, replié
+        if ($type === 'email_client' && $e['nouveau'] !== '') $txt .= '<details class="replie"><summary>Voir le mail</summary><pre class="corps" translate="no" lang="fr">' . h($e['nouveau']) . '</pre></details>';
         $s .= '<li class="' . $cl . '"><div class="ev-texte"' . ($type === 'commentaire' ? ' translate="no" lang="fr"' : '') . '>' . $txt . '</div><div class="ev-meta">' . h($e['auteur']) . ' · ' . h(date_fr($e['le'], 'heure')) . $ref . '</div></li>';
     }
     return '<ol class="fil">' . $s . '</ol>';
@@ -343,21 +345,67 @@ function email_proposition(array $k): array {
     $t .= "\nPour confirmer, il suffit de répondre à cet email. Vous pouvez annuler sans frais jusqu'à 24 heures avant le retrait.\n\nBelle journée,\n" . signature();
     return ['sujet' => 'Votre demande ' . $k['reference'] . ' : la proposition de Madame Cho', 'corps' => $t];   // pas de « Re: » sur un premier message (indésirables, 07/11/2026)
 }
-function email_confirmation(array $k): array {
+function email_confirmation(array $k, ?string $accueil = null, string $mot = ''): array {
     $total = montant_commande($k);
     $acompte = (int)$k['acompte'];
-    $t = salutation($k) . "\n\nVotre commande " . $k['reference'] . " est confirmée :\n\n" . lignes_email($k) . "\n\n"
+    $t = trim($accueil ?? accueil_confirmation($k)) . "\n\n" . lignes_email($k) . "\n\n"
        . 'Total : ' . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait (carte, virement ou espèces)') . "\n"
-       . retrait_email($k) . "\n" . rdv_client_texte($k) . "\nÀ bientôt,\n" . signature();
+       . retrait_email($k) . "\n" . (trim($mot) !== '' ? "\n" . trim($mot) . "\n" : '') . rdv_client_texte($k)
+       . "\nPaiement par carte, virement ou espèces. Annulation sans frais jusqu'à 24 heures avant le retrait.\n\nÀ bientôt,\n" . signature();
     return ['sujet' => 'Votre commande ' . $k['reference'] . ' est confirmée', 'corps' => $t];
 }
 /* ---------- Email de confirmation mis en forme, proposition A « La lettre » (choix d'Olivier du 07/11/2026) ----------
  * HTML d'email : tableaux, styles en ligne, une seule image (le logo, sur madamecho.com), tout le texte en vrai texte,
- * liens seulement vers madamecho.com : rien qui ressemble à une publicité (indésirables). La version texte (email_confirmation) l'accompagne. */
-function email_confirmation_html(array $k): string {
-    $CH = '#3B1D0E'; $IV = '#F3EDE4'; $TX = '#2B2623'; $DX = '#736A64'; $LG = '#E9E5E1'; $AC = '#6E2A10'; $FL = '#DDD3C6';
-    $F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
-    $p = fn(string $t, string $style = '') => '<p style="' . $F . 'font-size:15px;line-height:23px;color:' . $TX . ';margin:0;' . $style . '">' . $t . '</p>';
+ * liens seulement vers madamecho.com : rien qui ressemble à une publicité (indésirables). Il part avec sa version texte
+ * (email_confirmation), depuis la gestion, au toucher de Youngmi (« Envoyer », pages-commandes.php).
+ * Youngmi modifie la phrase d'accueil et peut ajouter un petit mot (demande d'Olivier du 07/11/2026) ; le reste vient de la commande.
+ * $apercu : le même mail pour l'aperçu dans la gestion, dont la politique de sécurité refuse les styles en ligne : chaque style
+ * devient une classe « m-… » ; leurs règles sont dans gestion.css (bloc « Aperçu du mail », à refaire si un style change ici :
+ * php -r 'require "inc/…"; echo apercu_mail_css();'). */
+function accueil_confirmation(array $k): string {
+    return salutation($k) . "\n\nVotre commande " . $k['reference'] . ' est confirmée. Je vous attends :';
+}
+function texte_mail_html(string $t, callable $p, string $style): string {
+    $html = '';
+    foreach (preg_split("/\n\s*\n/", trim($t)) as $para) if (trim($para) !== '') $html .= $p(nl2br(h(trim($para)), false), $style);
+    return $html;
+}
+const MAIL_F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
+/** Un style du mail : en ligne dans le mail envoyé, une classe « m-… » dans l'aperçu (voir plus haut). */
+function mail_style(bool $apercu): \Closure {
+    return function (string $css) use ($apercu): string {
+        if (!$apercu) return ' style="' . $css . '"';
+        $GLOBALS['mc_styles_mail'][$css] = true;
+        return ' class="m-' . substr(md5($css), 0, 8) . '"';
+    };
+}
+function mail_paragraphe(\Closure $S): \Closure {
+    return fn(string $t, string $style = '') => '<p' . $S(MAIL_F . 'font-size:15px;line-height:23px;color:#2B2623;margin:0;' . $style) . '>' . $t . '</p>';
+}
+function mail_signature_nom(): string { return h(trim(explode("\n", trim(signature()))[0] ?? '') ?: 'Youngmi Cho'); }
+/** Le cadre commun des mails aux clients : logo, filet chocolat, contenu, pied (qui écrit, pourquoi, ajouter contact@ aux contacts). */
+function mail_cadre(string $titre, string $contenu, \Closure $S, bool $apercu): string {
+    $DX = '#736A64'; $site = 'https://' . GESTION_DOMAINE;
+    $petit = MAIL_F . 'font-size:12px;line-height:18px;color:' . $DX . ';margin:0';
+    $pied = '<p' . $S($petit) . '>Madame Cho · pâtisserie sur commande · 4 avenue du Château, 92190 Meudon<br>'
+          . '06 61 31 17 79 · <a href="' . $site . '"' . $S('color:' . $DX . ';text-decoration:underline') . '>madamecho.com</a></p>'
+          . '<p' . $S($petit . ';margin-top:10px') . '>Vous recevez ce message parce que vous avez commandé chez Madame Cho. '
+          . 'Pour que nos messages arrivent bien, ajoutez contact@madamecho.com à vos contacts.</p>';
+    $corps = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#ffffff') . '><tr><td align="center"' . $S('padding:32px 16px') . '>'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('max-width:560px') . '>'
+        . '<tr><td' . $S('padding:0 0 20px;border-bottom:2px solid #3B1D0E') . '><img src="' . $site . '/assets/logo-email.png" width="150" height="42" alt="Madame Cho"' . $S('display:block;border:0;width:150px;height:auto;margin:0 auto') . '></td></tr>'
+        . '<tr><td' . $S('padding:28px 0 0') . '>' . $contenu . '</td></tr>'
+        . '<tr><td' . $S('padding:28px 0 0') . '><div' . $S('border-top:1px solid #E9E5E1;padding-top:16px') . '>' . $pied . '</div></td></tr>'
+        . '</table></td></tr></table>';
+    if ($apercu) return '<div class="apercu-mail" translate="no" lang="fr">' . $corps . '</div>';
+    return '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . h($titre) . '</title></head>'
+        . '<body style="margin:0;padding:0;background:#ffffff">' . $corps . '</body></html>';
+}
+function email_confirmation_html(array $k, ?string $accueil = null, string $mot = '', bool $apercu = false): string {
+    $CH = '#3B1D0E'; $IV = '#F3EDE4'; $TX = '#2B2623'; $DX = '#736A64'; $AC = '#6E2A10'; $FL = '#DDD3C6';
+    $F = MAIL_F;
+    $S = mail_style($apercu);
+    $p = mail_paragraphe($S);
     $total = montant_commande($k);
     $acompte = (int)$k['acompte'];
     $site = 'https://' . GESTION_DOMAINE;
@@ -368,47 +416,65 @@ function email_confirmation_html(array $k): string {
         if ($k['retrait_heure'] !== '') $quand .= ', ' . str_replace(':', ' h ', $k['retrait_heure']);
         elseif (isset(MOMENTS[$k['retrait_moment']])) $quand .= ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)';
     }
-    $td = 'style="' . $F . 'font-size:14px;line-height:22px;color:' . $TX . ';padding:2px 0"';
+    $td = $S($F . 'font-size:14px;line-height:22px;color:' . $TX . ';padding:2px 0');
     $lignes = '';
     foreach ($k['lignes_tab'] as $l) {
-        $lignes .= '<tr><td ' . $td . '>' . h($l['q'] . ' × ' . $l['nom'] . ($l['libelle'] !== '' ? ', ' . $l['libelle'] : '')) . '</td><td align="right" ' . $td . '>' . h(euros($l['prix'] * $l['q'])) . '</td></tr>';
-        if (($l['plaque'] ?? '') !== '') $lignes .= '<tr><td colspan="2" style="' . $F . 'font-size:13px;line-height:20px;color:' . $DX . ';padding:0 0 2px">Plaque en chocolat : « ' . h($l['plaque']) . ' »</td></tr>';
+        $lignes .= '<tr><td' . $td . '>' . h($l['q'] . ' × ' . $l['nom'] . ($l['libelle'] !== '' ? ', ' . $l['libelle'] : '')) . '</td><td align="right"' . $td . '>' . h(euros($l['prix'] * $l['q'])) . '</td></tr>';
+        if (($l['plaque'] ?? '') !== '') $lignes .= '<tr><td colspan="2"' . $S($F . 'font-size:13px;line-height:20px;color:' . $DX . ';padding:0 0 2px') . '>Plaque en chocolat : « ' . h($l['plaque']) . ' »</td></tr>';
     }
-    if ($k['perso'] !== '') $lignes .= '<tr><td colspan="2" ' . $td . '>' . nl2br(h($k['perso'])) . '</td></tr>';
-    $bord = 'border-top:1px solid ' . $FL . ';padding:8px 0 0;';
-    $lignes .= '<tr><td style="' . $F . 'font-size:14px;color:' . $TX . ';' . $bord . '"><b>Total TTC</b>, ' . ($k['paiement'] === 'acompte_recu' && $acompte ? 'acompte de ' . h(euros($acompte)) . ' reçu' : 'à régler au retrait') . '</td>'
-             . '<td align="right" style="' . $F . 'font-size:14px;color:' . $TX . ';' . $bord . '"><b>' . h(euros($total)) . '</b></td></tr>';
-    if ($k['paiement'] === 'acompte_recu' && $acompte) $lignes .= '<tr><td ' . $td . '>Reste à régler au retrait</td><td align="right" ' . $td . '>' . h(euros($total - $acompte)) . '</td></tr>';
-    $lien = fn(string $href, string $t) => '<a href="' . h($href) . '" style="color:' . $AC . ';font-weight:bold">' . $t . '</a>';
+    if ($k['perso'] !== '') $lignes .= '<tr><td colspan="2"' . $td . '>' . nl2br(h($k['perso']), false) . '</td></tr>';
+    $bord = $S($F . 'font-size:14px;color:' . $TX . ';border-top:1px solid ' . $FL . ';padding:8px 0 0');
+    $avecAcompte = $k['paiement'] === 'acompte_recu' && $acompte;
+    $lignes .= '<tr><td' . $bord . '><b>Total TTC</b>, ' . ($avecAcompte ? 'acompte de ' . h(euros($acompte)) . ' reçu' : 'à régler au retrait') . '</td>'
+             . '<td align="right"' . $bord . '><b>' . h(euros($total)) . '</b></td></tr>';
+    if ($avecAcompte) $lignes .= '<tr><td' . $td . '>Reste à régler au retrait</td><td align="right"' . $td . '>' . h(euros($total - $acompte)) . '</td></tr>';
+    $lien = fn(string $href, string $t) => '<a href="' . h($href) . '"' . $S('color:' . $AC . ';font-weight:bold') . '>' . $t . '</a>';
     $agenda = rdv_client_possible($k)
         ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:20px')
         : '';
-    $signature = array_map('MadameCho\Gestion\h', array_slice(explode("\n", trim(signature())), 0, 1));
-    $pied = '<p style="' . $F . 'font-size:12px;line-height:18px;color:' . $DX . ';margin:0">Madame Cho · pâtisserie sur commande · 4 avenue du Château, 92190 Meudon<br>'
-          . '06 61 31 17 79 · <a href="' . $site . '" style="color:' . $DX . ';text-decoration:underline">madamecho.com</a></p>'
-          . '<p style="' . $F . 'font-size:12px;line-height:18px;color:' . $DX . ';margin:10px 0 0">Vous recevez ce message parce que vous avez commandé chez Madame Cho. '
-          . 'Pour que nos messages arrivent bien, ajoutez contact@madamecho.com à vos contacts.</p>';
-    return '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . h('Votre commande ' . $k['reference'] . ' est confirmée') . '</title></head>'
-        . '<body style="margin:0;padding:0;background:#ffffff">'
-        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff"><tr><td align="center" style="padding:32px 16px">'
-        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">'
-        . '<tr><td style="padding:0 0 20px;border-bottom:2px solid ' . $CH . '"><img src="' . $site . '/assets/logo-email.png" width="150" height="42" alt="Madame Cho" style="display:block;border:0;width:150px;height:auto;margin:0 auto"></td></tr>'
-        . '<tr><td style="padding:28px 0 0">'
-        . $p(h(salutation($k)), 'margin-bottom:14px')
-        . $p('Votre commande <b>' . h($k['reference']) . '</b> est confirmée. Je vous attends :', 'margin-bottom:20px')
-        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' . $IV . ';border-radius:6px"><tr><td style="padding:18px 20px">'
-        . '<p style="' . $F . 'font-size:17px;line-height:24px;color:' . $CH . ';font-weight:bold;margin:0">' . h($quand) . '</p>'
-        . '<p style="' . $F . 'font-size:14px;line-height:21px;color:' . $TX . ';margin:2px 0 14px">4 avenue du Château, 92190 Meudon</p>'
+    $contenu = texte_mail_html($accueil ?? accueil_confirmation($k), $p, 'margin-bottom:14px')
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:' . $IV . ';border-radius:6px;margin-top:6px') . '><tr><td' . $S('padding:18px 20px') . '>'
+        . '<p' . $S($F . 'font-size:17px;line-height:24px;color:' . $CH . ';font-weight:bold;margin:0') . '>' . h($quand) . '</p>'
+        . '<p' . $S($F . 'font-size:14px;line-height:21px;color:' . $TX . ';margin:2px 0 14px') . '>4 avenue du Château, 92190 Meudon</p>'
         . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' . $lignes . '</table>'
         . '</td></tr></table>'
+        . (trim($mot) !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '')
         . $agenda
         . $p('Paiement par carte, virement ou espèces. Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:14px')
-        . $p('À bientôt,<br>' . implode('', $signature), 'margin-top:22px')
-        . '</td></tr>'
-        . '<tr><td style="padding:28px 0 0"><div style="border-top:1px solid ' . $LG . ';padding-top:16px">' . $pied . '</div></td></tr>'
-        . '</table></td></tr></table></body></html>';
+        . $p('À bientôt,<br>' . mail_signature_nom(), 'margin-top:22px');
+    return mail_cadre('Votre commande ' . $k['reference'] . ' est confirmée', $contenu, $S, $apercu);
 }
 
+/* ---------- « Écrire au client » : un autre mail sur la même commande (demande d'Olivier du 07/11/2026) ----------
+ * Même mise en forme ; l'objet garde toujours la référence MC-… (pour retrouver la conversation dans Gmail). */
+function sujet_libre(array $k, string $sujet): string {
+    $sujet = une_ligne(trim($sujet));
+    if ($sujet === '') $sujet = 'Votre commande ' . $k['reference'];
+    if (!str_contains($sujet, $k['reference'])) $sujet .= ' (' . $k['reference'] . ')';
+    return $sujet;
+}
+function email_libre(array $k, string $texte): string { return trim($texte) . "\n\nÀ bientôt,\n" . signature(); }
+function email_libre_html(array $k, string $sujet, string $texte, bool $apercu = false): string {
+    $S = mail_style($apercu);
+    $p = mail_paragraphe($S);
+    $contenu = texte_mail_html(trim($texte) !== '' ? $texte : salutation($k), $p, 'margin-bottom:14px')
+        . $p('À bientôt,<br>' . mail_signature_nom(), 'margin-top:8px')
+        . '<p' . $S(MAIL_F . 'font-size:12px;line-height:18px;color:#736A64;margin:18px 0 0') . '>Commande ' . h($k['reference']) . '</p>';
+    return mail_cadre($sujet, $contenu, $S, $apercu);
+}
+
+/** Les règles CSS de l'aperçu (à recopier dans gestion.css quand un style du mail change) : un mail d'essai qui passe par tous les cas. */
+function apercu_mail_css(): string {
+    $GLOBALS['mc_styles_mail'] = [];
+    $k = ['reference' => 'MC-000000-0000', 'retrait_date' => '2026-01-01', 'retrait_heure' => '10:00', 'retrait_moment' => '', 'mode' => 'retrait', 'statut' => 'confirmee',
+          'id' => 1, 'acompte' => 100, 'paiement' => 'acompte_recu', 'perso' => 'x', 'prix_final' => 1000, 'client_prenom' => 'A', 'client_nom' => 'B',
+          'lignes_tab' => [['q' => 1, 'nom' => 'x', 'libelle' => 'y', 'prix' => 100, 'plaque' => 'z']]];
+    email_confirmation_html($k, "a\n\nb", 'c', true);
+    email_libre_html($k, 's', "a\n\nb", true);
+    $css = '';
+    foreach (array_keys($GLOBALS['mc_styles_mail']) as $r) $css .= '.apercu-mail .m-' . substr(md5($r), 0, 8) . '{' . $r . "}\n";
+    return $css;
+}
 function email_avis(array $k, string $lien): array {
     $t = salutation($k) . "\n\nMerci encore pour votre commande. Si vous avez un moment, votre avis sur Google aiderait beaucoup Madame Cho à se faire connaître :\n" . $lien
        . "\n\nMerci et à bientôt,\n" . signature();
