@@ -90,6 +90,10 @@ function reponse_ranger(array $m): string {
         $etat = 'envoye';
     } else {
         $qui = $nom !== '' ? $nom : $adresse;
+        // Audit n° 3, C01 : une adresse autre que celle du client est rangée quand même (un client répond parfois d'ailleurs),
+        // mais marquée « à vérifier » ; la référence seule ne prouve pas qui écrit
+        $attendue = mb_strtolower(trim((string)($k['client_email'] ?? '')));
+        if ($attendue === '' || $adresse !== $attendue) $ancien .= ' expediteur:autre';
         evenement('email_recu', 'Réponse de ' . $qui . ($nom !== '' ? ' (' . $adresse . ')' : '') . ' : « ' . $objet . ' »', $liens, $ancien, $propre, $qui);
         $ev = (int)db()->lastInsertId();
         q("UPDATE evenements SET lu = 0, le = ? WHERE id = ?", [$recuLe, $ev]);
@@ -108,7 +112,9 @@ function page_reponses(): void {
     header('X-Robots-Tag: noindex, nofollow');
     $empreinte = (string)parametre('reponses_empreinte', '');
     $cle = is_string($_POST['cle'] ?? null) ? $_POST['cle'] : '';
-    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || $empreinte === '' || connexion_bloquee('reponses')) { http_response_code(404); exit; }
+    // Audit n° 3, C02 : seul l'appareil qui se trompe de clé est bloqué (jamais la réception pour tous)
+    $bloque = (int)val("SELECT COUNT(*) FROM connexions WHERE ok = 0 AND email = 'reponses' AND ip = ? AND le > ?", [ip_empreinte(), date('Y-m-d H:i:s', time() - 900)]) >= GESTION_ECHECS_MAX;
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || $empreinte === '' || $bloque) { http_response_code(404); exit; }
     if (!hash_equals($empreinte, hash('sha256', $cle))) { connexion_noter('reponses', false, 'reponses'); http_response_code(403); exit; }
     $brut = is_string($_POST['mails'] ?? null) ? $_POST['mails'] : '[]';
     $mails = strlen($brut) <= 2_000_000 ? json_decode($brut, true) : null;

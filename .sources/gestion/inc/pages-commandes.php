@@ -148,29 +148,29 @@ function page_commande(): void {
                 $prix = centimes(texte('prix_final', 12));
                 $acompte = centimes(texte('acompte', 12));
                 $kp = $k; if ($prix !== null) $kp['prix_final'] = $prix; $kp['acompte'] = $acompte ?? 0;
-                if (!envoyer_mail_commande($kp, 'proposition', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) { flash('erreur', 'L\'email n\'est pas parti. Réessayez, ou utilisez « Autre façon » plus bas.'); break; }
+                if (!envoyer_mail_commande($kp, 'proposition', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) { flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez, ou utilisez « Autre façon » plus bas.'); break; }
                 commande_statut($id, 'proposition', $prix !== null ? ['prix_final' => $prix] : []);
                 if ($acompte) commande_paiement($id, 'acompte_demande', '', $acompte, (string)$k['facture']);
-                flash('ok', 'Proposition envoyée au client. Une copie arrive dans contact@madamecho.com ; sa réponse arrivera dans les Échanges.');
+                flash_envoi('Proposition envoyée au client. Une copie arrive dans contact@madamecho.com ; sa réponse arrivera dans les Échanges.');
                 break;
             case 'envoyer_confirmation':
                 if ($k['statut'] !== 'confirmee' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la commande n\'est pas confirmée.'); break; }
-                if (envoyer_mail_commande($k, 'confirmation', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) flash('ok', 'Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com.');
-                else flash('erreur', 'L\'email n\'est pas parti. Réessayez, ou utilisez « Autre façon » plus bas.');
+                if (envoyer_mail_commande($k, 'confirmation', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) flash_envoi('Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com.');
+                else flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez, ou utilisez « Autre façon » plus bas.');
                 break;
             case 'ecrire_client':   // « Écrire au client » : un autre mail sur la même commande
                 $texteLibre = texte('texte_mail', 4000);
                 if (!email_valide((string)$k['client_email']) || trim($texteLibre) === '' || trim($texteLibre) === trim(salutation($k))) { flash('erreur', 'Écrivez le message (et vérifiez l\'email du client).'); break; }
-                if (envoyer_mail_commande($k, 'message', ['accueil' => $texteLibre, 'sujet' => texte('sujet', 200)])) flash('ok', 'Email envoyé au client. Une copie arrive dans contact@madamecho.com.');
-                else flash('erreur', 'L\'email n\'est pas parti. Réessayez dans un moment.');
+                if (envoyer_mail_commande($k, 'message', ['accueil' => $texteLibre, 'sujet' => texte('sujet', 200)])) flash_envoi('Email envoyé au client. Une copie arrive dans contact@madamecho.com.');
+                else flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez dans un moment.');
                 break;
             case 'envoyer_avis':
                 $lien = (string)parametre('lien_avis', '');
                 if ($k['statut'] !== 'remise' || $lien === '' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Il faut une commande remise, l\'email du client et le lien d\'avis (Paramètres).'); break; }
-                if (!envoyer_mail_commande($k, 'avis', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'lien' => $lien])) { flash('erreur', 'L\'email n\'est pas parti. Réessayez dans un moment.'); break; }
+                if (!envoyer_mail_commande($k, 'avis', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'lien' => $lien])) { flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez dans un moment.'); break; }
                 q("UPDATE clients SET avis_demande_le = ?, maj_le = ? WHERE id = ?", [aujourdhui(), maintenant(), $k['client_id']]);
                 evenement('avis', 'Avis Google demandé', ['commande' => $id, 'client' => (int)$k['client_id']]);
-                flash('ok', 'Demande d\'avis envoyée et notée sur la fiche du client.');
+                flash_envoi('Demande d\'avis envoyée et notée sur la fiche du client.');
                 break;
             case 'remise':
                 $prix = centimes(texte('prix_final', 12));

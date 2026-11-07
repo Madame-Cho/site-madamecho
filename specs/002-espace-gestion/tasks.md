@@ -70,6 +70,11 @@
 - [X] T035 Page Confidentialité du site : mails envoyés depuis la gestion, réponses des clients recopiées dans la gestion, échanges notés, correction du français (T9, principe IV)
 - [X] T038 [US5] Corbeille (demande d'Olivier) : schéma 9, table `corbeille`, 30 jours, « Restaurer », purge de nuit, vidée par un effacement RGPD ; Plus › Corbeille
 - [X] T039 [P] « Réglages » devient « Paramètres », icône engrenage (demande d'Olivier)
+- [X] T040 [US5] Audit n° 3, C01 : réponse d'une autre adresse que celle du client rangée mais marquée « à vérifier » (FR-037)
+- [X] T041 [US5] Audit n° 3, C02 : blocage par appareil après 10 clés fausses en 15 min, la réception continue pour le script (FR-037)
+- [X] T042 [US5] Audit n° 3, C04 et C05 : pas de double envoi en moins de 2 minutes, message d'erreur qui renvoie aux Échanges et à Gmail ; provenance des textes des clients pour l'assistant (FR-037)
+- [X] T043 [US5] Audit n° 3, C12 : « Tous les échanges » sur la fiche client, journal détaillé replié (FR-038)
+- [X] T044 [P] Couleurs B2B violet et B2C bleu-vert, distinctes du marron des filtres (FR-039) ; manuel FR/KO à jour (corbeille, Paramètres, icônes des titres, échanges, couleurs)
 - [ ] T036 Mail « Merci » et demande d'avis à essayer en réel quand la fiche Google existera (lien dans Paramètres)
 - [ ] T037 Changer la clé du script (montrée dans une capture le 2026-11-07) : nouvelle clé dans Paramètres, propriété CLE, puis « installer »
 

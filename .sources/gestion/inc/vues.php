@@ -309,7 +309,7 @@ function lien_bouton(string $href, string $label, string $classe = '', array $a 
 const ICONES_TITRES = [
     'Client' => 'clients', 'Coordonnées' => 'clients', 'Fiche et droits du client' => 'clients', 'Qui a accès' => 'clients',
     'Contenu' => 'produits', 'À préparer en tout' => 'produits', 'Ventes par gâteau' => 'produits',
-    'Échanges' => 'assistant',
+    'Échanges' => 'assistant', 'Tous les échanges' => 'assistant', 'Notes et historique' => 'crayon',
     'Montant et paiement' => 'paiement', 'Facture et paiement' => 'paiement', 'Acomptes attendus' => 'paiement', 'Paiements pas encore' => 'paiement',
     'Relevés' => 'paiement', 'À recopier dans la facture' => 'paiement', 'Chiffre d' => 'paiement',
     'Commandes' => 'commandes', 'Demandes' => 'commandes', 'Propositions sans réponse' => 'commandes', 'Les livraisons' => 'commandes', 'Où en sont les demandes' => 'commandes',
@@ -366,13 +366,14 @@ function fil_historique(array $evs, bool $avecReference = false): string {
 /** La conversation d'une commande, façon messagerie (retour d'Olivier en test, 07/11/2026) : du plus ancien au plus récent ;
  *  le client à gauche, Madame Cho à droite, les échanges notés au milieu ; une étiquette (Proposition, WhatsApp…) et l'heure ;
  *  le texte tout de suite (sans l'objet, toujours le même, ni la signature). $evs : du plus récent au plus ancien, comme historique(). */
-function fil_conversation(array $evs): string {
+function fil_conversation(array $evs, bool $avecReference = false): string {
     if (!$evs) return '<p class="vide">Pas encore d\'échange avec le client.</p>';
     $sig = trim(strtok(signature(), "\n") ?: '');
     // Comme une messagerie : le plus récent en haut (retour d'Olivier, 07/11/2026)
     $s = ''; $trait = false; $vus = false;
     foreach ($evs as $e) {
         $type = $e['type'];
+        $doute = false;
         $corps = trim((string)$e['nouveau']);
         $nouveau = $type === 'email_recu' && isset($e['lu']) && !(int)$e['lu'];
         if ($type === 'email_client') {
@@ -387,6 +388,7 @@ function fil_conversation(array $evs): string {
         } elseif ($type === 'email_recu') {
             $etiq = 'Mail du client'; $cl = 'msg-client'; $qui = (string)$e['auteur']; $ico = icone('email');
             if ($corps === '') $corps = (string)$e['texte'];
+            if (str_contains((string)$e['ancien'], 'expediteur:autre')) { $etiq = 'Mail reçu'; $cl .= ' msg-autre'; $doute = true; }
         } else {
             $par = preg_match('/^par:(\w+)/', (string)$e['ancien'], $m) && isset(CANAUX_ECHANGE[$m[1]]) ? CANAUX_ECHANGE[$m[1]] : '';
             $etiq = $type === 'probleme' ? 'Problème' : ($par !== '' ? $par : 'Note');
@@ -402,8 +404,10 @@ function fil_conversation(array $evs): string {
         if ($nouveau && !$trait) { $s .= '<li class="msg-trait"><span>Nouveaux messages</span></li>'; $trait = true; }
         if (!$nouveau && $trait && !$vus) { $s .= '<li class="msg-trait msg-trait-vus"><span>Déjà vus</span></li>'; $vus = true; }
         $s .= '<li class="msg ' . $cl . ($nouveau ? ' msg-nouveau' : '') . '"><div class="msg-tete">' . ($nouveau ? '<span class="chip chip-nouveau">Nouvelle réponse</span> ' : '')
+            . (!empty($doute) ? '<span class="chip chip-doute">' . icone('alerte') . 'Expéditeur différent du client : à vérifier</span> ' : '')
             . '<span class="msg-etiq">' . $ico . h($etiq) . '</span><span class="msg-qui" translate="no">' . h($qui) . '</span></div>'
-            . $texte . '<div class="msg-heure">' . h(date_fr($e['le'], 'heure')) . '</div></li>';
+            . $texte . '<div class="msg-heure">' . h(date_fr($e['le'], 'heure'))
+            . ($avecReference && !empty($e['reference']) ? ' · <a href="' . h(u('commande', ['id' => $e['commande_id']])) . '" translate="no">' . h($e['reference']) . '</a>' : '') . '</div></li>';
     }
     return '<ol class="conversation">' . $s . '</ol>';
 }
@@ -605,6 +609,9 @@ function envoyer_mail_commande(array $k, string $type, array $o = []): bool {
     $a = (string)$k['client_email'];
     if (!email_valide($a)) return false;
     $m = mail_commande($k, $type, $o);
+    // Audit n° 3, C04 : un double toucher ou un réseau qui hésite ne renvoie pas le même mail (même type, même texte, moins de 2 minutes)
+    if (val("SELECT 1 FROM evenements WHERE commande_id = ? AND type = 'email_client' AND ancien LIKE ? AND nouveau = ? AND le > ?",
+            [(int)$k['id'], 'type:' . $type . ' %', $m['corps'], date('Y-m-d H:i:s', time() - 120)])) { $GLOBALS['mc_doublon'] = true; return true; }
     $mid = envoyer_email_client($a, $m['sujet'], $m['corps'], $m['html'], mail_refs((int)$k['id']));
     if ($mid === '') return false;
     evenement('email_client', 'Email envoyé à ' . $a . ' (' . mb_strtolower(MAIL_TYPES[$type]) . ') : « ' . $m['sujet'] . ' »', ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']],
@@ -613,6 +620,10 @@ function envoyer_mail_commande(array $k, string $type, array $o = []): bool {
     q("UPDATE commandes SET dernier_echange = ?, maj_le = ? WHERE id = ?", [$now, $now, (int)$k['id']]);
     client_echange((int)$k['client_id'], $now);
     return true;
+}
+/** Le bandeau après un envoi : « parti », ou « déjà parti, pas renvoyé » si c'était un double toucher (audit n° 3, C04). */
+function flash_envoi(string $ok): void {
+    flash('ok', !empty($GLOBALS['mc_doublon']) ? 'Ce mail était déjà parti il y a moins de 2 minutes : il n\'a pas été envoyé une deuxième fois.' : $ok);
 }
 /** Le dernier envoi d'un type de mail sur la commande (ou null). */
 function mail_deja(int $commande, string $type): ?array {

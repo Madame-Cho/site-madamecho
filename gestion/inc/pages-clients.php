@@ -196,9 +196,14 @@ function page_client(): void {
         }
         $c .= bloc('Avis Google', $av);
     }
-    // Commentaires et historique
-    $c .= bloc('Échanges et historique', ($efface ? '' : formulaire_commentaire('Goûts, habitudes, retrait préféré… Allergie : l\'ingrédient à éviter, sans info de santé.'))
-        . fil_historique(historique(null, $id), true));
+    // Tous les échanges avec ce client, toutes commandes confondues, le plus récent en haut (audit n° 3, C12) ; le journal technique reste à part
+    $evsClient = historique(null, $id);
+    $convClient = array_values(array_filter($evsClient, fn($e) => in_array($e['type'], ['email_client', 'email_recu', 'commentaire', 'probleme'], true)));
+    $c .= bloc('Tous les échanges', '<p class="aide">Mails envoyés et reçus, et échanges notés, de toutes ses commandes. Le numéro MC-… ouvre la commande.</p>'
+        . fil_conversation($convClient, true), '', 'tous-echanges');
+    // Notes sur le client et journal
+    $c .= bloc('Notes et historique', ($efface ? '' : formulaire_commentaire('Goûts, habitudes, retrait préféré… Allergie : l\'ingrédient à éviter, sans info de santé.'))
+        . '<details class="replie"><summary>Journal détaillé (étapes, paiements, modifications)</summary>' . fil_historique($evsClient, true) . '</details>');
     // Droits et doublons
     if (!$efface) {
         $d = '<div class="actions-colonne">'

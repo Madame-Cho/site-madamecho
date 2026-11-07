@@ -247,6 +247,15 @@ Avis demandé | 리뷰 부탁함
 Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre. | 확정 이메일을 보냈어요. 다음 단계: 픽업 날, 이 칸 아래의 ‘고객에게 전달 완료’를 누르세요.
 À faire maintenant : envoyer la confirmation au client (ci-dessous). | 지금 할 일: 아래에서 고객에게 확정 이메일 보내기.
 Nouveaux messages | 새 메시지
+Tous les échanges | 모든 연락
+Mails envoyés et reçus, et échanges notés, de toutes ses commandes. Le numéro MC-… ouvre la commande. | 모든 주문에서 주고받은 이메일과 직접 적은 연락이에요. MC-… 번호를 누르면 그 주문이 열려요.
+Notes et historique | 메모와 기록
+Journal détaillé (étapes, paiements, modifications) | 자세한 기록 (단계, 결제, 수정)
+Ce mail était déjà parti il y a moins de 2 minutes : il n'a pas été envoyé une deuxième fois. | 이 이메일은 2분 안에 이미 보냈어요. 다시 보내지 않았어요.
+L'email n'est pas parti. Regardez d'abord dans les Échanges ou dans Gmail (Envoyés) s'il est arrivé, puis réessayez, ou utilisez « Autre façon » plus bas. | 이메일이 나가지 않았어요. 먼저 연락 내용이나 Gmail(보낸편지함)에서 나갔는지 확인한 뒤 다시 해 보거나, 아래 ‘다른 방법’을 쓰세요.
+L'email n'est pas parti. Regardez d'abord dans les Échanges ou dans Gmail (Envoyés) s'il est arrivé, puis réessayez dans un moment. | 이메일이 나가지 않았어요. 먼저 연락 내용이나 Gmail(보낸편지함)에서 나갔는지 확인한 뒤 잠시 후 다시 해 보세요.
+Expéditeur différent du client : à vérifier | 고객과 다른 보낸 사람: 확인하세요
+Mail reçu | 받은 이메일
 Corbeille | 휴지통
 Commandes et fiches supprimées, 30 jours pour les restaurer | 삭제한 주문과 고객 정보, 30일 안에 되살릴 수 있어요
 Ce qui a été supprimé reste ici 30 jours, puis s'efface tout seul. | 삭제한 것은 여기에 30일 동안 남아 있다가 저절로 지워져요.

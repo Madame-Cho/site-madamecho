@@ -7,6 +7,7 @@
  color-scheme:light;
  --fond:#FAF8F5;--carte:#fff;--texte:#2B2623;--doux:#6B625C;--ligne:#E9E5E1;--fort:#D9D2CB;--chocolat:#3B1D0E;--ivoire:#F3EDE4;--erreur:#8A2A12;
  --ambre:#7A4A00;--ambre-f:#FBEFD9;--bleu:#1F4E79;--bleu-f:#E6EEF7;--vert:#1E5B2E;--vert-f:#E3F1E6;--gris:#5F5853;--gris-f:#EEEDEC;--rouge-f:#F8E5E0;
+ --pro:#4B3A8A;--pro-f:#ECE8F7;--part:#0D5F6B;--part-f:#DDEFF1;
  --police:"Jost",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
  --g:max(16px,env(safe-area-inset-left,0px));--r:12px;--bas:calc(64px + env(safe-area-inset-bottom,0px))
 }
@@ -130,7 +131,7 @@ a.tuile .t-detail{color:var(--chocolat)}
 .s-confirmee{background:var(--vert-f);color:var(--vert)}
 .s-remise{background:var(--ivoire);color:var(--chocolat)}
 .s-sans-suite,.s-annulee,.s-inactif,.s-efface,.s-produit-retire{background:var(--gris-f);color:var(--gris)}
-.s-pro,.s-produit-pro{background:var(--chocolat);color:#fff}
+.s-pro,.s-produit-pro{background:var(--pro-f);color:var(--pro)}
 .s-produit-carte{background:var(--vert-f);color:var(--vert)}
 .s-produit-demande{background:var(--bleu-f);color:var(--bleu)}
 .paiement{background:transparent;border:1px solid var(--fort);color:var(--doux);font-weight:400}
@@ -142,8 +143,8 @@ a.tuile .t-detail{color:var(--chocolat)}
 /* Particulier ou Pro, au premier coup d'œil : devant le nom sur chaque carte, dans l'en-tête de chaque fiche (demande d'Olivier, 07/11/2026) */
 .type-client{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:1px 9px 1px 7px;border-radius:12px;font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap}
 .type-client .ic{width:14px;height:14px;vertical-align:0}
-.t-pro{background:var(--chocolat);color:#fff}
-.t-part{background:var(--carte);color:var(--chocolat);box-shadow:inset 0 0 0 1px var(--fort)}
+.t-pro{background:var(--pro-f);color:var(--pro);box-shadow:inset 0 0 0 1px #CFC6EC}
+.t-part{background:var(--part-f);color:var(--part);box-shadow:inset 0 0 0 1px #B5DCE1}
 .carte-cmd .l1 .type-client{order:-1}
 .bloc.activite .tuiles.petites{margin:0}
 .bloc.activite>h2{font-size:15px;color:var(--doux);margin-bottom:10px}
@@ -317,7 +318,7 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 
 /* Chiffre d'affaires par mois : professionnels (cacao) en bas, particuliers (caramel) au-dessus, même échelle, même base.
    Couleurs vérifiées : distinctes pour les daltoniens, contraste 3:1 au moins sur le blanc. Styles en classes seulement (CSP). */
-.ca-mois{--c-pro:#824121;--c-part:#C18434;margin:2px 0 8px}
+.ca-mois{--c-pro:var(--pro);--c-part:#3A9AA8;margin:2px 0 8px}
 .ca-mois .legende{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:0 0 6px;font-size:13px;color:var(--doux)}
 .ca-mois .legende span{display:inline-flex;align-items:center;gap:6px}
 .ca-mois .cle{display:inline-block;width:12px;height:12px;border-radius:3px}
@@ -744,3 +745,6 @@ details.geste>form{padding:0 2px 6px}
 .ligne-corbeille>div>.ic{display:none}
 .ligne-corbeille form{margin:0}
 .tete-texte h1>.ic{width:.85em;height:.85em;margin-right:.3em;vertical-align:-.08em;color:var(--chocolat)}
+.chip-doute{display:inline-flex;align-items:center;gap:4px;min-height:22px;padding:1px 9px;border-radius:11px;font-size:12px;font-weight:500;background:#FCEBD5;color:#7A3E00;border:1px solid #E9B77A}
+.chip-doute .ic{width:14px;height:14px}
+.msg-autre{border-color:#E9B77A}

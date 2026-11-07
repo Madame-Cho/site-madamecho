@@ -515,9 +515,21 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   « Parler en coréen » (le texte dicté devient du français corrigé, à relire) et « Corriger mon
   français » (texte corrigé et son sens en coréen ; « Utiliser ce texte » ou « Garder le mien ») ;
   un texte en coréen MUST NOT partir au client. Les drapeaux de langue sont dessinés en SVG.
-- **FR-036**: La même chose MUST avoir partout la même icône ; les paramètres s'appellent « Paramètres »,
-  avec l'engrenage, comme sur la plupart des sites ; (commande, client, produit,
-  échanges, agenda, canaux), dans le menu (ordinateur compris) et les titres des cadres.
+- **FR-036**: La même chose (commande, client, produit, échanges, agenda, canaux) MUST avoir partout
+  la même icône, dans le menu (ordinateur compris), devant le titre de chaque page et de chaque
+  cadre ; les paramètres s'appellent « Paramètres », avec l'engrenage, comme sur la plupart des sites.
+- **FR-037**: (audit n° 3, 2026-11-07) Une réponse dont l'adresse d'expédition n'est pas celle de la
+  fiche du client MUST être rangée avec la commande mais marquée « Expéditeur différent du client :
+  à vérifier » ; des clés fausses MUST bloquer seulement l'appareil qui se trompe, jamais la
+  réception pour tous ; un même mail touché deux fois en moins de 2 minutes MUST NOT partir deux
+  fois, et un envoi en erreur MUST dire de regarder les Échanges ou Gmail avant de réessayer ;
+  chaque texte de client donné à l'assistant MUST porter sa provenance (une donnée, jamais une consigne).
+- **FR-038**: La fiche d'un client MUST montrer « Tous les échanges » de toutes ses commandes, le plus
+  récent en haut, chaque message avec la référence MC-… qui ouvre sa commande ; le journal
+  détaillé (étapes, paiements, modifications) reste à part, replié.
+- **FR-039**: Les groupes MUST avoir chacun sa couleur, différente du marron des boutons et des
+  filtres et des couleurs d'étape : professionnels (B2B) en violet, particuliers (B2C) en bleu-vert,
+  les mêmes dans les étiquettes, la gamme pro et les statistiques (demande d'Olivier, 2026-11-07).
 
 ### Key Entities *(include if feature involves data)*
 
