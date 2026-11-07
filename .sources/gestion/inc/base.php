@@ -32,6 +32,8 @@ const GESTION_RETARD_HEURES = 24;          // le site promet une réponse sous 2
 const GESTION_PURGE_DEMANDES_MOIS = 12;    // demande sans suite : effacée 12 mois après le dernier échange (politique de confidentialité)
 const GESTION_PURGE_CLIENTS_ANS = 3;       // client sans commande ni échange depuis 3 ans : effacé (R-38)
 const GESTION_JOURNAL_MOIS = 6;            // journal des connexions : 6 mois
+const GESTION_ASSISTANT_MOIS = 6;          // conversations avec l'assistant : 6 mois (ici et pas dans assistant.php : la purge de nuit ne charge pas l'assistant, audit du 07/11 C1)
+const GESTION_RAPPORTS_MOIS = 12;          // rapports de l'assistant : 12 mois (l'email reçu par Olivier reste la trace)
 // Essai en local seulement (serveur intégré de PHP et MC_ESSAI=1) : aucun email ne part, les liens s'affichent à l'écran.
 define('GESTION_ESSAI', PHP_SAPI === 'cli-server' && getenv('MC_ESSAI') === '1');
 // Matomo, la mesure d'audience du site (T-06) : adresse publique ; la clé d'accès est dans la base (Réglages), jamais dans ce dépôt
@@ -176,7 +178,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 2) return;
+    if ($v >= 3) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -221,13 +223,18 @@ CREATE INDEX IF NOT EXISTS recettes_produit ON recettes(produit_id, variante);
     // Version 2 (07/11/2026) : l'assistant de Youngmi (conversations) et ses rapports pour Olivier
     $pdo->exec("
 CREATE TABLE IF NOT EXISTS assistant_messages (id INTEGER PRIMARY KEY, utilisateur_id INTEGER NOT NULL, fil INTEGER NOT NULL, le TEXT NOT NULL,
-  role TEXT NOT NULL, contenu TEXT NOT NULL, question INTEGER NOT NULL DEFAULT 0, usage TEXT NOT NULL DEFAULT '', rapport_id INTEGER);
+  role TEXT NOT NULL, contenu TEXT NOT NULL, question INTEGER NOT NULL DEFAULT 0, usage TEXT NOT NULL DEFAULT '', rapport_id INTEGER, echec INTEGER NOT NULL DEFAULT 0);
 CREATE INDEX IF NOT EXISTS assistant_messages_fil ON assistant_messages(utilisateur_id, fil);
 CREATE TABLE IF NOT EXISTS rapports (id INTEGER PRIMARY KEY, utilisateur_id INTEGER NOT NULL, fil INTEGER NOT NULL, le TEXT NOT NULL,
   type TEXT NOT NULL, titre TEXT NOT NULL, resume TEXT NOT NULL DEFAULT '', detail TEXT NOT NULL DEFAULT '', ecran TEXT NOT NULL DEFAULT '',
-  attendu TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT 'propose', envoye_le TEXT);
+  attendu TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT 'propose', envoye_le TEXT, pour_vous TEXT NOT NULL DEFAULT '');
 ");
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '2')");
+    // Version 3 (07/11/2026, audit C4 et C9) : une question ratée reste comptée dans le coût (echec) ; le rapport porte un résumé dans la langue de l'utilisatrice (pour_vous)
+    if ($v === 2) {
+        $pdo->exec("ALTER TABLE assistant_messages ADD COLUMN echec INTEGER NOT NULL DEFAULT 0");
+        $pdo->exec("ALTER TABLE rapports ADD COLUMN pour_vous TEXT NOT NULL DEFAULT ''");
+    }
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '3')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
@@ -284,11 +291,14 @@ function utilisateur_courant(): ?array {
     }
     if (!$uid && !empty($_COOKIE['mc_souvenir'])) {   // « rester connectée » : jeton de 30 jours
         $j = jeton_verifier((string)$_COOKIE['mc_souvenir'], 'session');
-        if ($j) { $uid = (int)$j['utilisateur_id']; $_SESSION['uid'] = $uid; }
+        if ($j) { $uid = (int)$j['utilisateur_id']; $_SESSION['uid'] = $uid; $_SESSION['depuis'] = maintenant(); }
     }
     if (!$uid) return null;
     $u = ligne("SELECT * FROM utilisateurs WHERE id = ? AND actif = 1", [$uid]);
     if (!$u) { session_fermer(); return null; }
+    // Une session ouverte avant le dernier changement de mot de passe s'arrête : les autres appareils se reconnectent (audit du 07/11, C2)
+    if (empty($_SESSION['depuis'])) $_SESSION['depuis'] = maintenant();
+    if (!empty($u['mdp_change_le']) && $_SESSION['depuis'] < $u['mdp_change_le']) { $u = null; session_fermer(); return null; }
     $_SESSION['vu'] = time();
     return $u;
 }
@@ -333,7 +343,7 @@ function connexion_tenter(string $email, string $mdp, bool $souvenir): ?array {
 function session_pour(array $u, bool $souvenir): void {
     session_ouvrir();
     session_regenerate_id(true);
-    $_SESSION['uid'] = (int)$u['id']; $_SESSION['vu'] = time();
+    $_SESSION['uid'] = (int)$u['id']; $_SESSION['vu'] = time(); $_SESSION['depuis'] = maintenant();
     q("UPDATE utilisateurs SET derniere_connexion = ? WHERE id = ?", [maintenant(), $u['id']]);
     if ($souvenir) {
         $j = jeton_creer((int)$u['id'], 'session', GESTION_SOUVENIR);
@@ -360,8 +370,11 @@ function mdp_acceptable(string $mdp): ?string {
     return null;
 }
 function mdp_changer(int $uid, string $mdp): void {
-    q("UPDATE utilisateurs SET mdp = ?, mdp_change_le = ? WHERE id = ?", [password_hash($mdp, PASSWORD_DEFAULT), maintenant(), $uid]);
-    q("DELETE FROM jetons WHERE utilisateur_id = ? AND type = 'session'", [$uid]);   // les autres appareils se reconnectent
+    $now = maintenant();
+    q("UPDATE utilisateurs SET mdp = ?, mdp_change_le = ? WHERE id = ?", [password_hash($mdp, PASSWORD_DEFAULT), $now, $uid]);
+    q("DELETE FROM jetons WHERE utilisateur_id = ? AND type = 'session'", [$uid]);   // les jetons « rester connectée » des autres appareils
+    // Cette session continue ; les autres sessions ouvertes de ce compte s'arrêtent à leur prochaine page (utilisateur_courant)
+    if (session_status() === PHP_SESSION_ACTIVE && (int)($_SESSION['uid'] ?? 0) === $uid) $_SESSION['depuis'] = $now;
 }
 
 /* ---------- Protection des formulaires et messages ---------- */

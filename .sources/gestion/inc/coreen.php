@@ -227,7 +227,7 @@ Paiement | 결제
 N° de facture Qonto (si facture) | Qonto 청구서 번호 (청구서가 있으면)
 Commande remise au client | 고객에게 전달 완료
 L'avis est arrivé | 리뷰가 올라왔어요
-Seulement à un client content, sans contrepartie et sans demander de note (règles de Google). | 만족한 고객에게만, 대가 없이, 별점을 요구하지 않고 부탁하세요 (구글 규칙).
+À proposer à tous les clients de la même façon, sans trier, sans contrepartie et sans demander une bonne note (règles de Google). | 모든 고객에게 똑같이 부탁하세요. 고르지 말고, 대가 없이, 좋은 별점을 요구하지 않고요 (구글 규칙).
 Demander un avis Google | 구글 리뷰 부탁하기
 J'ai demandé un avis | 리뷰를 부탁했어요
 Rouvrir la demande | 문의 다시 열기
@@ -361,7 +361,7 @@ Dans Qonto | Qonto 등록
 Oui | 예
 Modifier | 수정
 Avis Google | 구글 리뷰
-On demande un avis après une commande remise, à un client content. | 리뷰는 주문을 전달한 뒤, 만족한 고객에게 부탁해요.
+On propose un avis après une commande remise, à tous les clients de la même façon. | 리뷰는 주문을 전달한 뒤 모든 고객에게 똑같이 부탁해요.
 Goûts, habitudes, préférences de retrait… Jamais d'information de santé : pour une allergie, seulement l'ingrédient à éviter. | 취향, 습관, 선호하는 픽업 방식… 건강 정보는 적지 마세요. 알레르기는 피해야 할 재료만 적어요.
 Fiche et droits du client | 고객 정보와 권리
 Un doublon ? Fusionner une autre fiche dans celle-ci | 중복인가요? 다른 고객 정보를 여기에 합치기
@@ -428,10 +428,15 @@ Les prix HT viennent de la gamme pro (Produits). La TVA est calculée sur le tot
 Facture et paiement | 청구서와 결제
 Numéro de la facture Qonto | Qonto 청구서 번호
 Facture payée | 청구서 결제됨
-Une fois la facture faite dans Qonto, notez son numéro ici ; cochez « Facture payée » quand le virement arrive. | Qonto에서 청구서를 만들면 번호를 여기에 적으세요. 이체가 들어오면 « 청구서 결제됨 »에 체크하세요.
+Une fois la facture faite dans Qonto, notez son numéro ici : il s'inscrit sur les livraisons livrées qui n'en ont pas encore, jamais par-dessus un autre numéro. Cochez « Facture payée » quand le virement arrive. | Qonto에서 청구서를 만들면 번호를 여기에 적으세요. 아직 번호가 없는 배달 완료 건에만 적히고, 다른 번호를 덮어쓰지 않아요. 이체가 들어오면 « 청구서 결제됨 »에 체크하세요.
 Aucune livraison ce mois-là. | 그달에는 배달이 없어요.
 Payée par | 결제 수단
 Relevés à facturer | 청구할 내역서
+Noter le paiement | 결제 적기
+Rien à changer : c'était déjà noté. | 바꿀 게 없어요. 이미 적혀 있어요.
+Rien à facturer ce mois-ci : chaque livraison livrée a déjà sa facture. | 이번 달은 청구할 게 없어요. 배달 완료 건마다 이미 청구서가 있어요.
+Toutes les livraisons livrées de ce mois ont déjà une facture : pour corriger un numéro, ouvrez la livraison. | 이번 달 배달 완료 건에는 이미 청구서가 다 있어요. 번호를 고치려면 해당 배달을 여세요.
+Marge sur les matières et l'emballage seulement : le travail, l'énergie, les pertes et les charges ne sont pas comptés. | 재료와 포장만 계산한 마진이에요. 인건비, 에너지, 손실, 고정비는 포함되지 않아요.
 Restaurants livrés le mois dernier ou avant : faites la facture dans Qonto à partir du relevé, puis notez son numéro. | 지난달이나 그 전에 배달한 레스토랑이에요. 내역서를 보고 Qonto에서 청구서를 만든 뒤 번호를 적으세요.
 Indiquez le numéro de la facture Qonto, ou cochez « Facture payée ». | Qonto 청구서 번호를 적거나 « 청구서 결제됨 »에 체크하세요.
 Le client demande ses données (droit d'accès) | 고객이 자기 정보를 요청했어요 (열람권)
@@ -489,7 +494,7 @@ Retirer | 빼기
 Coût matières | 재료비
 Prix TTC | 가격 (부가세 포함)
 Prix HT | 가격 (부가세 별도)
-Marge brute | 총마진
+Marge sur matières | 재료 마진
 Coefficient | 배수
 prix HT ÷ coût | 부가세 별도 가격 ÷ 원가
 — Ingrédient — | — 재료 —
@@ -652,6 +657,16 @@ Pas maintenant | 나중에
 Non envoyé | 보내지 않음
 Remplacé par le rapport suivant | 다음 보고서로 대체됨
 Rapports envoyés | 보낸 보고서
+Écrire à Olivier | Olivier에게 쓰기
+Envoyer à Olivier | Olivier에게 보내기
+Message envoyé à contact@madamecho.com. | contact@madamecho.com으로 메시지를 보냈어요.
+L'email n'est pas parti : réessayez, ou appelez Olivier. | 이메일이 가지 않았어요. 다시 해 보거나 Olivier에게 전화하세요.
+Joindre les 10 derniers messages de la conversation | 대화의 마지막 메시지 10개 함께 보내기
+À envoyer | 보낼 수 있어요
+Plafond du mois, en dollars (0 = aucun) | 이번 달 한도, 달러 (0 = 없음)
+Enregistrer le plafond | 한도 저장
+Plafond enregistré : aucun. | 한도를 저장했어요: 없음.
+(prix publics d'Anthropic ; une question ratée est comptée aussi) | (Anthropic 공개 가격 기준. 실패한 질문도 포함돼요)
 Relier l'assistant | 어시스턴트 연결
 Clé d'accès Anthropic | Anthropic 접근 키
 Modèle | 모델
@@ -721,7 +736,7 @@ Roue dentée « Administration », puis « Personnel » › « Sécurité ». | 
 En bas, « Jetons d'authentification » : « Créer un nouveau jeton ». Matomo redemande le mot de passe. | 아래쪽 « Jetons d'authentification »에서 « Créer un nouveau jeton »을 누르세요. Matomo가 비밀번호를 다시 물어봐요.
 Description : « Gestion Madame Cho ». Copiez le jeton affiché et collez-le ici. | 설명(Description)에 « Gestion Madame Cho »라고 쓰세요. 화면에 나온 토큰을 복사해서 여기에 붙여 넣으세요.
 Clé d'accès de Matomo | Matomo 접근 키
-Elle reste dans la base de la gestion, hors du site. Elle n'est jamais réaffichée et ne part pas dans la sauvegarde. | 키는 사이트 밖에 있는 관리 데이터베이스에만 보관돼요. 다시 보여 주지 않고, 백업에도 들어가지 않아요.
+Elle reste dans la base de la gestion, hors du site. Elle n'est jamais réaffichée et ne part pas dans l'export. | 키는 사이트 밖에 있는 관리 데이터베이스에만 보관돼요. 다시 보여 주지 않고, 내보내기에도 들어가지 않아요.
 Vérifier et enregistrer | 확인하고 저장
 Retirer la clé | 키 삭제
 Retirer la clé de Matomo ? Les visites du site ne s'afficheront plus dans la gestion. | Matomo 키를 삭제할까요? 관리 화면에 사이트 방문 숫자가 더 이상 보이지 않아요.
@@ -746,12 +761,12 @@ Clé à coller dans le script Google | Google 스크립트에 붙여 넣을 키
 Créer une nouvelle clé (l'ancienne cesse de marcher) | 새 키 만들기 (이전 키는 더 이상 안 돼요)
 Créer la clé du miroir | 사본 키 만들기
 Arrêter le miroir | 사본 중지
-Reprise des données et sauvegarde | 데이터 가져오기와 백업
+Reprise des données et export | 데이터 가져오기와 내보내기
 Reprise : le fichier JSON préparé à partir de Qonto et des demandes déjà reçues (jamais dans le dépôt du site). Sans risque à relancer : ce qui est déjà là est sauté. | 가져오기: Qonto와 이미 받은 문의로 만든 JSON 파일이에요 (사이트 저장소에는 절대 넣지 않아요). 다시 실행해도 괜찮아요. 이미 있는 것은 건너뛰어요.
 Fichier de reprise (.json) | 가져오기 파일 (.json)
 Importer | 가져오기
-Sauvegarde : tout le contenu de la gestion dans un fichier, à ranger dans le Drive de Madame Cho chaque mois (P-24). Elle contient des données de clients. | 백업: 관리 화면의 모든 내용을 파일 하나로 받아요. 매달 Madame Cho의 Drive에 보관하세요 (P-24). 고객 정보가 들어 있어요.
-Télécharger une sauvegarde | 백업 다운로드
+Export complet : clients, commandes, produits, ingrédients et recettes dans un fichier JSON (sans les comptes, la clé de l'assistant ni les conversations), pour une analyse ou une reprise. Ce n'est pas une restauration de l'espace : la sauvegarde, c'est celle de l'hébergement OVH (fichier de la base), qu'Olivier vérifie. Le fichier contient des données de clients : à ranger dans le Drive de Madame Cho (P-24), jamais ailleurs. | 전체 내보내기: 고객, 주문, 제품, 재료, 레시피를 JSON 파일 하나로 받아요(계정, 어시스턴트 키, 대화는 빠져요). 분석이나 가져오기용이에요. 관리 공간을 복원하는 백업이 아니에요. 진짜 백업은 OVH 호스팅 쪽 백업(데이터베이스 파일)이고 Olivier가 확인해요. 고객 정보가 들어 있으니 Madame Cho의 Drive에만 보관하세요 (P-24).
+Télécharger l'export complet | 전체 데이터 내보내기 다운로드
 Contrôle technique | 기술 점검
 Base de données | 데이터베이스
 indisponible | 사용할 수 없음
@@ -794,7 +809,7 @@ Commande annulée. | 주문을 취소했어요.
 Commande confirmée : envoyez la confirmation au client et ajoutez le retrait à votre agenda. | 주문을 확정했어요. 고객에게 확정 이메일을 보내고 픽업을 캘린더에 추가하세요.
 Commande créée. | 주문을 만들었어요.
 Commande modifiée. | 주문을 수정했어요.
-Commande remise. Pensez à demander un avis Google si le client était content. | 전달 완료로 기록했어요. 고객이 만족했다면 구글 리뷰를 부탁해 보세요.
+Commande remise. Pensez à proposer un avis Google au client. | 전달 완료로 기록했어요. 고객에게 구글 리뷰를 부탁해 보세요.
 Commentaire ajouté. | 메모를 추가했어요.
 Copie créée : choisissez la date de retrait. | 복사본을 만들었어요. 픽업 날짜를 고르세요.
 Demande d'avis notée sur la fiche du client. | 고객 정보에 리뷰 요청을 기록했어요.
@@ -832,7 +847,7 @@ Fiche client créée | 고객 정보 생성
 Demande créée | 문의 생성
 Demande envoyée par le formulaire du site | 사이트 문의 양식으로 접수
 Reprise des données | 데이터 가져오기
-Sauvegarde complète téléchargée | 전체 백업 다운로드
+Export complet téléchargé | 전체 데이터 내보내기 다운로드
 Mot de passe changé | 비밀번호 변경
 Signature des emails ou lien d'avis modifié | 이메일 서명 또는 리뷰 링크 수정
 Enregistrement des demandes du site activé | 사이트 문의 자동 저장 켬
@@ -1083,13 +1098,15 @@ function coreen_motifs(): array {
         ['/^· (' . $E . ') HT$/u', fn($m) => '· ' . $m[1] . ' (부가세 별도)'],
         ['/^Recette · coût (' . $E . ')(?: · marge (\d+) %)?$/u', fn($m) => '레시피 · 원가 ' . $m[1] . (isset($m[2]) ? ' · 마진 ' . $m[2] . ' %' : '')],
         ['/^(\d+) livrée\(s\)$/', fn($m) => '배달 완료 ' . $m[1] . '건'],
-        ['/^(\d+) livraison\(s\) pas encore marquée\(s\) « Livrée » : vérifiez-les avant de faire la facture\.$/u',
-            fn($m) => '아직 ‘배달 완료’로 표시하지 않은 배달이 ' . $m[1] . '건 있어요. 청구서를 만들기 전에 확인하세요.'],
+        ['/^(\d+) livraison\(s\) pas encore marquée\(s\) « Livrée » : vérifiez-les avant de faire la facture, elles ne sont pas comptées\.$/u',
+            fn($m) => '아직 ‘배달 완료’로 표시하지 않은 배달이 ' . $m[1] . '건 있어요. 청구서를 만들기 전에 확인하세요. 합계에는 들어가지 않아요.'],
+        ['/^(\d+) livraison\(s\) déjà facturée\(s\) \((.+)\) : pas comptées dans le total\.$/u', fn($m) => '이미 청구한 배달 ' . $m[1] . '건 (' . $m[2] . '): 합계에 들어가지 않아요.'],
+        ['/^(\d+) à facturer$/', fn($m) => '청구할 배달 ' . $m[1] . '건'],
         ['/^(\d+) livraison\(s\) sur (\d+) facturée\(s\)\.$/u', fn($m) => '배달 ' . $m[2] . '건 중 ' . $m[1] . '건 청구함.'],
         ['/^(\d+) livraison\(s\) · (' . $E . ') HT · (' . $E . ') TTC$/u', fn($m) => '배달 ' . $m[1] . '건 · ' . $m[2] . ' (부가세 별도) · ' . $m[3] . ' (부가세 포함)'],
         ['/^Les livraisons \((\d+)\)$/', fn($m) => '배달 (' . $m[1] . ')'],
         ['/^(\d+) livraison\(s\)$/', fn($m) => '배달 ' . $m[1] . '건'],
-        ['/^Noter sur les (\d+) livraison\(s\)$/', fn($m) => '배달 ' . $m[1] . '건에 적기'],
+        ['/^Noter la facture sur les (\d+) livraison\(s\) à facturer$/u', fn($m) => '청구할 배달 ' . $m[1] . '건에 청구서 적기'],
         ['/^(\d+) livraison\(s\) notée\(s\)(?: avec la facture (.+?))?(, payée\(s\))?\.$/u',
             fn($m) => '배달 ' . $m[1] . '건에 적었어요' . (($m[2] ?? '') !== '' ? ': 청구서 ' . $m[2] : '') . (!empty($m[3]) ? ', 결제 완료' : '') . '.'],
         ['/^[Ff]acture (.+), payée\.?$/u', fn($m) => '청구서 ' . $m[1] . ', 결제 완료'],
@@ -1123,6 +1140,8 @@ function coreen_motifs(): array {
         ['/^Ce mois-ci : (\d+) question\(s\) · ≈ (.+) \$$/u', fn($m) => '이번 달: 질문 ' . $m[1] . '건 · ≈ ' . $m[2] . ' $'],
         ['/^Ce mois-ci : (\d+) question\(s\)$/u', fn($m) => '이번 달: 질문 ' . $m[1] . '건'],
         ['/^(\d+) question\(s\)$/u', fn($m) => '질문 ' . $m[1] . '건'],
+        ['/^le plafond du mois est atteint \((\d+) \$\) : prévenez Olivier$/u', fn($m) => '이번 달 한도(' . $m[1] . ' $)에 도달했어요. Olivier에게 알려 주세요'],
+        ['/^Plafond enregistré : (\d+) \$ par mois\.$/u', fn($m) => '한도를 저장했어요: 한 달 ' . $m[1] . ' $.'],
         ['/^(\d+) question\(s\) · ≈ (.+) \$$/u', fn($m) => '질문 ' . $m[1] . '건 · ≈ ' . $m[2] . ' $'],
         ['/^Rapport envoyé à Olivier : (.+)$/u', fn($m) => 'Olivier에게 보고서 보냄: ' . $m[1]],
         // Historique

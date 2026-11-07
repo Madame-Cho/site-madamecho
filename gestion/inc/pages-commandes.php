@@ -107,7 +107,7 @@ function page_commande(): void {
                 commande_statut($id, 'remise', $prix !== null ? ['prix_final' => $prix] : []);
                 $p = choix('paiement', PAIEMENTS, 'paye');
                 commande_paiement($id, $p, choix('moyen', MOYENS, ''), null, une_ligne(texte('facture', 40)));
-                flash('ok', livraison_pro($k) ? 'Livraison notée : elle est dans le relevé du mois du restaurant.' : 'Commande remise. Pensez à demander un avis Google si le client était content.');
+                flash('ok', livraison_pro($k) ? 'Livraison notée : elle est dans le relevé du mois du restaurant.' : 'Commande remise. Pensez à proposer un avis Google au client.');
                 break;
             case 'statut':
                 $s = choix('statut', STATUTS, '');
@@ -305,7 +305,7 @@ function etape_suivante(array $k): string {
                 elseif ($c['avis_demande_le']) $avis = '<p>Avis Google demandé le ' . h(date_fr($c['avis_demande_le'], 'longue')) . '.</p>' . formulaire('avis_recu', bouton(icone('avis') . 'L\'avis est arrivé', 'secondaire'));
                 elseif ($lien === '') $avis = '<p class="aide">' . fr_ko('Pour demander un avis Google, ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
                     '구글 리뷰를 부탁하려면 먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>';
-                else $avis = '<p class="aide">Seulement à un client content, sans contrepartie et sans demander de note (règles de Google).</p>' . bloc_email('email-avis', 'Demander un avis Google', email_avis($k, $lien), $email)
+                else $avis = '<p class="aide">À proposer à tous les clients de la même façon, sans trier, sans contrepartie et sans demander une bonne note (règles de Google).</p>' . bloc_email('email-avis', 'Demander un avis Google', email_avis($k, $lien), $email)
                             . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
             }
             return '<section class="etape etape-finie"><h2>Remise le ' . h(date_fr($k['remise_le'] ?? $k['maj_le'], 'longue')) . '</h2>' . $avis . '</section>';

@@ -177,7 +177,7 @@ function client_fusionner(int $cible, int $source): bool {
     foreach (['telephone', 'ville', 'societe', 'contact', 'email'] as $k) if ($a[$k] === '' && $b[$k] !== '') $maj[$k] = $b[$k];
     $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($maj)));
     q("UPDATE clients SET $set WHERE id = :id", $maj + ['id' => $cible]);
-    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', email = '', telephone = '', ville = '', contact = '', efface_le = ?, maj_le = ? WHERE id = ?", [maintenant(), maintenant(), $source]);
+    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', email = '', telephone = '', ville = '', contact = '', efface_le = ?, maj_le = ? WHERE id = ?", [maintenant(), maintenant(), $source]);
     evenement('fusion', 'Doublon ' . $b['numero'] . ' fusionné dans cette fiche', ['client' => $cible]);
     return true;
 }
@@ -186,7 +186,7 @@ function client_effacer(int $id, string $motif, ?string $auteur = null): void {
     $c = client($id);
     if (!$c || $c['statut'] === 'efface') return;
     $now = maintenant();
-    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', contact = '', email = '', telephone = '', ville = '', qonto = '',
+    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', contact = '', email = '', telephone = '', ville = '', qonto = '',
        lettre_info = '', lettre_info_le = NULL, avis_demande_le = NULL, avis_recu_le = NULL, efface_le = ?, maj_le = ? WHERE id = ?", [$now, $now, $id]);
     q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification')", [$id]);
     foreach (lignes("SELECT id FROM commandes WHERE client_id = ?", [$id]) as $k) commande_anonymiser((int)$k['id'], $now);
@@ -556,9 +556,15 @@ function releves_a_facturer(): array {
 function releve(int $clientId, string $mois): array {
     $jour = "COALESCE(retrait_date, substr(remise_le, 1, 10), substr(recue_le, 1, 10))";
     $ks = lignes("SELECT *, $jour AS jour FROM commandes WHERE client_id = ? AND type = 'pro' AND statut IN ('confirmee', 'remise') AND substr($jour, 1, 7) = ? ORDER BY jour, id", [$clientId, $mois]);
-    $groupes = []; $ht = []; $factures = []; $payees = 0; $livrees = 0;
+    $groupes = []; $ht = []; $factures = []; $payees = 0; $livrees = 0; $aFacturer = 0;
     foreach ($ks as &$k) {
         $k['lignes_tab'] = json_decode($k['lignes'], true) ?: [];
+        $k['a_facturer'] = $k['statut'] === 'remise' && $k['facture'] === '';   // livrée et pas encore facturée : seules ces livraisons entrent dans le total à recopier (audit du 07/11, C6)
+        if ($k['facture'] !== '') $factures[$k['facture']] = true;
+        if ($k['paiement'] === 'paye') $payees++;
+        if ($k['statut'] === 'remise') $livrees++;
+        if (!$k['a_facturer']) continue;
+        $aFacturer++;
         foreach ($k['lignes_tab'] as $l) {
             $tva = (int)($l['tva'] ?? 55);
             $pu = isset($l['ht']) ? (int)$l['ht'] : ht_de_ttc((int)$l['prix'], $tva);   // lignes reprises : HT retrouvé depuis le TTC arrondi
@@ -567,9 +573,6 @@ function releve(int $clientId, string $mois): array {
             $groupes[$g]['q'] += (int)$l['q'];
             $ht[$tva] = ($ht[$tva] ?? 0) + $pu * (int)$l['q'];
         }
-        if ($k['facture'] !== '') $factures[$k['facture']] = true;
-        if ($k['paiement'] === 'paye') $payees++;
-        if ($k['statut'] === 'remise') $livrees++;
     }
     unset($k);
     $totalHt = array_sum($ht); $totalTva = 0;
@@ -577,14 +580,18 @@ function releve(int $clientId, string $mois): array {
     uasort($groupes, fn($a, $b) => strcmp($a['nom'], $b['nom']));
     $n = count($ks);
     return ['mois' => $mois, 'livraisons' => $ks, 'lignes' => array_values($groupes), 'ht' => $totalHt, 'tva' => $totalTva, 'ttc' => $totalHt + $totalTva,
-            'factures' => array_keys($factures), 'facturees' => count(array_filter($ks, fn($k) => $k['facture'] !== '')), 'payees' => $payees, 'livrees' => $livrees, 'n' => $n];
+            'factures' => array_keys($factures), 'facturees' => count(array_filter($ks, fn($k) => $k['facture'] !== '')), 'payees' => $payees, 'livrees' => $livrees, 'a_facturer' => $aFacturer, 'n' => $n];
 }
-/** Note la facture Qonto (et, si $paye, le paiement) sur toutes les livraisons du relevé. */
+/** Note la facture Qonto sur les livraisons livrées qui n'en ont pas encore (jamais par-dessus une autre référence), et le paiement sur les livraisons de cette facture. */
 function releve_noter(array $r, string $facture, bool $paye, string $moyen = 'virement'): int {
     $n = 0;
     foreach ($r['livraisons'] as $k) {
-        $p = $paye ? 'paye' : ($k['paiement'] === 'paye' ? 'paye' : 'aucun');
-        commande_paiement((int)$k['id'], $p, $paye ? $moyen : (string)$k['moyen'], null, $facture !== '' ? $facture : (string)$k['facture']);
+        $f = (string)$k['facture'];
+        if ($f === '' && !empty($k['a_facturer']) && $facture !== '') $f = $facture;
+        if ($f === '') continue;                                                         // pas de paiement sans facture
+        $p = $paye && ($facture === '' || $f === $facture) ? 'paye' : (string)$k['paiement'];
+        if ($f === (string)$k['facture'] && $p === (string)$k['paiement']) continue;      // rien ne change
+        commande_paiement((int)$k['id'], $p, $p === 'paye' && (string)$k['paiement'] !== 'paye' ? $moyen : (string)$k['moyen'], null, $f);
         $n++;
     }
     return $n;
@@ -678,10 +685,10 @@ function conservation_apercu(): array {
     $limiteClients = date('Y-m-d H:i:s', strtotime('-' . GESTION_PURGE_CLIENTS_ANS . ' years'));
     $demandes = lignes("SELECT id, reference, statut, dernier_echange, client_id FROM commandes WHERE efface_le IS NULL AND statut IN ('demande', 'proposition', 'sans_suite', 'annulee') AND dernier_echange < ? ORDER BY dernier_echange", [$limiteDemandes]);
     $clients = lignes("SELECT c.id, c.numero, c.dernier_echange FROM clients c WHERE c.statut <> 'efface' AND c.dernier_echange < ?
-                       AND NOT EXISTS (SELECT 1 FROM commandes k WHERE k.client_id = c.id AND (k.statut IN ('demande','proposition','confirmee') OR k.dernier_echange >= ?)) ORDER BY c.dernier_echange", [$limiteClients, $limiteClients]);
+                       AND NOT EXISTS (SELECT 1 FROM commandes k WHERE k.client_id = c.id AND k.efface_le IS NULL AND (k.statut IN ('demande','proposition','confirmee') OR k.dernier_echange >= ?)) ORDER BY c.dernier_echange", [$limiteClients, $limiteClients]);
     // un client dont toutes les demandes sont effacées et qui n'a jamais commandé n'a plus de raison d'être gardé
     $orphelins = lignes("SELECT c.id, c.numero, c.dernier_echange FROM clients c WHERE c.statut <> 'efface' AND c.dernier_echange < ?
-                         AND NOT EXISTS (SELECT 1 FROM commandes k WHERE k.client_id = c.id AND k.statut IN ('demande','proposition','confirmee','remise'))", [$limiteDemandes]);
+                         AND NOT EXISTS (SELECT 1 FROM commandes k WHERE k.client_id = c.id AND k.efface_le IS NULL AND k.statut IN ('demande','proposition','confirmee','remise'))", [$limiteDemandes]);
     $journal = (int)val("SELECT COUNT(*) FROM connexions WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_JOURNAL_MOIS . ' months'))]);
     return ['demandes' => $demandes, 'clients' => $clients, 'orphelins' => $orphelins, 'journal' => $journal, 'jetons' => (int)val("SELECT COUNT(*) FROM jetons WHERE expire_le < ? OR utilise_le IS NOT NULL", [maintenant()])];
 }
@@ -695,6 +702,7 @@ function conservation_executer(?string $auteur = null): array {
     q("DELETE FROM connexions WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_JOURNAL_MOIS . ' months'))]);
     q("DELETE FROM jetons WHERE expire_le < ? OR utilise_le IS NOT NULL", [$now]);
     q("DELETE FROM assistant_messages WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_ASSISTANT_MOIS . ' months'))]);   // conversations avec l'assistant : 6 mois
+    q("DELETE FROM rapports WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_RAPPORTS_MOIS . ' months'))]);   // rapports de l'assistant : 12 mois
     $cr = ['demandes' => count($a['demandes']), 'clients' => count($vus), 'journal' => $a['journal'], 'le' => $now];
     parametre_ecrire('derniere_purge', json_encode($cr));
     if ($cr['demandes'] || $cr['clients'] || $cr['journal']) evenement('conservation', 'Purge : ' . $cr['demandes'] . ' demande(s) anonymisée(s), ' . $cr['clients'] . ' client(s) effacé(s), ' . $cr['journal'] . ' ligne(s) de journal', [], '', '', $auteur ?? 'système');

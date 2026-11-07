@@ -161,13 +161,13 @@ function page_client(): void {
         $lien = (string)parametre('lien_avis', '');
         if ($cl['avis_recu_le']) $av = '<p>' . icone('avis') . ' Avis reçu le ' . h(date_fr($cl['avis_recu_le'], 'longue')) . '.</p>';
         elseif ($cl['avis_demande_le']) $av = '<p>Avis demandé le ' . h(date_fr($cl['avis_demande_le'], 'longue')) . '.</p>' . formulaire('avis_recu', bouton(icone('avis') . 'L\'avis est arrivé', 'secondaire'));
-        elseif (!$ch['remises']) $av = '<p class="aide">On demande un avis après une commande remise, à un client content.</p>';
+        elseif (!$ch['remises']) $av = '<p class="aide">On propose un avis après une commande remise, à tous les clients de la même façon.</p>';
         else {
             $dk = $ks[0] ?? null;
             foreach ($ks as $k) if ($k['statut'] === 'remise') { $dk = $k; break; }
             $av = $lien === '' ? '<p class="aide">' . fr_ko('Ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
                     '먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>'
-                : '<p class="aide">Seulement à un client content, sans contrepartie et sans demander de note (règles de Google).</p>'
+                : '<p class="aide">À proposer à tous les clients de la même façon, sans trier, sans contrepartie et sans demander une bonne note (règles de Google).</p>'
                   . bloc_email('email-avis', 'Demander un avis Google', email_avis($dk + ['client_prenom' => $cl['prenom'], 'client_nom' => $cl['nom'], 'client_type' => $cl['type'], 'client_contact' => $cl['contact']], $lien), $cl['email'])
                   . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
         }
@@ -207,9 +207,11 @@ function page_releve(): void {
             $paye = ($_POST['paye'] ?? '') === '1';
             if (!$r['n']) flash('erreur', 'Aucune livraison ce mois-là.');
             elseif ($facture === '' && !$paye) flash('erreur', 'Indiquez le numéro de la facture Qonto, ou cochez « Facture payée ».');
+            elseif ($facture !== '' && !$r['a_facturer'] && !in_array($facture, $r['factures'], true)) flash('erreur', 'Toutes les livraisons livrées de ce mois ont déjà une facture : pour corriger un numéro, ouvrez la livraison.');
             else {
                 $n = releve_noter($r, $facture, $paye, choix('moyen', MOYENS, 'virement'));
-                flash('ok', $n . ' livraison(s) notée(s)' . ($facture !== '' ? ' avec la facture ' . $facture : '') . ($paye ? ', payée(s)' : '') . '.');
+                if (!$n) flash('ok', 'Rien à changer : c\'était déjà noté.');
+                else flash('ok', $n . ' livraison(s) notée(s)' . ($facture !== '' ? ' avec la facture ' . $facture : '') . ($paye ? ', payée(s)' : '') . '.');
             }
         }
         rediriger('releve', ['id' => $id, 'mois' => $mois]);
@@ -225,9 +227,10 @@ function page_releve(): void {
         mise_en_page('Relevé de ' . mois_texte($mois), $c, 'clients');
     }
     $tvas = array_unique(array_column($r['lignes'], 'tva'));
-    $c .= '<div class="tuiles">' . tuile('Livraisons', (string)$r['n'], $r['livrees'] . ' livrée(s)') . tuile('Total HT', euros($r['ht']))
+    $c .= '<div class="tuiles">' . tuile('Livraisons', (string)$r['n'], $r['a_facturer'] . ' à facturer') . tuile('Total HT', euros($r['ht']))
         . tuile('TVA', euros($r['tva']), count($tvas) === 1 ? nombre_tva((int)reset($tvas)) : '') . tuile('Total TTC', euros($r['ttc'])) . '</div>';
-    if ($r['livrees'] < $r['n']) $c .= '<p class="erreur">' . icone('alerte') . ' ' . ($r['n'] - $r['livrees']) . ' livraison(s) pas encore marquée(s) « Livrée » : vérifiez-les avant de faire la facture.</p>';
+    if ($r['livrees'] < $r['n']) $c .= '<p class="erreur">' . icone('alerte') . ' ' . ($r['n'] - $r['livrees']) . ' livraison(s) pas encore marquée(s) « Livrée » : vérifiez-les avant de faire la facture, elles ne sont pas comptées.</p>';
+    if ($r['facturees']) $c .= '<p class="aide">' . $r['facturees'] . ' livraison(s) déjà facturée(s) (' . h(implode(', ', $r['factures'])) . ') : pas comptées dans le total.</p>';
     // Les lignes, regroupées comme sur la facture
     $rows = '';
     foreach ($r['lignes'] as $l) {
@@ -237,7 +240,7 @@ function page_releve(): void {
     $pied = '<tr><td colspan="3">Total HT</td><td class="nombre">' . h(euros($r['ht'])) . '</td></tr>'
           . '<tr><td colspan="3">TVA' . (count($tvas) === 1 ? ' ' . h(nombre_tva((int)reset($tvas))) : '') . '</td><td class="nombre">' . h(euros($r['tva'])) . '</td></tr>'
           . '<tr><td colspan="3"><b>Total TTC</b></td><td class="nombre"><b>' . h(euros($r['ttc'])) . '</b></td></tr>';
-    $c .= bloc('À recopier dans la facture Qonto', '<table class="tableau releve"><thead><tr><th>Produit</th><th class="nombre">Quantité</th><th class="nombre">Prix HT</th><th class="nombre">Total HT</th></tr></thead><tbody>' . $rows . '</tbody><tfoot>' . $pied . '</tfoot></table>'
+    $c .= !$r['a_facturer'] ? '<p class="ok">Rien à facturer ce mois-ci : chaque livraison livrée a déjà sa facture.</p>' : bloc('À recopier dans la facture Qonto', '<table class="tableau releve"><thead><tr><th>Produit</th><th class="nombre">Quantité</th><th class="nombre">Prix HT</th><th class="nombre">Total HT</th></tr></thead><tbody>' . $rows . '</tbody><tfoot>' . $pied . '</tfoot></table>'
         . '<p class="aide">Les prix HT viennent de la gamme pro (Produits). La TVA est calculée sur le total HT, comme dans Qonto : la facture doit arriver au même total TTC, sinon un prix a changé.</p>');
     // Les livraisons du mois
     foreach ($r['livraisons'] as &$k) { $k['client_statut'] = $cl['statut']; $k['client_societe'] = $cl['societe']; $k['client_prenom'] = $cl['prenom']; $k['client_nom'] = $cl['nom']; $k['client_type'] = $cl['type']; $k['client_numero'] = $cl['numero']; }
@@ -247,11 +250,11 @@ function page_releve(): void {
     $etat = $r['facturees'] === $r['n'] ? 'Facture ' . implode(', ', $r['factures']) . ($r['payees'] === $r['n'] ? ', payée.' : ', pas encore payée.')
           : ($r['facturees'] ? $r['facturees'] . ' livraison(s) sur ' . $r['n'] . ' facturée(s).' : 'Pas encore facturé.');
     $c .= bloc('Facture et paiement', '<p><b>' . h($etat) . '</b></p>'
-        . formulaire('facture', '<div class="ligne-champs">' . champ('facture', 'Numéro de la facture Qonto', count($r['factures']) === 1 ? $r['factures'][0] : '', ['placeholder' => 'F-2026-013', 'maxlength' => '40', 'autocomplete' => 'off'])
+        . formulaire('facture', '<div class="ligne-champs">' . champ('facture', 'Numéro de la facture Qonto', !$r['a_facturer'] && count($r['factures']) === 1 ? $r['factures'][0] : '', ['placeholder' => 'F-2026-013', 'maxlength' => '40', 'autocomplete' => 'off'])
             . liste_choix('moyen', 'Payée par', MOYENS, 'virement') . '</div>'
             . case_a_cocher('paye', 'Facture payée', $r['payees'] === $r['n'] && $r['n'] > 0)
-            . bouton('Noter sur les ' . $r['n'] . ' livraison(s)', 'secondaire'))
-        . '<p class="aide">Une fois la facture faite dans Qonto, notez son numéro ici ; cochez « Facture payée » quand le virement arrive.</p>');
+            . bouton($r['a_facturer'] ? 'Noter la facture sur les ' . $r['a_facturer'] . ' livraison(s) à facturer' : 'Noter le paiement', 'secondaire'))
+        . '<p class="aide">Une fois la facture faite dans Qonto, notez son numéro ici : il s\'inscrit sur les livraisons livrées qui n\'en ont pas encore, jamais par-dessus un autre numéro. Cochez « Facture payée » quand le virement arrive.</p>');
     mise_en_page('Relevé de ' . mois_texte($mois), $c, 'clients');
 }
 
