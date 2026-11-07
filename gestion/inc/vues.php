@@ -237,8 +237,9 @@ function lien_bouton(string $href, string $label, string $classe = '', array $a 
 function bloc(string $titre, string $contenu, string $classe = '', string $id = ''): string {
     return '<section class="bloc ' . h($classe) . '"' . ($id !== '' ? ' id="' . h($id) . '"' : '') . '>' . ($titre !== '' ? '<h2>' . $titre . '</h2>' : '') . $contenu . '</section>';
 }
-function tuile(string $label, string $valeur, string $detail = ''): string {
-    return '<div class="tuile"><span class="t-label">' . h($label) . '</span><span class="t-valeur">' . h($valeur) . '</span>' . ($detail !== '' ? '<span class="t-detail">' . h($detail) . '</span>' : '') . '</div>';
+function tuile(string $label, string $valeur, string $detail = '', string $lien = ''): string {
+    $dedans = '<span class="t-label">' . h($label) . '</span><span class="t-valeur">' . h($valeur) . '</span>' . ($detail !== '' ? '<span class="t-detail">' . h($detail) . '</span>' : '');
+    return $lien !== '' ? '<a class="tuile" href="' . h($lien) . '">' . $dedans . '</a>' : '<div class="tuile">' . $dedans . '</div>';
 }
 function definition(array $paires): string {
     $s = '';
