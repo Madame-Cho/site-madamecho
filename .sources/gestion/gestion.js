@@ -424,4 +424,86 @@
       champs.forEach(function (x) { x.type = "password"; });
     });
   });
+
+  // Sous chaque zone de saisie marquée (note d'échange, phrase d'accueil, petit mot, message au client) : « Dicter » (la voix du
+  // navigateur, dans la langue de l'écran) et « Corriger mon français » (l'assistant propose un texte corrigé, avec la traduction
+  // coréenne ; Youngmi touche « Utiliser » ou garde le sien). Rien n'est inscrit ni envoyé sans son toucher sur « Ajouter » ou « Envoyer ».
+  // Demande d'Olivier du 07/11/2026.
+  var T = ko ? { dicter: "말로 입력", ecoute: "듣는 중… (다시 누르면 멈춤)", corriger: "프랑스어 고치기", attente: "고치는 중…", utiliser: "이 문장 쓰기", garder: "내 문장 그대로", sens: "뜻 (한국어):", erreur: "고치지 못했어요: ", vide: "먼저 문장을 쓰거나 말해 주세요." }
+             : { dicter: "Dicter", ecoute: "J'écoute… (touchez pour arrêter)", corriger: "Corriger mon français", attente: "Correction…", utiliser: "Utiliser ce texte", garder: "Garder le mien", sens: "Le sens, en coréen :", erreur: "La correction n'a pas marché : ", vide: "Écrivez ou dictez d'abord votre texte." };
+  var ZONES = { texte: "note", accueil: "accueil", mot: "mot", texte_mail: "message" };
+  var urlCorriger = d.body.getAttribute("data-corriger"), jeton = d.body.getAttribute("data-jeton");
+  function changer(z, v) { z.value = v; z.dispatchEvent(new Event("input", { bubbles: true })); }
+  d.querySelectorAll("textarea[data-aide-saisie]").forEach(function (z) {
+    if (!Reco && !urlCorriger) return;
+    var barreA = d.createElement("div"); barreA.className = "aide-saisie";
+    var boite = d.createElement("div"); boite.className = "correction"; boite.hidden = true;
+    var lab = z.closest(".champ") || z;
+    lab.insertAdjacentElement("afterend", barreA);
+    barreA.insertAdjacentElement("afterend", boite);
+    if (Reco) {
+      var bd = d.createElement("button"); bd.type = "button"; bd.className = "btn discret petit-btn"; bd.textContent = "🎤 " + T.dicter;
+      var reco = null;
+      bd.addEventListener("click", function () {
+        if (reco) { reco.stop(); return; }
+        try { reco = new Reco(); } catch (x) { return; }
+        reco.lang = ko ? "ko-KR" : "fr-FR"; reco.interimResults = true; reco.continuous = true;
+        var avant = z.value.replace(/\s+$/, ""), sep = avant ? (/\n$/.test(z.value) ? "" : " ") : "";
+        reco.onresult = function (e) {
+          var t = "";
+          for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+          changer(z, avant + sep + t.trim());
+        };
+        reco.onend = function () { reco = null; bd.textContent = "🎤 " + T.dicter; bd.classList.remove("actif"); };
+        reco.onerror = function () {};
+        bd.textContent = "■ " + T.ecoute; bd.classList.add("actif");
+        reco.start();
+      });
+      barreA.appendChild(bd);
+    }
+    if (urlCorriger) {
+      var bc = d.createElement("button"); bc.type = "button"; bc.className = "btn discret petit-btn"; bc.textContent = "✎ " + T.corriger;
+      bc.addEventListener("click", function () {
+        var texte = z.value.trim();
+        boite.hidden = false; boite.textContent = "";
+        if (!texte) { boite.textContent = T.vide; return; }
+        boite.textContent = T.attente; bc.disabled = true;
+        var f = new FormData(); f.append("_jeton", jeton); f.append("texte", texte); f.append("zone", ZONES[z.name] || "message");
+        fetch(urlCorriger, { method: "POST", body: f, credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            boite.textContent = "";
+            if (!j || j.erreur || !j.fr) { boite.textContent = T.erreur + ((j && j.erreur) || ""); return; }
+            var p = d.createElement("p"); p.className = "corrige"; p.setAttribute("translate", "no"); p.lang = "fr"; p.textContent = j.fr; boite.appendChild(p);
+            if (j.ko) { var s = d.createElement("p"); s.className = "aide"; s.setAttribute("translate", "no"); s.lang = "ko"; s.textContent = T.sens + " " + j.ko; boite.appendChild(s); }
+            if (j.remarque) { var rq = d.createElement("p"); rq.className = "aide"; rq.lang = "ko"; rq.textContent = j.remarque; boite.appendChild(rq); }
+            var act = d.createElement("div"); act.className = "actions";
+            var u = d.createElement("button"); u.type = "button"; u.className = "btn secondaire"; u.textContent = T.utiliser;
+            u.addEventListener("click", function () { changer(z, j.fr); boite.hidden = true; z.focus(); });
+            var g = d.createElement("button"); g.type = "button"; g.className = "btn discret"; g.textContent = T.garder;
+            g.addEventListener("click", function () { boite.hidden = true; });
+            act.appendChild(u); act.appendChild(g); boite.appendChild(act);
+          })
+          .catch(function () { boite.textContent = T.erreur; })
+          .then(function () { bc.disabled = false; });
+      });
+      barreA.appendChild(bc);
+    }
+  });
+
+  // « Répondre » sous une réponse de client, ou un lien vers #mail-avis : ouvrir le bloc replié et y aller
+  function ouvrir(id) {
+    var el = id && d.getElementById(id);
+    if (!el) return false;
+    for (var p = el; p; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;
+    el.scrollIntoView({ block: "start" });
+    var t = el.querySelector("textarea, input:not([type=hidden])");
+    if (t) setTimeout(function () { t.focus(); }, 200);
+    return true;
+  }
+  d.addEventListener("click", function (e) {
+    var a = e.target.closest("[data-ouvrir]");
+    if (a && ouvrir(a.getAttribute("data-ouvrir"))) e.preventDefault();
+  });
+  if (location.hash.length > 1 && /^#mail-|^#ecrire$/.test(location.hash)) ouvrir(location.hash.slice(1));
 })();

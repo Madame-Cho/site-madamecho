@@ -643,17 +643,26 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .apercu-mail p{max-width:none}
 .apercu-mail img{max-width:100%}
 .fil .ev-email{border-left-color:#6E2A10}
+.fil .ev-recu{border-left-color:#3B1D0E;background:#FBF8F3}
+.fil .ev-nouveau{box-shadow:inset 0 0 0 2px #D9C9B4}
+.chip-nouveau{display:inline-flex;align-items:center;min-height:22px;padding:1px 9px;border-radius:11px;background:#6E2A10;color:#fff;font-size:12px;font-weight:500;white-space:nowrap}
+.chip-par{display:inline-flex;align-items:center;min-height:20px;padding:0 8px;border-radius:10px;background:var(--ivoire);color:var(--chocolat);font-size:12px;font-weight:500;margin-right:4px}
+.corps-recu{background:#fff;border:1px solid var(--ligne);border-radius:8px;padding:10px 12px;margin-top:8px;white-space:pre-wrap}
+.aide-saisie{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 10px}
+.btn.petit-btn{min-height:34px;padding:4px 12px;font-size:14px}
+.btn.petit-btn.actif{background:#6E2A10;color:#fff}
+.correction{background:var(--ivoire);border-radius:10px;padding:12px 14px;margin:0 0 12px}
+.correction .corrige{white-space:pre-wrap;margin:0 0 8px;font-size:16px;line-height:1.5}
+.noter-echange{margin:10px 0}
+.apercu-mail .m-814d6317{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-bottom:14px}
 .apercu-mail .m-62b54660{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:22px;color:#2B2623;padding:2px 0}
 .apercu-mail .m-20c0cfd1{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#736A64;padding:0 0 2px}
 .apercu-mail .m-42d07982{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#2B2623;border-top:1px solid #DDD3C6;padding:8px 0 0}
-.apercu-mail .m-24c7d94c{color:#6E2A10;font-weight:bold}
-.apercu-mail .m-3bd4e46c{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:20px}
-.apercu-mail .m-814d6317{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-bottom:14px}
 .apercu-mail .m-dd04cd0d{background:#F3EDE4;border-radius:6px;margin-top:6px}
 .apercu-mail .m-1349f2cd{padding:18px 20px}
 .apercu-mail .m-abf3c79a{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:17px;line-height:24px;color:#3B1D0E;font-weight:bold;margin:0}
 .apercu-mail .m-2ca25459{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#2B2623;margin:2px 0 14px}
-.apercu-mail .m-055df721{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:14px}
+.apercu-mail .m-3bd4e46c{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:20px}
 .apercu-mail .m-cbd26aef{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:22px}
 .apercu-mail .m-194dc928{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#736A64;margin:0}
 .apercu-mail .m-7cb6e74d{color:#736A64;text-decoration:underline}
@@ -663,7 +672,10 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .apercu-mail .m-d80f5e63{max-width:560px}
 .apercu-mail .m-cbe13fdd{padding:0 0 20px;border-bottom:2px solid #3B1D0E}
 .apercu-mail .m-08b65158{display:block;border:0;width:150px;height:auto;margin:0 auto}
+.apercu-mail .m-045ef599{padding:22px 0 0}
+.apercu-mail .m-b8cebe6a{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;line-height:16px;letter-spacing:2px;color:#736A64;margin:0 0 18px}
 .apercu-mail .m-ad4bac1d{padding:28px 0 0}
 .apercu-mail .m-5f4bedf1{border-top:1px solid #E9E5E1;padding-top:16px}
-.apercu-mail .m-f0f18b83{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:8px}
-.apercu-mail .m-d9ee725c{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#736A64;margin:18px 0 0}
+.apercu-mail .m-24c7d94c{color:#6E2A10;font-weight:bold}
+.apercu-mail .m-055df721{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:14px}
+.apercu-mail .m-1ba5d5a6{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:4px}

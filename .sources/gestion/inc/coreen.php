@@ -244,6 +244,37 @@ L'email n'est pas parti. Réessayez dans un moment. | 이메일이 가지 않았
 Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com. | 고객에게 확정 이메일을 보냈어요. 사본이 contact@madamecho.com으로 와요.
 L'email n'est pas parti. Réessayez, ou utilisez « Ouvrir dans ma messagerie » plus bas. | 이메일이 가지 않았어요. 다시 해 보거나 아래 ‘메일 앱에서 열기’를 쓰세요.
 Pas d'email pour ce client, ou la commande n'est pas confirmée. | 이 고객의 이메일이 없거나 주문이 확정되지 않았어요.
+# Partie 2 des mails aux clients (07/11/2026) : proposition et avis envoyés depuis la gestion, réponses des clients, notes d'échange
+Déjà envoyé | 이미 보냈어요
+envoyé | 보냄
+Modifiez la phrase d'accueil si vous voulez, ajoutez un petit mot, vérifiez l'aperçu, puis envoyez. Le reste vient de la commande. | 원하면 인사말을 고치고 짧은 메모를 더한 뒤, 미리보기를 확인하고 보내세요. 나머지는 주문에서 가져와요.
+Par exemple : j'espère que le gâteau vous a plu ! | 예: 케이크가 마음에 드셨길 바라요!
+Envoyer la proposition au client | 고객에게 견적 이메일 보내기
+Indiquez le prix TTC et l'acompte (si personnalisé), vérifiez le jour et l'heure du retrait dans la commande, puis envoyez. | 부가세 포함 가격과 (맞춤 케이크면) 선금을 적고, 주문의 픽업 날짜와 시간을 확인한 뒤 보내세요.
+Vous l'avez envoyée vous-même ? Notez-la : | 직접 보냈나요? 여기에 적어 두세요:
+Vous l'avez demandé vous-même ? | 직접 부탁했나요?
+Noter un échange (appel, SMS, WhatsApp, de vive voix…) | 연락 내용 적기 (전화, 문자, 왓츠앱, 직접 대화…)
+Par | 경로
+SMS | 문자
+WhatsApp | 왓츠앱
+De vive voix | 직접 대화
+Elle a appelé : retrait à 16 h plutôt qu'à 15 h… | 예: 전화 옴, 15시 말고 16시에 픽업…
+Échange noté. | 연락 내용을 적었어요.
+Répondre | 답장하기
+Nouvelle réponse | 새 답장
+Nouvelles réponses des clients | 고객의 새 답장
+Proposition envoyée au client. Une copie arrive dans contact@madamecho.com ; sa réponse arrivera dans les Échanges. | 고객에게 견적을 보냈어요. 사본이 contact@madamecho.com으로 오고, 고객 답장은 ‘고객과의 연락’에 들어와요.
+L'email n'est pas parti. Réessayez, ou utilisez « Autre façon » plus bas. | 이메일이 가지 않았어요. 다시 해 보거나 아래 ‘다른 방법’을 쓰세요.
+Pas d'email pour ce client, ou la demande n'en est plus là. | 이 고객의 이메일이 없거나 문의가 이미 다음 단계예요.
+Il faut une commande remise, l'email du client et le lien d'avis (Réglages). | 전달 완료된 주문, 고객 이메일, 리뷰 링크(설정)가 필요해요.
+Demande d'avis envoyée et notée sur la fiche du client. | 리뷰 부탁 이메일을 보내고 고객 정보에 적었어요.
+Réponses des clients | 고객 답장
+Réponses des clients (Gmail) | 고객 답장 (Gmail)
+Rattacher | 연결하기
+Ignorer | 무시하기
+Rattacher à la commande | 주문에 연결
+Mail ignoré. | 이메일을 무시했어요.
+Mail rattaché à la commande. | 이메일을 주문에 연결했어요.
 Ajouter à Google Agenda | 구글 캘린더에 추가
 Fichier agenda (.ics) | 캘린더 파일 (.ics)
 Payé par | 결제 수단
@@ -1336,6 +1367,11 @@ function coreen_motifs(): array {
         ['/^Proposition envoyée (.+?)( :|\.)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 견적 발송' . ($m[2] === '.' ? '.' : ':') : null],
         ['/^sans nouvelles depuis (\d+) jours, une relance ou « sans suite » \?$/u', fn($m) => $m[1] . '일째 소식이 없어요. 다시 연락할까요, ‘진행 안 됨’으로 할까요?'],
         ['/^Avis Google reçu le (.+)\. Merci !$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 구글 리뷰 받음. 감사해요!' : null],
+        ['/^Email envoyé à (\\S+) \\((proposition|commande confirmée|message|merci)\\) : « (.*) »$/u', fn($m) => $m[1] . '에게 이메일 보냄 (' . ['proposition' => '견적', 'commande confirmée' => '주문 확정', 'message' => '메시지', 'merci' => '감사'][$m[2]] . '): « ' . $m[3] . ' »'],
+        ['/^Email envoyé depuis Gmail : « (.*) »$/u', fn($m) => 'Gmail에서 보낸 이메일: « ' . $m[1] . ' »'],
+        ['/^Réponse de (.+) : « (.*) »( \\(rattachée à la main, extrait\\))?$/u', fn($m) => $m[1] . '의 답장: « ' . $m[2] . ' »' . (!empty($m[3]) ? ' (직접 연결, 일부)' : '')],
+        ['/^(\\d+) nouvelles réponses$/u', fn($m) => '새 답장 ' . $m[1] . '개'],
+        ['/^Préparer le mail \\(commande (MC-[0-9A-F-]+)\\)$/u', fn($m) => '이메일 준비하기 (주문 ' . $m[1] . ')'],
         ['/^Avis Google demandé le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 구글 리뷰 요청함.' : null],
         ['/^Avis reçu le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 리뷰 받음.' : null],
         ['/^Avis demandé le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 리뷰 요청함.' : null],

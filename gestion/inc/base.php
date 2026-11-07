@@ -53,6 +53,8 @@ const PAIEMENTS = ['aucun' => 'Pas encore payé', 'acompte_demande' => 'Acompte 
 const MOYENS = ['' => 'Moyen non noté', 'carte' => 'Carte (Tap to Pay)', 'virement' => 'Virement', 'especes' => 'Espèces', 'autre' => 'Autre'];
 const CANAUX = ['site' => 'Site', 'qr' => 'QR code', 'email' => 'Email', 'instagram' => 'Instagram', 'telephone' => 'Téléphone',
                 'marche' => 'Marché', 'sur_place' => 'Sur place', 'restaurant' => 'Restaurant', 'autre' => 'Autre'];
+// Comment un échange noté à la main a eu lieu (demande d'Olivier du 07/11/2026 : ce qui ne passe pas par les mails)
+const CANAUX_ECHANGE = ['telephone' => 'Téléphone', 'sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'oral' => 'De vive voix', 'instagram' => 'Instagram', 'autre' => 'Autre'];
 const TYPES_COMMANDE = ['carte' => 'Carte', 'perso' => 'Personnalisée', 'pro' => 'Professionnel'];
 const TYPES_CLIENT = ['particulier' => 'Particulier', 'professionnel' => 'Professionnel'];
 // B2C et B2B écrits partout où l'on choisit ou lit le type (demande d'Olivier, 07/11/2026 : « bien clair entre B2B et B2C »)
@@ -184,7 +186,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 7) return;
+    if ($v >= 8) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -275,13 +277,26 @@ CREATE INDEX IF NOT EXISTS assistant_actions_fil ON assistant_actions(utilisateu
         try { $pdo->exec("ALTER TABLE commandes ADD COLUMN $col $def"); }
         catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }
     }
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '7')");
+    // Version 8 (07/11/2026, demande d'Olivier : les réponses des clients dans la gestion) : un mail reçu non lu (lu = 0, les anciens
+    // événements sont tous lus) ; les mails que le script de contact@ a déjà transmis (gmail_id, une seule fois chacun) ; ceux sans
+    // commande reconnue gardent l'expéditeur, l'objet et un extrait, 30 jours, pour qu'un admin les rattache ou les ignore
+    $colonnes = array_column($pdo->query("PRAGMA table_info(evenements)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+    if (!in_array('lu', $colonnes, true)) {
+        try { $pdo->exec("ALTER TABLE evenements ADD COLUMN lu INTEGER NOT NULL DEFAULT 1"); }
+        catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }
+    }
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS mails_recus (gmail_id TEXT PRIMARY KEY, le TEXT NOT NULL, commande_id INTEGER, evenement_id INTEGER,
+  de TEXT NOT NULL DEFAULT '', objet TEXT NOT NULL DEFAULT '', extrait TEXT NOT NULL DEFAULT '', recu_le TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS mails_recus_le ON mails_recus(le);
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '8')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
 const COLONNES_ENTIERES = ['id' => 1, 'client_id' => 1, 'commande_id' => 1, 'utilisateur_id' => 1, 'ingredient_id' => 1, 'probleme' => 1, 'total_indicatif' => 1,
     'prix_final' => 1, 'acompte' => 1, 'prix' => 1, 'prix_unite' => 1, 'actif' => 1, 'emballage' => 1, 'tva' => 1, 'ok' => 1, 'n' => 1, 'remises' => 1,
-    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1, 'fil' => 1, 'question' => 1, 'rapport_id' => 1, 'message_id' => 1];
+    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1, 'fil' => 1, 'question' => 1, 'rapport_id' => 1, 'message_id' => 1, 'lu' => 1, 'evenement_id' => 1];
 function entiers(array $r): array {
     foreach ($r as $k => $v) if (is_string($v) && isset(COLONNES_ENTIERES[$k]) && preg_match('/^-?\d+$/', $v)) $r[$k] = (int)$v;
     return $r;

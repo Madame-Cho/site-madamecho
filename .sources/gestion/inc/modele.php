@@ -193,7 +193,7 @@ function client_effacer(int $id, string $motif, ?string $auteur = null): void {
     $now = maintenant();
     q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', contact = '', email = '', telephone = '', ville = '', qonto = '',
        lettre_info = '', lettre_info_le = NULL, avis_demande_le = NULL, avis_recu_le = NULL, efface_le = ?, maj_le = ? WHERE id = ?", [$now, $now, $id]);
-    q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification')", [$id]);
+    q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification', 'email_client', 'email_recu')", [$id]);
     foreach (lignes("SELECT id FROM commandes WHERE client_id = ?", [$id]) as $k) commande_anonymiser((int)$k['id'], $now);
     assistant_oublier_client($c);
     evenement('effacement', 'Données personnelles effacées : ' . $motif, ['client' => $id], '', '', $auteur);
@@ -448,10 +448,11 @@ function commande_probleme(int $id, bool $ouvert, string $note): void {
     q("UPDATE commandes SET probleme = ?, probleme_note = ?, dernier_echange = ?, maj_le = ? WHERE id = ?", [$ouvert ? 1 : 0, $ouvert ? $note : '', maintenant(), maintenant(), $id]);
     evenement('probleme', ($ouvert ? 'Problème signalé : ' : 'Problème résolu : ') . $note, ['commande' => $id, 'client' => (int)$k['client_id']], $k['probleme'] ? '1' : '0', $ouvert ? '1' : '0');
 }
-function commentaire(string $texte, ?int $commande, ?int $client): void {
+/** Une note d'échange (appel, SMS, WhatsApp, de vive voix…) : $par = la façon dont l'échange a eu lieu (CANAUX_ECHANGE), gardée dans « ancien ». */
+function commentaire(string $texte, ?int $commande, ?int $client, string $par = ''): void {
     $texte = trim($texte);
     if ($texte === '') return;
-    evenement('commentaire', $texte, ['commande' => $commande, 'client' => $client]);
+    evenement('commentaire', $texte, ['commande' => $commande, 'client' => $client], isset(CANAUX_ECHANGE[$par]) ? 'par:' . $par : '');
     $now = maintenant();
     if ($commande) q("UPDATE commandes SET dernier_echange = ?, maj_le = ? WHERE id = ?", [$now, $now, $commande]);
     if ($client) client_echange($client, $now);
@@ -465,7 +466,7 @@ function commande_anonymiser(int $id, string $quand): void {
     unset($x);
     q("UPDATE commandes SET lignes = ?, perso = CASE WHEN perso = '' THEN '' ELSE '(effacé)' END, besoin = CASE WHEN besoin = '' THEN '' ELSE '(effacé)' END,
        probleme_note = '', annulee_motif = '', efface_le = ?, maj_le = ? WHERE id = ?", [json_encode($l, JSON_UNESCAPED_UNICODE), $quand, $quand, $id]);
-    q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE commande_id = ? AND type IN ('commentaire', 'probleme', 'modification')", [$id]);
+    q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE commande_id = ? AND type IN ('commentaire', 'probleme', 'modification', 'email_client', 'email_recu')", [$id]);
 }
 /** Filtres de la liste des commandes venus d'un lien (Statistiques) : étape, canal, mois de remise, particuliers ou professionnels. */
 function commandes_filtres(array $g): array {
@@ -1032,6 +1033,7 @@ function conservation_executer(?string $auteur = null): array {
     q("DELETE FROM assistant_messages WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_ASSISTANT_MOIS . ' months'))]);   // conversations avec l'assistant : 6 mois
     q("DELETE FROM assistant_actions WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_ASSISTANT_MOIS . ' months'))]);    // modifications qu'il a préparées : 6 mois aussi
     q("DELETE FROM rapports WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_RAPPORTS_MOIS . ' months'))]);   // rapports de l'assistant : 12 mois
+    reponses_purger();   // mails sans commande reconnue : 30 jours
     $cr = ['demandes' => count($a['demandes']), 'clients' => count($vus), 'journal' => $a['journal'], 'le' => $now];
     parametre_ecrire('derniere_purge', json_encode($cr));
     if ($cr['demandes'] || $cr['clients'] || $cr['journal']) evenement('conservation', 'Purge : ' . $cr['demandes'] . ' demande(s) anonymisée(s), ' . $cr['clients'] . ' client(s) effacé(s), ' . $cr['journal'] . ' ligne(s) de journal', [], '', '', $auteur ?? 'système');

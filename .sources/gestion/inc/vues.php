@@ -114,7 +114,9 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '<meta name="theme-color" content="#3B1D0E">'
        . '<link rel="preload" href="../assets/polices/jost-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>'
        . '<link rel="stylesheet" href="' . h(fichier_versionne('gestion.css')) . '">'
-       . '</head><body class="' . h(trim(($u ? 'connecte ' : 'deconnecte ') . $classe)) . '">' . $essai
+       . '</head><body class="' . h(trim(($u ? 'connecte ' : 'deconnecte ') . $classe)) . '"'
+       // « Corriger mon français » sous les zones de saisie (gestion.js) : seulement si l'assistant est relié
+       . ($u && assistant_relie() ? ' data-corriger="' . h(u('corriger')) . '" data-jeton="' . h(csrf()) . '"' : '') . '>' . $essai
        . '<a class="aller" href="#contenu">Aller au contenu</a>'
        . '<header class="barre"><a class="marque" href="' . h($u ? u('accueil') : u('connexion')) . '"><img src="../assets/logo-chocolat.svg" alt="Madame Cho" width="112" height="33"><span>' . h(GESTION_NOM) . '</span></a>'
        . ($u ? '<nav class="nav-haut" aria-label="Menu">' . $nav . '</nav>' : '')
@@ -207,10 +209,17 @@ function retrait_texte(array $k, bool $court = false): string {
     $m = $k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : (MOMENTS_COURTS[$k['retrait_moment']] ?? '');
     return $d . ($m !== '' ? ', ' . $m : '') . (($k['mode'] ?? 'retrait') === 'livraison' ? ' (livraison)' : '');
 }
+/** Les commandes qui ont une réponse de client pas encore lue (une seule requête par page). */
+function commandes_non_lues(): array {
+    static $n = null;
+    if ($n === null) { $n = []; foreach (lignes("SELECT DISTINCT commande_id FROM evenements WHERE type = 'email_recu' AND lu = 0 AND commande_id IS NOT NULL") as $r) $n[(int)$r['commande_id']] = true; }
+    return $n;
+}
 function montant_commande(array $k): int { return $k['prix_final'] !== null ? (int)$k['prix_final'] : (int)$k['total_indicatif']; }
 function carte_commande(array $k, bool $avecClient = true): string {
     $alertes = '';
     if (!empty($k['probleme'])) $alertes .= drapeau((string)$k['probleme_note']);
+    if (isset(commandes_non_lues()[(int)$k['id']])) $alertes .= '<span class="chip chip-nouveau">Nouvelle réponse</span>';
     if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . heures_depuis($k['recue_le']) . ' h</span>';
     elseif (commande_dormante($k)) $alertes .= '<span class="dormant">Rien depuis ' . jours_depuis($k['dernier_echange']) . ' j</span>';
     $nom = $avecClient ? '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(livraison_pro($k) ? 'Livraison' : (TYPES_COMMANDE[$k['type']] ?? 'Commande')) . '</b>';
@@ -298,18 +307,29 @@ function fil_historique(array $evs, bool $avecReference = false): string {
     $s = '';
     foreach ($evs as $e) {
         $type = $e['type'];
-        $cl = $type === 'commentaire' ? 'ev-commentaire' : ($type === 'probleme' ? 'ev-probleme' : ($type === 'email_client' ? 'ev-email' : 'ev-systeme'));
+        $cl = match ($type) { 'commentaire' => 'ev-commentaire', 'probleme' => 'ev-probleme', 'email_client' => 'ev-email', 'email_recu' => 'ev-email ev-recu', default => 'ev-systeme' };
+        if ($type === 'email_recu' && isset($e['lu']) && !(int)$e['lu']) $cl .= ' ev-nouveau';
         $ref = $avecReference && !empty($e['reference']) ? ' · <a href="' . h(u('commande', ['id' => $e['commande_id']])) . '">' . h($e['reference']) . '</a>' : '';
         $txt = $type === 'statut' && isset(STATUTS[$e['nouveau']]) ? chip_statut($e['nouveau'], false) . (($p = mb_strpos($e['texte'], ' : ')) !== false ? ' ' . h(mb_substr($e['texte'], $p + 3)) : '') : nl2br(h($e['texte']));
-        // Un email envoyé depuis la gestion : son texte exact, replié
+        $par = '';
+        if ($type === 'commentaire' && preg_match('/^par:(\w+)/', (string)$e['ancien'], $m) && isset(CANAUX_ECHANGE[$m[1]])) $par = '<span class="chip chip-par">' . h(CANAUX_ECHANGE[$m[1]]) . '</span> ';
+        // Un email envoyé : son texte exact, replié. Un email reçu : la réponse du client, visible (la partie citée est retirée), et « Répondre »
         if ($type === 'email_client' && $e['nouveau'] !== '') $txt .= '<details class="replie"><summary>Voir le mail</summary><pre class="corps" translate="no" lang="fr">' . h($e['nouveau']) . '</pre></details>';
-        $s .= '<li class="' . $cl . '"><div class="ev-texte"' . ($type === 'commentaire' ? ' translate="no" lang="fr"' : '') . '>' . $txt . '</div><div class="ev-meta">' . h($e['auteur']) . ' · ' . h(date_fr($e['le'], 'heure')) . $ref . '</div></li>';
+        if ($type === 'email_recu') {
+            $txt = (isset($e['lu']) && !(int)$e['lu'] ? '<span class="chip chip-nouveau">Nouvelle réponse</span> ' : '') . $txt
+                 . ($e['nouveau'] !== '' ? '<pre class="corps corps-recu" translate="no" lang="fr">' . h($e['nouveau']) . '</pre>' : '')
+                 . (!$avecReference && !empty($e['commande_id']) ? '<div class="actions"><a class="btn discret" href="#ecrire" data-ouvrir="ecrire">' . icone('email') . 'Répondre</a></div>' : '');
+        }
+        $s .= '<li class="' . $cl . '"><div class="ev-texte"' . ($type === 'commentaire' ? ' translate="no" lang="fr"' : '') . '>' . $par . $txt . '</div><div class="ev-meta">' . h($e['auteur']) . ' · ' . h(date_fr($e['le'], 'heure')) . $ref . '</div></li>';
     }
     return '<ol class="fil">' . $s . '</ol>';
 }
+/** « Noter un échange » : ce qui ne passe pas par les mails (appel, SMS, WhatsApp, de vive voix…). Micro et « Corriger mon français » sous la zone. */
 function formulaire_commentaire(string $aide = ''): string {
-    return formulaire('commentaire', zone('texte', 'Noter un échange', '', ['rows' => '2', 'maxlength' => '2000', 'required' => true, 'placeholder' => 'Appel, SMS, demande pour le retrait…'],
-        $aide !== '' ? $aide : 'Allergie : seulement l\'ingrédient à éviter, jamais d\'information de santé.') . bouton('Ajouter', 'secondaire'), ['class' => 'form-commentaire']);
+    return formulaire('commentaire', zone('texte', 'Noter un échange', '', ['rows' => '2', 'maxlength' => '2000', 'required' => true, 'placeholder' => 'Elle a appelé : retrait à 16 h plutôt qu\'à 15 h…', 'lang' => 'fr', 'data-aide-saisie' => '1'],
+        $aide !== '' ? $aide : 'Allergie : seulement l\'ingrédient à éviter, jamais d\'information de santé.')
+        . '<div class="ligne-champs">' . liste_choix('par', 'Par', ['' => '—'] + CANAUX_ECHANGE, '', ['id' => 'f-par']) . '</div>'
+        . bouton('Ajouter', 'secondaire'), ['class' => 'form-commentaire']);
 }
 
 /* ---------- Textes d'email (brouillons que Youngmi relit et envoie elle-même, R-01) ---------- */
@@ -336,42 +356,37 @@ function retrait_email(array $k): string {
     $h = $k['retrait_heure'] !== '' ? ' à ' . str_replace(':', ' h ', $k['retrait_heure']) : (isset(MOMENTS[$k['retrait_moment']]) ? ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)' : '');
     return 'Retrait : ' . $quand . $h . ', au 4 avenue du Château, 92190 Meudon.';
 }
-function email_proposition(array $k): array {
-    $total = montant_commande($k);
-    $acompte = (int)$k['acompte'];
-    $t = salutation($k) . "\n\nMerci pour votre demande " . $k['reference'] . ". Voici ma proposition :\n\n" . lignes_email($k) . "\n\n"
-       . 'Total : ' . ($total ? euros($total) . ' TTC' : '[prix à indiquer]') . "\n" . retrait_email($k) . "\n";
-    if ($acompte > 0) $t .= 'Pour réserver, un acompte de ' . euros($acompte) . " est demandé ; il est déduit du prix au retrait.\n";
-    $t .= "\nPour confirmer, il suffit de répondre à cet email. Vous pouvez annuler sans frais jusqu'à 24 heures avant le retrait.\n\nBelle journée,\n" . signature();
-    return ['sujet' => 'Votre demande ' . $k['reference'] . ' : la proposition de Madame Cho', 'corps' => $t];   // pas de « Re: » sur un premier message (indésirables, 07/11/2026)
-}
-function email_confirmation(array $k, ?string $accueil = null, string $mot = ''): array {
-    $total = montant_commande($k);
-    $acompte = (int)$k['acompte'];
-    $t = trim($accueil ?? accueil_confirmation($k)) . "\n\n" . lignes_email($k) . "\n\n"
-       . 'Total : ' . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait (carte, virement ou espèces)') . "\n"
-       . retrait_email($k) . "\n" . (trim($mot) !== '' ? "\n" . trim($mot) . "\n" : '') . rdv_client_texte($k)
-       . "\nPaiement par carte, virement ou espèces. Annulation sans frais jusqu'à 24 heures avant le retrait.\n\nÀ bientôt,\n" . signature();
-    return ['sujet' => 'Votre commande ' . $k['reference'] . ' est confirmée', 'corps' => $t];
-}
-/* ---------- Email de confirmation mis en forme, proposition A « La lettre » (choix d'Olivier du 07/11/2026) ----------
- * HTML d'email : tableaux, styles en ligne, une seule image (le logo, sur madamecho.com), tout le texte en vrai texte,
- * liens seulement vers madamecho.com : rien qui ressemble à une publicité (indésirables). Il part avec sa version texte
- * (email_confirmation), depuis la gestion, au toucher de Youngmi (« Envoyer », pages-commandes.php).
- * Youngmi modifie la phrase d'accueil et peut ajouter un petit mot (demande d'Olivier du 07/11/2026) ; le reste vient de la commande.
- * $apercu : le même mail pour l'aperçu dans la gestion, dont la politique de sécurité refuse les styles en ligne : chaque style
- * devient une classe « m-… » ; leurs règles sont dans gestion.css (bloc « Aperçu du mail », à refaire si un style change ici :
- * php -r 'require "inc/…"; echo apercu_mail_css();'). */
-function accueil_confirmation(array $k): string {
-    return salutation($k) . "\n\nVotre commande " . $k['reference'] . ' est confirmée. Je vous attends :';
-}
-function texte_mail_html(string $t, callable $p, string $style): string {
-    $html = '';
-    foreach (preg_split("/\n\s*\n/", trim($t)) as $para) if (trim($para) !== '') $html .= $p(nl2br(h(trim($para)), false), $style);
-    return $html;
-}
+/* ---------- Les mails aux clients (demandes d'Olivier du 07/11/2026) ----------
+ * Tout se fait dans la gestion, Gmail en secours : chaque mail part de la gestion au toucher de Youngmi sur « Envoyer »
+ * (jamais par une IA, R-01), une copie arrive dans contact@, « Ouvrir dans ma messagerie » reste possible, et ce que Youngmi
+ * envoie depuis Gmail revient dans la commande (script de contact@, page_reponses).
+ * Un seul design (proposition A « La lettre ») : logo, filet chocolat, une étiquette qui dit le type (PROPOSITION, COMMANDE
+ * CONFIRMÉE, MESSAGE, MERCI), le contenu propre au type, le même pied. HTML d'email : tableaux, styles en ligne, une seule image
+ * (le logo), tout en vrai texte, liens vers madamecho.com (et la fiche Google pour l'avis) : rien qui ressemble à une publicité.
+ * Un seul objet par commande (« Votre commande MC-… · Madame Cho ») et les en-têtes de réponse : chez le client, une seule conversation.
+ * Aperçu dans la gestion ($apercu) : sa politique de sécurité refuse les styles en ligne, chaque style devient une classe « m-… »
+ * dont les règles sont dans gestion.css (bloc « Aperçu du mail », généré par apercu_mail_css() : à refaire si un style change). */
+const MAIL_TYPES = ['proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'message' => 'Message', 'avis' => 'Merci'];
 const MAIL_F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
-/** Un style du mail : en ligne dans le mail envoyé, une classe « m-… » dans l'aperçu (voir plus haut). */
+function sujet_commande(array $k): string { return 'Votre commande ' . $k['reference'] . ' · Madame Cho'; }
+/** L'objet d'un message libre : celui de la commande par défaut ; la référence MC-… y reste toujours (pour retrouver la conversation). */
+function sujet_libre(array $k, string $sujet): string {
+    $sujet = une_ligne(trim($sujet));
+    if ($sujet === '') return sujet_commande($k);
+    if (!str_contains($sujet, $k['reference'])) $sujet .= ' (' . $k['reference'] . ')';
+    return $sujet;
+}
+/** La phrase d'accueil proposée, que Youngmi peut changer. */
+function accueil_mail(array $k, string $type): string {
+    $b = salutation($k) . "\n\n";
+    return match ($type) {
+        'proposition' => $b . 'Merci pour votre demande. Voici ma proposition :',
+        'confirmation' => $b . 'Votre commande ' . $k['reference'] . ' est confirmée. Je vous attends :',
+        'avis' => $b . 'Merci encore pour votre commande. Si vous avez un moment, votre avis sur Google aiderait beaucoup Madame Cho à se faire connaître.',
+        default => $b,
+    };
+}
+function accueil_confirmation(array $k): string { return accueil_mail($k, 'confirmation'); }
 function mail_style(bool $apercu): \Closure {
     return function (string $css) use ($apercu): string {
         if (!$apercu) return ' style="' . $css . '"';
@@ -382,9 +397,47 @@ function mail_style(bool $apercu): \Closure {
 function mail_paragraphe(\Closure $S): \Closure {
     return fn(string $t, string $style = '') => '<p' . $S(MAIL_F . 'font-size:15px;line-height:23px;color:#2B2623;margin:0;' . $style) . '>' . $t . '</p>';
 }
+function texte_mail_html(string $t, callable $p, string $style): string {
+    $html = '';
+    foreach (preg_split("/\n\s*\n/", trim($t)) as $para) if (trim($para) !== '') $html .= $p(nl2br(h(trim($para)), false), $style);
+    return $html;
+}
 function mail_signature_nom(): string { return h(trim(explode("\n", trim(signature()))[0] ?? '') ?: 'Youngmi Cho'); }
-/** Le cadre commun des mails aux clients : logo, filet chocolat, contenu, pied (qui écrit, pourquoi, ajouter contact@ aux contacts). */
-function mail_cadre(string $titre, string $contenu, \Closure $S, bool $apercu): string {
+/** Quand : « Vendredi 20 novembre, 15 h 30 », sinon le moment (« le matin, heure à convenir »). */
+function mail_quand(array $k): string {
+    if (!$k['retrait_date']) return 'Jour à convenir ensemble';
+    $q = ucfirst(date_fr($k['retrait_date'], 'jour'));
+    if ($k['retrait_heure'] !== '') return $q . ', ' . str_replace(':', ' h ', $k['retrait_heure']);
+    return isset(MOMENTS[$k['retrait_moment']]) ? $q . ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)' : $q;
+}
+/** L'encadré ivoire : quand, où, les gâteaux, le total (proposition et confirmation). */
+function mail_recap(array $k, string $type, \Closure $S): string {
+    $F = MAIL_F; $TX = '#2B2623'; $DX = '#736A64';
+    $td = $S($F . 'font-size:14px;line-height:22px;color:' . $TX . ';padding:2px 0');
+    $l = '';
+    foreach ($k['lignes_tab'] as $x) {
+        $l .= '<tr><td' . $td . '>' . h($x['q'] . ' × ' . $x['nom'] . ($x['libelle'] !== '' ? ', ' . $x['libelle'] : '')) . '</td><td align="right"' . $td . '>' . h(euros($x['prix'] * $x['q'])) . '</td></tr>';
+        if (($x['plaque'] ?? '') !== '') $l .= '<tr><td colspan="2"' . $S($F . 'font-size:13px;line-height:20px;color:' . $DX . ';padding:0 0 2px') . '>Plaque en chocolat : « ' . h($x['plaque']) . ' »</td></tr>';
+    }
+    if ($k['perso'] !== '') $l .= '<tr><td colspan="2"' . $td . '>' . nl2br(h($k['perso']), false) . '</td></tr>';
+    $total = montant_commande($k);
+    $acompte = (int)$k['acompte'];
+    $bord = $S($F . 'font-size:14px;color:' . $TX . ';border-top:1px solid #DDD3C6;padding:8px 0 0');
+    if ($type === 'proposition') {
+        $l .= '<tr><td' . $bord . '><b>Total TTC</b></td><td align="right"' . $bord . '><b>' . h($total ? euros($total) : 'à préciser') . '</b></td></tr>';
+        if ($acompte > 0) $l .= '<tr><td' . $td . '>Acompte pour réserver, déduit au retrait</td><td align="right"' . $td . '>' . h(euros($acompte)) . '</td></tr>';
+    } else {
+        $avecAcompte = $k['paiement'] === 'acompte_recu' && $acompte;
+        $l .= '<tr><td' . $bord . '><b>Total TTC</b>, ' . ($avecAcompte ? 'acompte de ' . h(euros($acompte)) . ' reçu' : 'à régler au retrait') . '</td><td align="right"' . $bord . '><b>' . h(euros($total)) . '</b></td></tr>';
+        if ($avecAcompte) $l .= '<tr><td' . $td . '>Reste à régler au retrait</td><td align="right"' . $td . '>' . h(euros($total - $acompte)) . '</td></tr>';
+    }
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#F3EDE4;border-radius:6px;margin-top:6px') . '><tr><td' . $S('padding:18px 20px') . '>'
+        . '<p' . $S($F . 'font-size:17px;line-height:24px;color:#3B1D0E;font-weight:bold;margin:0') . '>' . h(mail_quand($k)) . '</p>'
+        . '<p' . $S($F . 'font-size:14px;line-height:21px;color:' . $TX . ';margin:2px 0 14px') . '>4 avenue du Château, 92190 Meudon</p>'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' . $l . '</table></td></tr></table>';
+}
+/** Le cadre commun : logo, filet chocolat, étiquette du type, contenu, pied (qui écrit, pourquoi, ajouter contact@ aux contacts). */
+function mail_cadre(string $titre, string $etiquette, string $contenu, \Closure $S, bool $apercu): string {
     $DX = '#736A64'; $site = 'https://' . GESTION_DOMAINE;
     $petit = MAIL_F . 'font-size:12px;line-height:18px;color:' . $DX . ';margin:0';
     $pied = '<p' . $S($petit) . '>Madame Cho · pâtisserie sur commande · 4 avenue du Château, 92190 Meudon<br>'
@@ -394,91 +447,102 @@ function mail_cadre(string $titre, string $contenu, \Closure $S, bool $apercu): 
     $corps = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#ffffff') . '><tr><td align="center"' . $S('padding:32px 16px') . '>'
         . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('max-width:560px') . '>'
         . '<tr><td' . $S('padding:0 0 20px;border-bottom:2px solid #3B1D0E') . '><img src="' . $site . '/assets/logo-email.png" width="150" height="42" alt="Madame Cho"' . $S('display:block;border:0;width:150px;height:auto;margin:0 auto') . '></td></tr>'
-        . '<tr><td' . $S('padding:28px 0 0') . '>' . $contenu . '</td></tr>'
+        . '<tr><td' . $S('padding:22px 0 0') . '><p' . $S(MAIL_F . 'font-size:11px;line-height:16px;letter-spacing:2px;color:' . $DX . ';margin:0 0 18px') . '>' . h(mb_strtoupper($etiquette)) . '</p>' . $contenu . '</td></tr>'
         . '<tr><td' . $S('padding:28px 0 0') . '><div' . $S('border-top:1px solid #E9E5E1;padding-top:16px') . '>' . $pied . '</div></td></tr>'
         . '</table></td></tr></table>';
     if ($apercu) return '<div class="apercu-mail" translate="no" lang="fr">' . $corps . '</div>';
     return '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . h($titre) . '</title></head>'
         . '<body style="margin:0;padding:0;background:#ffffff">' . $corps . '</body></html>';
 }
-function email_confirmation_html(array $k, ?string $accueil = null, string $mot = '', bool $apercu = false): string {
-    $CH = '#3B1D0E'; $IV = '#F3EDE4'; $TX = '#2B2623'; $DX = '#736A64'; $AC = '#6E2A10'; $FL = '#DDD3C6';
-    $F = MAIL_F;
+/**
+ * Un mail au client, en trois morceaux : objet, texte, HTML (ou l'aperçu). $type : proposition, confirmation, message, avis.
+ * $o : accueil (phrase d'accueil ou, pour un message, le message), mot (petit mot), sujet (message), lien (avis), apercu.
+ */
+function mail_commande(array $k, string $type, array $o = []): array {
+    $apercu = !empty($o['apercu']);
     $S = mail_style($apercu);
     $p = mail_paragraphe($S);
-    $total = montant_commande($k);
-    $acompte = (int)$k['acompte'];
-    $site = 'https://' . GESTION_DOMAINE;
-    // Quand : « Vendredi 20 novembre, 15 h 30 », sinon le moment (« le matin, heure à convenir »)
-    if (!$k['retrait_date']) $quand = 'Jour à convenir ensemble';
-    else {
-        $quand = ucfirst(date_fr($k['retrait_date'], 'jour'));
-        if ($k['retrait_heure'] !== '') $quand .= ', ' . str_replace(':', ' h ', $k['retrait_heure']);
-        elseif (isset(MOMENTS[$k['retrait_moment']])) $quand .= ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)';
+    $accueil = trim((string)($o['accueil'] ?? '')) !== '' ? (string)$o['accueil'] : accueil_mail($k, $type);
+    $mot = trim((string)($o['mot'] ?? ''));
+    $etiquette = MAIL_TYPES[$type] . ($type === 'avis' ? '' : ' · ' . $k['reference']);
+    $sujet = $type === 'message' ? sujet_libre($k, (string)($o['sujet'] ?? '')) : sujet_commande($k);
+    $lien = fn(string $href, string $t) => '<a href="' . h($href) . '"' . $S('color:#6E2A10;font-weight:bold') . '>' . $t . '</a>';
+    $html = texte_mail_html($accueil, $p, 'margin-bottom:14px');
+    $texte = trim($accueil) . "\n\n";
+    $fin = 'À bientôt,';
+    switch ($type) {
+        case 'proposition':
+            $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '')
+                   . $p('<b>Pour confirmer, il suffit de répondre à ce mail.</b> Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:20px');
+            $total = montant_commande($k);
+            $texte .= lignes_email($k) . "\n\nTotal : " . ($total ? euros($total) . ' TTC' : 'à préciser') . "\n" . retrait_email($k) . "\n"
+                    . ((int)$k['acompte'] > 0 ? 'Pour réserver, un acompte de ' . euros((int)$k['acompte']) . " est demandé ; il est déduit du prix au retrait.\n" : '')
+                    . ($mot !== '' ? "\n" . $mot . "\n" : '') . "\nPour confirmer, il suffit de répondre à ce mail. Annulation sans frais jusqu'à 24 heures avant le retrait.\n\n";
+            $fin = 'Belle journée,';
+            break;
+        case 'confirmation':
+            $agenda = rdv_client_possible($k) ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:20px') : '';
+            $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '') . $agenda
+                   . $p('Paiement par carte, virement ou espèces. Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:14px');
+            $total = montant_commande($k); $acompte = (int)$k['acompte'];
+            $texte .= lignes_email($k) . "\n\nTotal : " . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait') . "\n"
+                    . retrait_email($k) . "\n" . ($mot !== '' ? "\n" . $mot . "\n" : '') . rdv_client_texte($k)
+                    . "\nPaiement par carte, virement ou espèces. Annulation sans frais jusqu'à 24 heures avant le retrait.\n\n";
+            break;
+        case 'avis':
+            $l = (string)($o['lien'] ?? parametre('lien_avis', ''));
+            $html .= ($l !== '' ? $p($lien($l, 'Laisser un avis sur Google'), 'margin-top:4px') : '') . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '');
+            $texte .= ($l !== '' ? 'Laisser un avis sur Google : ' . $l . "\n\n" : '') . ($mot !== '' ? $mot . "\n\n" : '');
+            $fin = 'Merci et à bientôt,';
+            break;
+        default:   // message
+            $texte = trim($accueil) . "\n\n";
     }
-    $td = $S($F . 'font-size:14px;line-height:22px;color:' . $TX . ';padding:2px 0');
-    $lignes = '';
-    foreach ($k['lignes_tab'] as $l) {
-        $lignes .= '<tr><td' . $td . '>' . h($l['q'] . ' × ' . $l['nom'] . ($l['libelle'] !== '' ? ', ' . $l['libelle'] : '')) . '</td><td align="right"' . $td . '>' . h(euros($l['prix'] * $l['q'])) . '</td></tr>';
-        if (($l['plaque'] ?? '') !== '') $lignes .= '<tr><td colspan="2"' . $S($F . 'font-size:13px;line-height:20px;color:' . $DX . ';padding:0 0 2px') . '>Plaque en chocolat : « ' . h($l['plaque']) . ' »</td></tr>';
-    }
-    if ($k['perso'] !== '') $lignes .= '<tr><td colspan="2"' . $td . '>' . nl2br(h($k['perso']), false) . '</td></tr>';
-    $bord = $S($F . 'font-size:14px;color:' . $TX . ';border-top:1px solid ' . $FL . ';padding:8px 0 0');
-    $avecAcompte = $k['paiement'] === 'acompte_recu' && $acompte;
-    $lignes .= '<tr><td' . $bord . '><b>Total TTC</b>, ' . ($avecAcompte ? 'acompte de ' . h(euros($acompte)) . ' reçu' : 'à régler au retrait') . '</td>'
-             . '<td align="right"' . $bord . '><b>' . h(euros($total)) . '</b></td></tr>';
-    if ($avecAcompte) $lignes .= '<tr><td' . $td . '>Reste à régler au retrait</td><td align="right"' . $td . '>' . h(euros($total - $acompte)) . '</td></tr>';
-    $lien = fn(string $href, string $t) => '<a href="' . h($href) . '"' . $S('color:' . $AC . ';font-weight:bold') . '>' . $t . '</a>';
-    $agenda = rdv_client_possible($k)
-        ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:20px')
-        : '';
-    $contenu = texte_mail_html($accueil ?? accueil_confirmation($k), $p, 'margin-bottom:14px')
-        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:' . $IV . ';border-radius:6px;margin-top:6px') . '><tr><td' . $S('padding:18px 20px') . '>'
-        . '<p' . $S($F . 'font-size:17px;line-height:24px;color:' . $CH . ';font-weight:bold;margin:0') . '>' . h($quand) . '</p>'
-        . '<p' . $S($F . 'font-size:14px;line-height:21px;color:' . $TX . ';margin:2px 0 14px') . '>4 avenue du Château, 92190 Meudon</p>'
-        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' . $lignes . '</table>'
-        . '</td></tr></table>'
-        . (trim($mot) !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '')
-        . $agenda
-        . $p('Paiement par carte, virement ou espèces. Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:14px')
-        . $p('À bientôt,<br>' . mail_signature_nom(), 'margin-top:22px');
-    return mail_cadre('Votre commande ' . $k['reference'] . ' est confirmée', $contenu, $S, $apercu);
+    $html .= $p(h($fin) . '<br>' . mail_signature_nom(), 'margin-top:22px');
+    $texte .= $fin . "\n" . signature();
+    return ['sujet' => $sujet, 'corps' => $texte, 'html' => mail_cadre($sujet, $etiquette, $html, $S, $apercu), 'type' => $type];
 }
-
-/* ---------- « Écrire au client » : un autre mail sur la même commande (demande d'Olivier du 07/11/2026) ----------
- * Même mise en forme ; l'objet garde toujours la référence MC-… (pour retrouver la conversation dans Gmail). */
-function sujet_libre(array $k, string $sujet): string {
-    $sujet = une_ligne(trim($sujet));
-    if ($sujet === '') $sujet = 'Votre commande ' . $k['reference'];
-    if (!str_contains($sujet, $k['reference'])) $sujet .= ' (' . $k['reference'] . ')';
-    return $sujet;
+/** Les Message-ID déjà échangés sur une commande (mails envoyés et reçus), du plus ancien au plus récent. */
+function mail_refs(int $commande): array {
+    $r = [];
+    foreach (lignes("SELECT ancien FROM evenements WHERE commande_id = ? AND type IN ('email_client', 'email_recu') AND ancien LIKE '%mid:<%' ORDER BY id", [$commande]) as $e)
+        if (preg_match('/mid:(<[^<>\s]+>)/', $e['ancien'], $m)) $r[] = $m[1];
+    return $r;
 }
-function email_libre(array $k, string $texte): string { return trim($texte) . "\n\nÀ bientôt,\n" . signature(); }
-function email_libre_html(array $k, string $sujet, string $texte, bool $apercu = false): string {
-    $S = mail_style($apercu);
-    $p = mail_paragraphe($S);
-    $contenu = texte_mail_html(trim($texte) !== '' ? $texte : salutation($k), $p, 'margin-bottom:14px')
-        . $p('À bientôt,<br>' . mail_signature_nom(), 'margin-top:8px')
-        . '<p' . $S(MAIL_F . 'font-size:12px;line-height:18px;color:#736A64;margin:18px 0 0') . '>Commande ' . h($k['reference']) . '</p>';
-    return mail_cadre($sujet, $contenu, $S, $apercu);
+/** Envoie un mail de la commande (au toucher de Youngmi, R-01) et le range dans ses Échanges. Renvoie true s'il est parti. */
+function envoyer_mail_commande(array $k, string $type, array $o = []): bool {
+    $a = (string)$k['client_email'];
+    if (!email_valide($a)) return false;
+    $m = mail_commande($k, $type, $o);
+    $mid = envoyer_email_client($a, $m['sujet'], $m['corps'], $m['html'], mail_refs((int)$k['id']));
+    if ($mid === '') return false;
+    evenement('email_client', 'Email envoyé à ' . $a . ' (' . mb_strtolower(MAIL_TYPES[$type]) . ') : « ' . $m['sujet'] . ' »', ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']],
+              'type:' . $type . ' mid:' . $mid, $m['corps']);
+    $now = maintenant();
+    q("UPDATE commandes SET dernier_echange = ?, maj_le = ? WHERE id = ?", [$now, $now, (int)$k['id']]);
+    client_echange((int)$k['client_id'], $now);
+    return true;
 }
-
-/** Les règles CSS de l'aperçu (à recopier dans gestion.css quand un style du mail change) : un mail d'essai qui passe par tous les cas. */
+/** Le dernier envoi d'un type de mail sur la commande (ou null). */
+function mail_deja(int $commande, string $type): ?array {
+    $l = ligne("SELECT le FROM evenements WHERE commande_id = ? AND type = 'email_client' AND (ancien LIKE ? OR (? = 'confirmation' AND texte LIKE '%est confirmée%')) ORDER BY id DESC LIMIT 1",
+               [$commande, 'type:' . $type . ' %', $type]);
+    return $l ?: null;
+}
+/* Les noms d'avant, gardés pour le reste de la gestion */
+function email_proposition(array $k): array { return mail_commande($k, 'proposition'); }
+function email_confirmation(array $k, ?string $accueil = null, string $mot = ''): array { return mail_commande($k, 'confirmation', ['accueil' => $accueil, 'mot' => $mot]); }
+function email_avis(array $k, string $lien): array { return mail_commande($k, 'avis', ['lien' => $lien]); }
+/** Les règles CSS de l'aperçu (à recopier dans gestion.css quand un style du mail change) : des mails d'essai qui passent par tous les cas. */
 function apercu_mail_css(): string {
     $GLOBALS['mc_styles_mail'] = [];
     $k = ['reference' => 'MC-000000-0000', 'retrait_date' => '2026-01-01', 'retrait_heure' => '10:00', 'retrait_moment' => '', 'mode' => 'retrait', 'statut' => 'confirmee',
-          'id' => 1, 'acompte' => 100, 'paiement' => 'acompte_recu', 'perso' => 'x', 'prix_final' => 1000, 'client_prenom' => 'A', 'client_nom' => 'B',
+          'id' => 1, 'acompte' => 100, 'paiement' => 'acompte_recu', 'perso' => 'x', 'besoin' => '', 'prix_final' => 1000, 'client_prenom' => 'A', 'client_nom' => 'B',
           'lignes_tab' => [['q' => 1, 'nom' => 'x', 'libelle' => 'y', 'prix' => 100, 'plaque' => 'z']]];
-    email_confirmation_html($k, "a\n\nb", 'c', true);
-    email_libre_html($k, 's', "a\n\nb", true);
+    foreach (array_keys(MAIL_TYPES) as $t) mail_commande($k, $t, ['accueil' => "a\n\nb", 'mot' => 'c', 'lien' => 'https://g.page/r/x', 'apercu' => true]);
     $css = '';
     foreach (array_keys($GLOBALS['mc_styles_mail']) as $r) $css .= '.apercu-mail .m-' . substr(md5($r), 0, 8) . '{' . $r . "}\n";
     return $css;
-}
-function email_avis(array $k, string $lien): array {
-    $t = salutation($k) . "\n\nMerci encore pour votre commande. Si vous avez un moment, votre avis sur Google aiderait beaucoup Madame Cho à se faire connaître :\n" . $lien
-       . "\n\nMerci et à bientôt,\n" . signature();
-    return ['sujet' => 'Merci pour votre commande', 'corps' => $t];
 }
 function mailto(string $a, array $e): string {
     return 'mailto:' . rawurlencode($a) . '?subject=' . rawurlencode($e['sujet']) . '&body=' . rawurlencode($e['corps']);

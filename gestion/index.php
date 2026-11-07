@@ -12,6 +12,7 @@ require_once __DIR__ . '/inc/modele.php';
 require_once __DIR__ . '/inc/vues.php';
 require_once __DIR__ . '/inc/langue.php';
 require_once __DIR__ . '/inc/email.php';
+require_once __DIR__ . '/inc/reponses.php';
 require_once __DIR__ . '/inc/matomo.php';
 require_once __DIR__ . '/inc/manuel.php';
 require_once __DIR__ . '/inc/assistant.php';
@@ -23,8 +24,8 @@ require_once __DIR__ . '/inc/pages-clients.php';
 require_once __DIR__ . '/inc/pages-produits.php';
 require_once __DIR__ . '/inc/pages-autres.php';
 
-$pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'mot-de-passe' => 'page_mot_de_passe', 'deconnexion' => 'page_deconnexion', 'miroir' => 'page_miroir', 'langue' => 'page_langue', 'rdv' => 'page_rdv'];
-$pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition', 'apercu-mail' => 'page_apercu_mail',
+$pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'mot-de-passe' => 'page_mot_de_passe', 'deconnexion' => 'page_deconnexion', 'miroir' => 'page_miroir', 'langue' => 'page_langue', 'rdv' => 'page_rdv', 'reponses' => 'page_reponses'];
+$pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition', 'apercu-mail' => 'page_apercu_mail', 'corriger' => 'page_corriger',
           'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition', 'releve' => 'page_releve',
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',
           'statistiques' => 'page_statistiques', 'taxe' => 'page_taxe', 'plus' => 'page_plus', 'rapprochement' => 'page_rapprochement', 'manuel' => 'page_manuel', 'aide' => 'page_manuel', 'assistant' => 'page_assistant', 'olivier' => 'page_olivier', 'reglages' => 'page_reglages', 'export' => 'page_export'];

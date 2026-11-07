@@ -549,6 +549,23 @@ function page_reglages(): void {
                 session_ouvrir();
                 $_SESSION['cle_miroir'] = $cle;   // montrée une seule fois
                 break;
+            case 'reponses':   // les réponses des clients (script Google de contact@)
+                if (!$admin) break;
+                $ancre = 'reponses';
+                if (!empty($_POST['arreter'])) { parametre_ecrire('reponses_empreinte', ''); evenement('reglage', 'Réponses des clients : script arrêté'); flash('ok', 'Arrêté : l\'ancienne clé ne marche plus, les réponses restent dans Gmail.'); break; }
+                if (($g = texte('gmail_id', 64)) !== '') {
+                    if (texte('quoi', 20) === 'ignorer') { q("UPDATE mails_recus SET etat = 'ignore', de = '', objet = '', extrait = '' WHERE gmail_id = ? AND etat = 'orphelin'", [$g]); flash('ok', 'Mail ignoré.'); }
+                    elseif (reponse_rattacher($g, mb_strtoupper(texte('reference', 20)))) flash('ok', 'Mail rattaché à la commande.');
+                    else flash('erreur', 'Référence inconnue : elle ressemble à MC-261105-5D17.');
+                    break;
+                }
+                $cle = bin2hex(random_bytes(24));
+                parametre_ecrire('reponses_empreinte', hash('sha256', $cle));
+                parametre_ecrire('reponses_cle_le', maintenant());
+                evenement('reglage', 'Réponses des clients : nouvelle clé du script de contact@');
+                session_ouvrir();
+                $_SESSION['cle_reponses'] = $cle;   // montrée une seule fois
+                break;
             case 'matomo':
                 if (!$admin) break;
                 $ancre = 'matomo';
@@ -722,6 +739,26 @@ function page_reglages(): void {
         if ($cle !== '') $m .= '<div class="cle-miroir"><p><b>Clé à coller dans le script Google</b> (elle ne sera plus jamais affichée) :</p><pre id="cle-miroir">' . h($cle) . '</pre><button type="button" class="btn" data-copier="cle-miroir">' . icone('copier') . 'Copier</button></div>';
         $m .= formulaire('miroir', bouton($actif ? 'Créer une nouvelle clé (l\'ancienne cesse de marcher)' : 'Créer la clé du miroir', 'discret')) . ($actif ? formulaire('miroir', '<input type="hidden" name="arreter" value="1">' . bouton('Arrêter le miroir', 'discret')) : '');
         $c .= bloc('Miroir pour le Drive', $m, '', 'miroir');
+        // Réponses des clients (script Google de contact@, demande d'Olivier du 07/11/2026)
+        $cle = '';
+        if (!empty($_SESSION['cle_reponses'])) { $cle = (string)$_SESSION['cle_reponses']; unset($_SESSION['cle_reponses']); }
+        $actif = reponses_actif();
+        $m = '<p>Un petit script Google, dans contact@madamecho.com, lit (sans rien modifier) les mails dont l\'objet contient « MC- » et les range ici dans les Échanges de la commande. Gmail garde toujours l\'original. Installation : guide dans le Drive (15/04).</p>'
+           . definition(['État' => h($actif ? 'actif' : 'arrêté'), 'Dernier passage' => h(($d = parametre('reponses_dernier')) ? date_fr($d, 'heure') : 'jamais'),
+                         'Dernière réponse rangée' => h(($d = parametre('reponses_dernier_mail')) ? date_fr($d, 'heure') : 'aucune'), 'Adresse' => '<code>' . h(gestion_adresse() . '?p=reponses') . '</code>']);
+        if (reponses_silence()) $m .= '<p class="erreur">Rien reçu depuis plus de 24 h : vérifiez le script dans contact@ (script.google.com › Exécutions).</p>';
+        if ($cle !== '') $m .= '<div class="cle-miroir"><p><b>Clé à coller dans le script Google</b> (Paramètres du projet › Propriétés du script › CLE ; elle ne sera plus jamais affichée) :</p><pre id="cle-reponses">' . h($cle) . '</pre><button type="button" class="btn" data-copier="cle-reponses">' . icone('copier') . 'Copier</button></div>';
+        $m .= formulaire('reponses', bouton($actif ? 'Créer une nouvelle clé (l\'ancienne cesse de marcher)' : 'Créer la clé du script', 'discret')) . ($actif ? formulaire('reponses', '<input type="hidden" name="arreter" value="1">' . bouton('Arrêter', 'discret')) : '');
+        $orph = reponses_orphelins();
+        if ($orph) {
+            $l = '';
+            foreach ($orph as $o) $l .= '<li><div class="ev-texte"><b translate="no">' . h($o['de']) . '</b> · « <span translate="no">' . h($o['objet']) . '</span> »<pre class="corps" translate="no" lang="fr">' . h($o['extrait']) . '</pre>'
+                . formulaire('reponses', '<input type="hidden" name="gmail_id" value="' . h($o['gmail_id']) . '"><div class="ligne-champs">' . champ('reference', 'Rattacher à la commande', '', ['placeholder' => 'MC-261105-5D17', 'maxlength' => '20', 'id' => 'f-ref-' . h($o['gmail_id'])]) . '</div>'
+                    . '<div class="actions">' . bouton('Rattacher', 'secondaire') . '<button type="submit" class="btn discret" name="quoi" value="ignorer">Ignorer</button></div>')
+                . '</div><div class="ev-meta">' . h(date_fr($o['recu_le'], 'heure')) . '</div></li>';
+            $m .= '<h3 class="sous-titre-graphique">À rattacher <span class="compte">' . count($orph) . '</span></h3><p class="aide">Des mails avec « MC- » dans l\'objet, mais sans commande reconnue. Effacés d\'ici après 30 jours (ils restent dans Gmail).</p><ol class="fil">' . $l . '</ol>';
+        }
+        $c .= bloc('Réponses des clients (Gmail)', $m, '', 'reponses');
         // Reprise et export complet
         $c .= bloc('Reprise des données et export', '<p class="aide">Reprise : fichier JSON préparé depuis Qonto (jamais dans le dépôt du site). Sans risque à relancer.</p>'
             . formulaire('importer', '<label class="champ"><span class="etiq">Fichier de reprise (.json)</span><input type="file" name="fichier" accept="application/json,.json" required></label>' . bouton('Importer', 'secondaire'), ['enctype' => 'multipart/form-data'])

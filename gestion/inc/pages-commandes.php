@@ -32,6 +32,15 @@ function page_accueil(): void {
         . tuile('Remises', (string)$act['remises']['j7'], $act['remises']['auj'] . ' aujourd\'hui', u('commandes', ['j7' => 'remises'])) . '</div>', 'activite');
     if ($t['depasses']) $c .= bloc('Retraits passés à clôturer', '<p class="aide">Date passée : marquez-les remises ou annulées.</p>' . liste_commandes($t['depasses'], ''), 'alerte');
     if ($t['problemes']) $c .= bloc(icone('alerte') . ' Problèmes ouverts', liste_commandes($t['problemes'], ''), 'alerte');
+    // Les réponses des clients pas encore lues (script de contact@) ; une alerte aux admins si le script ne passe plus
+    $nl = reponses_non_lues();
+    if ($nl) {
+        $l = '';
+        foreach ($nl as $e) $l .= '<a class="carte-cmd" href="' . h(u('commande', ['id' => $e['commande_id']])) . '#echanges"><span class="l1"><b translate="no">' . h($e['auteur']) . '</b><span class="chip chip-nouveau">Nouvelle réponse</span></span>'
+            . '<span class="l2">' . h($e['reference']) . ' · ' . h(date_fr($e['le'], 'relative')) . '</span></a>';
+        $c .= bloc(icone('email') . ' Nouvelles réponses des clients', '<div class="liste">' . $l . '</div>', '', 'reponses');
+    }
+    if (est_admin() && reponses_silence()) $c .= bloc(icone('alerte') . ' Réponses des clients', '<p class="erreur">Le script de contact@ n\'a rien transmis depuis plus de 24 h : les réponses des clients restent dans Gmail. Voir <a href="' . h(u('reglages')) . '#reponses">Réglages</a>.</p>', 'alerte');
     $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'), '', 'demandes');
     // Retraits groupés par jour
     $jours = [];
@@ -126,26 +135,35 @@ function page_commande(): void {
                 if ($ind) flash('erreur', 'Commande confirmée, mais le retrait tombe sur une indispo : ' . indispo_texte($ind) . '. Vérifiez avec le client, ou changez la date.');
                 else flash('ok', 'Commande confirmée : envoyez la confirmation au client et ajoutez le retrait à votre agenda.');
                 break;
-            case 'envoyer_confirmation':   // le mail de confirmation, au toucher de Youngmi sur « Envoyer » (R-01)
-                $accueil = texte('accueil', 1500);
-                $mot = texte('mot', 1000);
-                if ($k['statut'] !== 'confirmee' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la commande n\'est pas confirmée.'); break; }
-                if (trim($accueil) === '') $accueil = accueil_confirmation($k);
-                $e = email_confirmation($k, $accueil, $mot);
-                if (envoyer_email_client((string)$k['client_email'], $e['sujet'], $e['corps'], email_confirmation_html($k, $accueil, $mot))) {
-                    evenement('email_client', 'Email envoyé à ' . $k['client_email'] . ' : « ' . $e['sujet'] . ' »', ['commande' => $id, 'client' => (int)$k['client_id']], '', $e['corps']);
-                    flash('ok', 'Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com.');
-                } else flash('erreur', 'L\'email n\'est pas parti. Réessayez, ou utilisez « Ouvrir dans ma messagerie » plus bas.');
+            // Les mails au client partent de la gestion au toucher de Youngmi sur « Envoyer » (R-01) ; Gmail reste le secours
+            case 'envoyer_proposition':
+                if (!in_array($k['statut'], ['demande', 'proposition'], true) || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la demande n\'en est plus là.'); break; }
+                $prix = centimes(texte('prix_final', 12));
+                $acompte = centimes(texte('acompte', 12));
+                $kp = $k; if ($prix !== null) $kp['prix_final'] = $prix; $kp['acompte'] = $acompte ?? 0;
+                if (!envoyer_mail_commande($kp, 'proposition', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) { flash('erreur', 'L\'email n\'est pas parti. Réessayez, ou utilisez « Autre façon » plus bas.'); break; }
+                commande_statut($id, 'proposition', $prix !== null ? ['prix_final' => $prix] : []);
+                if ($acompte) commande_paiement($id, 'acompte_demande', '', $acompte, (string)$k['facture']);
+                flash('ok', 'Proposition envoyée au client. Une copie arrive dans contact@madamecho.com ; sa réponse arrivera dans les Échanges.');
                 break;
-            case 'ecrire_client':   // « Écrire au client » : un autre mail sur la même commande, au toucher de Youngmi (R-01)
+            case 'envoyer_confirmation':
+                if ($k['statut'] !== 'confirmee' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la commande n\'est pas confirmée.'); break; }
+                if (envoyer_mail_commande($k, 'confirmation', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) flash('ok', 'Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com.');
+                else flash('erreur', 'L\'email n\'est pas parti. Réessayez, ou utilisez « Autre façon » plus bas.');
+                break;
+            case 'ecrire_client':   // « Écrire au client » : un autre mail sur la même commande
                 $texteLibre = texte('texte_mail', 4000);
-                if (!email_valide((string)$k['client_email']) || trim($texteLibre) === '') { flash('erreur', 'Écrivez le message (et vérifiez l\'email du client).'); break; }
-                $sujet = sujet_libre($k, texte('sujet', 200));
-                $corps = email_libre($k, $texteLibre);
-                if (envoyer_email_client((string)$k['client_email'], $sujet, $corps, email_libre_html($k, $sujet, $texteLibre))) {
-                    evenement('email_client', 'Email envoyé à ' . $k['client_email'] . ' : « ' . $sujet . ' »', ['commande' => $id, 'client' => (int)$k['client_id']], '', $corps);
-                    flash('ok', 'Email envoyé au client. Une copie arrive dans contact@madamecho.com.');
-                } else flash('erreur', 'L\'email n\'est pas parti. Réessayez dans un moment.');
+                if (!email_valide((string)$k['client_email']) || trim($texteLibre) === '' || trim($texteLibre) === trim(salutation($k))) { flash('erreur', 'Écrivez le message (et vérifiez l\'email du client).'); break; }
+                if (envoyer_mail_commande($k, 'message', ['accueil' => $texteLibre, 'sujet' => texte('sujet', 200)])) flash('ok', 'Email envoyé au client. Une copie arrive dans contact@madamecho.com.');
+                else flash('erreur', 'L\'email n\'est pas parti. Réessayez dans un moment.');
+                break;
+            case 'envoyer_avis':
+                $lien = (string)parametre('lien_avis', '');
+                if ($k['statut'] !== 'remise' || $lien === '' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Il faut une commande remise, l\'email du client et le lien d\'avis (Réglages).'); break; }
+                if (!envoyer_mail_commande($k, 'avis', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'lien' => $lien])) { flash('erreur', 'L\'email n\'est pas parti. Réessayez dans un moment.'); break; }
+                q("UPDATE clients SET avis_demande_le = ?, maj_le = ? WHERE id = ?", [aujourdhui(), maintenant(), $k['client_id']]);
+                evenement('avis', 'Avis Google demandé', ['commande' => $id, 'client' => (int)$k['client_id']]);
+                flash('ok', 'Demande d\'avis envoyée et notée sur la fiche du client.');
                 break;
             case 'remise':
                 $prix = centimes(texte('prix_final', 12));
@@ -191,8 +209,8 @@ function page_commande(): void {
                 flash('ok', 'Problème résolu.');
                 break;
             case 'commentaire':
-                commentaire(texte('texte', 2000), $id, (int)$k['client_id']);
-                flash('ok', 'Commentaire ajouté.');
+                commentaire(texte('texte', 2000), $id, (int)$k['client_id'], choix('par', CANAUX_ECHANGE, ''));
+                flash('ok', 'Échange noté.');
                 break;
             case 'avis_demande':
                 q("UPDATE clients SET avis_demande_le = ?, maj_le = ? WHERE id = ?", [aujourdhui(), maintenant(), $k['client_id']]);
@@ -216,8 +234,9 @@ function page_commande(): void {
     $client = client((int)$k['client_id']);
     $nom = commande_client_nom($k);
     $chips = chip_type(commande_est_pro($k)) . chip_statut($k['statut'], false, livraison_pro($k)) . chip_paiement($k['paiement'], (int)$k['acompte']) . ($k['probleme'] ? drapeau() : '');
-    $notes = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'commentaire'", [$id]);
-    $versEchanges = lien_bouton('#echanges', icone('assistant') . 'Échanges' . ($notes ? ' <span class="compte">' . $notes . '</span>' : ''), 'discret');
+    $notes = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type IN ('commentaire', 'email_client', 'email_recu')", [$id]);
+    $nonLues = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);
+    $versEchanges = lien_bouton('#echanges', icone('assistant') . 'Échanges' . ($notes ? ' <span class="compte">' . $notes . '</span>' : '') . ($nonLues ? ' <span class="chip chip-nouveau">' . ($nonLues > 1 ? $nonLues . ' nouvelles réponses' : 'Nouvelle réponse') . '</span>' : ''), $nonLues ? 'secondaire' : 'discret');
     $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>', $versEchanges, u('commandes'));
     $c .= etape_suivante($k);
     // Client
@@ -264,11 +283,13 @@ function page_commande(): void {
     $gmail = 'https://mail.google.com/mail/?authuser=contact@madamecho.com#search/' . rawurlencode($recherche);
     // Les notes d'échange d'abord ; le suivi automatique (statuts, paiements) replié dessous
     $evs = historique($id, null);
-    $echanges = array_values(array_filter($evs, fn($e) => in_array($e['type'], ['commentaire', 'probleme', 'email_client'], true)));
-    $suivi = array_values(array_filter($evs, fn($e) => !in_array($e['type'], ['commentaire', 'probleme', 'email_client'], true)));
+    $types = ['commentaire', 'probleme', 'email_client', 'email_recu'];
+    $echanges = array_values(array_filter($evs, fn($e) => in_array($e['type'], $types, true)));
+    $suivi = array_values(array_filter($evs, fn($e) => !in_array($e['type'], $types, true)));
+    if ($nonLues) q("UPDATE evenements SET lu = 1 WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);   // vues : la pastille s'en va à la prochaine visite
     $c .= bloc('Échanges avec le client', '<div class="actions">' . lien_bouton($gmail, icone('email') . 'Ses emails dans Gmail', 'secondaire', ['target' => '_blank', 'rel' => 'noopener'])
             . ($k['client_tel'] !== '' ? lien_bouton('tel:' . preg_replace('/[^0-9+]/', '', $k['client_tel']), icone('tel') . 'Appeler', 'discret') : '') . '</div>'
-        . bloc_ecrire_client($k) . formulaire_commentaire() . ($echanges ? fil_historique($echanges) : '')
+        . bloc_ecrire_client($k) . '<details class="replie noter-echange"' . ($echanges ? '' : ' open') . '><summary>Noter un échange (appel, SMS, WhatsApp, de vive voix…)</summary>' . formulaire_commentaire() . '</details>' . ($echanges ? fil_historique($echanges) : '')
         . ($suivi ? '<details class="replie suivi"><summary>Suivi de la commande <span class="compte">' . count($suivi) . '</span></summary>' . fil_historique($suivi) . '</details>' : ''), 'echanges', 'echanges');
     // Montants et paiement
     $reste = montant_commande($k) - ($k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : 0);
@@ -304,55 +325,67 @@ function page_commande(): void {
     mise_en_page($k['reference'], $c, 'commandes', 'page-commande');
 }
 
-/** Le mail de confirmation : phrase d'accueil et petit mot modifiables, aperçu exact, « Envoyer » (demande d'Olivier du 07/11/2026). */
-function bloc_confirmation_client(array $k): string {
+/**
+ * Un mail au client, préparé dans la gestion (demandes d'Olivier du 07/11/2026) : phrase d'accueil et petit mot modifiables (micro et
+ * « Corriger mon français » sous chaque zone), aperçu exact, « Envoyer » (R-01 : au toucher de Youngmi). Gmail en secours : le même
+ * texte, à ouvrir dans sa messagerie, et $secours (par exemple « J'ai envoyé la proposition » quand elle l'a envoyée elle-même).
+ * $avant : des champs propres au type (prix et acompte de la proposition), pris en compte dans l'aperçu.
+ */
+function bloc_mail_client(array $k, string $type, string $titre, string $avant = '', string $secours = '', bool $ouvert = true): string {
     $email = (string)$k['client_email'];
-    $texte = email_confirmation($k);
-    if (!email_valide($email)) return bloc_email('email-conf', 'Envoyer la confirmation au client', $texte, '');
     $id = (int)$k['id'];
-    $deja = ligne("SELECT le FROM evenements WHERE commande_id = ? AND type = 'email_client' AND texte LIKE '%est confirmée%' ORDER BY id DESC LIMIT 1", [$id]);
-    $accueil = accueil_confirmation($k);
-    $form = ($deja ? '<p class="aide"><b>Déjà envoyée</b> · ' . h(date_fr($deja['le'], 'heure')) . '</p>' : '')
-          . '<p class="aide">Modifiez la phrase d\'accueil si vous voulez, ajoutez un petit mot, vérifiez l\'aperçu, puis envoyez. Le reste vient de la commande : pour le changer, modifiez la commande.</p>'
-          . zone('accueil', 'Phrase d\'accueil', $accueil, ['rows' => '4', 'maxlength' => '1500', 'data-apercu' => 'apercu-conf', 'lang' => 'fr'])
-          . zone('mot', 'Petit mot (facultatif)', '', ['rows' => '3', 'maxlength' => '1000', 'data-apercu' => 'apercu-conf', 'lang' => 'fr', 'placeholder' => 'Par exemple : la plaque sera bien prête, à vendredi !'],
-                 'Il s\'ajoute sous le récapitulatif.')
+    $m = mail_commande($k, $type);
+    $boite = 'mail-' . $type;
+    if (!email_valide($email)) return bloc_email($boite, $titre, $m, '') . $secours;
+    $deja = mail_deja($id, $type);
+    $ap = 'apercu-' . $type;
+    $form = ($deja ? '<p class="aide"><b>Déjà envoyé</b> · ' . h(date_fr($deja['le'], 'heure')) . '</p>' : '')
+          . '<p class="aide">Modifiez la phrase d\'accueil si vous voulez, ajoutez un petit mot, vérifiez l\'aperçu, puis envoyez. Le reste vient de la commande.</p>'
+          . $avant
+          . zone('accueil', 'Phrase d\'accueil', accueil_mail($k, $type), ['rows' => '4', 'maxlength' => '1500', 'data-apercu' => $ap, 'lang' => 'fr', 'data-aide-saisie' => '1', 'id' => 'f-accueil-' . $type])
+          . zone('mot', 'Petit mot (facultatif)', '', ['rows' => '3', 'maxlength' => '1000', 'data-apercu' => $ap, 'lang' => 'fr', 'data-aide-saisie' => '1', 'id' => 'f-mot-' . $type,
+                 'placeholder' => $type === 'avis' ? 'Par exemple : j\'espère que le gâteau vous a plu !' : 'Par exemple : la plaque sera bien prête, à vendredi !'])
           . '<p class="etiq-apercu">Aperçu du mail (tel que le client le recevra)</p>'
-          . '<div class="cadre-apercu" id="apercu-conf" data-source="' . h(u('apercu-mail', ['id' => $id])) . '">' . email_confirmation_html($k, null, '', true) . '</div>'
+          . '<div class="cadre-apercu" id="' . $ap . '" data-source="' . h(u('apercu-mail', ['id' => $id, 'type' => $type])) . '">' . mail_commande($k, $type, ['apercu' => true])['html'] . '</div>'
           . '<div class="actions">' . bouton(icone('email') . ($deja ? 'Renvoyer à ' : 'Envoyer à ') . '<span translate="no">' . h($email) . '</span>', 'principal') . '</div>';
-    return '<details class="email-pret" id="email-conf"' . ($deja ? '' : ' open') . '><summary>' . icone('email') . 'Envoyer la confirmation au client' . ($deja ? ' <span class="compte">envoyée</span>' : '') . '</summary>'
-         . formulaire('envoyer_confirmation', $form, ['class' => 'form-confirmation', 'data-confirmer' => 'Envoyer ce mail à ' . $email . ' maintenant ?'])
-         . '<details class="replie"><summary>Autre façon : ouvrir dans ma messagerie</summary>' . bloc_email('email-conf-texte', 'Texte simple, à envoyer vous-même', $texte, $email) . '</details>'
+    return '<details class="email-pret" id="' . $boite . '"' . ($ouvert && !$deja ? ' open' : '') . '><summary>' . icone('email') . h($titre) . ($deja ? ' <span class="compte">envoyé</span>' : '') . '</summary>'
+         . formulaire('envoyer_' . $type, $form, ['class' => 'form-mail', 'data-confirmer' => 'Envoyer ce mail à ' . $email . ' maintenant ?'])
+         . '<details class="replie"><summary>Autre façon : ouvrir dans ma messagerie</summary>' . bloc_email($boite . '-texte', 'Texte simple, à envoyer vous-même', $m, $email) . $secours . '</details>'
          . '</details>';
 }
+function bloc_confirmation_client(array $k): string { return bloc_mail_client($k, 'confirmation', 'Envoyer la confirmation au client'); }
 
-/** « Écrire au client » : objet, message, aperçu exact, « Envoyer » ; rangé ensuite dans les Échanges. */
+/** « Écrire au client » : objet, message, aperçu exact, « Envoyer » ; rangé ensuite dans les Échanges. $reponse : l'objet de l'email auquel elle répond. */
 function bloc_ecrire_client(array $k): string {
     $email = (string)$k['client_email'];
     if (!email_valide($email)) return '';
     $id = (int)$k['id'];
     $texteDefaut = salutation($k) . "\n\n";
-    $form = champ('sujet', 'Objet', 'Votre commande ' . $k['reference'], ['maxlength' => '200', 'data-apercu' => 'apercu-libre', 'lang' => 'fr'], 'Le numéro de commande reste toujours dans l\'objet.')
-          . zone('texte_mail', 'Message', $texteDefaut, ['rows' => '6', 'maxlength' => '4000', 'required' => true, 'data-apercu' => 'apercu-libre', 'lang' => 'fr'])
+    $form = champ('sujet', 'Objet', sujet_commande($k), ['maxlength' => '200', 'data-apercu' => 'apercu-libre', 'lang' => 'fr'], 'Le numéro de commande reste toujours dans l\'objet.')
+          . zone('texte_mail', 'Message', $texteDefaut, ['rows' => '6', 'maxlength' => '4000', 'required' => true, 'data-apercu' => 'apercu-libre', 'lang' => 'fr', 'data-aide-saisie' => '1'])
           . '<p class="etiq-apercu">Aperçu du mail (tel que le client le recevra)</p>'
-          . '<div class="cadre-apercu" id="apercu-libre" data-source="' . h(u('apercu-mail', ['id' => $id, 'type' => 'libre'])) . '">' . email_libre_html($k, 'Votre commande ' . $k['reference'], $texteDefaut, true) . '</div>'
+          . '<div class="cadre-apercu" id="apercu-libre" data-source="' . h(u('apercu-mail', ['id' => $id, 'type' => 'message'])) . '">' . mail_commande($k, 'message', ['accueil' => $texteDefaut, 'apercu' => true])['html'] . '</div>'
           . '<div class="actions">' . bouton(icone('email') . 'Envoyer à <span translate="no">' . h($email) . '</span>', 'principal') . '</div>';
-    return '<details class="replie ecrire-client"><summary>' . icone('email') . 'Écrire au client</summary>'
+    return '<details class="replie ecrire-client" id="ecrire"><summary>' . icone('email') . 'Écrire au client</summary>'
          . formulaire('ecrire_client', $form, ['class' => 'form-ecrire', 'data-confirmer' => 'Envoyer ce mail à ' . $email . ' maintenant ?']) . '</details>';
 }
 
-/** L'aperçu du mail, mis à jour pendant la saisie (gestion.js) : ?p=apercu-mail&id=…[&type=libre], en POST, sans rien enregistrer. */
+/** L'aperçu du mail, mis à jour pendant la saisie (gestion.js) : ?p=apercu-mail&id=…&type=…, en POST, sans rien enregistrer. */
 function page_apercu_mail(): void {
     $k = commande(entier('id', 1));
     if (!$k || ($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { http_response_code(404); exit; }
     csrf_verifier();
     entetes_securite();
-    if (($_GET['type'] ?? '') === 'libre') {
-        echo email_libre_html($k, sujet_libre($k, texte('sujet', 200)), texte('texte_mail', 4000), true);
-        exit;
+    $type = (string)($_GET['type'] ?? 'confirmation');
+    if ($type === 'libre') $type = 'message';
+    if (!isset(MAIL_TYPES[$type])) $type = 'confirmation';
+    if ($type === 'message') { echo mail_commande($k, 'message', ['accueil' => texte('texte_mail', 4000), 'sujet' => texte('sujet', 200), 'apercu' => true])['html']; exit; }
+    if ($type === 'proposition') {   // le prix et l'acompte en cours de saisie
+        $prix = centimes(texte('prix_final', 12));
+        if ($prix !== null) $k['prix_final'] = $prix;
+        $k['acompte'] = centimes(texte('acompte', 12)) ?? 0;
     }
-    $accueil = texte('accueil', 1500);
-    echo email_confirmation_html($k, trim($accueil) !== '' ? $accueil : null, texte('mot', 1000), true);
+    echo mail_commande($k, $type, ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'apercu' => true])['html'];
     exit;
 }
 
@@ -375,12 +408,15 @@ function etape_suivante(array $k): string {
             $acompteDefaut = $k['perso'] !== '' ? number_format(round(montant_commande($k) * 0.3 / 100, 2), 2, ',', '') : '';
             $gmail = 'https://mail.google.com/mail/?authuser=contact@madamecho.com#search/' . rawurlencode($k['reference']);
             return '<section class="etape"><h2>Prochaine étape : envoyer une proposition</h2><p>' . $quand . '</p>'
-                 . '<p class="aide">Répondez par écrit : prix TTC, jour et heure du retrait, acompte si personnalisé.</p>'
-                 . bloc_email('email-prop', 'Préparer la proposition', email_proposition($k), $email)
-                 . '<div class="actions">' . lien_bouton($gmail, icone('email') . 'Retrouver la demande dans Gmail', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>'
-                 . formulaire('proposition', '<div class="ligne-champs">' . champ('prix_final', 'Prix proposé (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])
-                      . champ('acompte', 'Acompte demandé (€)', $acompteDefaut, ['inputmode' => 'decimal'], 'Vide s\'il n\'y en a pas.') . '</div>'
-                      . bouton('J\'ai envoyé la proposition', 'principal'), ['class' => 'form-etape'])
+                 . '<p class="aide">Indiquez le prix TTC et l\'acompte (si personnalisé), vérifiez le jour et l\'heure du retrait dans la commande, puis envoyez.</p>'
+                 . bloc_mail_client($k, 'proposition', 'Envoyer la proposition au client',
+                       '<div class="ligne-champs">' . champ('prix_final', 'Prix proposé (€ TTC)', $prixDefaut, ['inputmode' => 'decimal', 'data-apercu' => 'apercu-proposition', 'id' => 'f-prix-prop'])
+                       . champ('acompte', 'Acompte demandé (€)', $acompteDefaut, ['inputmode' => 'decimal', 'data-apercu' => 'apercu-proposition', 'id' => 'f-acompte-prop'], 'Vide s\'il n\'y en a pas.') . '</div>',
+                       '<p class="aide">Vous l\'avez envoyée vous-même ? Notez-la :</p>'
+                       . formulaire('proposition', '<div class="ligne-champs">' . champ('prix_final', 'Prix proposé (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])
+                           . champ('acompte', 'Acompte demandé (€)', $acompteDefaut, ['inputmode' => 'decimal'], 'Vide s\'il n\'y en a pas.') . '</div>'
+                           . bouton('J\'ai envoyé la proposition', 'secondaire'), ['class' => 'form-etape'])
+                       . '<div class="actions">' . lien_bouton($gmail, icone('email') . 'Retrouver la demande dans Gmail', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>')
                  . formulaire('statut', '<input type="hidden" name="statut" value="sans_suite">' . bouton('Classer sans suite', 'discret'), ['class' => 'form-secondaire'])
                  . '</section>';
         case 'proposition':
@@ -427,8 +463,8 @@ function etape_suivante(array $k): string {
                 elseif ($c['avis_demande_le']) $avis = '<p>Avis Google demandé le ' . h(date_fr($c['avis_demande_le'], 'longue')) . '.</p>' . formulaire('avis_recu', bouton(icone('avis') . 'L\'avis est arrivé', 'secondaire'));
                 elseif ($lien === '') $avis = '<p class="aide">' . fr_ko('Pour demander un avis Google, ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
                     '구글 리뷰를 부탁하려면 먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>';
-                else $avis = '<p class="aide">À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google).</p>' . bloc_email('email-avis', 'Demander un avis Google', email_avis($k, $lien), $email)
-                            . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
+                else $avis = '<p class="aide">À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google).</p>' . bloc_mail_client($k, 'avis', 'Demander un avis Google', '',
+                                '<p class="aide">Vous l\'avez demandé vous-même ?</p>' . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire')), false);
             }
             return '<section class="etape etape-finie"><h2>Remise le ' . h(date_fr($k['remise_le'] ?? $k['maj_le'], 'longue')) . '</h2>' . $avis . '</section>';
         default:

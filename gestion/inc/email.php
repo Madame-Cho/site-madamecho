@@ -61,12 +61,16 @@ function email_lien_mot_de_passe(array $u, string $jeton, bool $invitation): boo
  * sur « Envoyer » : jamais par une IA (R-01). Au nom de « Madame Cho <contact@madamecho.com> », signés DKIM par le site
  * (sélecteur « site », d=madamecho.com : DMARC aligné ; OVH autorisé dans le SPF), en deux versions (texte et mise en forme).
  * Les réponses vont à contact@ ; une copie cachée arrive dans contact@ (le mail n'est pas dans « Envoyés » de Gmail). */
-function envoyer_email_client(string $a, string $sujet, string $texte, string $html): bool {
-    if (!email_valide($a)) return false;
+/** Un mail au client (R-01 : au toucher de Youngmi). $refs : les Message-ID déjà échangés sur la commande, pour que le client voie une seule
+ *  conversation (In-Reply-To, References). Renvoie le Message-ID du mail, ou '' s'il n'est pas parti. */
+function envoyer_email_client(string $a, string $sujet, string $texte, string $html, array $refs = []): string {
+    if (!email_valide($a)) return '';
+    $mid = '<commande.' . bin2hex(random_bytes(8)) . '@' . GESTION_DOMAINE . '>';
+    $refs = array_slice(array_values(array_unique(array_filter($refs, fn($r) => preg_match('/^<[^<>\s]{3,200}>$/', $r)))), -10);
     if (GESTION_ESSAI) {
         session_ouvrir();
-        $_SESSION['essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html];
-        return true;
+        $_SESSION['essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid, 'refs' => $refs];
+        return $mid;
     }
     $dkim = gestion_site() . '/ma-demande/dkim.php';
     if (!is_file($dkim)) { error_log('madamecho gestion : dkim.php absent, email client non envoyé'); return false; }
@@ -83,7 +87,8 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
         'To' => $a,
         'Subject' => $sujetEnc,
         'Date' => date('r'),
-        'Message-ID' => '<commande.' . bin2hex(random_bytes(8)) . '@' . GESTION_DOMAINE . '>',
+        'Message-ID' => $mid,
+    ] + ($refs ? ['In-Reply-To' => end($refs), 'References' => implode(' ', $refs)] : []) + [
         'MIME-Version' => '1.0',
         'Content-Type' => 'multipart/alternative; boundary="' . $frontiere . '"',
     ];
@@ -97,5 +102,5 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
     $ok = @mail($a, $sujetEnc, $corps, $entetes, '-f' . GESTION_EXPEDITEUR);
     if (!$ok) $ok = @mail($a, $sujetEnc, $corps, $entetes);
     if (!$ok) error_log('madamecho gestion : mail() a échoué (email client)');
-    return $ok;
+    return $ok ? $mid : '';
 }

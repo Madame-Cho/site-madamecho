@@ -66,8 +66,8 @@ function page_client(): void {
         csrf_verifier();
         switch (texte('_action', 40)) {
             case 'commentaire':
-                commentaire(texte('texte', 2000), null, $id);
-                flash('ok', 'Commentaire ajouté.');
+                commentaire(texte('texte', 2000), null, $id, choix('par', CANAUX_ECHANGE, ''));
+                flash('ok', 'Échange noté.');
                 break;
             case 'avis_demande':
                 q("UPDATE clients SET avis_demande_le = ?, maj_le = ? WHERE id = ?", [aujourdhui(), maintenant(), $id]);
@@ -183,7 +183,8 @@ function page_client(): void {
             $av = $lien === '' ? '<p class="aide">' . fr_ko('Ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
                     '먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>'
                 : '<p class="aide">À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google).</p>'
-                  . bloc_email('email-avis', 'Demander un avis Google', email_avis($dk + ['client_prenom' => $cl['prenom'], 'client_nom' => $cl['nom'], 'client_type' => $cl['type'], 'client_contact' => $cl['contact']], $lien), $cl['email'])
+                  . ($dk && email_valide((string)$cl['email']) ? '<div class="actions">' . lien_bouton(u('commande', ['id' => $dk['id']]) . '#mail-avis', icone('email') . 'Préparer le mail (commande ' . h($dk['reference']) . ')', 'principal') . '</div>'
+                     : bloc_email('email-avis', 'Demander un avis Google', email_avis($dk + ['client_prenom' => $cl['prenom'], 'client_nom' => $cl['nom'], 'client_type' => $cl['type'], 'client_contact' => $cl['contact'], 'client_email' => $cl['email']], $lien), (string)$cl['email']))
                   . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
         }
         $c .= bloc('Avis Google', $av);
