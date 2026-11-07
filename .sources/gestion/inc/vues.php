@@ -98,8 +98,10 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
        . '<meta name="robots" content="noindex, nofollow, noarchive">'
        . '<title>' . h($titre) . ' · Gestion Madame Cho</title>'
-       . '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">'
-       . '<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">'
+       // Icônes de la gestion : le 조 du site aux couleurs inversées, chocolat sur ivoire, pour la distinguer du site (demande d'Olivier, 07/11/2026)
+       . '<link rel="icon" href="' . h(fichier_versionne('icones/favicon.ico')) . '" sizes="48x48">'
+       . '<link rel="icon" href="' . h(fichier_versionne('icones/favicon.svg')) . '" type="image/svg+xml">'
+       . '<link rel="apple-touch-icon" href="' . h(fichier_versionne('icones/apple-touch-icon.png')) . '">'
        . '<link rel="manifest" href="' . h(fichier_versionne('gestion.webmanifest')) . '">'
        . '<meta name="theme-color" content="#3B1D0E">'
        . '<link rel="preload" href="../assets/polices/jost-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>'

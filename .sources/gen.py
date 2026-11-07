@@ -631,7 +631,7 @@ if not APERCU:
     for racine, _, fichiers in os.walk(src):
         rel = os.path.relpath(racine, src)
         for f in fichiers:
-            if f.endswith((".php", ".css", ".js", ".webmanifest")) and f != "catalogue.php":
+            if f.endswith((".php", ".css", ".js", ".webmanifest", ".svg", ".png", ".ico")) and f != "catalogue.php":   # .svg, .png, .ico : icônes de la gestion (07/11/2026)
                 os.makedirs(os.path.join(OUT, "gestion", rel), exist_ok=True)
                 shutil.copy(os.path.join(racine, f), os.path.join(OUT, "gestion", rel, f))
     ecrire("gestion/inc/catalogue.php", "<?php\n// Carte de Madame Cho pour l'espace de gestion, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(catalogue_gestion()) + ";\n")
