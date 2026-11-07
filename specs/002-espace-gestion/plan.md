@@ -87,3 +87,36 @@ gestion/inc/                # copie générée par .sources/gen.py (jamais modif
 ## Complexity Tracking
 
 Aucun écart à justifier.
+
+---
+
+## Lot « échanges avec les clients » et retours du parcours de test (2026-11-07, nuit)
+
+**Branche de travail** : `claude/project-thread-0jsg44` ; en ligne : f145afc (mails envoyés depuis la
+gestion, réponses des clients) ; à publier : les retours du parcours de test d'Olivier et la
+suppression des essais.
+
+**Summary** : la gestion envoie les mails au client au toucher de Youngmi (R-01 v0.45) et reçoit leurs
+réponses par un script de contact@ en lecture seule (FR-005, FR-031) ; le parcours réel d'Olivier a
+donné les retours suivants, faits sur la branche : conversation façon messagerie, du plus récent en
+haut (FR-032) ; « Par » en boutons à icônes (FR-033) ; frise des étapes collée en haut, Confirmer
+aussi en bas, Modifier en haut, bandeau qui dit ce qui a changé, croix des bandeaux (FR-034) ;
+« Parler en coréen » à côté de « Dicter » et « Corriger mon français », drapeaux en SVG (FR-035) ;
+icônes cohérentes dans le menu et les titres (FR-036) ; suppression d'une commande d'essai ou d'une
+fiche vide (FR-002). Le correctif du script Google (corps des mails en octets) est dans le même lot.
+
+### Constitution Check (lot échanges)
+
+| Principe | Vérification | État |
+|----------|--------------|------|
+| I. Dépôt public | Le script ne contient ni clé ni donnée ; la clé n'est gardée qu'en empreinte ; essais fictifs | OK |
+| II. Feu vert | Mails envoyés seulement au toucher de Youngmi (R-01 v0.45), DKIM « site » ; suppression seulement par une personne qui tape SUPPRIMER, jamais d'une vente payée, facturée ou rapprochée ; publication après feu vert | OK (feu vert à demander) |
+| III. Fiche produit | Rien de changé | OK |
+| IV. Données personnelles | Nouveau traitement (réponses des clients, script Google) au registre (T9) le 2026-11-07 ; orphelins 30 jours ; la page Confidentialité du site reste à compléter (T9) | ÉCART à fermer |
+| V. Sobre | Script Google gratuit dans le compte existant, sans nouvel outil payant | OK |
+| VI. Langue, téléphone | Coréen complet (263 pages) ; boutons de dictée, puces « Par » et croix portés à 44 px | OK |
+| VII. Preuves | 30 + 11 vérifications, coréen, suppression ; captures téléphone et ordinateur | OK |
+| VIII. Écritures de l'IA | L'assistant ne peut ni envoyer un mail ni supprimer | OK |
+
+**Complexity Tracking** : la règle « aucune commande n'est supprimée » (FR-002) reçoit une exception
+bornée pour les essais ; à confirmer par Olivier avant publication.

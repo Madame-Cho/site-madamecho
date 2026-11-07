@@ -5,7 +5,9 @@
 **Created**: 2026-11-07
 
 **Status**: En ligne depuis le 2026-11-06 (dernière version publiée le 2026-11-07) ; spécification
-reprise au format Spec Kit ; mise à jour le 2026-11-07 au soir après l'audit n° 2 (lot C1, C2, C3, C8)
+reprise au format Spec Kit ; mise à jour le 2026-11-07 au soir après l'audit n° 2 (lot C1, C2, C3, C8),
+puis après les échanges avec les clients (mails envoyés depuis la gestion, réponses des clients) et
+le parcours de test d'Olivier du 2026-11-07
 
 **Input**: « 2026-11-07 Claude Dossier de l'espace de gestion Madame Cho » (Drive, 91/03) : la
 proposition de fichier clients, la spécification v1, le compte rendu du prototype et celui du
@@ -51,6 +53,26 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
   Olivier : « oui je veux préciser », 2026-11-07, FR-030). Rapprochement à la main d'abord, par la
   liaison Qonto en lecture ensuite (proposé, en attente du choix d'Olivier).
 
+### Session 2026-11-07 (nuit, échanges avec les clients et parcours de test d'Olivier)
+
+- Q: Qui envoie les mails aux clients ? → A : la gestion, depuis contact@madamecho.com, signés
+  DKIM, seulement au toucher de Youngmi sur « Envoyer » après l'aperçu ; jamais l'assistant ni
+  une IA (rulebook v0.45, R-01 complétée ; FR-005). Gmail reste le secours.
+- Q: Comment les réponses des clients arrivent-elles ? → A : un script Google installé dans
+  contact@, en lecture seule, transmet chaque minute les mails dont l'objet porte une référence
+  MC-… ; la gestion les range dans la commande (FR-031).
+- Q: Dans quel ordre montrer les échanges ? → A : comme une messagerie, le plus récent en haut ;
+  ce qui n'a pas été vu est sous un trait « Nouveaux messages », puis vient « Déjà vus » (Olivier :
+  « une messagerie c'est généralement les récents en haut », FR-032).
+- Q: Comment Youngmi sait-elle où en est une commande ? → A : une frise des étapes reste en haut
+  de l'écran et dit l'étape à faire maintenant (FR-034).
+- Q: Youngmi peut-elle parler coréen pour écrire au client ? → A : oui ; deux boutons, « Dicter
+  en français » et « Parler en coréen » (le texte devient du français corrigé, à relire) ;
+  « Corriger mon français » reste ; aucun texte en coréen ne part au client (FR-035).
+- Q: Comment effacer une commande d'essai ? → A : « Supprimer la commande » en tapant SUPPRIMER,
+  seulement sans facture, sans rapprochement Qonto et sans paiement noté reçu ; une fiche client
+  sans commande se supprime de la même façon ; une trace reste (FR-002, à confirmer par Olivier).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Savoir ce qu'il y a à faire aujourd'hui (Priority: P1)
@@ -77,7 +99,7 @@ rouge dans « À répondre » ; toucher la case « À répondre » descend jusqu
 ### User Story 2 - Faire avancer une commande jusqu'à la remise (Priority: P1)
 
 De la demande à la remise, Youngmi fait avancer chaque commande d'un geste : proposition envoyée
-(texte prêt à copier ou réponse par email dans sa messagerie), confirmée (heure de retrait fixée,
+(mail envoyé depuis la gestion à son toucher, après aperçu), confirmée (heure de retrait fixée,
 ajout à son agenda avec un rappel la veille), remise (prix final et paiement). Une commande peut
 aussi finir sans suite ou annulée, et porter un drapeau « problème » à n'importe quelle étape.
 
@@ -88,8 +110,8 @@ les étapes ; l'historique montre chaque changement, daté et signé.
 
 **Acceptance Scenarios**:
 
-1. **Given** une demande, **When** Youngmi prépare sa proposition, **Then** l'outil lui donne un
-   texte prêt à envoyer elle-même, et n'envoie rien à sa place.
+1. **Given** une demande, **When** Youngmi prépare sa proposition, **Then** l'outil lui montre le
+   mail tel qu'il partira, qu'elle peut modifier, et ne l'envoie qu'à son toucher sur « Envoyer ».
 2. **Given** une commande avec un jour de retrait, **When** Youngmi touche « Ajouter à Google
    Agenda », **Then** son agenda s'ouvre sur l'événement du retrait, prêt à enregistrer ; le
    fichier agenda (.ics) donne le même événement avec un rappel la veille.
@@ -97,6 +119,11 @@ les étapes ; l'historique montre chaque changement, daté et signé.
    l'ouvre, **Then** l'outil lui signale qu'elle dort et lui propose de la passer « Sans suite ».
 4. **Given** un problème signalé, **When** il n'est pas résolu, **Then** il reste visible dans
    toutes les listes jusqu'à « Résolu ».
+5. **Given** un client qui répond au mail de la commande, **When** le script de contact@ passe,
+   **Then** sa réponse apparaît en moins de 2 minutes dans les échanges de la commande, en haut,
+   marquée « Nouvelle réponse » aussi dans la liste des commandes et sur Aujourd'hui.
+6. **Given** une commande ouverte, **When** Youngmi fait défiler l'écran, **Then** la frise des
+   étapes reste en haut et dit l'étape à faire maintenant.
 
 ---
 
@@ -349,17 +376,23 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   avoir de compte pour une IA.
 - **FR-002**: L'outil MUST tenir trois registres reliés par leurs numéros : clients (CL-…),
   commandes (MC-AAMMJJ-XXXX, la même référence que l'email du site), produits (avec
-  ingrédients et recettes), et un historique daté et signé de chaque changement ; aucune
-  commande n'est supprimée : une erreur se corrige par une modification notée dans
-  l'historique, et un effacement vide les données personnelles sans toucher aux montants.
+  ingrédients et recettes), et un historique daté et signé de chaque changement ; une vraie
+  commande n'est jamais supprimée : une erreur se corrige par une modification notée dans
+  l'historique, et un effacement vide les données personnelles sans toucher aux montants. Seule
+  une commande d'essai ou saisie par erreur, sans facture, sans rapprochement Qonto et sans
+  paiement noté reçu, MAY être supprimée par une personne qui tape SUPPRIMER ; de même une fiche
+  client sans aucune commande ; une ligne « supprimée » (référence, motif) reste dans le journal.
 - **FR-003**: Une commande MUST suivre le cycle Demande → Proposition → Confirmée → Remise, avec
   les sorties Sans suite et Annulée (motif) ; le paiement (pas encore payé, acompte demandé,
   acompte reçu, payé, remboursé) et le drapeau « problème » sont tenus à part du statut.
 - **FR-004**: Aujourd'hui MUST montrer les demandes à répondre avec leur âge (en retard après
   24 heures), les retraits des 7 prochains jours, les problèmes, les acomptes attendus, les
   retraits passés à clôturer et les chiffres du mois ; chaque case MUST mener à son détail.
-- **FR-005**: Chaque étape MUST préparer, sans l'envoyer, le texte à envoyer au client
-  (proposition, confirmation, demande d'avis), dans la messagerie de Madame Cho.
+- **FR-005**: Chaque étape MUST préparer le mail au client (proposition, confirmation, message,
+  demande d'avis), montré tel qu'il partira et modifiable ; il MUST partir de contact@, signé
+  DKIM, seulement au toucher de l'utilisatrice sur « Envoyer », dans une seule conversation par
+  commande (même objet, In-Reply-To) ; les boutons qui ouvrent un mail MUST dire que rien ne part
+  avant « Envoyer ». L'assistant MUST NOT envoyer de mail.
 - **FR-006**: Une commande en cours qui a un jour de retrait MUST pouvoir s'ajouter à l'agenda
   (Google Agenda, ou un fichier agenda avec un rappel la veille).
 - **FR-007**: Une demande ou une proposition sans échange depuis 15 jours MUST être signalée et
@@ -459,6 +492,30 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   commande quand on change la date, l'heure, le mode ou la quantité, à la main comme par
   l'assistant ; seul un gâteau ajouté prend le prix actuel de la carte.
 
+- **FR-031**: Les réponses des clients MUST arriver dans la commande par un script installé dans
+  contact@, en lecture seule, authentifié par une clé dont la gestion ne garde que l'empreinte ;
+  seuls les mails dont l'objet porte une référence MC-… sont transmis (expéditeur, date, objet,
+  texte, noms des pièces jointes) ; un mail sans commande reconnue est gardé 30 jours dans
+  Réglages ; 24 heures sans nouvelles du script MUST déclencher une alerte sur Aujourd'hui.
+- **FR-032**: Les échanges d'une commande MUST se lire comme une messagerie : le plus récent en
+  haut, le client d'un côté, Madame Cho de l'autre, les échanges notés au milieu, chacun avec son
+  icône et son heure ; ce qui n'a pas été vu MUST être sous un trait « Nouveaux messages », suivi
+  d'un trait « Déjà vus » ; un long mail se replie.
+- **FR-033**: « Noter un échange » MUST garder ce qui ne passe pas par les mails, avec « Par »
+  (téléphone, SMS, WhatsApp, de vive voix, Instagram, autre), choisi d'un toucher avec la même
+  icône que dans la conversation ; rien ne s'enregistre avant « Ajouter la note ».
+- **FR-034**: Une commande de particulier en cours MUST montrer en haut, et garder visible en
+  défilant, la frise de ses étapes (demande reçue, proposition envoyée, commande confirmée,
+  confirmation envoyée, remise, avis demandé) avec l'étape à faire maintenant ; « Confirmer la
+  commande » MUST être aussi en bas des échanges, et « Modifier la commande » en haut ; après une
+  modification, le bandeau MUST dire ce qui a changé ; chaque bandeau se ferme d'une croix.
+- **FR-035**: Sous chaque texte destiné à un client, l'outil MUST proposer « Dicter en français »,
+  « Parler en coréen » (le texte dicté devient du français corrigé, à relire) et « Corriger mon
+  français » (texte corrigé et son sens en coréen ; « Utiliser ce texte » ou « Garder le mien ») ;
+  un texte en coréen MUST NOT partir au client. Les drapeaux de langue sont dessinés en SVG.
+- **FR-036**: La même chose MUST avoir partout la même icône (commande, client, produit,
+  échanges, agenda, canaux), dans le menu (ordinateur compris) et les titres des cadres.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Client** : numéro CL-…, particulier ou professionnel, prénom et nom ou société et contact,
@@ -468,7 +525,9 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   paiement, moyen, facture, problème, retrait (date, moment, heure, mode), lignes, plaque et
   personnalisation, besoin d'un professionnel, montants (indicatif, final, acompte), dates.
 - **Événement** : une ligne datée et signée de l'historique d'une commande, d'un client ou d'un
-  produit (changement, commentaire, envoi, effacement).
+  produit (changement, commentaire avec son canal, mail envoyé, mail reçu et « vu », effacement,
+  suppression d'un essai).
+- **Mail reçu** : identifiant Gmail, date, commande rattachée ou orphelin (30 jours).
 - **Produit** et **variante** : gâteau de la carte ou de la gamme pro, statut, fiche validée,
   TVA, emballage, recette par variante.
 - **Ingrédient** : nom, unité, prix d'achat, allergènes, fournisseur.
@@ -491,8 +550,11 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - **SC-004**: Le relevé du mois d'un restaurant égale, à l'euro près, la facture préparée à
   partir de lui, et ne contient jamais une livraison déjà facturée.
 - **SC-005**: 100 % des données qui ont dépassé leur durée sont effacées dans les 24 heures.
-- **SC-006**: 0 email envoyé à un client par l'outil ; 0 rapport envoyé sans le clic de
-  l'utilisatrice.
+- **SC-006**: 0 email envoyé à un client sans le toucher de l'utilisatrice sur « Envoyer » ; 0
+  rapport envoyé sans son clic ; 0 mail envoyé par l'assistant.
+- **SC-011**: La réponse d'un client apparaît dans sa commande en moins de 2 minutes (mesuré le
+  2026-11-07 sur un vrai mail).
+- **SC-012**: 0 vente payée, facturée ou rapprochée supprimable.
 - **SC-007**: Le coût de l'assistant ne dépasse jamais le plafond du mois fixé dans Réglages.
 - **SC-008**: 0 donnée changée par l'assistant sans le toucher de « Confirmer » de l'utilisatrice.
 - **SC-009**: 0 paiement changé par une modification de l'assistant sans être affiché sur sa carte
@@ -513,5 +575,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   version.
 - La double authentification, le paiement en ligne et la lettre d'information viendront plus
   tard ; l'accord pour la lettre est seulement prévu dans la fiche client.
+- Ce que Youngmi envoie depuis son Gmail personnel « en tant que » contact@ ne passe pas par la
+  boîte contact@ et ne revient donc pas dans la gestion.
 - Deux demandes d'Olivier du 07/11/2026 sont à cadrer avant toute spécification : un assistant
   qui dépend de la personne connectée, et un écran Agenda relié au Google Agenda de Youngmi.

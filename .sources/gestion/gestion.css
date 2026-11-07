@@ -200,7 +200,7 @@ fieldset.cases legend{font-size:14px;font-weight:500;padding:0;margin-bottom:4px
 .erreur a{font-weight:500}
 .info{background:var(--bleu-f);color:var(--bleu);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:15px}
 .flash{position:relative;border-radius:10px;padding:12px 48px 12px 14px;margin-bottom:14px;font-size:15px}
-.flash-fermer{position:absolute;top:4px;right:4px;width:40px;height:40px;border:0;border-radius:20px;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
+.flash-fermer{position:absolute;top:2px;right:2px;width:44px;height:44px;border:0;border-radius:22px;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
 .flash-fermer:hover{background:rgba(0,0,0,.06)}
 .flash-ok{background:var(--vert-f);color:var(--vert)}
 .flash-erreur{background:var(--rouge-f);color:var(--erreur)}
@@ -310,7 +310,7 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 /* Montants HT ou TTC : un seul choix pour tout ce qu'on compare (demande d'Olivier, 07/11/2026) */
 .choix-taxe{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--doux)}
 .choix-taxe span{margin-right:2px}
-.choix-taxe a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid var(--fort);border-radius:20px;background:var(--carte);color:var(--texte);text-decoration:none;font-weight:500;white-space:nowrap}
+.choix-taxe a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--fort);border-radius:22px;background:var(--carte);color:var(--texte);text-decoration:none;font-weight:500;white-space:nowrap}
 .choix-taxe a:hover{border-color:var(--chocolat)}
 .choix-taxe a[aria-current]{background:var(--chocolat);border-color:var(--chocolat);color:#fff}
 .choix-ligne{margin:0 0 10px}
@@ -651,7 +651,7 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .chip-par{display:inline-flex;align-items:center;min-height:20px;padding:0 8px;border-radius:10px;background:var(--ivoire);color:var(--chocolat);font-size:12px;font-weight:500;margin-right:4px}
 .corps-recu{background:#fff;border:1px solid var(--ligne);border-radius:8px;padding:10px 12px;margin-top:8px;white-space:pre-wrap}
 .aide-saisie{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 10px}
-.btn.petit-btn{min-height:34px;padding:4px 12px;font-size:14px}
+.btn.petit-btn{min-height:44px;padding:4px 12px;font-size:14px}
 .btn.petit-btn.actif{background:#6E2A10;color:#fff}
 .correction{background:var(--ivoire);border-radius:10px;padding:12px 14px;margin:0 0 12px}
 .correction .corrige{white-space:pre-wrap;margin:0 0 8px;font-size:16px;line-height:1.5}
@@ -730,7 +730,7 @@ details.geste>form{padding:0 2px 6px}
 .puces{display:flex;flex-wrap:wrap;gap:8px}
 .puce-choix{position:relative;cursor:pointer}
 .puce-choix input{position:absolute;opacity:0;width:1px;height:1px}
-.puce-choix span{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid var(--fort);border-radius:20px;background:var(--carte);font-size:14px;color:var(--texte)}
+.puce-choix span{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border:1px solid var(--fort);border-radius:22px;background:var(--carte);font-size:14px;color:var(--texte)}
 .puce-choix span .ic{width:17px;height:17px;color:var(--chocolat)}
 .puce-choix input:checked+span{background:var(--chocolat);border-color:var(--chocolat);color:#fff}
 .puce-choix input:checked+span .ic{color:#fff}

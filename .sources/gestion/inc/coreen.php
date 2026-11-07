@@ -247,6 +247,7 @@ Avis demandé | 리뷰 부탁함
 Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre. | 확정 이메일을 보냈어요. 다음 단계: 픽업 날, 이 칸 아래의 ‘고객에게 전달 완료’를 누르세요.
 À faire maintenant : envoyer la confirmation au client (ci-dessous). | 지금 할 일: 아래에서 고객에게 확정 이메일 보내기.
 Nouveaux messages | 새 메시지
+Le texte contient du coréen. Les mails et les notes sont en français : touchez « Corriger mon français » pour le traduire. | 한국어가 들어 있어요. 고객과 기록은 프랑스어로 써요. ‘프랑스어 고치기’를 눌러 프랑스어로 바꿔 주세요.
 Supprimer la commande (essai, erreur de saisie) | 주문 삭제 (테스트, 입력 실수)
 Supprimer la commande | 주문 삭제
 Supprimer la fiche (essai, erreur de saisie) | 고객 정보 삭제 (테스트, 입력 실수)
@@ -256,8 +257,8 @@ Pour supprimer, tapez SUPPRIMER en majuscules. | 삭제하려면 대문자로 SU
 Supprimer définitivement cette commande ? | 이 주문을 완전히 삭제할까요?
 Supprimer définitivement cette fiche client ? | 이 고객 정보를 완전히 삭제할까요?
 Possible seulement pour une fiche sans aucune commande. Elle disparaît de la gestion. | 주문이 하나도 없는 고객 정보만 삭제할 수 있어요. 관리 시스템에서 사라져요.
-La commande et ses échanges disparaissent de la gestion, des statistiques et de l'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Les mails restent dans Gmail. | 주문과 연락 내용이 관리 시스템, 통계, 일정에서 사라져요. 실제 주문이 취소된 경우에는 ‘주문 취소’를 쓰세요. 이메일은 Gmail에 남아요.
-Cette commande a une facture Qonto ou un paiement rapproché : elle reste pour les comptes. Annulez-la plutôt. | 이 주문에는 Qonto 청구서나 대조된 결제가 있어서 회계를 위해 남겨야 해요. 대신 취소하세요.
+La commande et ses échanges disparaissent de la gestion, des statistiques et de l'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Impossible pour une commande facturée, rapprochée avec Qonto ou notée payée. Les mails restent dans Gmail. | 주문과 연락 내용이 관리 시스템, 통계, 일정에서 사라져요. 실제 주문이 취소된 경우에는 ‘주문 취소’를 쓰세요. 청구서가 있거나 Qonto와 대조됐거나 결제됨으로 적힌 주문은 삭제할 수 없어요. 이메일은 Gmail에 남아요.
+Cette commande a une facture, un paiement rapproché ou un paiement reçu : elle reste pour les comptes. Annulez-la plutôt. | 이 주문에는 청구서, 대조된 결제 또는 받은 결제가 있어서 회계를 위해 남겨야 해요. 대신 취소하세요.
 Ce client a des commandes : utilisez plutôt « Demande d'effacement ». | 이 고객에게 주문이 있어요. 대신 ‘삭제 요청’을 쓰세요.
 Déjà vus | 이미 본 메시지
 Mail envoyé depuis Gmail | Gmail에서 보낸 이메일

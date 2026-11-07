@@ -12,3 +12,13 @@ Données fictives seulement (principe I). Scripts gardés hors du dépôt en att
    puis confirmation).
 
 Résultat attendu : « TOUT EST BON » pour chacun.
+
+## Lot « échanges avec les clients » (2026-11-07, nuit)
+
+7. `node echanges/test.js` : 30 vérifications (réponses du script, conversation du plus récent en haut,
+   traits « Nouveaux messages » et « Déjà vus », Écrire au client, Noter un échange avec « Par »).
+8. `MC_ESSAI=1 php echanges/prep8.php` puis `node echanges/conf3.js` : 11 vérifications (confirmation,
+   frise, Confirmer en bas, bandeau de modification).
+9. `node coreen/verif.js <dossier>` : 263 pages en coréen, 0 texte resté en français.
+10. Suppression d'un essai : commande supprimable puis supprimée, refus sans SUPPRIMER, fiche sans
+    commande supprimée (6 vérifications).

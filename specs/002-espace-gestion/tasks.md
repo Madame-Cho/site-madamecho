@@ -55,8 +55,25 @@
 - [X] T023 C14 (FR-030, voulu par Olivier le 2026-11-07, « à la main d'abord, auto ensuite ») : schéma 7 (`paiement_par`, `paiement_le`, `qonto_ref`, `qonto_le`, `qonto_par`) ; « Constaté par » et état Qonto sur la commande ; Plus › Rapprochement Qonto (liste, plusieurs paiements pour une opération, tout ou rien) ; référence obligatoire, jamais un nom ou un montant seuls ; espèces dispensées ; un paiement changé est à rapprocher de nouveau ; manuel FR/KO ; essais 26 + 21 vérifications. Reste : la liaison Qonto en lecture remplira le même état (portail développeur de Qonto fermé aux inscriptions)
 - [ ] T024 Pilote avec Youngmi (T-22) et relecture coréenne (T-23) avant d'ajouter des fonctions
 
+## Phase 8 : Échanges avec les clients et retours du parcours de test (2026-11-07, nuit)
+
+- [X] T025 [US2] FR-005 : mails au client envoyés depuis la gestion au toucher de « Envoyer », une conversation par commande (en ligne f145afc)
+- [X] T026 [US2] FR-031 : page `?p=reponses`, script `.sources/scripts-google/reponses-clients.gs` en lecture seule, orphelins, alerte 24 h (en ligne f145afc) ; correctif du corps en octets (278c2b7)
+- [X] T027 [US2] FR-032 : conversation façon messagerie, du plus récent en haut, traits « Nouveaux messages » et « Déjà vus », dans `inc/vues.php`
+- [X] T028 [P] [US2] FR-033 : « Par » en boutons à icônes, « Ajouter la note »
+- [X] T029 [US2] FR-034 : frise des étapes collée en haut, Confirmer en bas, Modifier en haut, bandeau des changements, croix des bandeaux
+- [X] T030 [P] [US8] FR-035 : « Parler en coréen », garde contre un texte en coréen, drapeaux SVG
+- [X] T031 [P] FR-036 : icônes du menu (ordinateur compris) et des titres de cadres
+- [X] T032 [US5] FR-002 : suppression d'une commande d'essai (ni facture, ni Qonto, ni paiement reçu) et d'une fiche sans commande, en tapant SUPPRIMER
+- [X] T033 [P] [US8] Manuel FR/KO et dictionnaire coréen à jour ; zones à toucher à 44 px
+- [ ] T034 Feu vert d'Olivier sur la version exacte (et sur l'exception de FR-002), publication, Journal des publications, Registre
+- [ ] T035 Page Confidentialité du site : les réponses des clients lues par la gestion (T9, principe IV)
+- [ ] T036 Mail « Merci » et demande d'avis à essayer en réel quand la fiche Google existera (lien dans Réglages)
+- [ ] T037 Changer la clé du script (montrée dans une capture le 2026-11-07) : nouvelle clé dans Réglages, propriété CLE, puis « installer »
+
 ## Dependencies & Execution Order
 
 - Phase 2 dépend de la phase 1 ; T011 clôt le lot.
 - Les phases 3 à 6 sont indépendantes entre elles ; chacune se publie sur feu vert séparé.
 - Phase 7 : T021 de préférence avant le lot suivant ; T023 avant tout changement du paiement.
+- Phase 8 : T034 clôt le lot ; T035 avant d'annoncer les réponses des clients ; T037 dès que possible.

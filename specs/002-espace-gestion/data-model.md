@@ -29,3 +29,23 @@
   est refusée si elle n'est qu'un montant ou que le nom du client. Aucune vente ni aucun paiement ne naît d'un
   rapprochement ; Qonto n'est jamais écrit (R-24).
 - Événements : type `rapprochement` (rapprochée, retiré, à refaire).
+
+## Échanges avec les clients (FR-005, FR-031 à FR-033, schéma 8)
+
+- **Événement**, colonne ajoutée `lu` (1 par défaut ; 0 pour un mail reçu pas encore vu, remis à 1 à
+  l'ouverture de la commande). Types utilisés : `email_client` (mail envoyé depuis la gestion,
+  `ancien` = « type:… mid:<Message-ID> »), `email_recu` (réponse du client ou mail envoyé depuis Gmail),
+  `commentaire` (échange noté, `ancien` = « par:telephone|sms|whatsapp|oral|instagram|autre »).
+- **mails_recus** (nouvelle table) : `gmail_id` (une seule fois chacun), `le`, `commande_id`,
+  `evenement_id`, `etat` (rangé, envoyé, copie, orphelin, ignoré) ; pour un orphelin seulement :
+  expéditeur, objet, extrait, gardés 30 jours ; copies et ignorés effacés après 3 mois.
+- **Paramètres** : `reponses_empreinte` (empreinte de la clé du script, jamais la clé), heure du dernier
+  passage du script.
+
+## Suppression d'un essai (FR-002, sans changement de schéma)
+
+- Une commande sans facture, sans `qonto_ref` et dont le paiement n'est ni « Payé » ni « Acompte reçu »
+  peut être supprimée : la commande, ses événements et ses lignes de `mails_recus` disparaissent ; un
+  événement `suppression` (référence, motif, rattaché au client) reste.
+- Une fiche client sans aucune commande peut être supprimée avec ses événements ; un événement
+  `suppression` (numéro, motif) reste dans le journal.

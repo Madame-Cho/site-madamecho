@@ -1227,9 +1227,11 @@ function reprises_dernieres(int $n = 5): array {
     return lignes("SELECT le, auteur, texte, ancien AS fichier, nouveau AS etat FROM evenements WHERE type = 'import' ORDER BY id DESC LIMIT " . max(1, $n));
 }
 
-/** Supprimer une commande d'essai ou saisie par erreur (demande d'Olivier, test du 07/11/2026) : jamais une vente facturée ni rapprochée avec Qonto. */
+/** Supprimer une commande d'essai ou saisie par erreur (test d'Olivier du 07/11/2026, FR-002) : jamais une vente facturée, rapprochée avec Qonto ou notée payée. */
 function commande_supprimable(array $k): bool {
-    return trim((string)($k['facture'] ?? '')) === '' && trim((string)($k['qonto_ref'] ?? '')) === '';
+    // Ni facture, ni rapprochement Qonto, ni argent noté reçu : une vraie vente payée (même en espèces) ne disparaît jamais (FR-002)
+    return trim((string)($k['facture'] ?? '')) === '' && trim((string)($k['qonto_ref'] ?? '')) === ''
+        && !in_array((string)($k['paiement'] ?? ''), ['paye', 'acompte_recu'], true);
 }
 function commande_supprimer(int $id, string $motif): void {
     $k = commande($id);

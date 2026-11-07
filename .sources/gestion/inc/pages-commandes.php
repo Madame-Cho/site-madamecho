@@ -117,6 +117,13 @@ function page_commande(): void {
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         csrf_verifier();
         $a = texte('_action', 40);
+        // Un mail ou une note au client ne part jamais en coréen (FR-035) : la page bloque déjà, le serveur aussi
+        foreach (['accueil', 'mot', 'texte_mail', 'texte'] as $champ) {
+            if (preg_match('/[\x{3131}-\x{318E}\x{AC00}-\x{D7A3}]/u', (string)($_POST[$champ] ?? ''))) {
+                flash('erreur', 'Le texte contient du coréen. Les mails et les notes sont en français : touchez « Corriger mon français » pour le traduire.');
+                rediriger('commande', ['id' => $id]);
+            }
+        }
         switch ($a) {
             case 'proposition':
                 $prix = centimes(texte('prix_final', 12));
@@ -175,7 +182,7 @@ function page_commande(): void {
             case 'supprimer':
                 // Une commande d'essai ou saisie par erreur, jamais une vraie vente facturée (demande d'Olivier, test du 07/11/2026)
                 if (texte('confirmation', 12) !== 'SUPPRIMER') { flash('erreur', 'Pour supprimer, tapez SUPPRIMER en majuscules.'); break; }
-                if (!commande_supprimable($k)) { flash('erreur', 'Cette commande a une facture Qonto ou un paiement rapproché : elle reste pour les comptes. Annulez-la plutôt.'); break; }
+                if (!commande_supprimable($k)) { flash('erreur', 'Cette commande a une facture, un paiement rapproché ou un paiement reçu : elle reste pour les comptes. Annulez-la plutôt.'); break; }
                 commande_supprimer($id, une_ligne(texte('motif', 200)) ?: 'essai');
                 flash('ok', 'Commande ' . $k['reference'] . ' supprimée, avec ses échanges.');
                 rediriger('commandes');
@@ -334,7 +341,7 @@ function page_commande(): void {
         . '<details class="replie"><summary>Changer l\'étape à la main</summary>' . formulaire('statut', liste_choix('statut', 'Étape', STATUTS, $k['statut']) . champ('motif', 'Précision (facultatif)', '', ['maxlength' => '300']) . bouton('Changer', 'secondaire')) . '</details>'
         . formulaire('dupliquer', bouton('Faire une copie (client régulier)', 'discret'))
         . (commande_supprimable($k) ? '<details class="replie"><summary>' . icone('supprimer') . 'Supprimer la commande (essai, erreur de saisie)</summary>'
-            . '<p class="aide">La commande et ses échanges disparaissent de la gestion, des statistiques et de l\'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Les mails restent dans Gmail.</p>'
+            . '<p class="aide">La commande et ses échanges disparaissent de la gestion, des statistiques et de l\'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Impossible pour une commande facturée, rapprochée avec Qonto ou notée payée. Les mails restent dans Gmail.</p>'
             . formulaire('supprimer', champ('motif', 'Motif', 'essai', ['maxlength' => '200']) . champ('confirmation', 'Tapez SUPPRIMER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'SUPPRIMER'])
                 . bouton(icone('supprimer') . 'Supprimer la commande', 'danger'), ['data-confirmer' => 'Supprimer définitivement cette commande ?']) . '</details>' : '')
         . '</div>';
