@@ -4,6 +4,8 @@
  * - POST seulement ; destinataire fixe ; l'adresse du client seulement en « Reply-To », après validation.
  * - Seuls les gâteaux, tailles et parfums de la carte sont acceptés ; prix et délais recalculés ici.
  * - Champ-piège et limite de tentatives contre le spam ; messages d'erreur sans donnée personnelle.
+ * - Les indispos de l'agenda de la gestion ferment un jour ou un moment (07/11/2026) : la page le demande pendant la saisie
+ *   (« verifier », date et moment seulement), et l'envoi est refusé ; le motif n'est jamais dit.
  * - Si une protection ne marche pas (dossier des limites, verrou, signature DKIM), aucun email ne part :
  *   la page le dit et propose le téléphone ou l'email (audit du site du 03/11/2026, C04).
  * - Aucun secret dans ce fichier (dépôt public, R-08). Signature DKIM : dkim.php (clé créée sur le serveur).
@@ -67,6 +69,25 @@ function champ(string $nom, int $max): string {
     return mb_substr($v, 0, $max);
 }
 function uneLigne(string $v): string { return trim(preg_replace('/\s+/u', ' ', $v) ?? ''); }
+
+/* ---------- L'agenda de la gestion (demande d'Olivier du 07/11/2026) ---------- */
+// Les indispos de Youngmi (vacances, journée complète…) ferment aussi ce formulaire : la phrase dit le jour ou le moment, jamais le motif.
+// Si la gestion ne répond pas (pas encore ouverte, base illisible), la date reste libre : l'agenda ne bloque jamais le formulaire.
+function indispo_agenda(string $date, string $moment): string {
+    if (PHP_VERSION_ID < 80000 || !is_file(GESTION_ENREGISTRER)) return '';   // l'espace de gestion demande PHP 8
+    try {
+        require_once GESTION_ENREGISTRER;
+        return \MadameCho\Gestion\indispo_pour_demande($date, $moment);
+    } catch (\Throwable $e) {
+        error_log('madamecho formulaire : agenda de la gestion non lu (' . get_class($e) . ')');
+        return '';
+    }
+}
+// Pendant la saisie, la page demande si le jour et le moment choisis sont libres : seulement la date et le moment, rien d'enregistré ni d'envoyé.
+if (champ('verifier', 1) === '1') {
+    $indispo = indispo_agenda(champ('date', 10), champ('moment', 20));
+    repondre(true, ['libre' => $indispo === '', 'message' => $indispo], true);
+}
 
 // Champ-piège : un robot le remplit ; on répond comme si tout allait bien, sans rien envoyer.
 if (champ('site_web', 200) !== '') {
@@ -142,20 +163,25 @@ if ($perso !== '' || $besoin !== '' || !$lignes) $delai = max($delai, (int)$CAT[
 if ($pro) $delai = max($delai, (int)($CAT['delaiPro'] ?? 14));   // demande d'un professionnel : deux semaines (audit C02)
 
 /* ---------- La date de retrait ---------- */
+$indispo = '';   // la phrase de l'agenda de la gestion, si ce jour ou ce moment est indisponible
 $jour = DateTimeImmutable::createFromFormat('!Y-m-d', $date, new DateTimeZone('Europe/Paris'));
 $auj = new DateTimeImmutable('today', new DateTimeZone('Europe/Paris'));
 if (!$jour || $jour->format('Y-m-d') !== $date) {
     $erreurs[] = 'Choisissez une date de retrait.';
 } else {
     $min = $auj->modify('+' . $delai . ' day');
+    $avant = count($erreurs);
     if ($jour < $min) $erreurs[] = 'La date de retrait doit être au plus tôt le ' . $min->format('d/m/Y') . '.';
     if (in_array($jour->format('m-d'), $CAT['fermes'], true)) $erreurs[] = 'Pas de retrait le 24 décembre.';
     if ($jour > $auj->modify('+6 month')) $erreurs[] = 'Choisissez une date dans les six prochains mois.';
+    // Une date possible, mais une indispo dans l'agenda de la gestion ce jour-là, à ce moment : refusée aussi (la page l'a dit pendant la saisie)
+    if (count($erreurs) === $avant && isset($CAT['moments'][$moment])) $indispo = indispo_agenda($date, $moment);
+    if ($indispo !== '') $erreurs[] = $indispo;
 }
 
 if ($erreurs) {
     http_response_code(422);
-    repondre(false, ['erreurs' => array_values(array_unique($erreurs))], $enJson);
+    repondre(false, ['erreurs' => array_values(array_unique($erreurs))] + ($indispo !== '' ? ['indispo' => $indispo] : []), $enJson);
 }
 
 /* ---------- Limite de tentatives et double envoi ---------- */

@@ -232,6 +232,31 @@
       dateAide.textContent = 'Au plus tôt le ' + dateFr(dateIn.min) + (n === 1 ? ' (commande la veille).' : ' (commande ' + n + ' jours avant).') + ' Pas de retrait le 24 décembre.';
     }
 
+    // L'agenda de Madame Cho (07/11/2026) : le jour et le moment choisis sont demandés au site, sans rien d'autre ; une phrase sous la date
+    // s'ils sont indisponibles (jamais le motif). Sans réponse, rien n'est bloqué : le serveur vérifie de nouveau à l'envoi.
+    var indispoP = $('[data-date-indispo]'), indispo = { cle: '', message: '' }, numIndispo = 0;
+    function cleRetrait() { return form.elements.date.value + '|' + form.elements.moment.value; }
+    function montrerIndispo(cle, message) {
+      var avant = indispo.message;
+      indispo = { cle: cle, message: message };
+      if (indispoP) indispoP.textContent = message;
+      if (message) form.elements.date.setAttribute('aria-invalid', 'true');
+      else if (avant) form.elements.date.removeAttribute('aria-invalid');
+    }
+    function verifierAgenda() {
+      var d = form.elements.date.value, cle = cleRetrait(), n = ++numIndispo;
+      if (indispo.cle !== cle) montrerIndispo('', '');
+      if (APERCU || !window.fetch || !window.FormData || !/^\d{4}-\d{2}-\d{2}$/.test(d) || d < dateIn.min || d > dateIn.max || d.slice(5) === '12-24') return;
+      var fd = new FormData();
+      fd.append('verifier', '1'); fd.append('date', d); fd.append('moment', form.elements.moment.value);
+      fetch(form.getAttribute('action'), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { if (n === numIndispo && cle === cleRetrait() && j && j.ok) montrerIndispo(cle, j.libre ? '' : String(j.message || '')); })
+        .catch(function () {});
+    }
+    dateIn.addEventListener('change', verifierAgenda);
+    form.elements.moment.addEventListener('change', verifierAgenda);
+
     var sansStockage = $('[data-sans-stockage]');
     if (sansStockage) sansStockage.hidden = STOCKAGE;
     panier.setAttribute('tabindex', '-1');
@@ -308,6 +333,7 @@
     perso.addEventListener('input', majDate);
     form.addEventListener('input', function (e) { if (e.target.removeAttribute) e.target.removeAttribute('aria-invalid'); });
     rendre();
+    if (form.elements.date.value) verifierAgenda();   // date remise par le navigateur (retour arrière)
 
     function recap(ref) {
       var f = form.elements, ls = lignes(), t = [], total = 0;
@@ -344,6 +370,7 @@
       else if (f.date.value < dateIn.min) err(f.date, 'La date de retrait doit être au plus tôt le ' + dateFr(dateIn.min) + '.');
       else if (f.date.value.slice(5) === '12-24') err(f.date, 'Pas de retrait le 24 décembre\u00a0: choisissez une autre date.');
       else if (f.date.value > dateIn.max) err(f.date, 'Choisissez une date dans les six prochains mois.');
+      else if (indispo.message && indispo.cle === cleRetrait()) err(f.date, indispo.message);
       if (f.prenom && !f.prenom.value.trim()) err(f.prenom, 'Indiquez votre prénom.');
       if (!f.nom.value.trim()) err(f.nom, 'Indiquez votre nom.');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) err(f.email, 'Indiquez une adresse email valide, pour recevoir la réponse de Madame Cho.');
@@ -366,7 +393,9 @@
         if (plaques[cleLigne(l)]) o.plaque = plaques[cleLigne(l)].trim().slice(0, 60);
         return o;
       })));
+      var cleEnvoi = cleRetrait();
       envoiEnCours = true; envoyer.disabled = true; envoyer.textContent = 'Envoi en cours…';
+      function rouvrir() { envoiEnCours = false; envoyer.disabled = false; envoyer.textContent = 'Envoyer ma demande, sans engagement'; }
       function fini(ref) {
         var r = $('[data-recu]'), texte = recap(ref);
         $('[data-ref]').textContent = ref; $('[data-recap]').textContent = texte;
@@ -378,7 +407,7 @@
         ecrire([]);
       }
       function echec(msg) {
-        envoiEnCours = false; envoyer.disabled = false; envoyer.textContent = 'Envoyer ma demande, sans engagement';
+        rouvrir();
         erreurs.hidden = false;
         erreurs.innerHTML = '';
         erreurs.appendChild(document.createTextNode(msg + ' Votre demande est gardée. Vous pouvez réessayer, appeler le 06 61 31 17 79 ou '));
@@ -402,6 +431,10 @@
             // Mesure d'audience : la demande envoyée est comptée, sans aucune donnée de la demande (ni référence, ni contenu)
             if (window._paq) window._paq.push(['trackEvent', 'Demande', 'Envoyée']);
             fini(j.ref);
+          }
+          else if (j && j.indispo) {   // le jour ou le moment vient d'être fermé dans l'agenda : à changer, comme une erreur de saisie
+            rouvrir(); montrerIndispo(cleEnvoi, String(j.indispo));
+            erreurs.hidden = false; erreurs.textContent = (j.erreurs || [j.indispo]).join('\n'); erreurs.focus();
           }
           else echec((j && j.erreurs && j.erreurs.length) ? j.erreurs.join(' ') : 'L’envoi n’a pas abouti.');
         })

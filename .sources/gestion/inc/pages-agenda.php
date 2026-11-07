@@ -3,7 +3,8 @@
  * Madame Cho : espace de gestion. L'agenda (demande d'Olivier du 07/11/2026) : les retraits et les livraisons du mois,
  * jour par jour, chaque commande menant à sa page ; les indispos de Youngmi (jours entiers ou plages horaires), à ajouter,
  * modifier ou supprimer ici. La gestion prévient quand une commande en cours tombe sur une indispo.
- * Le formulaire « Ma demande » du site n'en tient pas encore compte : ce sera la version suivante (choix d'Olivier, 07/11/2026).
+ * Le formulaire « Ma demande » du site en tient compte aussi (2e version, 07/11/2026) : un jour ou un moment indisponible y est refusé,
+ * sans le motif (indispo_pour_demande, dans enregistrer.php).
  */
 declare(strict_types=1);
 namespace MadameCho\Gestion;
@@ -117,7 +118,7 @@ function page_agenda(): void {
     $ajout = '<details class="replie" id="ajouter"' . (($_GET['ajouter'] ?? '') === '1' ? ' open' : '') . '><summary>' . icone('ajouter') . 'Ajouter une indispo</summary>'
            . formulaire('indispo_ajouter', champs_indispo($nouvelle, 'n') . bouton('Ajouter l\'indispo', 'principal'), ['class' => 'form-indispo']) . '</details>';
     $c .= bloc('Indispos à venir', ($liste !== '' ? '<div class="indispos">' . $liste . '</div>' : '<p class="vide">Aucune indispo à venir.</p>')
-        . '<p class="aide">Un jour entier ou une plage horaire (de 14 h à 18 h, par exemple), sur un ou plusieurs jours. La gestion prévient si une commande tombe dessus. Le formulaire du site n\'en tient pas encore compte.</p>'
+        . '<p class="aide">Un jour entier ou une plage horaire (de 14 h à 18 h, par exemple), sur un ou plusieurs jours. La gestion prévient si une commande tombe dessus, et le formulaire du site refuse ces jours et ces moments, sans jamais dire le motif.</p>'
         . $ajout, '', 'indispos');
     mise_en_page('Agenda', $c, 'agenda', 'page-agenda');
 }

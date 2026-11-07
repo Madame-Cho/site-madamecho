@@ -3,6 +3,7 @@
  * Madame Cho : enregistrement d'une demande du formulaire du site dans l'espace de gestion.
  * Appelé par ma-demande/envoyer.php APRÈS l'envoi de l'email à contact@ (même référence MC-…) :
  * si l'enregistrement échoue, l'email est parti quand même et le visiteur ne voit aucune différence.
+ * Le formulaire y demande aussi, avant l'envoi, si le jour et le moment choisis tombent sur une indispo de l'agenda.
  * Aucun cookie, aucune session : le visiteur du site n'a pas de compte (GESTION_CONTEXTE_SITE).
  */
 declare(strict_types=1);
@@ -50,4 +51,30 @@ function enregistrer_demande(array $d): int {
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
     }
+}
+
+/**
+ * Le retrait demandé sur le site tombe-t-il sur une indispo de l'agenda (demande d'Olivier du 07/11/2026) ? Renvoie la phrase pour le
+ * visiteur, ou '' si ce jour et ce moment sont libres. Jamais le motif ni les heures de l'indispo : le jour et le moment choisis, les autres
+ * moments encore libres ce jour-là, ou les jours d'une indispo d'une journée entière. Une plage ferme tout le moment qu'elle touche, comme
+ * pour les commandes de la gestion (indispo_de_commande). Rien tant que l'espace de gestion n'est pas ouvert : la base n'est jamais créée ici.
+ */
+function indispo_pour_demande(string $date, string $moment): string {
+    if (!date_valide($date) || !isset(MOMENTS_PLAGES[$moment]) || !gestion_base_existante()) return '';
+    $i = indispo_de_commande(['statut' => 'demande', 'retrait_date' => $date, 'retrait_heure' => '', 'retrait_moment' => $moment]);
+    if (!$i) return '';
+    $duJour = indispos_entre($date, $date);
+    $libres = array_keys(array_filter(MOMENTS_PLAGES, function (array $p) use ($duJour): bool {
+        foreach ($duJour as $x) if (indispo_journee($x) || ($x['heure_debut'] < $p[1] && $x['heure_fin'] > $p[0])) return false;
+        return true;
+    }));
+    if (!$libres) {
+        $de = max($i['debut'], date('Y-m-d'));   // une indispo déjà commencée : à partir d'aujourd'hui
+        $jours = (indispo_journee($i) && $de < $i['fin']) ? 'du ' . date_fr($de, 'jour') . ' au ' . date_fr($i['fin'], 'jour') : 'le ' . date_fr($date, 'jour');
+        return 'Madame Cho n\'est pas disponible ' . $jours . ' : choisissez une autre date.';
+    }
+    $pas = ['matin' => 'le matin', 'midi' => 'à midi', 'apres-midi' => 'l\'après-midi', 'soir' => 'le soir'];
+    $plutot = array_map(fn(string $m): string => ['matin' => 'le matin', 'midi' => 'midi', 'apres-midi' => 'l\'après-midi', 'soir' => 'le soir'][$m], $libres);
+    $choix = count($plutot) > 1 ? implode(', ', array_slice($plutot, 0, -1)) . ' ou ' . end($plutot) : $plutot[0];
+    return 'Le ' . date_fr($date, 'jour') . ', Madame Cho n\'est pas disponible ' . $pas[$moment] . ' : choisissez plutôt ' . $choix . ', ou une autre date.';
 }

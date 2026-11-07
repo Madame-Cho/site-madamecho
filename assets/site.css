@@ -142,6 +142,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .panier .somme{display:flex;justify-content:space-between;gap:12px;padding:14px 0;font-weight:500}
 .panier .avert{color:var(--erreur);font-size:14px;padding:10px 0}
 .aide{font-size:14px;color:var(--doux);margin:6px 0 0}
+.indispo{color:var(--erreur);font-size:15px;margin:8px 0 0}
+.indispo:empty{margin:0}
 .champ{display:grid;gap:6px;margin-top:16px}
 .champ>span{font-size:14px}
 .champ i{font-style:normal;color:var(--doux)}

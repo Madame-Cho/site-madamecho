@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-07-indesirables"
+VERSION = "2026-11-07-agenda"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -346,10 +346,11 @@ def demande():
   <h2 class="sous-titre">Le retrait</h2>
   <p class="aide">Au {E(ADRESSE)}, sur rendez-vous. Madame Cho confirme l'heure dans sa réponse.</p>
   <div class="deux-champs">
-   <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date aria-describedby="aide-date"></label>
+   <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date aria-describedby="aide-date indispo-date"></label>
    <label class="champ"><span>Moment</span><select name="moment" required>{moments}</select></label>
   </div>
   <p class="aide" id="aide-date" data-date-aide></p>
+  <p class="indispo" id="indispo-date" data-date-indispo role="status"></p>
 
   <h2 class="sous-titre" id="coordonnees">Vos coordonnées</h2>
   <div class="deux-champs">
@@ -446,7 +447,7 @@ CONFID = [
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
  ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les informations d'un client sont effacées 3 ans après sa dernière commande ou son dernier échange avec Madame Cho. Les factures sont conservées 10 ans, comme la loi l'exige."]),
  ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à <a href=\"mailto:{EMAIL}\">{EMAIL}</a>. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
- ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Si vous arrivez par le QR code d'un emballage, les pages que vous ouvrez ensuite gardent cette indication dans leur adresse, et votre demande la signale à Madame Cho ; rien d'autre n'est noté."]),
+ ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Quand vous choisissez la date et le moment du retrait, la page demande au site si Madame Cho est disponible : seuls la date et le moment sont envoyés, et rien n'est enregistré. Si vous arrivez par le QR code d'un emballage, les pages que vous ouvrez ensuite gardent cette indication dans leur adresse, et votre demande la signale à Madame Cho ; rien d'autre n'est noté."]),
 ] + ([("Mesure d'audience", [
    "Pour savoir quelles pages sont lues et améliorer le site, Madame Cho compte les visites avec Matomo, un outil installé sur son propre hébergement chez OVH, en France. "
    "Aucun cookie n'est déposé, l'adresse IP est tronquée avant d'être enregistrée, les données ne sont ni croisées avec d'autres ni transmises à quiconque, et elles servent seulement à produire des statistiques anonymes. "

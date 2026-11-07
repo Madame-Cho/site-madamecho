@@ -967,7 +967,7 @@ Sans date de retrait : | 픽업 날짜 없음:
 Indispo ce jour-là | 이날 예약 불가로 하기
 Indispos à venir | 다가오는 예약 불가
 Aucune indispo à venir. | 다가오는 예약 불가가 없어요.
-Un jour entier ou une plage horaire (de 14 h à 18 h, par exemple), sur un ou plusieurs jours. La gestion prévient si une commande tombe dessus. Le formulaire du site n'en tient pas encore compte. | 하루 종일 또는 시간대(예: 14시~18시)로, 하루나 여러 날에 걸쳐 정할 수 있어요. 주문이 겹치면 관리 화면이 알려 줘요. 사이트 문의 양식에는 아직 반영되지 않아요.
+Un jour entier ou une plage horaire (de 14 h à 18 h, par exemple), sur un ou plusieurs jours. La gestion prévient si une commande tombe dessus, et le formulaire du site refuse ces jours et ces moments, sans jamais dire le motif. | 하루 종일 또는 시간대(예: 14시~18시)로, 하루나 여러 날에 걸쳐 정할 수 있어요. 주문이 겹치면 관리 화면이 알려 주고, 사이트 문의 양식에서도 그 날짜와 시간대는 받지 않아요. 이유는 절대 보이지 않아요.
 Toute la journée | 하루 종일
 toute la journée | 하루 종일
 Une plage horaire | 시간대

@@ -97,8 +97,10 @@ function manuel_sections(): array {
              '- <b>예약 불가</b>는 하루 종일 또는 시간대(예: 14시~18시)로, 하루나 여러 날에 걸쳐 정해요. 휴가, 박람회, 이미 꽉 찬 날 같은 경우예요. ‘예약 불가 추가’를 누르고, <b>다가오는 예약 불가</b> 목록에서 ‘수정’하거나 ‘이 예약 불가 삭제’를 눌러요.'],
             ['- Si une commande en cours tombe sur une indispo, la gestion prévient : en ajoutant l\'indispo, en confirmant la commande, et sur la page de la commande. À voir avec le client, ou changer la date.',
              '- 진행 중인 주문이 예약 불가와 겹치면 관리 화면이 알려 줘요. 예약 불가를 추가할 때, 주문을 확정할 때, 그리고 주문 화면에서요. 고객과 상의하거나 날짜를 바꾸세요.'],
-            ['- Le formulaire « Ma demande » du site n\'en tient pas encore compte : ce sera la prochaine étape.',
-             '- 사이트의 ‘내 문의’ 양식에는 아직 반영되지 않아요. 다음 단계에서 할 거예요.'],
+            ['- Le formulaire « Ma demande » du site en tient compte : le client qui choisit un jour ou un moment indisponible le voit tout de suite, et sa demande ne part pas tant qu\'il n\'a pas changé. Le site ne dit jamais le motif.',
+             '- 사이트의 ‘내 문의’ 양식에도 반영돼요. 고객이 예약 불가인 날짜나 시간대를 고르면 바로 안내가 보이고, 바꾸기 전에는 문의가 보내지지 않아요. 사이트에는 이유가 절대 보이지 않아요.'],
+            ['- Sur le site, une plage ferme tout le moment qu\'elle touche : une indispo de 15 h à 16 h ferme l\'après-midi (14 h – 18 h). Les autres moments du jour restent possibles.',
+             '- 사이트에서는 예약 불가 시간대가 걸친 시간대 전체가 막혀요. 예를 들어 15시~16시 예약 불가는 오후(14시~18시) 전체를 막아요. 그날의 다른 시간대는 그대로 고를 수 있어요.'],
         ]],
         ['id' => 'clients', 'titre' => ['Clients', '고객'], 'textes' => [
             ['La liste des clients, avec la recherche par nom, email, téléphone ou ville. Deux groupes bien séparés : les <b>professionnels (B2B)</b>, restaurants et entreprises, comptés en HT comme leurs factures ; les <b>particuliers (B2C)</b>, comptés en TTC. Chaque fiche porte son étiquette « Pro · B2B » ou « Particulier · B2C ».',
