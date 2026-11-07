@@ -146,9 +146,9 @@ def page(chemin, titre, desc, corps, prof, script_page="", jsonld=None, classe="
 <meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#ffffff">
-<link rel="icon" href="{r}assets/favicon.ico?v={VERSION}" sizes="48x48">
-<link rel="icon" href="{r}assets/favicon.svg?v={VERSION}" type="image/svg+xml">
-<link rel="apple-touch-icon" href="{r}assets/apple-touch-icon.png?v={VERSION}">
+<link rel="icon" href="{r}favicon.ico" sizes="48x48">
+<link rel="icon" href="{r}assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{r}assets/apple-touch-icon.png">
 <link rel="manifest" href="{r}assets/site.webmanifest?v={VERSION}">
 <link rel="preload" href="{r}assets/polices/jost-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{r}assets/site.css?v={VERSION}">
@@ -649,6 +649,9 @@ shutil.copy(os.path.join(COMMUN, "logo-email.png"), os.path.join(OUT, "assets/lo
 # Favicon B choisi par Olivier le 03/11/2026 : le 조 du logo, ivoire sur chocolat (gen_fav.py)
 for f in ("favicon.ico", "favicon.svg", "apple-touch-icon.png", "icone-192.png", "icone-512.png", "site.webmanifest"):
     shutil.copy(os.path.join(ICI, "favicon", f), os.path.join(OUT, "assets", f))
+# Favicon pour Google (07/11/2026) : aussi à la racine, à une adresse qui ne change jamais (sans ?v=),
+# sinon chaque publication donne à Google une nouvelle adresse d'icône à revisiter
+shutil.copy(os.path.join(ICI, "favicon", "favicon.ico"), os.path.join(OUT, "favicon.ico"))
 if EN_LIGNE:
     # Plan du site : les pages à trouver dans les résultats (Ma demande et la 404 n'y sont pas)
     urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in PRODUITS] + ["conditions-de-commande/", "mentions-legales/", "confidentialite/"]
