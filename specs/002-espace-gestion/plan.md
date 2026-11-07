@@ -112,7 +112,7 @@ fiche vide (FR-002). Le correctif du script Google (corps des mails en octets) e
 | I. Dépôt public | Le script ne contient ni clé ni donnée ; la clé n'est gardée qu'en empreinte ; essais fictifs | OK |
 | II. Feu vert | Mails envoyés seulement au toucher de Youngmi (R-01 v0.45), DKIM « site » ; suppression seulement par une personne qui tape SUPPRIMER, jamais d'une vente payée, facturée ou rapprochée ; publication après feu vert | OK (feu vert à demander) |
 | III. Fiche produit | Rien de changé | OK |
-| IV. Données personnelles | Nouveau traitement (réponses des clients, script Google) au registre (T9) le 2026-11-07 ; orphelins 30 jours ; la page Confidentialité du site reste à compléter (T9) | ÉCART à fermer |
+| IV. Données personnelles | Nouveau traitement (réponses des clients, script Google) au registre (T9) le 2026-11-07 ; orphelins 30 jours ; page Confidentialité du site complétée (T035) | OK |
 | V. Sobre | Script Google gratuit dans le compte existant, sans nouvel outil payant | OK |
 | VI. Langue, téléphone | Coréen complet (263 pages) ; boutons de dictée, puces « Par » et croix portés à 44 px | OK |
 | VII. Preuves | 30 + 11 vérifications, coréen, suppression ; captures téléphone et ordinateur | OK |

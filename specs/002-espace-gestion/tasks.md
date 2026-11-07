@@ -67,7 +67,7 @@
 - [X] T032 [US5] FR-002 : suppression d'une commande d'essai (ni facture, ni Qonto, ni paiement reçu) et d'une fiche sans commande, en tapant SUPPRIMER
 - [X] T033 [P] [US8] Manuel FR/KO et dictionnaire coréen à jour ; zones à toucher à 44 px
 - [ ] T034 Feu vert d'Olivier sur la version exacte (et sur l'exception de FR-002), publication, Journal des publications, Registre
-- [ ] T035 Page Confidentialité du site : les réponses des clients lues par la gestion (T9, principe IV)
+- [X] T035 Page Confidentialité du site : mails envoyés depuis la gestion, réponses des clients recopiées dans la gestion, échanges notés, correction du français (T9, principe IV)
 - [ ] T036 Mail « Merci » et demande d'avis à essayer en réel quand la fiche Google existera (lien dans Réglages)
 - [ ] T037 Changer la clé du script (montrée dans une capture le 2026-11-07) : nouvelle clé dans Réglages, propriété CLE, puis « installer »
 

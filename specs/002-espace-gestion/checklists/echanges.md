@@ -29,5 +29,5 @@
 
 - [x] CHK013 Coréen complet (263 pages, 0 texte en français)
 - [x] CHK014 Zones à toucher d'au moins 44 px pour les nouveaux boutons [Principe VI]
-- [ ] CHK015 Page Confidentialité du site complétée (T035) [Principe IV]
+- [x] CHK015 Page Confidentialité du site complétée (T035) [Principe IV]
 - [ ] CHK016 Relecture coréenne humaine des nouveaux messages (T-23)
