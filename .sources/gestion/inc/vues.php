@@ -527,7 +527,7 @@ function mail_cadre(string $titre, string $etiquette, string $contenu, \Closure 
     $pied = '<p' . $S($petit) . '>Madame Cho · pâtisserie sur commande · 4 avenue du Château, 92190 Meudon<br>'
           . '06 61 31 17 79 · <a href="' . $site . '"' . $S('color:' . $DX . ';text-decoration:underline') . '>madamecho.com</a></p>'
           . '<p' . $S($petit . ';margin-top:10px') . '>Vous recevez ce message parce que vous avez commandé chez Madame Cho. '
-          . 'Pour que nos messages arrivent bien, ajoutez contact@madamecho.com à vos contacts.</p>';
+          . 'Pour que nos messages arrivent bien, <a href="' . $site . '/madame-cho.vcf"' . $S('color:' . $DX . ';text-decoration:underline') . '>ajoutez Madame Cho à vos contacts</a> (contact@madamecho.com).</p>';
     $corps = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#ffffff') . '><tr><td align="center"' . $S('padding:32px 16px') . '>'
         . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('max-width:560px') . '>'
         . '<tr><td' . $S('padding:0 0 20px;border-bottom:2px solid #3B1D0E') . '><img src="' . $site . '/assets/logo-email.png" width="150" height="42" alt="Madame Cho"' . $S('display:block;border:0;width:150px;height:auto;margin:0 auto') . '></td></tr>'

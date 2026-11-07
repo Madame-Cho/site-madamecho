@@ -44,7 +44,7 @@ function repondre(bool $ok, array $data, bool $enJson): void {
     if ($ok) {
         echo '<div class="recu"><div class="etiquette">Demande envoyée</div><h1 class="titre">Merci, Madame Cho vous répond sous 24 heures</h1>'
            . '<p>Votre demande n\'est pas encore une commande : Madame Cho vous envoie une proposition écrite, que vous acceptez par écrit.</p>'
-           . '<p>Sa réponse viendra de <b>' . $h(DESTINATAIRE) . '</b> : ajoutez cette adresse à vos contacts, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>'
+           . '<p>Sa réponse viendra de <b>' . $h(DESTINATAIRE) . '</b> : <a href="../madame-cho.vcf">ajoutez Madame Cho à vos contacts</a>, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>'
            . '<p class="ref">Référence : <b>' . $h($data['ref']) . '</b></p></div>';
     } else {
         echo '<h1 class="titre">La demande n\'a pas pu être envoyée</h1><p>' . $h(implode(' ', $data['erreurs'] ?? [])) . '</p>'

@@ -376,7 +376,7 @@ def demande():
   <div class="etiquette">Demande envoyée</div>
   <h2 class="titre">Merci, Madame Cho vous répond sous 24 heures</h2>
   <p>Votre demande n'est pas encore une commande : Madame Cho vous envoie une proposition écrite (prix, jour et heure du retrait), que vous acceptez par écrit.</p>
-  <p>Sa réponse viendra de <b>{EMAIL}</b> : ajoutez cette adresse à vos contacts, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
+  <p>Sa réponse viendra de <b>{EMAIL}</b> : <a href="{lien('madame-cho.vcf', prof)}">ajoutez Madame Cho à vos contacts</a>, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>
   <p class="aide">Gardez ce récapitulatif. <button type="button" class="lien-bouton" data-copier>Copier le récapitulatif</button></p>
@@ -530,7 +530,7 @@ def htaccess():
               "# (panier et formulaire) doivent être servis. Le reste des règles d'atelier-site/ s'applique.",
               '<FilesMatch "\\.js$">', "  Require all granted", "</FilesMatch>"]
     l += ["", "# Page introuvable (et anciennes pages retirées)", f"ErrorDocument 404 {BASE}404.html"] + ([f"ErrorDocument 410 {BASE}404.html"] if EN_LIGNE else []) + [
-          "", "# Types des fichiers", "AddType image/webp .webp", "AddType font/woff2 .woff2", "AddType application/manifest+json .webmanifest",
+          "", "# Types des fichiers", "AddType image/webp .webp", "AddType font/woff2 .woff2", "AddType application/manifest+json .webmanifest", "AddType text/vcard .vcf",
           "", "# Compression des textes",
           "<IfModule mod_deflate.c>", "  <IfModule mod_filter.c>",
           "    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml application/javascript text/javascript application/json image/svg+xml application/manifest+json",
@@ -691,5 +691,9 @@ if EN_LIGNE:
     ecrire("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
            "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{MAJ}</lastmod></url>\n" for u in urls) + "</urlset>\n")
     # Tout est permis aux robots : les pages à ne pas indexer (Ma demande, 404) portent leur « noindex » (il faut pouvoir le lire)
+    # Fiche contact (demande d'Olivier, 07/11/2026) : sur téléphone, le lien ouvre « Ajouter aux contacts » ; les mails de Madame Cho arrivent mieux
+    ecrire("madame-cho.vcf", "\r\n".join(["BEGIN:VCARD", "VERSION:3.0", "FN:Madame Cho", "N:;Madame Cho;;;", "ORG:Madame Cho",
+        "TITLE:Pâtisserie sur commande", f"EMAIL;TYPE=INTERNET,WORK:{EMAIL}", f"TEL;TYPE=WORK,VOICE:{TEL_LIEN}",
+        "ADR;TYPE=WORK:;;4 avenue du Château;Meudon;;92190;France", f"URL:{SITE}", "END:VCARD", ""]))
     ecrire("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n")
 print("ok", OUT, "aperçu" if APERCU else "production")

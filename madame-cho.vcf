@@ -1,0 +1,11 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Madame Cho
+N:;Madame Cho;;;
+ORG:Madame Cho
+TITLE:Pâtisserie sur commande
+EMAIL;TYPE=INTERNET,WORK:contact@madamecho.com
+TEL;TYPE=WORK,VOICE:+33661311779
+ADR;TYPE=WORK:;;4 avenue du Château;Meudon;;92190;France
+URL:https://madamecho.com/
+END:VCARD
