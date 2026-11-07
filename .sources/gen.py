@@ -519,7 +519,11 @@ def htaccess():
               "RewriteRule ^atelier-(site|logo)(/|$) - [G,L]", "",
               "# QR code imprimé sur les emballages (décision d'Olivier du 07/11/2026) : adresse fixe madamecho.com/qr, redirection temporaire (302)",
               "# pour changer un jour la destination sans réimprimer ; Matomo compte chaque scan dans la campagne « qr-code », mot-clé « packaging »",
-              "RewriteRule ^qr/?$ /carte/?mtm_campaign=qr-code&mtm_kwd=packaging [R=302,L,NC,NE]"]
+              "RewriteRule ^qr/?$ /carte/?mtm_campaign=qr-code&mtm_kwd=packaging [R=302,L,NC,NE]", "",
+              "# Retrait dans l'agenda du client (email de confirmation, demande d'Olivier du 07/11/2026) : adresses courtes madamecho.com/rdv/…,",
+              "# servies par la gestion (?p=rdv, jeton secret) sans changer l'adresse affichée",
+              "RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/google/?$ /gestion/index.php?p=rdv&c=$1&vers=google [L]",
+              "RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/?$ /gestion/index.php?p=rdv&c=$1 [L]"]
     if ESSAI:
         l += ["", "# Version d'essai : le dossier atelier-site/ refuse les .js (scripts de feuille) ; ici, les scripts du site",
               "# (panier et formulaire) doivent être servis. Le reste des règles d'atelier-site/ s'applique.",

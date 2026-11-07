@@ -351,6 +351,64 @@ function email_confirmation(array $k): array {
        . retrait_email($k) . "\n" . rdv_client_texte($k) . "\nÀ bientôt,\n" . signature();
     return ['sujet' => 'Votre commande ' . $k['reference'] . ' est confirmée', 'corps' => $t];
 }
+/* ---------- Email de confirmation mis en forme, proposition A « La lettre » (choix d'Olivier du 07/11/2026) ----------
+ * HTML d'email : tableaux, styles en ligne, une seule image (le logo, sur madamecho.com), tout le texte en vrai texte,
+ * liens seulement vers madamecho.com : rien qui ressemble à une publicité (indésirables). La version texte (email_confirmation) l'accompagne. */
+function email_confirmation_html(array $k): string {
+    $CH = '#3B1D0E'; $IV = '#F3EDE4'; $TX = '#2B2623'; $DX = '#736A64'; $LG = '#E9E5E1'; $AC = '#6E2A10'; $FL = '#DDD3C6';
+    $F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
+    $p = fn(string $t, string $style = '') => '<p style="' . $F . 'font-size:15px;line-height:23px;color:' . $TX . ';margin:0;' . $style . '">' . $t . '</p>';
+    $total = montant_commande($k);
+    $acompte = (int)$k['acompte'];
+    $site = 'https://' . GESTION_DOMAINE;
+    // Quand : « Vendredi 20 novembre, 15 h 30 », sinon le moment (« le matin, heure à convenir »)
+    if (!$k['retrait_date']) $quand = 'Jour à convenir ensemble';
+    else {
+        $quand = ucfirst(date_fr($k['retrait_date'], 'jour'));
+        if ($k['retrait_heure'] !== '') $quand .= ', ' . str_replace(':', ' h ', $k['retrait_heure']);
+        elseif (isset(MOMENTS[$k['retrait_moment']])) $quand .= ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)';
+    }
+    $td = 'style="' . $F . 'font-size:14px;line-height:22px;color:' . $TX . ';padding:2px 0"';
+    $lignes = '';
+    foreach ($k['lignes_tab'] as $l) {
+        $lignes .= '<tr><td ' . $td . '>' . h($l['q'] . ' × ' . $l['nom'] . ($l['libelle'] !== '' ? ', ' . $l['libelle'] : '')) . '</td><td align="right" ' . $td . '>' . h(euros($l['prix'] * $l['q'])) . '</td></tr>';
+        if (($l['plaque'] ?? '') !== '') $lignes .= '<tr><td colspan="2" style="' . $F . 'font-size:13px;line-height:20px;color:' . $DX . ';padding:0 0 2px">Plaque en chocolat : « ' . h($l['plaque']) . ' »</td></tr>';
+    }
+    if ($k['perso'] !== '') $lignes .= '<tr><td colspan="2" ' . $td . '>' . nl2br(h($k['perso'])) . '</td></tr>';
+    $bord = 'border-top:1px solid ' . $FL . ';padding:8px 0 0;';
+    $lignes .= '<tr><td style="' . $F . 'font-size:14px;color:' . $TX . ';' . $bord . '"><b>Total TTC</b>, ' . ($k['paiement'] === 'acompte_recu' && $acompte ? 'acompte de ' . h(euros($acompte)) . ' reçu' : 'à régler au retrait') . '</td>'
+             . '<td align="right" style="' . $F . 'font-size:14px;color:' . $TX . ';' . $bord . '"><b>' . h(euros($total)) . '</b></td></tr>';
+    if ($k['paiement'] === 'acompte_recu' && $acompte) $lignes .= '<tr><td ' . $td . '>Reste à régler au retrait</td><td align="right" ' . $td . '>' . h(euros($total - $acompte)) . '</td></tr>';
+    $lien = fn(string $href, string $t) => '<a href="' . h($href) . '" style="color:' . $AC . ';font-weight:bold">' . $t . '</a>';
+    $agenda = rdv_client_possible($k)
+        ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:20px')
+        : '';
+    $signature = array_map('MadameCho\Gestion\h', array_slice(explode("\n", trim(signature())), 0, 1));
+    $pied = '<p style="' . $F . 'font-size:12px;line-height:18px;color:' . $DX . ';margin:0">Madame Cho · pâtisserie sur commande · 4 avenue du Château, 92190 Meudon<br>'
+          . '06 61 31 17 79 · <a href="' . $site . '" style="color:' . $DX . ';text-decoration:underline">madamecho.com</a></p>'
+          . '<p style="' . $F . 'font-size:12px;line-height:18px;color:' . $DX . ';margin:10px 0 0">Vous recevez ce message parce que vous avez commandé chez Madame Cho. '
+          . 'Pour que nos messages arrivent bien, ajoutez contact@madamecho.com à vos contacts.</p>';
+    return '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . h('Votre commande ' . $k['reference'] . ' est confirmée') . '</title></head>'
+        . '<body style="margin:0;padding:0;background:#ffffff">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff"><tr><td align="center" style="padding:32px 16px">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">'
+        . '<tr><td style="padding:0 0 20px;border-bottom:2px solid ' . $CH . '"><img src="' . $site . '/assets/logo-email.png" width="150" height="42" alt="Madame Cho" style="display:block;border:0;width:150px;height:auto;margin:0 auto"></td></tr>'
+        . '<tr><td style="padding:28px 0 0">'
+        . $p(h(salutation($k)), 'margin-bottom:14px')
+        . $p('Votre commande <b>' . h($k['reference']) . '</b> est confirmée. Je vous attends :', 'margin-bottom:20px')
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' . $IV . ';border-radius:6px"><tr><td style="padding:18px 20px">'
+        . '<p style="' . $F . 'font-size:17px;line-height:24px;color:' . $CH . ';font-weight:bold;margin:0">' . h($quand) . '</p>'
+        . '<p style="' . $F . 'font-size:14px;line-height:21px;color:' . $TX . ';margin:2px 0 14px">4 avenue du Château, 92190 Meudon</p>'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' . $lignes . '</table>'
+        . '</td></tr></table>'
+        . $agenda
+        . $p('Paiement par carte, virement ou espèces. Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:14px')
+        . $p('À bientôt,<br>' . implode('', $signature), 'margin-top:22px')
+        . '</td></tr>'
+        . '<tr><td style="padding:28px 0 0"><div style="border-top:1px solid ' . $LG . ';padding-top:16px">' . $pied . '</div></td></tr>'
+        . '</table></td></tr></table></body></html>';
+}
+
 function email_avis(array $k, string $lien): array {
     $t = salutation($k) . "\n\nMerci encore pour votre commande. Si vous avez un moment, votre avis sur Google aiderait beaucoup Madame Cho à se faire connaître :\n" . $lien
        . "\n\nMerci et à bientôt,\n" . signature();
@@ -404,7 +462,9 @@ function rdv_client_possible(array $k): bool {
 }
 function rdv_jeton(array $k): string { return substr(hash_hmac('sha256', 'rdv|' . (int)$k['id'] . '|' . $k['reference'], sel()), 0, 24); }
 function lien_rdv_client(array $k, string $vers): string {
-    return gestion_adresse() . u('rdv', ['c' => (int)$k['id'] . '-' . rdv_jeton($k)] + ($vers === 'google' ? ['vers' => 'google'] : []));
+    // Adresse courte madamecho.com/rdv/… (réécrite vers ?p=rdv par le .htaccess de la racine) ; en essai local, l'adresse longue
+    if (GESTION_ESSAI) return gestion_adresse() . u('rdv', ['c' => (int)$k['id'] . '-' . rdv_jeton($k)] + ($vers === 'google' ? ['vers' => 'google'] : []));
+    return 'https://' . GESTION_DOMAINE . '/rdv/' . (int)$k['id'] . '-' . rdv_jeton($k) . ($vers === 'google' ? '/google' : '');
 }
 function rdv_client_texte(array $k): string {
     if (!rdv_client_possible($k)) return '';

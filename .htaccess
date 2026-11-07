@@ -28,6 +28,11 @@ RewriteRule ^atelier-(site|logo)(/|$) - [G,L]
 # pour changer un jour la destination sans réimprimer ; Matomo compte chaque scan dans la campagne « qr-code », mot-clé « packaging »
 RewriteRule ^qr/?$ /carte/?mtm_campaign=qr-code&mtm_kwd=packaging [R=302,L,NC,NE]
 
+# Retrait dans l'agenda du client (email de confirmation, demande d'Olivier du 07/11/2026) : adresses courtes madamecho.com/rdv/…,
+# servies par la gestion (?p=rdv, jeton secret) sans changer l'adresse affichée
+RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/google/?$ /gestion/index.php?p=rdv&c=$1&vers=google [L]
+RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/?$ /gestion/index.php?p=rdv&c=$1 [L]
+
 # Page introuvable (et anciennes pages retirées)
 ErrorDocument 404 /404.html
 ErrorDocument 410 /404.html
