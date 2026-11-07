@@ -348,7 +348,7 @@ function email_confirmation(array $k): array {
     $acompte = (int)$k['acompte'];
     $t = salutation($k) . "\n\nVotre commande " . $k['reference'] . " est confirmée :\n\n" . lignes_email($k) . "\n\n"
        . 'Total : ' . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait (carte, virement ou espèces)') . "\n"
-       . retrait_email($k) . "\n\nÀ bientôt,\n" . signature();
+       . retrait_email($k) . "\n" . rdv_client_texte($k) . "\nÀ bientôt,\n" . signature();
     return ['sujet' => 'Votre commande ' . $k['reference'] . ' est confirmée', 'corps' => $t];
 }
 function email_avis(array $k, string $lien): array {
@@ -390,4 +390,34 @@ function lien_agenda_google(array $k): ?string {
     $details = $k['reference'] . "\n" . lignes_email($k) . "\n\n" . gestion_adresse() . u('commande', ['id' => $k['id']]);
     return 'https://calendar.google.com/calendar/render?' . http_build_query(['action' => 'TEMPLATE', 'text' => agenda_titre($k), 'dates' => $f($c[0]) . '/' . $f($c[1]),
         'ctz' => 'Europe/Paris', 'details' => $details, 'location' => '4 avenue du Château, 92190 Meudon', 'authuser' => 'contact@madamecho.com']);
+}
+
+/* ---------- Le retrait dans l'agenda du client (demande d'Olivier du 07/11/2026) ----------
+ * L'email de confirmation propose au client, s'il le souhaite, d'ajouter son retrait à son agenda : Google Agenda,
+ * ou un fichier agenda (.ics) pour iPhone, Outlook et les autres. Les deux liens passent par ?p=rdv&c=… (page publique) :
+ * une adresse courte, impossible à deviner (empreinte HMAC avec le sel du serveur), qui donne toujours le jour et l'heure
+ * à jour, et plus rien si la commande est annulée. Jamais le lien de la gestion, le nom du client ni les prix dans l'événement.
+ * Seulement pour un retrait à Meudon avec une heure précise (une livraison ou un moment « à convenir » n'a pas de lien). */
+function rdv_client_possible(array $k): bool {
+    return ($k['mode'] ?? 'retrait') !== 'livraison' && (string)$k['retrait_date'] !== '' && preg_match('/^\d{2}:\d{2}$/', (string)$k['retrait_heure']) === 1
+        && !in_array($k['statut'], ['annulee', 'sans_suite', 'remise'], true);
+}
+function rdv_jeton(array $k): string { return substr(hash_hmac('sha256', 'rdv|' . (int)$k['id'] . '|' . $k['reference'], sel()), 0, 24); }
+function lien_rdv_client(array $k, string $vers): string {
+    return gestion_adresse() . u('rdv', ['c' => (int)$k['id'] . '-' . rdv_jeton($k)] + ($vers === 'google' ? ['vers' => 'google'] : []));
+}
+function rdv_client_texte(array $k): string {
+    if (!rdv_client_possible($k)) return '';
+    return "\nPour l'ajouter à votre agenda, si vous le souhaitez :\n- Google Agenda : " . lien_rdv_client($k, 'google')
+         . "\n- iPhone, Outlook ou un autre agenda : " . lien_rdv_client($k, 'ics') . "\n";
+}
+function rdv_client_titre(array $k): string { return 'Retrait chez Madame Cho · ' . $k['reference']; }
+function rdv_client_details(array $k): string {
+    $t = ['Commande ' . $k['reference']];
+    foreach ($k['lignes_tab'] as $l) $t[] = '- ' . $l['q'] . ' × ' . $l['nom'] . ($l['libelle'] !== '' ? ', ' . $l['libelle'] : '');
+    if ($k['perso'] !== '') $t[] = '- Commande personnalisée';
+    $t[] = '';
+    $t[] = 'Une question, un retard : 06 61 31 17 79 (appel, SMS ou WhatsApp) ou contact@madamecho.com.';
+    $t[] = 'madamecho.com';
+    return implode("\n", $t);
 }

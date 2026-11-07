@@ -531,20 +531,74 @@ function page_commande_edition(): void {
 /* ---------- Fichier agenda (.ics) d'une commande : ?p=agenda&id=… (l'agenda lui-même est dans pages-agenda.php) ---------- */
 function page_agenda_ics(): void {
     $k = commande_depuis_requete();
-    if (!$k || !($c = creneau($k))) rediriger('commandes');
+    if (!$k || !creneau($k)) rediriger('commandes');
+    envoyer_ics($k, false);
+}
+
+/** Le texte d'un fichier agenda : pour Youngmi (titre avec le client, prix) ou pour le client (rdv_client_*). */
+function ics_texte(array $k, bool $client): string {
+    $c = creneau($k);
     $f = fn($s) => date('Ymd\THis', strtotime($s));
     $esc = fn($s) => str_replace(["\\", ";", ",", "\n"], ["\\\\", "\\;", "\\,", "\\n"], $s);
-    $ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Madame Cho//Gestion//FR\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\n"
-         . 'UID:' . strtolower($k['reference']) . '@madamecho.com' . "\r\n" . 'DTSTAMP:' . gmdate('Ymd\THis\Z') . "\r\n"
+    $titre = $client ? rdv_client_titre($k) : agenda_titre($k);
+    $details = $client ? rdv_client_details($k) : $k['reference'] . "\n" . lignes_email($k);
+    // Le fuseau de Paris décrit dans le fichier (Outlook en a besoin), et les lignes pliées à 75 octets (norme iCalendar)
+    $fuseau = "BEGIN:VTIMEZONE\r\nTZID:Europe/Paris\r\nBEGIN:DAYLIGHT\r\nTZOFFSETFROM:+0100\r\nTZOFFSETTO:+0200\r\nTZNAME:CEST\r\nDTSTART:19700329T020000\r\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\r\nEND:DAYLIGHT\r\n"
+            . "BEGIN:STANDARD\r\nTZOFFSETFROM:+0200\r\nTZOFFSETTO:+0100\r\nTZNAME:CET\r\nDTSTART:19701025T030000\r\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n";
+    $ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Madame Cho//Gestion//FR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n" . $fuseau . "BEGIN:VEVENT\r\n"
+         . 'UID:' . ($client ? 'rdv-' : '') . strtolower($k['reference']) . '@madamecho.com' . "\r\n" . 'DTSTAMP:' . gmdate('Ymd\THis\Z') . "\r\n"
          . 'DTSTART;TZID=Europe/Paris:' . $f($c[0]) . "\r\n" . 'DTEND;TZID=Europe/Paris:' . $f($c[1]) . "\r\n"
-         . 'SUMMARY:' . $esc(agenda_titre($k)) . "\r\n" . 'LOCATION:' . $esc('4 avenue du Château, 92190 Meudon') . "\r\n"
-         . 'DESCRIPTION:' . $esc($k['reference'] . "\n" . lignes_email($k)) . "\r\n"
-         . "BEGIN:VALARM\r\nTRIGGER:-P1D\r\nACTION:DISPLAY\r\nDESCRIPTION:" . $esc('Demain : ' . agenda_titre($k)) . "\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+         . 'SUMMARY:' . $esc($titre) . "\r\n" . 'LOCATION:' . $esc('4 avenue du Château, 92190 Meudon') . "\r\n"
+         . 'DESCRIPTION:' . $esc($details) . "\r\n"
+         . "BEGIN:VALARM\r\nTRIGGER:-P1D\r\nACTION:DISPLAY\r\nDESCRIPTION:" . $esc('Demain : ' . $titre) . "\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+    return implode("\r\n", array_map('MadameCho\\Gestion\\ics_plier', explode("\r\n", $ics)));
+}
+function ics_plier(string $ligne): string {
+    $sortie = '';
+    $max = 75;   // 75 octets par ligne, l'espace de début des lignes suivantes compris
+    while (strlen($ligne) > $max) {
+        $n = $max;
+        while ($n > 1 && (ord($ligne[$n]) & 0xC0) === 0x80) $n--;   // ne jamais couper un caractère accentué
+        $sortie .= substr($ligne, 0, $n) . "\r\n ";
+        $ligne = substr($ligne, $n);
+        $max = 74;
+    }
+    return $sortie . $ligne;
+}
+function envoyer_ics(array $k, bool $client): void {
     header('Content-Type: text/calendar; charset=utf-8');
-    header('Content-Disposition: attachment; filename="retrait-' . strtolower($k['reference']) . '.ics"');
+    header('Content-Disposition: attachment; filename="' . ($client ? 'retrait-madame-cho-' : 'retrait-') . strtolower($k['reference']) . '.ics"');
     header('Cache-Control: no-store, private');
-    echo $ics;
+    header('X-Robots-Tag: noindex, nofollow, noarchive');
+    header('X-Content-Type-Options: nosniff');
+    echo ics_texte($k, $client);
     exit;
+}
+
+/* ---------- Le retrait dans l'agenda du client : ?p=rdv&c=<id>-<jeton>[&vers=google] (page publique, voir vues.php) ---------- */
+function page_rdv(): void {
+    $c = is_string($_GET['c'] ?? null) ? $_GET['c'] : '';
+    $k = preg_match('/^(\d{1,9})-([0-9a-f]{24})$/', $c, $m) ? commande((int)$m[1]) : null;
+    if (!$k || !hash_equals(rdv_jeton($k), $m[2]) || !rdv_client_possible($k) || !creneau($k)) {
+        entetes_securite();
+        http_response_code(404);
+        echo '<!doctype html><html lang="fr" translate="no"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+           . '<meta name="robots" content="noindex, nofollow"><title>Madame Cho</title><link rel="stylesheet" href="' . h(fichier_versionne('gestion.css')) . '"></head>'
+           . '<body class="deconnecte"><main class="page etroite"><h1>Ce rendez-vous n\'est plus disponible</h1>'
+           . '<p>La commande a peut-être changé ou été annulée. Pour toute question : 06 61 31 17 79 (appel, SMS ou WhatsApp) ou contact@madamecho.com.</p>'
+           . '<p><a href="https://madamecho.com/">madamecho.com</a></p></main></body></html>';
+        exit;
+    }
+    if (($_GET['vers'] ?? '') === 'google') {
+        $cr = creneau($k);
+        $f = fn($s) => date('Ymd\THis', strtotime($s));
+        header('Cache-Control: no-store, private');
+        header('X-Robots-Tag: noindex, nofollow, noarchive');
+        header('Location: https://calendar.google.com/calendar/render?' . http_build_query(['action' => 'TEMPLATE', 'text' => rdv_client_titre($k), 'dates' => $f($cr[0]) . '/' . $f($cr[1]),
+            'ctz' => 'Europe/Paris', 'details' => rdv_client_details($k), 'location' => '4 avenue du Château, 92190 Meudon']), true, 302);
+        exit;
+    }
+    envoyer_ics($k, true);
 }
 
 /* ---------- Fiche de production ---------- */
