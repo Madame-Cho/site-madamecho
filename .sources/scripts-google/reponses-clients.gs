@@ -64,6 +64,13 @@ function lire(id) {
 }
 
 function decoder(d) {
-  while (d.length % 4) d += '=';
-  return Utilities.newBlob(Utilities.base64DecodeWebSafe(d)).getDataAsString('UTF-8');
+  // Le service Gmail d'Apps Script rend le corps déjà décodé, en liste d'octets ; l'API brute le rend en base64.
+  try {
+    if (Array.isArray(d)) return Utilities.newBlob(d).getDataAsString('UTF-8');
+    d = String(d);
+    while (d.length % 4) d += '=';
+    return Utilities.newBlob(Utilities.base64DecodeWebSafe(d)).getDataAsString('UTF-8');
+  } catch (e) {
+    return '';
+  }
 }
