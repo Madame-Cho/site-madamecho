@@ -101,6 +101,13 @@ function page_client(): void {
                 client_doublon_ecarter($id, entier('autre', 1));
                 flash('ok', 'Noté : ces deux fiches ne seront plus signalées comme doublon.');
                 break;
+            case 'supprimer':
+                if (texte('confirmation', 12) !== 'SUPPRIMER') { flash('erreur', 'Pour supprimer, tapez SUPPRIMER en majuscules.'); break; }
+                if (!client_supprimable($id)) { flash('erreur', 'Ce client a des commandes : utilisez plutôt « Demande d\'effacement ».'); break; }
+                $num = client($id)['numero'];
+                client_supprimer($id, une_ligne(texte('motif', 200)) ?: 'essai');
+                flash('ok', 'Fiche ' . $num . ' supprimée.');
+                rediriger('clients');
             case 'effacer':
                 if (texte('confirmation', 10) !== 'EFFACER') { flash('erreur', 'Pour effacer, tapez EFFACER en majuscules.'); break; }
                 $enCours = (int)val("SELECT COUNT(*) FROM commandes WHERE client_id = ? AND statut IN ('demande','proposition','confirmee')", [$id]);
@@ -202,6 +209,10 @@ function page_client(): void {
            . '<details class="replie"><summary>Demande d\'effacement</summary>'
            . '<p class="aide">Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures Qonto ne changent pas (gardées 10 ans).</p>'
            . formulaire('effacer', champ('motif', 'Motif', 'demande du client', ['maxlength' => '200']) . champ('confirmation', 'Tapez EFFACER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'EFFACER']) . bouton('Effacer ses données', 'danger')) . '</details>'
+           . (client_supprimable($id) ? '<details class="replie"><summary>' . icone('supprimer') . 'Supprimer la fiche (essai, erreur de saisie)</summary>'
+               . '<p class="aide">Possible seulement pour une fiche sans aucune commande. Elle disparaît de la gestion.</p>'
+               . formulaire('supprimer', champ('motif', 'Motif', 'essai', ['maxlength' => '200']) . champ('confirmation', 'Tapez SUPPRIMER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'SUPPRIMER'])
+                   . bouton(icone('supprimer') . 'Supprimer la fiche', 'danger'), ['data-confirmer' => 'Supprimer définitivement cette fiche client ?']) . '</details>' : '')
            . formulaire('inactif', bouton($cl['statut'] === 'actif' ? 'Marquer inactif (ne commande plus)' : 'Réactiver', 'discret'))
            . '</div>';
         $c .= bloc('Fiche et droits du client', $d);

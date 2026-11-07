@@ -59,6 +59,7 @@ function icone(string $n): string {
         'micro' => '<path d="M12 3.5a3 3 0 0 1 3 3V12a3 3 0 0 1-6 0V6.5a3 3 0 0 1 3-3z"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/>',
         'stop' => '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
         'valider' => '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+        'supprimer' => '<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/>',
         default => '',
     };
     return '<svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';

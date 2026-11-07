@@ -1226,3 +1226,28 @@ function reprise_noter(string $etat, string $fichier, string $texte): void {
 function reprises_dernieres(int $n = 5): array {
     return lignes("SELECT le, auteur, texte, ancien AS fichier, nouveau AS etat FROM evenements WHERE type = 'import' ORDER BY id DESC LIMIT " . max(1, $n));
 }
+
+/** Supprimer une commande d'essai ou saisie par erreur (demande d'Olivier, test du 07/11/2026) : jamais une vente facturée ni rapprochée avec Qonto. */
+function commande_supprimable(array $k): bool {
+    return trim((string)($k['facture'] ?? '')) === '' && trim((string)($k['qonto_ref'] ?? '')) === '';
+}
+function commande_supprimer(int $id, string $motif): void {
+    $k = commande($id);
+    if (!$k) return;
+    q("DELETE FROM mails_recus WHERE commande_id = ?", [$id]);
+    q("DELETE FROM evenements WHERE commande_id = ?", [$id]);
+    q("DELETE FROM commandes WHERE id = ?", [$id]);
+    // La trace reste, sans contenu : référence, client et motif
+    evenement('suppression', 'Commande ' . $k['reference'] . ' supprimée (' . $motif . ')', ['client' => (int)$k['client_id']]);
+}
+/** Une fiche client sans aucune commande (essai, doublon vide) peut être supprimée. */
+function client_supprimable(int $id): bool {
+    return !(int)val("SELECT COUNT(*) FROM commandes WHERE client_id = ?", [$id]);
+}
+function client_supprimer(int $id, string $motif): void {
+    $c = client($id);
+    if (!$c || !client_supprimable($id)) return;
+    q("DELETE FROM evenements WHERE client_id = ?", [$id]);
+    q("DELETE FROM clients WHERE id = ?", [$id]);
+    evenement('suppression', 'Fiche client ' . $c['numero'] . ' supprimée (' . $motif . ')');
+}

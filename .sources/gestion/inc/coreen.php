@@ -247,6 +247,18 @@ Avis demandé | 리뷰 부탁함
 Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre. | 확정 이메일을 보냈어요. 다음 단계: 픽업 날, 이 칸 아래의 ‘고객에게 전달 완료’를 누르세요.
 À faire maintenant : envoyer la confirmation au client (ci-dessous). | 지금 할 일: 아래에서 고객에게 확정 이메일 보내기.
 Nouveaux messages | 새 메시지
+Supprimer la commande (essai, erreur de saisie) | 주문 삭제 (테스트, 입력 실수)
+Supprimer la commande | 주문 삭제
+Supprimer la fiche (essai, erreur de saisie) | 고객 정보 삭제 (테스트, 입력 실수)
+Supprimer la fiche | 고객 정보 삭제
+Tapez SUPPRIMER pour confirmer | 확인하려면 SUPPRIMER를 입력하세요
+Pour supprimer, tapez SUPPRIMER en majuscules. | 삭제하려면 대문자로 SUPPRIMER를 입력하세요.
+Supprimer définitivement cette commande ? | 이 주문을 완전히 삭제할까요?
+Supprimer définitivement cette fiche client ? | 이 고객 정보를 완전히 삭제할까요?
+Possible seulement pour une fiche sans aucune commande. Elle disparaît de la gestion. | 주문이 하나도 없는 고객 정보만 삭제할 수 있어요. 관리 시스템에서 사라져요.
+La commande et ses échanges disparaissent de la gestion, des statistiques et de l'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Les mails restent dans Gmail. | 주문과 연락 내용이 관리 시스템, 통계, 일정에서 사라져요. 실제 주문이 취소된 경우에는 ‘주문 취소’를 쓰세요. 이메일은 Gmail에 남아요.
+Cette commande a une facture Qonto ou un paiement rapproché : elle reste pour les comptes. Annulez-la plutôt. | 이 주문에는 Qonto 청구서나 대조된 결제가 있어서 회계를 위해 남겨야 해요. 대신 취소하세요.
+Ce client a des commandes : utilisez plutôt « Demande d'effacement ». | 이 고객에게 주문이 있어요. 대신 ‘삭제 요청’을 쓰세요.
 Déjà vus | 이미 본 메시지
 Mail envoyé depuis Gmail | Gmail에서 보낸 이메일
 Mail | 이메일
@@ -1379,6 +1391,9 @@ function coreen_motifs(): array {
         // Repères dans les listes
         ['/^reçue (.+)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 접수' : null],
         ['/^dernier échange (.+)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? '최근 연락 ' . $d : null],
+        ['/^Commande (MC-\d{6}-[0-9A-F]{4}) supprimée, avec ses échanges\.$/u', fn($m) => '주문 ' . $m[1] . '을(를) 연락 내용과 함께 삭제했어요.'],
+        ['/^Fiche (CL-\d+) supprimée\.$/u', fn($m) => '고객 정보 ' . $m[1] . '을(를) 삭제했어요.'],
+        ['/^(Commande MC-[0-9A-F-]+|Fiche client CL-\d+) supprimée \((.*)\)$/u', fn($m) => $m[1] . ' 삭제 (' . $m[2] . ')'],
         ['/^dernière le (.+)$/u', fn($m) => ($d = $date($m[1])) ? '최근 주문 ' . $d : null],
         ['/^client depuis le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . '부터 고객' : null],
         ['/^vu (.+)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 접속' : null],

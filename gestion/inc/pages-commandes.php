@@ -172,6 +172,13 @@ function page_commande(): void {
                 commande_paiement($id, $p, choix('moyen', MOYENS, ''), null, une_ligne(texte('facture', 40)));
                 flash('ok', livraison_pro($k) ? 'Livraison notée : elle est dans le relevé du mois du restaurant.' : 'Commande remise. Pensez à proposer un avis Google au client.');
                 break;
+            case 'supprimer':
+                // Une commande d'essai ou saisie par erreur, jamais une vraie vente facturée (demande d'Olivier, test du 07/11/2026)
+                if (texte('confirmation', 12) !== 'SUPPRIMER') { flash('erreur', 'Pour supprimer, tapez SUPPRIMER en majuscules.'); break; }
+                if (!commande_supprimable($k)) { flash('erreur', 'Cette commande a une facture Qonto ou un paiement rapproché : elle reste pour les comptes. Annulez-la plutôt.'); break; }
+                commande_supprimer($id, une_ligne(texte('motif', 200)) ?: 'essai');
+                flash('ok', 'Commande ' . $k['reference'] . ' supprimée, avec ses échanges.');
+                rediriger('commandes');
             case 'statut':
                 $s = choix('statut', STATUTS, '');
                 if ($s !== '') commande_statut($id, $s, ['motif' => une_ligne(texte('motif', 300))]);
@@ -326,6 +333,10 @@ function page_commande(): void {
             . bouton('Annuler la commande', 'danger'), ['data-confirmer' => 'Annuler cette commande ?']) . '</details>' : '')
         . '<details class="replie"><summary>Changer l\'étape à la main</summary>' . formulaire('statut', liste_choix('statut', 'Étape', STATUTS, $k['statut']) . champ('motif', 'Précision (facultatif)', '', ['maxlength' => '300']) . bouton('Changer', 'secondaire')) . '</details>'
         . formulaire('dupliquer', bouton('Faire une copie (client régulier)', 'discret'))
+        . (commande_supprimable($k) ? '<details class="replie"><summary>' . icone('supprimer') . 'Supprimer la commande (essai, erreur de saisie)</summary>'
+            . '<p class="aide">La commande et ses échanges disparaissent de la gestion, des statistiques et de l\'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Les mails restent dans Gmail.</p>'
+            . formulaire('supprimer', champ('motif', 'Motif', 'essai', ['maxlength' => '200']) . champ('confirmation', 'Tapez SUPPRIMER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'SUPPRIMER'])
+                . bouton(icone('supprimer') . 'Supprimer la commande', 'danger'), ['data-confirmer' => 'Supprimer définitivement cette commande ?']) . '</details>' : '')
         . '</div>';
     $c .= bloc('Autres actions', $autres);
     mise_en_page($k['reference'], $c, 'commandes', 'page-commande');
