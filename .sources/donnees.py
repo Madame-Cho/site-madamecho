@@ -120,7 +120,7 @@ ETAPES = [
  ("Vous retirez à Meudon", "Au 4 avenue du Château, à l'heure convenue."),
 ]
 PRATIQUE = [
- ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h. Pas de livraison."),
+ ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h. Pas de livraison. Nos clients viennent aussi de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart."),
  ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre."),
  ("Paiement", "Au retrait, par carte bancaire, virement ou espèces. Pour une personnalisation au-delà de la plaque, un acompte de 30 % est demandé."),
  ("Conservation", "Indiquée sur la page de chaque gâteau."),
@@ -136,7 +136,7 @@ INSTAGRAM = "https://www.instagram.com/madamecho.fr/"
 # Titres et descriptions pour les moteurs de recherche et le partage : tirés des textes validés, sans nouvelle promesse.
 # Une description reste sous 160 signes, pour ne pas être coupée dans les résultats.
 SEO_ACCUEIL = ("Madame Cho, pâtisserie et gâteaux d'anniversaire à Meudon",
-               "Gâteaux d'anniversaire, entremets, tartes, choux et cookies faits main par Madame Cho. Sur commande, retrait à Meudon (92).")
+               "Gâteaux d'anniversaire, entremets, tartes, choux et cookies faits main par Madame Cho. Sur commande, retrait à Meudon, près de Boulogne, Issy et Sèvres.")
 SEO_CARTE = ("La carte et les prix · Madame Cho, pâtisserie à Meudon",
              "La carte de Madame Cho et ses prix : entremets aux fruits, charlotte chocolat-framboise, tarte aux noix de pécan, cookies, choux et petits cakes.")
 SEO_PRODUITS = {
@@ -154,3 +154,7 @@ SEO_PRODUITS = {
                       "Petits cakes faits main pour le goûter : banane-chocolat, noix de coco, chocolat ou vegan au praliné cacahuète. 3,50 € la pièce, à partir de 6."),
 }
 ACTIVITE = "Pâtisserie sur commande à Meudon, dans les Hauts-de-Seine."
+# Villes citées pour le référencement local (accord d'Olivier du 07/11/2026 : pas de livraison, retrait à Meudon seulement)
+VILLES = ["Meudon", "Boulogne-Billancourt", "Issy-les-Moulineaux", "Sèvres", "Chaville", "Clamart"]
+SEO_RETRAIT = ("Retrait de vos gâteaux à Meudon, près de Boulogne, Issy et Sèvres · Madame Cho",
+               "Pas de livraison : vos gâteaux se retirent sur rendez-vous au 4 avenue du Château à Meudon, à quelques minutes de Boulogne, Issy, Sèvres, Chaville et Clamart.")

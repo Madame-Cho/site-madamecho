@@ -89,7 +89,7 @@ def pied(prof):
     return f'''<footer class="pied">
  <img class="logo-pied" src="{r}assets/logo-chocolat.svg" alt="Madame Cho" width="150" height="45" loading="lazy">
  <p class="activite">{E(ACTIVITE).replace("Hauts-de-Seine", '<span class="insecable">Hauts-de-Seine</span>')}</p>
- <address>{E(ADRESSE)}<br>Retrait sur rendez-vous, tous les jours de 9 h à 19 h<br>
+ <address>{E(ADRESSE)}<br><a href="{lien('retrait/', prof)}">Retrait sur rendez-vous</a>, tous les jours de 9 h à 19 h<br>
  <a href="tel:{TEL_LIEN}">{TEL}</a> · <a href="mailto:{EMAIL}">{EMAIL}</a><br>
  </address>
  {bouton_insta("insta-pied")}
@@ -397,6 +397,27 @@ def legale(slug, titre, desc, sections, maj="3 novembre 2026"):
  <p class="petit">Mise à jour : {maj}.</p></div></section>'''
     return page(f"{slug}/index.html", f"{titre} · Madame Cho", desc, corps, prof)
 
+# ---------- Retrait à Meudon (référencement local, 07/11/2026) ----------
+# Une seule page pour les villes voisines, jamais une page par ville au texte recopié (Google y voit du spam)
+def retrait():
+    prof = 1
+    voisines = VILLES[1:]
+    liste = ", ".join(voisines[:-1]) + " et " + voisines[-1]
+    itineraire = "https://www.google.com/maps/dir/?api=1&destination=" + "4+avenue+du+Ch%C3%A2teau+92190+Meudon"
+    corps = f'''<section class="bloc premier" aria-labelledby="t-ret"><div class="etroit texte-long">
+ <h1 class="titre" id="t-ret">Retrait de vos gâteaux à Meudon</h1>
+ <p>Madame Cho ne livre pas : chaque commande se retire sur rendez-vous, à l'heure convenue, au <b>{E(ADRESSE)}</b>, tous les jours de 9 h à 19 h (pas de retrait le 24 décembre).</p>
+ <h2 class="sous-titre">Pour les villes voisines</h2>
+ <p>Meudon est à quelques minutes de {E(liste)}. Pour un gâteau d'anniversaire, un entremets ou des choux, vous choisissez le jour et l'heure du retrait dans votre demande, Madame Cho vous confirme le rendez-vous.</p>
+ <p><a href="{E(itineraire)}" rel="noopener" target="_blank">Préparer l'itinéraire jusqu'au 4 avenue du Château</a></p>
+ <h2 class="sous-titre">Comment commander</h2>
+ <p>Choisissez vos gâteaux sur <a href="{lien('carte/', prof)}">la carte</a> et envoyez votre demande, sans engagement. Madame Cho vous répond sous 24 heures avec une proposition écrite : le prix, le jour et l'heure du retrait. Pour une question : <a href="tel:{TEL_LIEN}">{TEL}</a> ou <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+ <p class="centre"><a class="bouton plein" href="{lien('ma-demande/', prof)}">Faire ma demande</a></p></div></section>'''
+    ld = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Accueil", "item": SITE},
+        {"@type": "ListItem", "position": 2, "name": "Retrait à Meudon", "item": SITE + "retrait/"}]}
+    return page("retrait/index.html", SEO_RETRAIT[0], SEO_RETRAIT[1], corps, prof, jsonld=ld)
+
 # Médiateur : CM2C choisi par Olivier ; texte à remplacer par ses coordonnées et le numéro d'adhérent dès la confirmation de l'adhésion
 MEDIATION = ("En cas de litige non résolu avec Madame Cho, le client consommateur peut recourir gratuitement à un médiateur de la consommation. "
              "L'adhésion de Madame Cho au CM2C est en cours : ses coordonnées seront indiquées ici dès qu'elle sera confirmée.")
@@ -466,7 +487,10 @@ MAISON_LD = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho", "
              "telephone": "+33 6 61 31 17 79", "email": EMAIL,
              "address": {"@type": "PostalAddress", "streetAddress": "4 avenue du Château", "postalCode": "92190",
                          "addressLocality": "Meudon", "addressRegion": "Hauts-de-Seine", "addressCountry": "FR"},
-             "areaServed": {"@type": "City", "name": "Meudon"},
+             "areaServed": [{"@type": "City", "name": v} for v in VILLES],
+             "openingHoursSpecification": [{"@type": "OpeningHoursSpecification",
+                                            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                                            "opens": "09:00", "closes": "19:00"}],
              "hasMenu": SITE + "carte/", "servesCuisine": "Pâtisserie", "priceRange": "€€",
              "paymentAccepted": "Carte bancaire, virement, espèces", "currenciesAccepted": "EUR",
              "founder": {"@type": "Person", "name": "Youngmi Cho", "jobTitle": "Pâtissière",
@@ -608,6 +632,7 @@ ecrire("carte/index.html", carte())
 for p in PRODUITS:
     ecrire(f"carte/{p['id']}/index.html", fiche(p))
 ecrire("ma-demande/index.html", demande())
+ecrire("retrait/index.html", retrait())
 if not APERCU:
     ecrire("404.html", introuvable())
     ecrire(".htaccess", htaccess())
@@ -654,7 +679,7 @@ for f in ("favicon.ico", "favicon.svg", "apple-touch-icon.png", "icone-192.png",
 shutil.copy(os.path.join(ICI, "favicon", "favicon.ico"), os.path.join(OUT, "favicon.ico"))
 if EN_LIGNE:
     # Plan du site : les pages à trouver dans les résultats (Ma demande et la 404 n'y sont pas)
-    urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in PRODUITS] + ["conditions-de-commande/", "mentions-legales/", "confidentialite/"]
+    urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in PRODUITS] + ["retrait/", "conditions-de-commande/", "mentions-legales/", "confidentialite/"]
     ecrire("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
            "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{MAJ}</lastmod></url>\n" for u in urls) + "</urlset>\n")
     # Tout est permis aux robots : les pages à ne pas indexer (Ma demande, 404) portent leur « noindex » (il faut pouvoir le lire)
