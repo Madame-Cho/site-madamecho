@@ -54,7 +54,7 @@ Clients | 고객
 Produits | 제품
 Statistiques | 통계
 Production | 생산
-Réglages | 설정
+Paramètres | 설정
 Plus | 더보기
 Menu | 메뉴
 Menu principal | 주 메뉴
@@ -247,6 +247,20 @@ Avis demandé | 리뷰 부탁함
 Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre. | 확정 이메일을 보냈어요. 다음 단계: 픽업 날, 이 칸 아래의 ‘고객에게 전달 완료’를 누르세요.
 À faire maintenant : envoyer la confirmation au client (ci-dessous). | 지금 할 일: 아래에서 고객에게 확정 이메일 보내기.
 Nouveaux messages | 새 메시지
+Corbeille | 휴지통
+Commandes et fiches supprimées, 30 jours pour les restaurer | 삭제한 주문과 고객 정보, 30일 안에 되살릴 수 있어요
+Ce qui a été supprimé reste ici 30 jours, puis s'efface tout seul. | 삭제한 것은 여기에 30일 동안 남아 있다가 저절로 지워져요.
+À restaurer | 되살릴 수 있는 것
+La corbeille est vide. | 휴지통이 비어 있어요.
+Restaurer | 되살리기
+Restauré : c'est de nouveau à sa place. | 되살렸어요. 원래 자리로 돌아갔어요.
+Cet élément n'est plus dans la corbeille. | 이 항목은 더 이상 휴지통에 없어요.
+Cet élément est illisible. | 이 항목을 읽을 수 없어요.
+Restaurez d'abord la fiche du client, elle aussi dans la corbeille. | 먼저 고객 정보를 되살려 주세요. 고객 정보도 휴지통에 있어요.
+Impossible de la remettre à sa place : écrivez à Olivier. | 원래 자리로 되돌릴 수 없어요. 올리비에에게 알려 주세요.
+Fiche client | 고객 정보
+La commande et ses échanges vont à la corbeille (Plus › Corbeille) : 30 jours pour la restaurer, puis effacement. D'ici là, elle n'est plus dans les listes, les statistiques ni l'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Impossible pour une commande facturée, rapprochée avec Qonto ou notée payée. Les mails restent dans Gmail. | 주문과 연락 내용이 휴지통(더보기 › 휴지통)으로 가요. 30일 안에 되살릴 수 있고, 그 뒤에는 지워져요. 그동안 목록, 통계, 일정에는 나오지 않아요. 실제 주문이 취소된 경우에는 ‘주문 취소’를 쓰세요. 청구서가 있거나 Qonto와 대조됐거나 결제됨으로 적힌 주문은 삭제할 수 없어요. 이메일은 Gmail에 남아요.
+Possible seulement pour une fiche sans aucune commande. Elle va à la corbeille (Plus › Corbeille) : 30 jours pour la restaurer. | 주문이 하나도 없는 고객 정보만 삭제할 수 있어요. 휴지통(더보기 › 휴지통)으로 가고, 30일 안에 되살릴 수 있어요.
 Le texte contient du coréen. Les mails et les notes sont en français : touchez « Corriger mon français » pour le traduire. | 한국어가 들어 있어요. 고객과 기록은 프랑스어로 써요. ‘프랑스어 고치기’를 눌러 프랑스어로 바꿔 주세요.
 Supprimer la commande (essai, erreur de saisie) | 주문 삭제 (테스트, 입력 실수)
 Supprimer la commande | 주문 삭제
@@ -300,7 +314,7 @@ Nouvelles réponses des clients | 고객의 새 답장
 Proposition envoyée au client. Une copie arrive dans contact@madamecho.com ; sa réponse arrivera dans les Échanges. | 고객에게 견적을 보냈어요. 사본이 contact@madamecho.com으로 오고, 고객 답장은 ‘고객과의 연락’에 들어와요.
 L'email n'est pas parti. Réessayez, ou utilisez « Autre façon » plus bas. | 이메일이 가지 않았어요. 다시 해 보거나 아래 ‘다른 방법’을 쓰세요.
 Pas d'email pour ce client, ou la demande n'en est plus là. | 이 고객의 이메일이 없거나 문의가 이미 다음 단계예요.
-Il faut une commande remise, l'email du client et le lien d'avis (Réglages). | 전달 완료된 주문, 고객 이메일, 리뷰 링크(설정)가 필요해요.
+Il faut une commande remise, l'email du client et le lien d'avis (Paramètres). | 전달 완료된 주문, 고객 이메일, 리뷰 링크(설정)가 필요해요.
 Demande d'avis envoyée et notée sur la fiche du client. | 리뷰 부탁 이메일을 보내고 고객 정보에 적었어요.
 Réponses des clients | 고객 답장
 Réponses des clients (Gmail) | 고객 답장 (Gmail)
@@ -712,7 +726,7 @@ Aucune commande avec ce filtre. | 이 필터에 맞는 주문이 없어요.
 Actualiser | 새로고침
 Ouvrir Matomo | Matomo 열기
 Les visites du site | 사이트 방문
-Remplacer la clé dans Réglages | 설정에서 키 바꾸기
+Remplacer la clé dans Paramètres | 설정에서 키 바꾸기
 Réessayez dans quelques minutes. | 몇 분 뒤에 다시 해 보세요.
 Visites aujourd'hui | 오늘 방문
 depuis minuit | 자정부터
@@ -786,7 +800,7 @@ Assistant | 어시스턴트
 Questions, problèmes, idées d'amélioration | 질문, 문제, 개선 아이디어
 Nouvelle conversation | 새 대화
 Pas encore relié | 아직 연결되지 않음
-Relier l'assistant dans Réglages | 설정에서 어시스턴트 연결
+Relier l'assistant dans Paramètres | 설정에서 어시스턴트 연결
 Votre message | 메시지
 Envoyer | 보내기
 Envoyer le rapport à Olivier | Olivier에게 보고서 보내기
@@ -814,7 +828,7 @@ Retirer la clé de l'assistant ? Il ne répondra plus. | 어시스턴트 키를 
 L'assistant n'est plus relié. | 어시스턴트 연결을 해제했어요.
 L'assistant est relié : il répond dans Plus › Assistant. | 어시스턴트를 연결했어요. 더보기 › 어시스턴트에서 답해요.
 Collez la clé telle qu'Anthropic l'affiche : elle commence par sk-ant-, sans espace. | Anthropic이 보여 주는 그대로 키를 붙여 넣으세요. sk-ant-로 시작하고 공백이 없어야 해요.
-L'assistant n'est pas encore relié : demandez à Olivier de coller la clé dans Réglages. | 어시스턴트가 아직 연결되지 않았어요. Olivier에게 설정에서 키를 붙여 넣어 달라고 하세요.
+L'assistant n'est pas encore relié : demandez à Olivier de coller la clé dans Paramètres. | 어시스턴트가 아직 연결되지 않았어요. Olivier에게 설정에서 키를 붙여 넣어 달라고 하세요.
 L'email n'est pas parti : réessayez, ou prévenez Olivier. | 이메일이 나가지 않았어요. 다시 해 보거나 Olivier에게 알려 주세요.
 Rapport envoyé à contact@madamecho.com. | 보고서를 contact@madamecho.com으로 보냈어요.
 clé refusée par Anthropic | Anthropic이 키를 거부했어요
@@ -834,7 +848,7 @@ Problème | 문제
 Amélioration | 개선
 Question | 질문
 
-# Réglages
+# Paramètres
 Langue de l'écran | 화면 언어
 Gardé sur cet appareil. Notes, fiches et emails préparés restent en français. | 이 기기에 저장돼요. 메모, 고객 정보, 준비된 이메일은 프랑스어 그대로예요.
 Mon mot de passe | 내 비밀번호
@@ -1392,9 +1406,15 @@ function coreen_motifs(): array {
         // Repères dans les listes
         ['/^reçue (.+)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 접수' : null],
         ['/^dernier échange (.+)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? '최근 연락 ' . $d : null],
-        ['/^Commande (MC-\d{6}-[0-9A-F]{4}) supprimée, avec ses échanges\.$/u', fn($m) => '주문 ' . $m[1] . '을(를) 연락 내용과 함께 삭제했어요.'],
-        ['/^Fiche (CL-\d+) supprimée\.$/u', fn($m) => '고객 정보 ' . $m[1] . '을(를) 삭제했어요.'],
-        ['/^(Commande MC-[0-9A-F-]+|Fiche client CL-\d+) supprimée \((.*)\)$/u', fn($m) => $m[1] . ' 삭제 (' . $m[2] . ')'],
+        ['/^Commande (MC-\d{6}-[0-9A-F]{4}) mise à la corbeille, avec ses échanges : 30 jours pour la restaurer \(Plus › Corbeille\)\.$/u', fn($m) => '주문 ' . $m[1] . '을(를) 연락 내용과 함께 휴지통에 넣었어요. 30일 안에 되살릴 수 있어요(더보기 › 휴지통).'],
+        ['/^Fiche (CL-\d+) mise à la corbeille : 30 jours pour la restaurer \(Plus › Corbeille\)\.$/u', fn($m) => '고객 정보 ' . $m[1] . '을(를) 휴지통에 넣었어요. 30일 안에 되살릴 수 있어요(더보기 › 휴지통).'],
+        ['/^(Commande MC-[0-9A-F-]+|Fiche client CL-\d+) mise à la corbeille \((.*)\)$/u', fn($m) => $m[1] . ' 휴지통으로 (' . $m[2] . ')'],
+        ['/^(Commande MC-[0-9A-F-]+|Fiche client CL-\d+) restaurée depuis la corbeille$/u', fn($m) => $m[1] . ' 휴지통에서 되살림'],
+        ['/^Restaurer (MC-[0-9A-F-]+|CL-\d+) \?$/u', fn($m) => $m[1] . '을(를) 되살릴까요?'],
+        ['/^Une commande (MC-[0-9A-F-]+) existe déjà\.$/u', fn($m) => '주문 ' . $m[1] . '이(가) 이미 있어요.'],
+        ['/^Une fiche (CL-\d+) existe déjà\.$/u', fn($m) => '고객 정보 ' . $m[1] . '이(가) 이미 있어요.'],
+        ['/^Supprimée le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 삭제' : null],
+        ['/^Effacée dans (\d+) j$/u', fn($m) => $m[1] . '일 뒤 완전 삭제'],
         ['/^dernière le (.+)$/u', fn($m) => ($d = $date($m[1])) ? '최근 주문 ' . $d : null],
         ['/^client depuis le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . '부터 고객' : null],
         ['/^vu (.+)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 접속' : null],
@@ -1467,7 +1487,7 @@ function coreen_motifs(): array {
         ['/^Lecture impossible pour l\'instant \((.+)\) : voici les chiffres lus à (\d{2}) h (\d{2})\.$/u', fn($m) => '지금은 읽을 수 없어요 (' . $t($m[1]) . '). ' . $m[2] . ':' . $m[3] . '에 읽은 숫자예요.'],
         ['/^Matomo, lu à (\d{2}) h (\d{2})\. Sans cookie ; les refus de mesure ne sont pas comptés\.$/u',
             fn($m) => 'Matomo, ' . $m[1] . ':' . $m[2] . '에 읽음. 쿠키 없이 측정하고, 거부한 방문자는 세지 않아요.'],
-        // Réglages
+        // Paramètres
         ['/^La tâche de nuit ne passe plus depuis le (.+) : prévenez Olivier \(tâche planifiée OVH\)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . '부터 야간 작업이 돌지 않아요. Olivier에게 알려 주세요 (OVH 예약 작업).' : null],
         // Messages après une action
         ['/^Étape changée : (.*)\.$/u', fn($m) => '단계를 바꿨어요: ' . $t($m[1]) . '.'],

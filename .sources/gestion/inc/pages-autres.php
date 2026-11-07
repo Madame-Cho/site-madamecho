@@ -1,6 +1,6 @@
 <?php
 /*
- * Madame Cho : espace de gestion. Statistiques, menu « Plus », réglages (compte, comptes, emails, conservation RGPD,
+ * Madame Cho : espace de gestion. Statistiques, menu « Plus », paramètres (compte, comptes, emails, conservation RGPD,
  * miroir pour le Drive, reprise des données, export complet, contrôle technique), exports CSV et miroir.
  */
 declare(strict_types=1);
@@ -260,16 +260,16 @@ function page_statistiques_site(): void {
     $actions = fn() => '<div class="actions">' . lien_bouton(u('statistiques', ['vue' => 'site', 'actualiser' => '1']), 'Actualiser', 'discret')
         . lien_bouton(GESTION_MATOMO, 'Ouvrir Matomo', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>';
     if (($m['etat'] ?? '') === 'non-relie') {
-        $reglages = '<a href="' . h(u('reglages')) . '#matomo">' . h(fr_ko('Réglages', '설정')) . '</a>';
+        $reglages = '<a href="' . h(u('reglages')) . '#matomo">' . h(fr_ko('Paramètres', '설정')) . '</a>';
         $c .= bloc('Les visites du site', '<p>' . fr_ko('Les visites de madamecho.com sont mesurées par Matomo, sans cookie. Pour les voir ici, '
-            . ($admin ? 'collez une clé d\'accès de Matomo dans ' . $reglages . ' : la marche à suivre y est, elle prend deux minutes.' : 'demandez à Youngmi de relier Matomo dans Réglages.'),
+            . ($admin ? 'collez une clé d\'accès de Matomo dans ' . $reglages . ' : la marche à suivre y est, elle prend deux minutes.' : 'demandez à Youngmi de relier Matomo dans Paramètres.'),
               'madamecho.com 방문은 Matomo가 쿠키 없이 측정해요. 여기에서 보려면 '
             . ($admin ? $reglages . '에 Matomo 접근 키를 붙여 넣으세요. 방법이 거기 적혀 있고, 2분이면 돼요.' : 'Youngmi에게 설정에서 Matomo를 연결해 달라고 하세요.')) . '</p>');
         mise_en_page('Statistiques', $c, 'statistiques');
         return;
     }
     if (($m['etat'] ?? '') !== 'ok') {
-        $cle = $admin && str_contains((string)($m['erreur'] ?? ''), 'clé') ? ' <a href="' . h(u('reglages')) . '#matomo">Remplacer la clé dans Réglages</a>.' : ' Réessayez dans quelques minutes.';
+        $cle = $admin && str_contains((string)($m['erreur'] ?? ''), 'clé') ? ' <a href="' . h(u('reglages')) . '#matomo">Remplacer la clé dans Paramètres</a>.' : ' Réessayez dans quelques minutes.';
         $c .= bloc('Les visites du site', '<p class="erreur">Lecture impossible pour l\'instant : ' . h((string)($m['erreur'] ?? '')) . '.' . $cle . '</p>' . $actions());
         mise_en_page('Statistiques', $c, 'statistiques');
         return;
@@ -343,15 +343,41 @@ function page_plus(): void {
     $l = [[u('statistiques'), 'stats', 'Statistiques', 'Ventes et visites du site'],
           [u('production'), 'imprimer', 'Fiche de production', 'À préparer, jour par jour'],
           [u('ingredients'), 'produits', 'Ingrédients', 'Prix et allergènes'],
-          [u('rapprochement'), 'stats', 'Rapprochement Qonto', 'Paiements à retrouver dans Qonto'],
+          [u('rapprochement'), 'paiement', 'Rapprochement Qonto', 'Paiements à retrouver dans Qonto'],
+          [u('corbeille'), 'supprimer', 'Corbeille', 'Commandes et fiches supprimées, 30 jours pour les restaurer'],
           [u('manuel'), 'livre', 'Manuel', 'Mode d\'emploi, écran par écran'],
           [u('assistant'), 'ia', 'Assistant', 'Une IA : questions, problèmes, idées'],
-          [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, emails, données']];
+          [u('reglages'), 'reglages', 'Paramètres', 'Langue, mot de passe, emails, données']];
     $s = '';
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';
     $c = titre_page('Plus', '') . '<nav class="menu" aria-label="Plus">' . $s . '</nav><p class="aide centre">Gestion Madame Cho · version du ' . h(date_fr(GESTION_VERSION, 'longue')) . '</p>';
     mise_en_page('Plus', $c, 'plus');
+}
+
+/* ---------- Corbeille (demande d'Olivier, 07/11/2026) : 30 jours pour restaurer une commande ou une fiche supprimée ---------- */
+function page_corbeille(): void {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        csrf_verifier();
+        if (texte('_action', 40) === 'restaurer') {
+            $e = corbeille_restaurer(entier('id', 1));
+            flash($e === '' ? 'ok' : 'erreur', $e === '' ? 'Restauré : c\'est de nouveau à sa place.' : $e);
+        }
+        rediriger('corbeille');
+    }
+    $l = lignes("SELECT id, le, par, genre, reference, libelle, motif FROM corbeille ORDER BY le DESC");
+    $s = '';
+    foreach ($l as $e) {
+        $reste = max(0, CORBEILLE_JOURS - intdiv(time() - strtotime($e['le']), 86400));
+        $s .= '<li class="ligne-corbeille"><div>' . icone($e['genre'] === 'commande' ? 'commandes' : 'clients') . '<b translate="no">' . h($e['reference']) . '</b> '
+            . '<span translate="no">' . h($e['libelle']) . '</span>'
+            . '<span class="petit">' . h(($e['genre'] === 'commande' ? 'Commande' : 'Fiche client') . ' · Supprimée le ' . date_fr($e['le'], 'longue') . ' · Effacée dans ' . $reste . ' j') . '</span>'
+            . '<span class="petit" translate="no">' . h($e['par'] . ($e['motif'] !== '' ? ' · ' . $e['motif'] : '')) . '</span></div>'
+            . formulaire('restaurer', '<input type="hidden" name="id" value="' . (int)$e['id'] . '">' . bouton(icone('retour') . 'Restaurer', 'secondaire'), ['data-confirmer' => 'Restaurer ' . $e['reference'] . ' ?']) . '</li>';
+    }
+    $c = titre_page(icone('supprimer') . 'Corbeille', 'Ce qui a été supprimé reste ici 30 jours, puis s\'efface tout seul.', '', u('plus'))
+        . bloc('À restaurer', $s !== '' ? '<ul class="liste-corbeille">' . $s . '</ul>' : '<p class="vide">La corbeille est vide.</p>');
+    mise_en_page('Corbeille', $c, 'plus');
 }
 
 /* ---------- Rapprochement avec Qonto (audit n° 2, C14, FR-030) ----------
@@ -432,7 +458,7 @@ function page_export(): void {
     exit;
 }
 
-/** Miroir pour le Google Sheet du Drive (dossier 10) : appelé par un script Google en POST, avec la clé créée dans Réglages. */
+/** Miroir pour le Google Sheet du Drive (dossier 10) : appelé par un script Google en POST, avec la clé créée dans Paramètres. */
 function page_miroir(): void {
     header('Cache-Control: no-store, private');
     header('X-Robots-Tag: noindex, nofollow');
@@ -469,7 +495,7 @@ function liste_reprises(): string {
 }
 
 
-/* ---------- Réglages ---------- */
+/* ---------- Paramètres ---------- */
 function page_reglages(): void {
     $u = utilisateur_courant();
     $admin = est_admin();
@@ -630,7 +656,7 @@ function page_reglages(): void {
         }
         rediriger('reglages', [], $ancre);
     }
-    $c = titre_page('Réglages', h($u['nom']) . ' · ' . h($u['email']), '', u('plus'));
+    $c = titre_page('Paramètres', h($u['nom']) . ' · ' . h($u['email']), '', u('plus'));
     // Langue de l'écran (gardée sur cet appareil)
     $ko = coreen_actif();
     $c .= bloc('Langue de l\'écran', '<p class="aide">Gardé sur cet appareil. Notes, fiches et emails préparés restent en français.</p>'
@@ -789,5 +815,5 @@ function page_reglages(): void {
         foreach (lignes("SELECT * FROM connexions ORDER BY id DESC LIMIT 25") as $x) $rows .= '<tr><td>' . h(date_fr($x['le'], 'heure')) . '</td><td>' . h($x['email']) . '</td><td>' . ($x['ok'] ? 'oui' : '<span class="retard">non</span>') . ($x['detail'] !== '' ? ' · ' . h($x['detail']) : '') . '</td></tr>';
         $c .= bloc('Dernières connexions', $rows !== '' ? '<div class="defile"><table class="tableau"><thead><tr><th>Quand</th><th>Email</th><th>Réussie</th></tr></thead><tbody>' . $rows . '</tbody></table></div><p class="aide">Gardées 6 mois. Connexion inconnue : changez le mot de passe et prévenez Olivier.</p>' : '<p class="vide">Aucune.</p>');
     }
-    mise_en_page('Réglages', $c, 'reglages');
+    mise_en_page('Paramètres', $c, 'reglages');
 }

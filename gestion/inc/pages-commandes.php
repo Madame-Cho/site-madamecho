@@ -40,7 +40,7 @@ function page_accueil(): void {
             . '<span class="l2">' . h($e['reference']) . ' · ' . h(date_fr($e['le'], 'relative')) . '</span></a>';
         $c .= bloc(icone('email') . ' Nouvelles réponses des clients', '<div class="liste">' . $l . '</div>', '', 'reponses');
     }
-    if (est_admin() && reponses_silence()) $c .= bloc(icone('alerte') . ' Réponses des clients', '<p class="erreur">Le script de contact@ n\'a rien transmis depuis plus de 24 h : les réponses des clients restent dans Gmail. Voir <a href="' . h(u('reglages')) . '#reponses">Réglages</a>.</p>', 'alerte');
+    if (est_admin() && reponses_silence()) $c .= bloc(icone('alerte') . ' Réponses des clients', '<p class="erreur">Le script de contact@ n\'a rien transmis depuis plus de 24 h : les réponses des clients restent dans Gmail. Voir <a href="' . h(u('reglages')) . '#reponses">Paramètres</a>.</p>', 'alerte');
     $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'), '', 'demandes');
     // Retraits groupés par jour
     $jours = [];
@@ -166,7 +166,7 @@ function page_commande(): void {
                 break;
             case 'envoyer_avis':
                 $lien = (string)parametre('lien_avis', '');
-                if ($k['statut'] !== 'remise' || $lien === '' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Il faut une commande remise, l\'email du client et le lien d\'avis (Réglages).'); break; }
+                if ($k['statut'] !== 'remise' || $lien === '' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Il faut une commande remise, l\'email du client et le lien d\'avis (Paramètres).'); break; }
                 if (!envoyer_mail_commande($k, 'avis', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'lien' => $lien])) { flash('erreur', 'L\'email n\'est pas parti. Réessayez dans un moment.'); break; }
                 q("UPDATE clients SET avis_demande_le = ?, maj_le = ? WHERE id = ?", [aujourdhui(), maintenant(), $k['client_id']]);
                 evenement('avis', 'Avis Google demandé', ['commande' => $id, 'client' => (int)$k['client_id']]);
@@ -184,7 +184,7 @@ function page_commande(): void {
                 if (texte('confirmation', 12) !== 'SUPPRIMER') { flash('erreur', 'Pour supprimer, tapez SUPPRIMER en majuscules.'); break; }
                 if (!commande_supprimable($k)) { flash('erreur', 'Cette commande a une facture, un paiement rapproché ou un paiement reçu : elle reste pour les comptes. Annulez-la plutôt.'); break; }
                 commande_supprimer($id, une_ligne(texte('motif', 200)) ?: 'essai');
-                flash('ok', 'Commande ' . $k['reference'] . ' supprimée, avec ses échanges.');
+                flash('ok', 'Commande ' . $k['reference'] . ' mise à la corbeille, avec ses échanges : 30 jours pour la restaurer (Plus › Corbeille).');
                 rediriger('commandes');
             case 'statut':
                 $s = choix('statut', STATUTS, '');
@@ -341,7 +341,7 @@ function page_commande(): void {
         . '<details class="replie"><summary>Changer l\'étape à la main</summary>' . formulaire('statut', liste_choix('statut', 'Étape', STATUTS, $k['statut']) . champ('motif', 'Précision (facultatif)', '', ['maxlength' => '300']) . bouton('Changer', 'secondaire')) . '</details>'
         . formulaire('dupliquer', bouton('Faire une copie (client régulier)', 'discret'))
         . (commande_supprimable($k) ? '<details class="replie"><summary>' . icone('supprimer') . 'Supprimer la commande (essai, erreur de saisie)</summary>'
-            . '<p class="aide">La commande et ses échanges disparaissent de la gestion, des statistiques et de l\'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Impossible pour une commande facturée, rapprochée avec Qonto ou notée payée. Les mails restent dans Gmail.</p>'
+            . '<p class="aide">La commande et ses échanges vont à la corbeille (Plus › Corbeille) : 30 jours pour la restaurer, puis effacement. D\'ici là, elle n\'est plus dans les listes, les statistiques ni l\'agenda. Pour une vraie commande qui ne se fait pas, utilisez plutôt « Annuler la commande ». Impossible pour une commande facturée, rapprochée avec Qonto ou notée payée. Les mails restent dans Gmail.</p>'
             . formulaire('supprimer', champ('motif', 'Motif', 'essai', ['maxlength' => '200']) . champ('confirmation', 'Tapez SUPPRIMER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'SUPPRIMER'])
                 . bouton(icone('supprimer') . 'Supprimer la commande', 'danger'), ['data-confirmer' => 'Supprimer définitivement cette commande ?']) . '</details>' : '')
         . '</div>';
@@ -522,7 +522,7 @@ function etape_suivante(array $k): string {
             if ($c && $c['statut'] !== 'efface') {
                 if ($c['avis_recu_le']) $avis = '<p>Avis Google reçu le ' . h(date_fr($c['avis_recu_le'], 'longue')) . '. Merci !</p>';
                 elseif ($c['avis_demande_le']) $avis = '<p>Avis Google demandé le ' . h(date_fr($c['avis_demande_le'], 'longue')) . '.</p>' . formulaire('avis_recu', bouton(icone('avis') . 'L\'avis est arrivé', 'secondaire'));
-                elseif ($lien === '') $avis = '<p class="aide">' . fr_ko('Pour demander un avis Google, ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
+                elseif ($lien === '') $avis = '<p class="aide">' . fr_ko('Pour demander un avis Google, ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Paramètres</a>.',
                     '구글 리뷰를 부탁하려면 먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>';
                 else $avis = '<p class="aide">À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google).</p>' . bloc_mail_client($k, 'avis', 'Demander un avis Google', '',
                                 '<p class="aide">Vous l\'avez demandé vous-même ?</p>' . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire')), false);

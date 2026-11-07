@@ -5,7 +5,7 @@
  * Il lit les commandes, les clients (noms et coordonnées compris : c'est un outil interne), les gâteaux, recettes et ingrédients,
  * l'agenda et les indispos, les chiffres de vente et les visites du site (Matomo). Il ne modifie rien lui-même (carte « Youngmi confirme
  * d'un clic ») : chaque modification préparée s'affiche avec un bouton « Confirmer », qui envoie le formulaire habituel de la gestion,
- * prérempli avec l'état actuel de la fiche (mêmes contrôles, même historique, mêmes messages). Jamais les réglages, les comptes,
+ * prérempli avec l'état actuel de la fiche (mêmes contrôles, même historique, mêmes messages). Jamais les paramètres, les comptes,
  * les clés, l'import, l'export, la fusion ni l'effacement d'un client ; aucun email (R-01).
  */
 declare(strict_types=1);
@@ -434,7 +434,7 @@ function outil_chiffres(array $in): array {
 
 /** Les visites du site sur une période, demandées à Matomo (une seule requête groupée, 12 secondes au plus). */
 function ia_visites(string $du, string $au): array|string {
-    if (!matomo_relie()) return 'Matomo n\'est pas encore relié (Réglages) : pas de chiffres de visites.';
+    if (!matomo_relie()) return 'Matomo n\'est pas encore relié (Paramètres) : pas de chiffres de visites.';
     if ($au < GESTION_MATOMO_DEBUT) return 'La mesure du site a commencé le ' . date_fr(GESTION_MATOMO_DEBUT, 'longue') . ' : pas de visites mesurées avant.';
     $debut = max($du, GESTION_MATOMO_DEBUT);
     $date = $debut . ',' . $au;
@@ -544,7 +544,7 @@ function outil_proposer_modification(): array {
             . "- produit_prix_pro (identifiant d'un produit de la gamme pro) : nom, unite, prix_ht, tva, statut (pro|retire).\n"
             . "- recette_ajouter (identifiant du produit) : variante (code), ingredient (numéro, ou nom d'un nouvel ingrédient avec unite g|ml|piece et prix au kg, au litre ou à la pièce), quantite, note. recette_modifier (numéro de ligne) : quantite, note. recette_retirer (numéro de ligne).\n"
             . "- ingredient_modifier (numéro de l'ingrédient) : nom, unite, prix, allergenes (liste de codes : gluten, crustaces, oeufs, poissons, arachides, soja, lait, fruits_a_coque, celeri, moutarde, sesame, sulfites, lupin, mollusques), fournisseur, achat, notes, actif (oui|non).\n"
-            . "Jamais : réglages, comptes, mots de passe, clés, import, export, fusion ou effacement d'un client, emails.",
+            . "Jamais : paramètres, comptes, mots de passe, clés, import, export, fusion ou effacement d'un client, emails.",
         'input_schema' => ['type' => 'object', 'additionalProperties' => false, 'required' => ['action', 'cible', 'champs', 'resume'], 'properties' => [
             'action' => ['type' => 'string', 'enum' => array_keys(PROPOSITIONS)],
             'cible' => ['type' => 'string', 'description' => 'La référence MC-…, le numéro CL-…, le numéro de l\'indispo, de la ligne de recette ou de l\'ingrédient, l\'identifiant du produit ; vide pour une création'],

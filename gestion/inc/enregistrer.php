@@ -17,7 +17,7 @@ require_once __DIR__ . '/modele.php';
  * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
  * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code).
  * Renvoie le numéro interne de la commande (0 : rien d'enregistré).
- * Ne fait rien tant que l'espace n'est pas ouvert, ni avant que l'enregistrement soit activé dans Réglages (mise en ligne en deux temps).
+ * Ne fait rien tant que l'espace n'est pas ouvert, ni avant que l'enregistrement soit activé dans Paramètres (mise en ligne en deux temps).
  */
 function enregistrer_demande(array $d): int {
     if (!gestion_base_existante() || parametre('demandes_site') !== '1') return 0;

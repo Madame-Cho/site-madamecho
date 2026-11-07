@@ -2,7 +2,7 @@
 /*
  * Madame Cho : espace de gestion. Statistiques du site, lues dans Matomo (https://stats.madamecho.com, T-06),
  * pour que Youngmi voie tout au même endroit (demande d'Olivier, 06/11/2026).
- * La clé d'accès de Matomo est collée dans Réglages et gardée dans la base, hors du site : jamais dans ce dépôt public (R-08),
+ * La clé d'accès de Matomo est collée dans Paramètres et gardée dans la base, hors du site : jamais dans ce dépôt public (R-08),
  * jamais réaffichée, jamais dans l'export. Les chiffres (agrégés, sans donnée personnelle) sont gardés 15 minutes.
  */
 declare(strict_types=1);

@@ -214,7 +214,7 @@ gâteau affiché sans lait, déclenche l'alerte d'écart.
 
 ### User Story 7 - Recevoir les demandes du site dans l'outil (Priority: P2)
 
-Une fois activé dans Réglages (après le pilote avec Youngmi), chaque demande envoyée par le
+Une fois activé dans Paramètres (après le pilote avec Youngmi), chaque demande envoyée par le
 formulaire du site s'ajoute toute seule, avec son client et la même référence que l'email.
 
 **Why this priority**: plus de double saisie, mais seulement quand Youngmi a pris l'outil en main.
@@ -301,14 +301,14 @@ utilisé ne sert pas deux fois ; changer son mot de passe déconnecte l'autre ap
 
 1. **Given** une session ouverte sur deux appareils, **When** le mot de passe change sur l'un,
    **Then** l'autre est déconnecté à la page suivante.
-2. **Given** un membre, **When** il ouvre Réglages, **Then** il ne voit ni les accès ni les
+2. **Given** un membre, **When** il ouvre Paramètres, **Then** il ne voit ni les accès ni les
    données de tous les clients à exporter.
 
 ---
 
 ### User Story 11 - Garder seulement le nécessaire (Priority: P2)
 
-Chaque nuit, l'outil efface ce qui a dépassé sa durée de conservation et Réglages montre ce qui
+Chaque nuit, l'outil efface ce qui a dépassé sa durée de conservation et Paramètres montre ce qui
 le sera bientôt, avec la liste des emails de demandes à supprimer aussi dans la boîte de Madame
 Cho.
 
@@ -381,7 +381,9 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   l'historique, et un effacement vide les données personnelles sans toucher aux montants. Seule
   une commande d'essai ou saisie par erreur, sans facture, sans rapprochement Qonto et sans
   paiement noté reçu, MAY être supprimée par une personne qui tape SUPPRIMER ; de même une fiche
-  client sans aucune commande ; une ligne « supprimée » (référence, motif) reste dans le journal.
+  client sans aucune commande. Ce qui est supprimé MUST aller dans une corbeille 30 jours (Plus › Corbeille,
+  « Restaurer » d'un toucher), puis s'effacer tout seul ; un effacement RGPD du client vide aussi
+  sa corbeille ; une ligne « mise à la corbeille » (référence, motif) reste dans le journal.
 - **FR-003**: Une commande MUST suivre le cycle Demande → Proposition → Confirmée → Remise, avec
   les sorties Sans suite et Annulée (motif) ; le paiement (pas encore payé, acompte demandé,
   acompte reçu, payé, remboursé) et le drapeau « problème » sont tenus à part du statut.
@@ -443,7 +445,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   client sans commande en cours ni échange depuis 3 ans, ou qui n'a jamais commandé, 12 mois
   après son dernier échange ; le journal des connexions et les conversations de l'assistant
   après 6 mois ; les rapports après 12 mois ; les liens de connexion expirés ou utilisés.
-  Réglages MUST montrer ce qui sera effacé, et la liste des demandes du site de plus de 11 mois
+  Paramètres MUST montrer ce qui sera effacé, et la liste des demandes du site de plus de 11 mois
   dont l'email est à supprimer aussi dans la boîte de Madame Cho. L'effacement d'un client MUST
   aussi retirer son nom et ses coordonnées des conversations de l'assistant.
 - **FR-022**: Les statistiques MUST donner, par mois, par canal et par produit, les commandes
@@ -455,7 +457,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   confirmées, leur contenu et les plaques, sans email ni téléphone.
 - **FR-024**: Les clés d'accès (assistant, mesure d'audience) MUST être collées une fois par une
   administratrice, vérifiées, jamais réaffichées et jamais exportées.
-- **FR-025**: Réglages MUST montrer un contrôle technique (version du serveur, base de données,
+- **FR-025**: Paramètres MUST montrer un contrôle technique (version du serveur, base de données,
   données rangées hors du site, connexion chiffrée, signature des emails, carte du site,
   dernières demandes du site, mesure d'audience reliée) ; si la base ne répond pas, l'outil
   MUST l'annoncer en français et en coréen, et les demandes du site continuent d'arriver par
@@ -476,7 +478,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   après 24 heures. Elle peut porter sur une commande (étape, paiement, fiche, problème, échange,
   nouvelle commande), un client (fiche, échange, avis, actif, nouveau client), une indispo, la
   fiche d'un gâteau, la gamme pro, une recette ou un ingrédient. L'assistant MUST NOT toucher aux
-  réglages, aux comptes, aux clés, à l'import, à l'export, à la fusion ni à l'effacement d'un
+  paramètres, aux comptes, aux clés, à l'import, à l'export, à la fusion ni à l'effacement d'un
   client, et MUST NOT envoyer d'email.
 - **FR-028**: Un mode vocal MUST permettre de parler à l'assistant et de l'entendre, dans la
   langue choisie dans l'outil (français ou coréen), avec la reconnaissance et la voix du
@@ -496,7 +498,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   contact@, en lecture seule, authentifié par une clé dont la gestion ne garde que l'empreinte ;
   seuls les mails dont l'objet porte une référence MC-… sont transmis (expéditeur, date, objet,
   texte, noms des pièces jointes) ; un mail sans commande reconnue est gardé 30 jours dans
-  Réglages ; 24 heures sans nouvelles du script MUST déclencher une alerte sur Aujourd'hui.
+  Paramètres ; 24 heures sans nouvelles du script MUST déclencher une alerte sur Aujourd'hui.
 - **FR-032**: Les échanges d'une commande MUST se lire comme une messagerie : le plus récent en
   haut, le client d'un côté, Madame Cho de l'autre, les échanges notés au milieu, chacun avec son
   icône et son heure ; ce qui n'a pas été vu MUST être sous un trait « Nouveaux messages », suivi
@@ -513,7 +515,8 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   « Parler en coréen » (le texte dicté devient du français corrigé, à relire) et « Corriger mon
   français » (texte corrigé et son sens en coréen ; « Utiliser ce texte » ou « Garder le mien ») ;
   un texte en coréen MUST NOT partir au client. Les drapeaux de langue sont dessinés en SVG.
-- **FR-036**: La même chose MUST avoir partout la même icône (commande, client, produit,
+- **FR-036**: La même chose MUST avoir partout la même icône ; les paramètres s'appellent « Paramètres »,
+  avec l'engrenage, comme sur la plupart des sites ; (commande, client, produit,
   échanges, agenda, canaux), dans le menu (ordinateur compris) et les titres des cadres.
 
 ### Key Entities *(include if feature involves data)*
@@ -555,7 +558,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - **SC-011**: La réponse d'un client apparaît dans sa commande en moins de 2 minutes (mesuré le
   2026-11-07 sur un vrai mail).
 - **SC-012**: 0 vente payée, facturée ou rapprochée supprimable.
-- **SC-007**: Le coût de l'assistant ne dépasse jamais le plafond du mois fixé dans Réglages.
+- **SC-007**: Le coût de l'assistant ne dépasse jamais le plafond du mois fixé dans Paramètres.
 - **SC-008**: 0 donnée changée par l'assistant sans le toucher de « Confirmer » de l'utilisatrice.
 - **SC-009**: 0 paiement changé par une modification de l'assistant sans être affiché sur sa carte
   avant « Confirmer ».

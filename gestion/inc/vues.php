@@ -37,7 +37,7 @@ function icone(string $n): string {
         'alerte' => '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
         'copier' => '<path d="M8 8h12v12H8z"/><path d="M4 16V4h12"/>',
         'stats' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
-        'reglages' => '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+        'reglages' => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',   // engrenage, comme sur la plupart des sites (Olivier, 07/11/2026)
         'sortir' => '<path d="M10 4H4v16h6"/><path d="M14 8l4 4-4 4M18 12H9"/>',
         'crayon' => '<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"/><path d="M14 7l3 3"/>',
         'livre' => '<path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>',
@@ -98,7 +98,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
         // Sur ordinateur : les cinq pages du menu Plus en liens directs quand l'écran est large (≥ 1200 px),
         // un seul lien « Plus » sinon, pour que la barre reste sur une ligne
         $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant'], true);
-        foreach ([['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Réglages', 'reglages']] as [$p, $l, $i]) {
+        foreach ([['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Paramètres', 'reglages']] as [$p, $l, $i]) {
             $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . icone($i) . h($l) . '</a>';
         }
         $nav .= '<a class="plus" href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . 'Plus</a>';
@@ -154,8 +154,15 @@ function page_indisponible(): void {
     exit;
 }
 
+const ICONES_PAGES = ['accueil' => 'jour', 'agenda' => 'mois', 'commandes' => 'commandes', 'commande' => 'commandes', 'commande-edition' => 'commandes',
+    'clients' => 'clients', 'client' => 'clients', 'client-edition' => 'clients', 'releve' => 'imprimer', 'produits' => 'produits', 'produit' => 'produits',
+    'ingredients' => 'produits', 'ingredient' => 'produits', 'statistiques' => 'stats', 'taxe' => 'stats', 'production' => 'imprimer', 'plus' => 'plus',
+    'rapprochement' => 'paiement', 'corbeille' => 'supprimer', 'manuel' => 'livre', 'aide' => 'livre', 'assistant' => 'ia', 'olivier' => 'ia', 'reglages' => 'reglages'];
 function titre_page(string $titre, string $sous = '', string $actions = '', string $retour = ''): string {
     $r = $retour !== '' ? '<a class="retour" href="' . h($retour) . '">' . icone('retour') . '<span>Retour</span></a>' : '';
+    // Chaque titre de page porte l'icône de sa rubrique, la même que dans le menu (retour d'Olivier, 07/11/2026)
+    $p = is_string($_GET['p'] ?? null) ? $_GET['p'] : 'accueil';
+    if (isset(ICONES_PAGES[$p]) && !str_contains($titre, '<svg')) $titre = icone(ICONES_PAGES[$p]) . $titre;
     return '<div class="tete">' . $r . '<div class="tete-texte"><h1>' . $titre . '</h1>' . ($sous !== '' ? '<p class="sous">' . $sous . '</p>' : '') . '</div>'
          . ($actions !== '' ? '<div class="tete-actions">' . $actions . '</div>' : '') . '</div>';
 }
@@ -298,7 +305,7 @@ function lien_bouton(string $href, string $label, string $classe = '', array $a 
 }
 /** Une icône par sujet, toujours la même partout (demande d'Olivier du 07/11/2026 : « une commande toujours la même icône ») :
  *  commande = commandes, client = clients, gâteau/produit = produits, échanges = bulle (assistant), paiement = carte, retrait du jour = jour,
- *  agenda = mois, avis = avis, mail = email, statistiques = stats, réglages = reglages, assistant IA = ia. Les titres des cadres la prennent ici. */
+ *  agenda = mois, avis = avis, mail = email, statistiques = stats, paramètres = reglages, assistant IA = ia. Les titres des cadres la prennent ici. */
 const ICONES_TITRES = [
     'Client' => 'clients', 'Coordonnées' => 'clients', 'Fiche et droits du client' => 'clients', 'Qui a accès' => 'clients',
     'Contenu' => 'produits', 'À préparer en tout' => 'produits', 'Ventes par gâteau' => 'produits',

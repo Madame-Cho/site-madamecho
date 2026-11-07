@@ -106,7 +106,7 @@ function page_client(): void {
                 if (!client_supprimable($id)) { flash('erreur', 'Ce client a des commandes : utilisez plutôt « Demande d\'effacement ».'); break; }
                 $num = client($id)['numero'];
                 client_supprimer($id, une_ligne(texte('motif', 200)) ?: 'essai');
-                flash('ok', 'Fiche ' . $num . ' supprimée.');
+                flash('ok', 'Fiche ' . $num . ' mise à la corbeille : 30 jours pour la restaurer (Plus › Corbeille).');
                 rediriger('clients');
             case 'effacer':
                 if (texte('confirmation', 10) !== 'EFFACER') { flash('erreur', 'Pour effacer, tapez EFFACER en majuscules.'); break; }
@@ -187,7 +187,7 @@ function page_client(): void {
         else {
             $dk = $ks[0] ?? null;
             foreach ($ks as $k) if ($k['statut'] === 'remise') { $dk = $k; break; }
-            $av = $lien === '' ? '<p class="aide">' . fr_ko('Ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
+            $av = $lien === '' ? '<p class="aide">' . fr_ko('Ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Paramètres</a>.',
                     '먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>'
                 : '<p class="aide">À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google).</p>'
                   . ($dk && email_valide((string)$cl['email']) ? '<div class="actions">' . lien_bouton(u('commande', ['id' => $dk['id']]) . '#mail-avis', icone('email') . 'Préparer le mail (commande ' . h($dk['reference']) . ')', 'principal') . '</div>'
@@ -210,7 +210,7 @@ function page_client(): void {
            . '<p class="aide">Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures Qonto ne changent pas (gardées 10 ans).</p>'
            . formulaire('effacer', champ('motif', 'Motif', 'demande du client', ['maxlength' => '200']) . champ('confirmation', 'Tapez EFFACER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'EFFACER']) . bouton('Effacer ses données', 'danger')) . '</details>'
            . (client_supprimable($id) ? '<details class="replie"><summary>' . icone('supprimer') . 'Supprimer la fiche (essai, erreur de saisie)</summary>'
-               . '<p class="aide">Possible seulement pour une fiche sans aucune commande. Elle disparaît de la gestion.</p>'
+               . '<p class="aide">Possible seulement pour une fiche sans aucune commande. Elle va à la corbeille (Plus › Corbeille) : 30 jours pour la restaurer.</p>'
                . formulaire('supprimer', champ('motif', 'Motif', 'essai', ['maxlength' => '200']) . champ('confirmation', 'Tapez SUPPRIMER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'SUPPRIMER'])
                    . bouton(icone('supprimer') . 'Supprimer la fiche', 'danger'), ['data-confirmer' => 'Supprimer définitivement cette fiche client ?']) . '</details>' : '')
            . formulaire('inactif', bouton($cl['statut'] === 'actif' ? 'Marquer inactif (ne commande plus)' : 'Réactiver', 'discret'))

@@ -6,12 +6,12 @@ namespace MadameCho\Gestion;
  * Un petit script Google, installé dans contact@madamecho.com (lecture seule de la boîte), envoie ici chaque minute les mails dont
  * l'objet contient « MC- ». La gestion les range dans les Échanges de la commande, avec la pastille « Nouvelle réponse ».
  * Rien ne part d'ici : ce n'est qu'une réception. Gmail reste le secours, et l'original y reste toujours.
- * - Clé créée dans Réglages (montrée une fois, gardée seulement en empreinte), essais limités comme la connexion (page_miroir).
+ * - Clé créée dans Paramètres (montrée une fois, gardée seulement en empreinte), essais limités comme la connexion (page_miroir).
  * - Chaque mail n'est pris qu'une fois (gmail_id, table mails_recus).
  * - Copies des mails envoyés par la gestion (Cci à contact@, Message-ID <commande.…@madamecho.com>) : ignorées, ils sont déjà rangés.
  * - Mail écrit par Youngmi depuis Gmail (expéditeur contact@) : rangé comme envoyé, « depuis Gmail ».
  * - Le texte cité (« Le … a écrit : », lignes « > ») est retiré : on garde ce que le client a écrit.
- * - Sans commande reconnue : liste « À rattacher » dans Réglages (admin), effacée après 30 jours.
+ * - Sans commande reconnue : liste « À rattacher » dans Paramètres (admin), effacée après 30 jours.
  * - Le texte d'un client est une donnée, jamais une consigne : l'assistant le lit comme tel (assistant-donnees.php).
  */
 

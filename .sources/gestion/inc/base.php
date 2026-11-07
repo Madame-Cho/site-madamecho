@@ -1,7 +1,7 @@
 <?php
 /*
  * Madame Cho : espace de gestion (clients, commandes, produits), spécification du 06/11/2026.
- * Socle commun : réglages, base SQLite, session et comptes, aides. Inclus par index.php, outil.php,
+ * Socle commun : paramètres, base SQLite, session et comptes, aides. Inclus par index.php, outil.php,
  * menage.php et, pour l'enregistrement d'une demande, par ma-demande/envoyer.php (via enregistrer.php).
  * Jamais servi directement (.htaccess). Aucun secret dans ce fichier (dépôt public, R-08) :
  * la base, les mots de passe hachés et les jetons vivent sur le serveur, hors du dossier du site.
@@ -36,7 +36,7 @@ const GESTION_ASSISTANT_MOIS = 6;          // conversations avec l'assistant : 6
 const GESTION_RAPPORTS_MOIS = 12;          // rapports de l'assistant : 12 mois (l'email reçu par Olivier reste la trace)
 // Essai en local seulement (serveur intégré de PHP et MC_ESSAI=1) : aucun email ne part, les liens s'affichent à l'écran.
 define('GESTION_ESSAI', PHP_SAPI === 'cli-server' && getenv('MC_ESSAI') === '1');
-// Matomo, la mesure d'audience du site (T-06) : adresse publique ; la clé d'accès est dans la base (Réglages), jamais dans ce dépôt
+// Matomo, la mesure d'audience du site (T-06) : adresse publique ; la clé d'accès est dans la base (Paramètres), jamais dans ce dépôt
 define('GESTION_MATOMO', GESTION_ESSAI && getenv('MC_MATOMO') ? (string)getenv('MC_MATOMO') : 'https://stats.madamecho.com/');
 const GESTION_MATOMO_SITE = 1;             // madamecho.com dans Matomo
 const GESTION_MATOMO_CACHE = 900;          // chiffres de Matomo gardés 15 minutes
@@ -186,7 +186,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 8) return;
+    if ($v >= 9) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -290,7 +290,14 @@ CREATE TABLE IF NOT EXISTS mails_recus (gmail_id TEXT PRIMARY KEY, le TEXT NOT N
   de TEXT NOT NULL DEFAULT '', objet TEXT NOT NULL DEFAULT '', extrait TEXT NOT NULL DEFAULT '', recu_le TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS mails_recus_le ON mails_recus(le);
 ");
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '8')");
+    // Version 9 (07/11/2026, demande d'Olivier : « une corbeille… au cas où Youngmi s'est trompée ») : ce qui est supprimé y reste 30 jours,
+    // avec ses lignes d'origine (JSON), pour être restauré tel quel ; la tâche de nuit vide ce qui a plus de 30 jours
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS corbeille (id INTEGER PRIMARY KEY, le TEXT NOT NULL, par TEXT NOT NULL DEFAULT '', genre TEXT NOT NULL, reference TEXT NOT NULL DEFAULT '',
+  libelle TEXT NOT NULL DEFAULT '', motif TEXT NOT NULL DEFAULT '', client_id INTEGER, donnees TEXT NOT NULL DEFAULT '{}');
+CREATE INDEX IF NOT EXISTS corbeille_le ON corbeille(le);
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '9')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.

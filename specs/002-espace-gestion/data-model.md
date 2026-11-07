@@ -49,3 +49,10 @@
   événement `suppression` (référence, motif, rattaché au client) reste.
 - Une fiche client sans aucune commande peut être supprimée avec ses événements ; un événement
   `suppression` (numéro, motif) reste dans le journal.
+
+## Corbeille (FR-002, schéma 9)
+
+- **corbeille** (nouvelle table) : `le`, `par`, `genre` (commande ou client), `reference`, `libelle`, `motif`, `client_id`,
+  `donnees` (les lignes d'origine en JSON : commande, événements, mails reçus ; ou fiche et événements). « Restaurer » les
+  remet telles quelles (identifiant gardé s'il est libre) ; une commande ne se restaure qu'après sa fiche client. La tâche
+  de nuit efface ce qui a plus de 30 jours ; l'effacement RGPD d'un client efface aussi ses lignes de corbeille.

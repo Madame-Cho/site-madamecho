@@ -194,6 +194,7 @@ function client_effacer(int $id, string $motif, ?string $auteur = null): void {
     q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', contact = '', email = '', telephone = '', ville = '', qonto = '',
        lettre_info = '', lettre_info_le = NULL, avis_demande_le = NULL, avis_recu_le = NULL, efface_le = ?, maj_le = ? WHERE id = ?", [$now, $now, $id]);
     q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification', 'email_client', 'email_recu')", [$id]);
+    q("DELETE FROM corbeille WHERE client_id = ?", [$id]);   // un effacement (RGPD) vide aussi la corbeille de ce client
     foreach (lignes("SELECT id FROM commandes WHERE client_id = ?", [$id]) as $k) commande_anonymiser((int)$k['id'], $now);
     assistant_oublier_client($c);
     evenement('effacement', 'Données personnelles effacées : ' . $motif, ['client' => $id], '', '', $auteur);
@@ -1056,6 +1057,7 @@ function conservation_executer(?string $auteur = null): array {
     q("DELETE FROM assistant_actions WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_ASSISTANT_MOIS . ' months'))]);    // modifications qu'il a préparées : 6 mois aussi
     q("DELETE FROM rapports WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_RAPPORTS_MOIS . ' months'))]);   // rapports de l'assistant : 12 mois
     reponses_purger();   // mails sans commande reconnue : 30 jours
+    q("DELETE FROM corbeille WHERE le < ?", [date('Y-m-d H:i:s', time() - CORBEILLE_JOURS * 86400)]);   // corbeille : 30 jours
     $cr = ['demandes' => count($a['demandes']), 'clients' => count($vus), 'journal' => $a['journal'], 'le' => $now];
     parametre_ecrire('derniere_purge', json_encode($cr));
     if ($cr['demandes'] || $cr['clients'] || $cr['journal']) evenement('conservation', 'Purge : ' . $cr['demandes'] . ' demande(s) anonymisée(s), ' . $cr['clients'] . ' client(s) effacé(s), ' . $cr['journal'] . ' ligne(s) de journal', [], '', '', $auteur ?? 'système');
@@ -1218,7 +1220,7 @@ function reprise_resume(array $cr): string {
     return implode(', ', $m);
 }
 /** Chaque essai de reprise dans l'historique (demande d'Olivier, 07/11/2026) : réussie, réussie avec des points à revoir, ou échouée,
- *  avec le fichier et ce qui s'est passé. « Dernières reprises », dans Réglages, les relit. */
+ *  avec le fichier et ce qui s'est passé. « Dernières reprises », dans Paramètres, les relit. */
 const REPRISE_ETATS = ['ok' => 'Réussie', 'a_revoir' => 'Réussie, à revoir', 'echec' => 'Échouée'];
 function reprise_noter(string $etat, string $fichier, string $texte): void {
     evenement('import', mb_substr($texte, 0, 4000), [], mb_substr($fichier, 0, 120), $etat);
@@ -1227,6 +1229,7 @@ function reprises_dernieres(int $n = 5): array {
     return lignes("SELECT le, auteur, texte, ancien AS fichier, nouveau AS etat FROM evenements WHERE type = 'import' ORDER BY id DESC LIMIT " . max(1, $n));
 }
 
+const CORBEILLE_JOURS = 30;
 /** Supprimer une commande d'essai ou saisie par erreur (test d'Olivier du 07/11/2026, FR-002) : jamais une vente facturée, rapprochée avec Qonto ou notée payée. */
 function commande_supprimable(array $k): bool {
     // Ni facture, ni rapprochement Qonto, ni argent noté reçu : une vraie vente payée (même en espèces) ne disparaît jamais (FR-002)
@@ -1236,11 +1239,17 @@ function commande_supprimable(array $k): bool {
 function commande_supprimer(int $id, string $motif): void {
     $k = commande($id);
     if (!$k) return;
+    // À la corbeille, avec toutes ses lignes d'origine : 30 jours pour la restaurer (demande d'Olivier, 07/11/2026)
+    $donnees = ['commande' => q("SELECT * FROM commandes WHERE id = ?", [$id])->fetch(\PDO::FETCH_ASSOC),
+                'evenements' => q("SELECT * FROM evenements WHERE commande_id = ?", [$id])->fetchAll(\PDO::FETCH_ASSOC),
+                'mails_recus' => q("SELECT * FROM mails_recus WHERE commande_id = ?", [$id])->fetchAll(\PDO::FETCH_ASSOC)];
+    $libelle = trim(($k['client_prenom'] ?? '') . ' ' . ($k['client_nom'] ?? '')) ?: (string)($k['client_societe'] ?? '');
+    q("INSERT INTO corbeille (le, par, genre, reference, libelle, motif, client_id, donnees) VALUES (?, ?, 'commande', ?, ?, ?, ?, ?)",
+      [maintenant(), auteur(), $k['reference'], $libelle, $motif, (int)$k['client_id'], json_encode($donnees, JSON_UNESCAPED_UNICODE)]);
     q("DELETE FROM mails_recus WHERE commande_id = ?", [$id]);
     q("DELETE FROM evenements WHERE commande_id = ?", [$id]);
     q("DELETE FROM commandes WHERE id = ?", [$id]);
-    // La trace reste, sans contenu : référence, client et motif
-    evenement('suppression', 'Commande ' . $k['reference'] . ' supprimée (' . $motif . ')', ['client' => (int)$k['client_id']]);
+    evenement('suppression', 'Commande ' . $k['reference'] . ' mise à la corbeille (' . $motif . ')', ['client' => (int)$k['client_id']]);
 }
 /** Une fiche client sans aucune commande (essai, doublon vide) peut être supprimée. */
 function client_supprimable(int $id): bool {
@@ -1249,7 +1258,50 @@ function client_supprimable(int $id): bool {
 function client_supprimer(int $id, string $motif): void {
     $c = client($id);
     if (!$c || !client_supprimable($id)) return;
+    $donnees = ['client' => q("SELECT * FROM clients WHERE id = ?", [$id])->fetch(\PDO::FETCH_ASSOC),
+                'evenements' => q("SELECT * FROM evenements WHERE client_id = ? AND commande_id IS NULL", [$id])->fetchAll(\PDO::FETCH_ASSOC)];
+    q("INSERT INTO corbeille (le, par, genre, reference, libelle, motif, client_id, donnees) VALUES (?, ?, 'client', ?, ?, ?, ?, ?)",
+      [maintenant(), auteur(), $c['numero'], client_nom($c), $motif, $id, json_encode($donnees, JSON_UNESCAPED_UNICODE)]);
     q("DELETE FROM evenements WHERE client_id = ?", [$id]);
     q("DELETE FROM clients WHERE id = ?", [$id]);
-    evenement('suppression', 'Fiche client ' . $c['numero'] . ' supprimée (' . $motif . ')');
+    evenement('suppression', 'Fiche client ' . $c['numero'] . ' mise à la corbeille (' . $motif . ')');
+}
+/** Remet des lignes dans une table, seulement les colonnes qui existent encore ; garde l'identifiant s'il est libre. */
+function corbeille_remettre(string $table, array $ligne): void {
+    $cols = array_column(q("PRAGMA table_info($table)")->fetchAll(\PDO::FETCH_ASSOC), 'name');
+    $l = array_intersect_key($ligne, array_flip($cols));
+    if (isset($l['id']) && val("SELECT 1 FROM $table WHERE id = ?", [$l['id']])) unset($l['id']);
+    if (!$l) return;
+    q("INSERT OR IGNORE INTO $table (" . implode(', ', array_keys($l)) . ") VALUES (" . implode(', ', array_fill(0, count($l), '?')) . ")", array_values($l));
+}
+/** Restaure un élément de la corbeille ; renvoie une erreur lisible ou ''. */
+function corbeille_restaurer(int $id): string {
+    $e = ligne("SELECT * FROM corbeille WHERE id = ?", [$id]);
+    if (!$e) return 'Cet élément n\'est plus dans la corbeille.';
+    $d = json_decode((string)$e['donnees'], true) ?: [];
+    if ($e['genre'] === 'commande') {
+        $k = $d['commande'] ?? null;
+        if (!$k) return 'Cet élément est illisible.';
+        if (!client((int)$k['client_id'])) return 'Restaurez d\'abord la fiche du client, elle aussi dans la corbeille.';
+        if (val("SELECT 1 FROM commandes WHERE reference = ?", [$k['reference']])) return 'Une commande ' . $k['reference'] . ' existe déjà.';
+        if (val("SELECT 1 FROM commandes WHERE id = ?", [$k['id']])) return 'Impossible de la remettre à sa place : écrivez à Olivier.';
+        db()->beginTransaction();
+        corbeille_remettre('commandes', $k);
+        foreach ($d['evenements'] ?? [] as $ev) corbeille_remettre('evenements', $ev);
+        foreach ($d['mails_recus'] ?? [] as $m) corbeille_remettre('mails_recus', $m);
+        q("DELETE FROM corbeille WHERE id = ?", [$id]);
+        db()->commit();
+        evenement('restauration', 'Commande ' . $k['reference'] . ' restaurée depuis la corbeille', ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']]);
+        return '';
+    }
+    $c = $d['client'] ?? null;
+    if (!$c) return 'Cet élément est illisible.';
+    if (val("SELECT 1 FROM clients WHERE id = ? OR numero = ?", [$c['id'], $c['numero']])) return 'Une fiche ' . $c['numero'] . ' existe déjà.';
+    db()->beginTransaction();
+    corbeille_remettre('clients', $c);
+    foreach ($d['evenements'] ?? [] as $ev) corbeille_remettre('evenements', $ev);
+    q("DELETE FROM corbeille WHERE id = ?", [$id]);
+    db()->commit();
+    evenement('restauration', 'Fiche client ' . $c['numero'] . ' restaurée depuis la corbeille', ['client' => (int)$c['id']]);
+    return '';
 }

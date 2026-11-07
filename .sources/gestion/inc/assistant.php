@@ -7,7 +7,7 @@
  * Depuis le 07/11/2026 (demandes d'Olivier), il connaît aussi les données de la gestion (commandes, clients noms compris, gâteaux,
  * recettes, agenda, chiffres, visites du site) et prépare les modifications qu'on lui demande : chacune ne se fait qu'au toucher
  * de « Confirmer » (assistant-donnees.php). On peut aussi lui parler et l'écouter, les mains prises (mode vocal, gestion.js).
- * Il tourne avec Claude (API d'Anthropic). La clé d'accès est collée dans Réglages et vit dans la base, hors du site : jamais dans
+ * Il tourne avec Claude (API d'Anthropic). La clé d'accès est collée dans Paramètres et vit dans la base, hors du site : jamais dans
  * ce dépôt public (R-08), jamais réaffichée, jamais dans l'export. Les échanges et les données lues partent chez Anthropic
  * (registre des traitements, T8), jamais d'information de santé. Les conversations sont gardées 6 mois, les rapports 12 mois.
  */
@@ -28,7 +28,7 @@ const GESTION_ASSISTANT_TOURS = 6;             // allers-retours avec les outils
 const GESTION_ASSISTANT_MAX_JOUR = 60;         // questions par jour, tous comptes : garde-fou sur le coût
 const GESTION_ASSISTANT_MAX_CAR = 2000;        // longueur d'un message
 // GESTION_ASSISTANT_MOIS (6 mois) et GESTION_RAPPORTS_MOIS (12 mois) sont dans base.php : la purge de nuit ne charge pas ce fichier (audit du 07/11, C1)
-const GESTION_ASSISTANT_PLAFOND = 10;          // plafond du mois par défaut, en dollars (réglable dans Réglages) : garde-fou sur le coût (audit C9)
+const GESTION_ASSISTANT_PLAFOND = 10;          // plafond du mois par défaut, en dollars (réglable dans Paramètres) : garde-fou sur le coût (audit C9)
 // Prix publics d'Anthropic pour ce modèle, en dollars par million de jetons : pour l'estimation affichée à Olivier
 const GESTION_ASSISTANT_PRIX = ['entree' => 4.0, 'cache_ecriture' => 5.0, 'cache_lecture' => 0.20, 'sortie' => 20.0];
 const RAPPORT_TYPES = ['probleme' => 'Problème', 'amelioration' => 'Amélioration', 'question' => 'Question'];
@@ -124,7 +124,7 @@ Ton rôle
 7. Quand tu ne sais pas, ou quand la question dépasse la gestion, dis-le en une phrase, sans inventer. Le lien « Écrire à Olivier », en haut de ton écran, envoie un message tel quel à Olivier, sans passer par toi : indique-le quand c'est le plus simple.
 
 Ce que tu ne fais jamais
-- Toucher aux réglages, aux comptes et aux invitations, aux mots de passe, aux clés, à l'import et à l'export, à la fusion de deux fiches ou à l'effacement d'un client (RGPD) : ce n'est pas dans tes outils. Explique, d'après le manuel, où elle le fait elle-même.
+- Toucher aux paramètres, aux comptes et aux invitations, aux mots de passe, aux clés, à l'import et à l'export, à la fusion de deux fiches ou à l'effacement d'un client (RGPD) : ce n'est pas dans tes outils. Explique, d'après le manuel, où elle le fait elle-même.
 - Envoyer un email : tu n'envoies jamais rien. Les mails aux clients se préparent sur la commande (proposition, confirmation, « Écrire au client », demande d'avis) et partent quand elle touche « Envoyer ». Tu peux l'aider à les écrire : propose un texte, elle le copie et l'envoie.
 - Donner un conseil juridique, comptable ou médical : renvoie à Olivier ou au comptable. Hors de la gestion et de l'activité de Madame Cho, réponds en une phrase que ce n'est pas ton rôle.
 
@@ -530,7 +530,7 @@ function page_assistant(): void {
             case 'message':
                 $t = texte('message', GESTION_ASSISTANT_MAX_CAR);
                 if ($t === '') break;
-                if (!assistant_relie()) { flash('erreur', 'L\'assistant n\'est pas encore relié : demandez à Olivier de coller la clé dans Réglages.'); break; }
+                if (!assistant_relie()) { flash('erreur', 'L\'assistant n\'est pas encore relié : demandez à Olivier de coller la clé dans Paramètres.'); break; }
                 $pb = assistant_repondre($uid, $fil, $t, $u, ($_POST['vocal'] ?? '') === '1');
                 if ($pb !== '') { $_SESSION['assistant_brouillon'] = $t; flash('erreur', 'Pas de réponse : ' . $pb . '.'); }
                 break;
@@ -571,8 +571,8 @@ function page_assistant(): void {
              . lien_bouton(u('olivier'), icone('email') . 'Écrire à Olivier', 'discret');
     $c = titre_page('<span class="titre-ia">' . icone('ia') . '</span>Assistant', '', $actions, u('plus'));
     if (!assistant_relie()) {
-        $c .= bloc('', '<p>' . fr_ko('L\'assistant n\'est pas encore relié : Olivier doit coller sa clé dans Réglages.', '어시스턴트가 아직 연결되지 않았어요. Olivier가 설정에 키를 붙여 넣어야 해요.') . '</p>'
-            . (est_admin() ? '<p>' . lien_bouton(u('reglages') . '#assistant', 'Relier l\'assistant dans Réglages', 'secondaire') . '</p>' : ''), 'alerte');
+        $c .= bloc('', '<p>' . fr_ko('L\'assistant n\'est pas encore relié : Olivier doit coller sa clé dans Paramètres.', '어시스턴트가 아직 연결되지 않았어요. Olivier가 설정에 키를 붙여 넣어야 해요.') . '</p>'
+            . (est_admin() ? '<p>' . lien_bouton(u('reglages') . '#assistant', 'Relier l\'assistant dans Paramètres', 'secondaire') . '</p>' : ''), 'alerte');
     }
     $chat = '';
     foreach ($messages as $m) {

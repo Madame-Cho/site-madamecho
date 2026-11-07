@@ -342,7 +342,7 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
  .ca-mois .colonnes{display:none}
  .ca-mois .lignes-ca{display:block}
 }
-/* Dernières reprises (Réglages) */
+/* Dernières reprises (Paramètres) */
 .reprises{list-style:none;margin:0;padding:0}
 .reprises li{padding:10px 0;border-bottom:1px solid var(--ligne)}
 .reprises li:last-child{border-bottom:0}
@@ -735,3 +735,12 @@ details.geste>form{padding:0 2px 6px}
 .puce-choix input:checked+span{background:var(--chocolat);border-color:var(--chocolat);color:#fff}
 .puce-choix input:checked+span .ic{color:#fff}
 .puce-choix input:focus-visible+span{outline:2px solid var(--chocolat);outline-offset:2px}
+
+/* Corbeille (07/11/2026) */
+.liste-corbeille{list-style:none;margin:0;padding:0}
+.ligne-corbeille{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--fort)}
+.ligne-corbeille:first-child{border-top:0}
+.ligne-corbeille>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ligne-corbeille>div>.ic{display:none}
+.ligne-corbeille form{margin:0}
+.tete-texte h1>.ic{width:.85em;height:.85em;margin-right:.3em;vertical-align:-.08em;color:var(--chocolat)}
