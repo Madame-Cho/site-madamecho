@@ -437,7 +437,7 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 /* La zone de saisie */
 .composer{position:sticky;bottom:calc(var(--bas) + 8px);z-index:5;margin-top:14px;padding:6px 0 4px;background:var(--fond);box-shadow:0 -18px 14px -6px var(--fond)}
 .composer-boite{display:flex;align-items:flex-end;gap:8px;padding:6px 6px 6px 18px;background:var(--carte);border:1px solid var(--fort);border-radius:26px;box-shadow:0 4px 18px rgba(43,38,35,.08)}
-.composer-boite:focus-within{border-color:var(--chocolat);box-shadow:0 0 0 3px rgba(59,29,14,.10),0 4px 18px rgba(43,38,35,.10)}
+.composer-boite:focus-within{border-color:rgba(59,29,14,.55);box-shadow:0 6px 24px rgba(43,38,35,.12)}
 .composer textarea{flex:1;min-width:0;min-height:40px;max-height:240px;padding:8px 0;border:0;outline:0;background:transparent;resize:none;font-size:16px;line-height:1.5;overflow-y:auto;field-sizing:content}
 .composer textarea:focus-visible{outline:0}
 .composer-envoyer{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:0;border-radius:50%;background:var(--chocolat);color:#fff;cursor:pointer}

@@ -16,6 +16,9 @@ Options -Indexes
 # Fichiers et dossiers cachés (limites du formulaire, clés…) jamais servis, où qu'ils soient, sauf .well-known
 RewriteRule (^|/)\.(?!well-known(/|$)) - [R=404,L]
 
+# Spécifications du projet (Spec Kit, dossier specs/ du dépôt) : documents de travail, jamais servis par le site
+RewriteRule ^specs(/|$) - [R=404,L]
+
 # Anciennes pages de travail, retirées à la mise en ligne du 03/11/2026 :
 # la version d'essai renvoie vers la même page du site, l'atelier du logo et l'atelier du site n'existent plus (410)
 RewriteRule ^atelier-site/site/(.*)$ /$1 [R=301,L]
