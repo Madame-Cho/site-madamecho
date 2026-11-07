@@ -337,7 +337,7 @@ function email_proposition(array $k): array {
        . 'Total : ' . ($total ? euros($total) . ' TTC' : '[prix à indiquer]') . "\n" . retrait_email($k) . "\n";
     if ($acompte > 0) $t .= 'Pour réserver, un acompte de ' . euros($acompte) . " est demandé ; il est déduit du prix au retrait.\n";
     $t .= "\nPour confirmer, il suffit de répondre à cet email. Vous pouvez annuler sans frais jusqu'à 24 heures avant le retrait.\n\nBelle journée,\n" . signature();
-    return ['sujet' => 'Re: Demande ' . $k['reference'], 'corps' => $t];
+    return ['sujet' => 'Votre demande ' . $k['reference'] . ' : la proposition de Madame Cho', 'corps' => $t];   // pas de « Re: » sur un premier message (indésirables, 07/11/2026)
 }
 function email_confirmation(array $k): array {
     $total = montant_commande($k);

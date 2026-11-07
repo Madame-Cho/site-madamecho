@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-07-clients"
+VERSION = "2026-11-07-indesirables"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -375,6 +375,7 @@ def demande():
   <div class="etiquette">Demande envoyée</div>
   <h2 class="titre">Merci, Madame Cho vous répond sous 24 heures</h2>
   <p>Votre demande n'est pas encore une commande : Madame Cho vous envoie une proposition écrite (prix, jour et heure du retrait), que vous acceptez par écrit.</p>
+  <p>Sa réponse viendra de <b>{EMAIL}</b> : ajoutez cette adresse à vos contacts, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>
   <p class="aide">Gardez ce récapitulatif. <button type="button" class="lien-bouton" data-copier>Copier le récapitulatif</button></p>

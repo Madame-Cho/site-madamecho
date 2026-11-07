@@ -157,6 +157,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .erreurs{color:var(--erreur);margin-top:16px;font-size:15px;white-space:pre-line}
 .envoyer{width:100%;letter-spacing:.14em}
 .recu{margin-top:32px}
+.recu p+p{margin-top:12px}
 .recu .ref{margin-top:16px}
 .recap{white-space:pre-wrap;font:400 14px/1.6 var(--police);background:var(--ivoire);padding:16px;margin:12px 0 0}
 .texte-long p{margin-top:10px}

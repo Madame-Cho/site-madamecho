@@ -40,9 +40,10 @@ function repondre(bool $ok, array $data, bool $enJson): void {
        . '<meta name="robots" content="noindex"><title>Ma demande · Madame Cho</title><link rel="stylesheet" href="../assets/site.css"></head>'
        . '<body><main class="bloc premier"><div class="etroit">';
     if ($ok) {
-        echo '<div class="etiquette">Demande envoyée</div><h1 class="titre">Merci, Madame Cho vous répond sous 24 heures</h1>'
+        echo '<div class="recu"><div class="etiquette">Demande envoyée</div><h1 class="titre">Merci, Madame Cho vous répond sous 24 heures</h1>'
            . '<p>Votre demande n\'est pas encore une commande : Madame Cho vous envoie une proposition écrite, que vous acceptez par écrit.</p>'
-           . '<p class="ref">Référence : <b>' . $h($data['ref']) . '</b></p>';
+           . '<p>Sa réponse viendra de <b>' . $h(DESTINATAIRE) . '</b> : ajoutez cette adresse à vos contacts, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>'
+           . '<p class="ref">Référence : <b>' . $h($data['ref']) . '</b></p></div>';
     } else {
         echo '<h1 class="titre">La demande n\'a pas pu être envoyée</h1><p>' . $h(implode(' ', $data['erreurs'] ?? [])) . '</p>'
            . '<p>Revenez en arrière pour corriger, ou appelez le <a href="tel:+33661311779">06 61 31 17 79</a>.</p>';
@@ -230,7 +231,12 @@ if ($deuxChamps) { $t[] = 'Prénom : ' . $prenom; $t[] = 'Nom : ' . $nom; } else
 $t[] = 'Email : ' . $email;
 if ($tel !== '') $t[] = 'Téléphone : ' . $tel;
 $t[] = '';
-$t[] = 'Répondre à cet email écrit directement au client. Rappel : une proposition écrite (prix TTC total, jour et heure du retrait, acompte éventuel), son accord écrit, puis votre confirmation.';
+// Pas de « Répondre » : la réponse citerait cet email interne, avec un « Re: » que le client n'a jamais reçu, et risquerait ses indésirables (07/11/2026)
+$t[] = is_file(GESTION_ENREGISTRER)
+    ? 'Pour répondre au client, ouvrez la demande dans la gestion (lien ci-dessous) puis « Préparer la proposition » : un nouveau message, envoyé depuis ' . DESTINATAIRE . '. Évitez « Répondre » ici : votre réponse citerait cet email et risquerait les indésirables du client.'
+    : 'Pour répondre au client, écrivez-lui un nouveau message depuis ' . DESTINATAIRE . '. Évitez « Répondre » ici : votre réponse citerait cet email et risquerait les indésirables du client.';
+$t[] = '고객에게는 « 답장 » 대신 ' . DESTINATAIRE . '에서 새 메일로 보내 주세요' . (is_file(GESTION_ENREGISTRER) ? ' (관리 화면의 « 견적 이메일 준비 »)' : '') . '. 답장하면 이 메일이 인용되어 고객의 스팸함으로 갈 수 있어요.';
+$t[] = 'Rappel : une proposition écrite (prix TTC total, jour et heure du retrait, acompte éventuel), son accord écrit, puis votre confirmation.';
 // Espace de gestion : la demande y est aussi enregistrée (voir plus bas) ; le lien ouvre sa fiche, ou propose de la créer
 if (is_file(GESTION_ENREGISTRER)) { $t[] = ''; $t[] = 'Dans la gestion : https://' . DKIM_DOMAINE . '/gestion/?p=commande&ref=' . $ref; }
 $corps = implode("\r\n", $t);
