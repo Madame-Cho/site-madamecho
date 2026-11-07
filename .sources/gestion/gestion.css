@@ -704,3 +704,34 @@ details.geste>form{padding:0 2px 6px}
 .apercu-mail .m-24c7d94c{color:#6E2A10;font-weight:bold}
 .apercu-mail .m-055df721{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:14px}
 .apercu-mail .m-1ba5d5a6{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:4px}
+
+/* Frise des étapes d'une commande (retour d'Olivier en test, 07/11/2026) */
+.parcours{position:sticky;top:56px;z-index:15;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:4px calc(-1 * var(--g)) 14px;padding:10px var(--g) 8px;list-style:none;background:var(--fond);border-bottom:1px solid var(--ligne)}
+.parcours li{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;font-size:12px;line-height:1.3;color:var(--doux)}
+.parcours li:not(:first-child)::before{content:"";position:absolute;top:13px;right:50%;width:100%;border-top:2px solid var(--fort);z-index:0}
+.parcours li.pc-fait:not(:first-child)::before,.parcours li.pc-courant:not(:first-child)::before{border-top-color:var(--chocolat)}
+.pc-rond{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--carte);border:2px solid var(--fort);font-size:13px;font-weight:500;color:var(--doux)}
+.pc-rond .ic{width:15px;height:15px}
+.pc-fait .pc-rond{background:var(--chocolat);border-color:var(--chocolat);color:#fff}
+.pc-courant .pc-rond{border-color:var(--chocolat);color:var(--chocolat);box-shadow:0 0 0 4px var(--ivoire)}
+.pc-courant .pc-nom{color:var(--chocolat);font-weight:500}
+.pc-afaire{display:inline-block;padding:1px 8px;border-radius:10px;background:#6E2A10;color:#fff;font-size:11px;font-weight:500}
+.etape-afaire{margin:0 0 10px;font-weight:500;color:var(--chocolat)}
+.parcours .pc-ligne{display:none}
+@media (max-width:599px){.parcours{padding-top:8px;padding-bottom:6px}.parcours .pc-nom,.parcours .pc-afaire{display:none}
+ .parcours li.pc-ligne{display:block;grid-column:1/-1;font-size:13px;font-weight:500;color:var(--chocolat)}
+ .parcours li.pc-ligne::before{display:none}}
+.drap-langue{display:inline-block;width:18px;height:12px;vertical-align:-1px;border-radius:2px;flex:none}
+.langue .drap-langue{margin-right:6px}
+.bloc>h2{display:flex;align-items:center;gap:8px}
+.bloc>h2>.ic{width:20px;height:20px;flex:none;color:var(--chocolat)}
+.choix-par{border:0;padding:0;margin:0 0 12px}
+.choix-par legend{font-weight:500;font-size:15px;margin-bottom:6px;padding:0}
+.puces{display:flex;flex-wrap:wrap;gap:8px}
+.puce-choix{position:relative;cursor:pointer}
+.puce-choix input{position:absolute;opacity:0;width:1px;height:1px}
+.puce-choix span{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid var(--fort);border-radius:20px;background:var(--carte);font-size:14px;color:var(--texte)}
+.puce-choix span .ic{width:17px;height:17px;color:var(--chocolat)}
+.puce-choix input:checked+span{background:var(--chocolat);border-color:var(--chocolat);color:#fff}
+.puce-choix input:checked+span .ic{color:#fff}
+.puce-choix input:focus-visible+span{outline:2px solid var(--chocolat);outline-offset:2px}

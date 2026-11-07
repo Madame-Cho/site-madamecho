@@ -240,7 +240,7 @@ function page_commande(): void {
     $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>',
         // « Modifier la commande » en haut, bien visible (retour d'Olivier en test, 07/11/2026 : il ne le trouvait pas)
         lien_bouton(u('commande-edition', ['id' => $id]), icone('crayon') . 'Modifier la commande', 'secondaire') . $versEchanges, u('commandes'));
-    $c .= etape_suivante($k);
+    $c .= parcours_commande($k) . etape_suivante($k);
     // Client
     $tel = $k['client_tel'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $k['client_tel'])) . '">' . h($k['client_tel']) . '</a>' : '';
     $mail = $k['client_email'] !== '' ? '<a href="mailto:' . h($k['client_email']) . '">' . h($k['client_email']) . '</a>' : '';
@@ -414,6 +414,28 @@ function confirmer_en_bas(array $k): string {
              ['class' => 'form-etape', 'data-confirmer' => 'Confirmer la commande pour ' . $quand . ' ?']) . '</div>';
 }
 
+/** La frise des étapes d'une commande de particulier (retour d'Olivier en test, 07/11/2026 : Youngmi doit voir où elle en est,
+ *  ce qui est fait et ce qui vient). Pas pour les livraisons aux restaurants, ni pour une commande annulée ou sans suite. */
+function parcours_commande(array $k): string {
+    if (livraison_pro($k) || !in_array($k['statut'], ['demande', 'proposition', 'confirmee', 'remise'], true)) return '';
+    $id = (int)$k['id'];
+    $rang = ['demande' => 0, 'proposition' => 1, 'confirmee' => 2, 'remise' => 3][$k['statut']];
+    $c = client((int)$k['client_id']);
+    $faits = [true, $rang >= 1, $rang >= 2, $rang >= 3 || mail_deja($id, 'confirmation') !== null, $rang >= 3,
+              $c && ($c['avis_demande_le'] || $c['avis_recu_le'])];
+    $noms = ['Demande reçue', 'Proposition envoyée', 'Commande confirmée', 'Confirmation envoyée au client', 'Remise au client', 'Avis demandé'];
+    $courant = array_search(false, $faits, true);
+    $s = '';
+    foreach ($noms as $i => $n) {
+        $etat = $faits[$i] ? 'fait' : ($i === $courant ? 'courant' : 'avenir');
+        $s .= '<li class="pc-' . $etat . '"' . ($etat === 'courant' ? ' aria-current="step"' : '') . '><span class="pc-rond">' . ($faits[$i] ? icone('valider') : ($i + 1)) . '</span>'
+            . '<span class="pc-nom">' . h($n) . '</span>' . ($etat === 'courant' ? '<span class="pc-afaire">À faire maintenant</span>' : '') . '</li>';
+    }
+    // Sur téléphone, les ronds seuls et une ligne qui dit l'étape à faire (la frise reste en haut sans manger l'écran)
+    if ($courant !== false) $s .= '<li class="pc-ligne" aria-hidden="true">Étape ' . ($courant + 1) . ' sur 6 : ' . h($noms[$courant]) . '</li>';
+    return '<ol class="parcours" aria-label="Étapes de la commande">' . $s . '</ol>';
+}
+
 /** Le grand cadre « prochaine étape » d'une commande, selon où elle en est. */
 function etape_suivante(array $k): string {
     $id = (int)$k['id'];
@@ -457,7 +479,10 @@ function etape_suivante(array $k): string {
                      . '</section>';
             }
             $passe = $k['retrait_date'] && $k['retrait_date'] < aujourdhui();
+            $envoyee = mail_deja((int)$k['id'], 'confirmation') !== null;
             return '<section class="etape' . ($passe ? ' etape-alerte' : '') . '"><h2>' . ($passe ? 'Retrait passé : la commande a été remise ?' : 'Retrait programmé : ' . h(retrait_texte($k))) . '</h2>'
+                 . (!$passe ? '<p class="etape-afaire">' . ($envoyee ? 'Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre.'
+                                                                  : 'À faire maintenant : envoyer la confirmation au client (ci-dessous).') . '</p>' : '')
                  . bloc_confirmation_client($k)
                  . agenda_boutons($k)
                  . formulaire('remise', '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])

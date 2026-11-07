@@ -437,8 +437,8 @@
   // navigateur, dans la langue de l'écran) et « Corriger mon français » (l'assistant propose un texte corrigé, avec la traduction
   // coréenne ; Youngmi touche « Utiliser » ou garde le sien). Rien n'est inscrit ni envoyé sans son toucher sur « Ajouter » ou « Envoyer ».
   // Demande d'Olivier du 07/11/2026.
-  var T = ko ? { dicter: "말로 입력", ecoute: "듣는 중… (다시 누르면 멈춤)", corriger: "프랑스어 고치기", attente: "고치는 중…", utiliser: "이 문장 쓰기", garder: "내 문장 그대로", sens: "뜻 (한국어):", erreur: "고치지 못했어요: ", vide: "먼저 문장을 쓰거나 말해 주세요." }
-             : { dicter: "Dicter", ecoute: "J'écoute… (touchez pour arrêter)", corriger: "Corriger mon français", attente: "Correction…", utiliser: "Utiliser ce texte", garder: "Garder le mien", sens: "Le sens, en coréen :", erreur: "La correction n'a pas marché : ", vide: "Écrivez ou dictez d'abord votre texte." };
+  var T = ko ? { dicter: "프랑스어로 말하기", dicterKo: "한국어로 말하기", hangul: "한국어가 들어 있어요. 고객과 기록은 프랑스어로 써요. ‘프랑스어 고치기’를 눌러 프랑스어로 바꿔 주세요.", ecoute: "듣는 중… (다시 누르면 멈춤)", corriger: "프랑스어 고치기", attente: "고치는 중…", utiliser: "이 문장 쓰기", garder: "내 문장 그대로", sens: "뜻 (한국어):", erreur: "고치지 못했어요: ", vide: "먼저 문장을 쓰거나 말해 주세요." }
+             : { dicter: "Dicter en français", dicterKo: "Parler en coréen", hangul: "Le texte contient du coréen. Les mails et les notes sont en français : touchez « Corriger mon français » pour le traduire.", ecoute: "J'écoute… (touchez pour arrêter)", corriger: "Corriger mon français", attente: "Correction…", utiliser: "Utiliser ce texte", garder: "Garder le mien", sens: "Le sens, en coréen :", erreur: "La correction n'a pas marché : ", vide: "Écrivez ou dictez d'abord votre texte." };
   var ZONES = { texte: "note", accueil: "accueil", mot: "mot", texte_mail: "message" };
   var urlCorriger = d.body.getAttribute("data-corriger"), jeton = d.body.getAttribute("data-jeton");
   function changer(z, v) { z.value = v; z.dispatchEvent(new Event("input", { bubbles: true })); }
@@ -449,28 +449,40 @@
     var lab = z.closest(".champ") || z;
     lab.insertAdjacentElement("afterend", barreA);
     barreA.insertAdjacentElement("afterend", boite);
-    if (Reco) {
-      var bd = d.createElement("button"); bd.type = "button"; bd.className = "btn secondaire petit-btn"; bd.textContent = "🎤 " + T.dicter;
+    // Deux façons de dicter (demande d'Olivier, 07/11/2026) : en français, ou en coréen, et l'assistant propose aussitôt la phrase en français
+    var bc = null;
+    function drapeau(l) { var t = d.getElementById("drapeau-" + l); return t ? t.innerHTML : ""; }
+    function bouton_dicter(langue, libelle, apres) {
+      var b = d.createElement("button"); b.type = "button"; b.className = "btn secondaire petit-btn";
+      // 🎤 + drapeau de la langue parlée (+ → drapeau français quand l'assistant traduit)
+      var dessin = "🎤 " + drapeau(langue === "ko-KR" ? "ko" : "fr") + (langue === "ko-KR" ? " → " + drapeau("fr") : "") + " ";
+      function etiquette() { b.innerHTML = dessin; b.appendChild(d.createTextNode(libelle)); }
+      etiquette();
       var reco = null;
-      bd.addEventListener("click", function () {
+      b.addEventListener("click", function () {
         if (reco) { reco.stop(); return; }
         try { reco = new Reco(); } catch (x) { return; }
-        reco.lang = ko ? "ko-KR" : "fr-FR"; reco.interimResults = true; reco.continuous = true;
-        var avant = z.value.replace(/\s+$/, ""), sep = avant ? (/\n$/.test(z.value) ? "" : " ") : "";
+        reco.lang = langue; reco.interimResults = true; reco.continuous = true;
+        var avant = z.value.replace(/\s+$/, ""), sep = avant ? (/\n$/.test(z.value) ? "" : " ") : "", dit = false;
         reco.onresult = function (e) {
           var t = "";
           for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+          if (t.trim()) dit = true;
           changer(z, avant + sep + t.trim());
         };
-        reco.onend = function () { reco = null; bd.textContent = "🎤 " + T.dicter; bd.classList.remove("actif"); };
+        reco.onend = function () { reco = null; etiquette(); b.classList.remove("actif"); if (dit && apres) apres(); };
         reco.onerror = function () {};
-        bd.textContent = "■ " + T.ecoute; bd.classList.add("actif");
+        b.textContent = "■ " + T.ecoute; b.classList.add("actif");
         reco.start();
       });
-      barreA.appendChild(bd);
+      barreA.appendChild(b);
+    }
+    if (Reco) {
+      bouton_dicter("fr-FR", T.dicter, null);
+      if (urlCorriger) bouton_dicter("ko-KR", T.dicterKo, function () { if (bc) bc.click(); });
     }
     if (urlCorriger) {
-      var bc = d.createElement("button"); bc.type = "button"; bc.className = "btn secondaire petit-btn"; bc.textContent = "✎ " + T.corriger;
+      bc = d.createElement("button"); bc.type = "button"; bc.className = "btn secondaire petit-btn"; bc.textContent = "✎ " + T.corriger;
       bc.addEventListener("click", function () {
         var texte = z.value.trim();
         boite.hidden = false; boite.textContent = "";
@@ -498,6 +510,17 @@
       barreA.appendChild(bc);
     }
   });
+
+  // Rien en coréen ne part au client ni dans les notes : on arrête l'envoi et on propose « Corriger mon français »
+  d.addEventListener("submit", function (e) {
+    var zs = e.target.querySelectorAll ? e.target.querySelectorAll("textarea[data-aide-saisie]") : [];
+    for (var i = 0; i < zs.length; i++) {
+      if (/[\u3131-\u318E\uAC00-\uD7A3]/.test(zs[i].value)) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        alert(T.hangul); zs[i].focus(); return;
+      }
+    }
+  }, true);
 
   // « Répondre » sous une réponse de client, ou un lien vers #mail-avis : ouvrir le bloc replié et y aller
   function ouvrir(id) {

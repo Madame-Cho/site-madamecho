@@ -238,6 +238,14 @@ Voir le mail | 이메일 보기
 Écrire un mail au client | 고객에게 이메일 쓰기
 Pas encore d'échange avec le client. | 아직 고객과 연락한 내용이 없어요.
 Mail du client | 고객 이메일
+Ajouter la note | 메모 추가
+Confirmation envoyée au client | 고객에게 확정 이메일 보냄
+Remise au client | 고객에게 전달
+Avis demandé | 리뷰 부탁함
+À faire maintenant | 지금 할 일
+Étapes de la commande | 주문 단계
+Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre. | 확정 이메일을 보냈어요. 다음 단계: 픽업 날, 이 칸 아래의 ‘고객에게 전달 완료’를 누르세요.
+À faire maintenant : envoyer la confirmation au client (ci-dessous). | 지금 할 일: 아래에서 고객에게 확정 이메일 보내기.
 Nouveaux messages | 새 메시지
 Mail envoyé depuis Gmail | Gmail에서 보낸 이메일
 Mail | 이메일
@@ -1394,6 +1402,7 @@ function coreen_motifs(): array {
         ['/^Modifier (.+)$/u', fn($m) => $m[1] . ' 수정'],
         ['/^Retrait programmé : (.+)$/u', fn($m) => ($d = coreen_retrait($m[1])) ? '픽업 예정: ' . $d : null],
         ['/^Commande modifiée\. Changé : (.+)\.$/us', fn($m) => ($x = coreen_modifs($m[1])) !== null ? '주문을 수정했어요. 바뀐 내용: ' . $x . '.' : null],
+        ['/^Étape (\d) sur 6 : (.+)$/u', fn($m) => ($x = coreen_dico()[coreen_cle($m[2])] ?? null) !== null ? '6단계 중 ' . $m[1] . '단계: ' . $x : null],
         ['/^Confirmer la commande pour (.+) \?$/u', fn($m) => ($d = coreen_retrait($m[1])) ? $d . '로 주문을 확정할까요?' : null],
         ['/^Remise le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 전달 완료' : null],
         ['/^Livrée le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 배달 완료' : null],

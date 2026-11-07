@@ -42,6 +42,11 @@ function icone(string $n): string {
         'crayon' => '<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"/><path d="M14 7l3 3"/>',
         'livre' => '<path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>',
         'assistant' => '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+        'sms' => '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10.5h.01M12 10.5h.01M16 10.5h.01"/>',
+        'whatsapp' => '<path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.4 18.6z"/><path d="M9.2 8.6c0 3 2.4 5.6 5.5 6l1.1-1.3-1.8-1-1 .8c-1-.5-1.8-1.3-2.3-2.3l.8-1-1-1.8z"/>',
+        'oral' => '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.6 2.9-5.5 5.5-5.5s4.9 1.9 5.5 5.5"/><path d="M16.5 6.5c1 .8 1.5 1.8 1.5 3s-.5 2.2-1.5 3M19 4.5c1.6 1.3 2.4 3 2.4 5s-.8 3.7-2.4 5"/>',
+        'instagram' => '<rect x="4" y="4" width="16" height="16" rx="4.5"/><circle cx="12" cy="12" r="3.6"/><path d="M16.8 7.2h.01"/>',
+        'paiement' => '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',
         // Étincelles : le signe habituel d'une IA (demande d'Olivier, 07/11/2026) ; l'assistant est le seul endroit de la gestion où une IA répond
         'ia' => '<path d="M10 3.5l1.6 4.4 4.4 1.6-4.4 1.6L10 15.5l-1.6-4.4L4 9.5l4.4-1.6z"/><path d="M18 13.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/><path d="M17.5 3v3M16 4.5h3"/>',
         // La flèche d'envoi et la nouvelle conversation, comme dans ChatGPT et Claude
@@ -117,6 +122,8 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '</head><body class="' . h(trim(($u ? 'connecte ' : 'deconnecte ') . $classe)) . '"'
        // « Corriger mon français » sous les zones de saisie (gestion.js) : seulement si l'assistant est relié
        . ($u && assistant_relie() ? ' data-corriger="' . h(u('corriger')) . '" data-jeton="' . h(csrf()) . '"' : '') . '>' . $essai
+       // Les drapeaux des boutons de dictée (gestion.js les recopie)
+       . ($u ? '<template id="drapeau-fr">' . DRAPEAU_FR . '</template><template id="drapeau-ko">' . DRAPEAU_KO . '</template>' : '')
        . '<a class="aller" href="#contenu">Aller au contenu</a>'
        . '<header class="barre"><a class="marque" href="' . h($u ? u('accueil') : u('connexion')) . '"><img src="../assets/logo-chocolat.svg" alt="Madame Cho" width="112" height="33"><span>' . h(GESTION_NOM) . '</span></a>'
        . ($u ? '<nav class="nav-haut" aria-label="Menu">' . $nav . '</nav>' : '')
@@ -288,8 +295,32 @@ function bouton(string $label, string $classe = '', array $a = []): string {
 function lien_bouton(string $href, string $label, string $classe = '', array $a = []): string {
     return '<a class="btn ' . h($classe) . '" href="' . h($href) . '"' . attrs($a) . '>' . $label . '</a>';
 }
+/** Une icône par sujet, toujours la même partout (demande d'Olivier du 07/11/2026 : « une commande toujours la même icône ») :
+ *  commande = commandes, client = clients, gâteau/produit = produits, échanges = bulle (assistant), paiement = carte, retrait du jour = jour,
+ *  agenda = mois, avis = avis, mail = email, statistiques = stats, réglages = reglages, assistant IA = ia. Les titres des cadres la prennent ici. */
+const ICONES_TITRES = [
+    'Client' => 'clients', 'Coordonnées' => 'clients', 'Fiche et droits du client' => 'clients', 'Qui a accès' => 'clients',
+    'Contenu' => 'produits', 'À préparer en tout' => 'produits', 'Ventes par gâteau' => 'produits',
+    'Échanges' => 'assistant',
+    'Montant et paiement' => 'paiement', 'Facture et paiement' => 'paiement', 'Acomptes attendus' => 'paiement', 'Paiements pas encore' => 'paiement',
+    'Relevés' => 'paiement', 'À recopier dans la facture' => 'paiement', 'Chiffre d' => 'paiement',
+    'Commandes' => 'commandes', 'Demandes' => 'commandes', 'Propositions sans réponse' => 'commandes', 'Les livraisons' => 'commandes', 'Où en sont les demandes' => 'commandes',
+    'Retraits' => 'jour', 'Les 7 derniers jours' => 'jour',
+    'Avis Google' => 'avis', 'Emails préparés et avis Google' => 'avis', 'Réponses des clients' => 'email',
+    'Assistant' => 'ia',
+    'Statistiques' => 'stats', 'Les visites du site' => 'stats', 'Visites par jour' => 'stats', 'Pages les plus vues' => 'stats', 'Téléphone ou ordinateur' => 'stats',
+    'Doublon possible' => 'alerte',
+    'Mon mot de passe' => 'reglages', 'Dernières connexions' => 'reglages', 'Langue de l' => 'reglages', 'Exporter' => 'reglages', 'Reprise des données' => 'reglages',
+    'Conservation des données' => 'reglages', 'Miroir pour le Drive' => 'reglages', 'Contrôle technique' => 'reglages', 'QR code' => 'reglages',
+];
+function icone_titre(string $titre): string {
+    if (str_contains($titre, "<svg")) return "";   // le titre a déjà son icône
+    $t = trim(html_entity_decode(strip_tags($titre), ENT_QUOTES, 'UTF-8'));
+    foreach (ICONES_TITRES as $debut => $ic) if (str_starts_with($t, $debut)) return icone($ic);
+    return '';
+}
 function bloc(string $titre, string $contenu, string $classe = '', string $id = ''): string {
-    return '<section class="bloc ' . h($classe) . '"' . ($id !== '' ? ' id="' . h($id) . '"' : '') . '>' . ($titre !== '' ? '<h2>' . $titre . '</h2>' : '') . $contenu . '</section>';
+    return '<section class="bloc ' . h($classe) . '"' . ($id !== '' ? ' id="' . h($id) . '"' : '') . '>' . ($titre !== '' ? '<h2>' . icone_titre($titre) . $titre . '</h2>' : '') . $contenu . '</section>';
 }
 function tuile(string $label, string $valeur, string $detail = '', string $lien = ''): string {
     $dedans = '<span class="t-label">' . h($label) . '</span><span class="t-valeur">' . h($valeur) . '</span>' . ($detail !== '' ? '<span class="t-detail">' . h($detail) . '</span>' : '');
@@ -350,7 +381,7 @@ function fil_conversation(array $evs): string {
         } else {
             $par = preg_match('/^par:(\w+)/', (string)$e['ancien'], $m) && isset(CANAUX_ECHANGE[$m[1]]) ? CANAUX_ECHANGE[$m[1]] : '';
             $etiq = $type === 'probleme' ? 'Problème' : ($par !== '' ? $par : 'Note');
-            $cl = 'msg-note' . ($type === 'probleme' ? ' msg-probleme' : ''); $qui = (string)$e['auteur']; $ico = icone('crayon');
+            $cl = 'msg-note' . ($type === 'probleme' ? ' msg-probleme' : ''); $qui = (string)$e['auteur']; $ico = icone($type === 'probleme' ? 'alerte' : (isset($m[1]) && isset(ICONES_CANAUX[$m[1]]) ? ICONES_CANAUX[$m[1]] : 'crayon'));
             $corps = (string)$e['texte'];
         }
         $lignes = explode("\n", $corps);
@@ -366,12 +397,20 @@ function fil_conversation(array $evs): string {
     }
     return '<ol class="conversation">' . $s . '</ol>';
 }
+/** Les canaux d'un échange noté, toujours avec la même icône (la conversation reprend la même). */
+const ICONES_CANAUX = ['telephone' => 'tel', 'sms' => 'sms', 'whatsapp' => 'whatsapp', 'oral' => 'oral', 'instagram' => 'instagram', 'autre' => 'plus'];
+/** « Par » : des boutons à toucher avec leur icône, plutôt qu'une liste (retour d'Olivier en test, 07/11/2026). */
+function choix_par(): string {
+    $s = '';
+    foreach (CANAUX_ECHANGE as $v => $l) $s .= '<label class="puce-choix"><input type="radio" name="par" value="' . h($v) . '"><span>' . icone(ICONES_CANAUX[$v]) . h($l) . '</span></label>';
+    return '<fieldset class="choix-par"><legend>Par</legend><div class="puces">' . $s . '</div></fieldset>';
+}
 /** « Noter un échange » : ce qui ne passe pas par les mails (appel, SMS, WhatsApp, de vive voix…). Micro et « Corriger mon français » sous la zone. */
 function formulaire_commentaire(string $aide = ''): string {
     return formulaire('commentaire', zone('texte', 'Noter un échange', '', ['rows' => '2', 'maxlength' => '2000', 'required' => true, 'placeholder' => 'Elle a appelé : retrait à 16 h plutôt qu\'à 15 h…', 'lang' => 'fr', 'data-aide-saisie' => '1'],
         $aide !== '' ? $aide : 'Allergie : seulement l\'ingrédient à éviter, jamais d\'information de santé.')
-        . '<div class="ligne-champs">' . liste_choix('par', 'Par', ['' => '—'] + CANAUX_ECHANGE, '', ['id' => 'f-par']) . '</div>'
-        . bouton('Ajouter', 'secondaire'), ['class' => 'form-commentaire']);
+        . choix_par()
+        . bouton(icone('valider') . 'Ajouter la note', 'principal'), ['class' => 'form-commentaire']);
 }
 
 /* ---------- Textes d'email (brouillons que Youngmi relit et envoie elle-même, R-01) ---------- */

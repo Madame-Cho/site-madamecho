@@ -55,10 +55,13 @@ function page_langue(): void {
 }
 
 /** Le petit bouton de la barre du haut : « FR » quand l'écran est en coréen, « 한국어 » quand il est en français. */
+/** Petits drapeaux en SVG (les drapeaux emoji ne s'affichent pas sous Windows) : demande d'Olivier du 07/11/2026. */
+const DRAPEAU_FR = '<svg class="drap-langue" viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#002654"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#CE1126"/><rect width="30" height="20" fill="none" stroke="#0000001f"/></svg>';
+const DRAPEAU_KO = '<svg class="drap-langue" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><g transform="rotate(33.7 15 10)"><path d="M10 10a5 5 0 0 1 10 0z" fill="#CD2E3A"/><path d="M10 10a5 5 0 0 0 10 0z" fill="#0047A0"/><circle cx="12.5" cy="10" r="2.5" fill="#CD2E3A"/><circle cx="17.5" cy="10" r="2.5" fill="#0047A0"/></g><g fill="#000"><path d="M3.2 6.2l3-4.4 0.9 0.6-3 4.4zM4.3 7l3-4.4 0.9 0.6-3 4.4z"/><path d="M22.8 15.4l3-4.4 0.9 0.6-3 4.4zM21.7 14.6l3-4.4 0.9 0.6-3 4.4z"/><path d="M22.8 4.6l0.9-0.6 3 4.4-0.9 0.6zM21.7 5.4l0.9-0.6 3 4.4-0.9 0.6z"/><path d="M3.2 13.8l0.9 0.6 3 4.4-0.9 0.6zM4.3 13l0.9-0.6 3 4.4-0.9 0.6z"/></g><rect width="30" height="20" fill="none" stroke="#0000001f"/></svg>';
 function bouton_langue(): string {
     return coreen_actif()
-        ? '<a class="langue" href="' . h(lien_langue('fr')) . '" hreflang="fr" title="프랑스어로 보기 (Français)" translate="no">FR</a>'
-        : '<a class="langue" href="' . h(lien_langue('ko')) . '" hreflang="ko" lang="ko" title="Afficher en coréen" translate="no">한국어</a>';
+        ? '<a class="langue" href="' . h(lien_langue('fr')) . '" hreflang="fr" title="프랑스어로 보기 (Français)" translate="no">' . DRAPEAU_FR . 'FR</a>'
+        : '<a class="langue" href="' . h(lien_langue('ko')) . '" hreflang="ko" lang="ko" title="Afficher en coréen" translate="no">' . DRAPEAU_KO . '한국어</a>';
 }
 
 /** Rappel, en coréen, que ce qu'on remplit s'écrit en français (sur les pages qui ont une zone de texte). */
