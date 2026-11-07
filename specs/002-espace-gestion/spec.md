@@ -19,6 +19,14 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
 - Q: Comment sauvegarder la gestion, que la sauvegarde du Drive (P-24) ne couvre pas ? → A :
   par les copies automatiques de l'hébergeur seulement, avec un essai de restauration fait une
   fois ; rien de plus à faire chaque trimestre (choix d'Olivier, 2026-11-07, FR-026).
+- Q: Que voit l'assistant, et que peut-il faire ? → A : c'est un assistant interne à la gestion ;
+  il lit toutes ses données, noms et coordonnées des clients compris, et prépare les modifications
+  des données que Youngmi demande ; chacune attend son toucher sur « Confirmer ». Il ne change
+  jamais la structure de l'outil (demandes d'Olivier et choix « Youngmi confirme d'un clic »,
+  2026-11-07, FR-017, FR-027).
+- Q: Comment le consulter les mains prises ? → A : par un mode vocal ; Youngmi parle, il répond à
+  voix haute, en français ou en coréen selon la langue choisie dans l'outil (demandes d'Olivier,
+  2026-11-07, FR-028).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -193,18 +201,21 @@ reste en français, et les noms saisis ne changent pas.
 
 ---
 
-### User Story 9 - Trouver de l'aide, signaler un problème (Priority: P2)
+### User Story 9 - Trouver de l'aide, se faire assister, signaler un problème (Priority: P2)
 
 Youngmi lit le manuel (en coréen ou en français) ou pose sa question à l'assistant, qui répond à
-partir du manuel, lui dit franchement quand elle se trompe, et prépare un rapport quand il y a un
-vrai problème ou une vraie idée. Elle voit l'email tel qu'il partira, choisit de joindre ou non
-les derniers messages, et l'envoie elle-même à Olivier. Sans assistant, « Écrire à Olivier »
+partir du manuel et des données de la gestion, prépare les modifications qu'elle lui demande
+(elle les confirme d'un toucher), lui dit franchement quand elle se trompe, et prépare un rapport
+quand il y a un vrai problème ou une vraie idée. Les mains prises, elle peut lui parler, et il lui
+répond à voix haute. Pour un rapport, elle voit l'email tel qu'il partira, choisit de joindre ou
+non les derniers messages, et l'envoie elle-même à Olivier. Sans assistant, « Écrire à Olivier »
 envoie un message simple.
 
 **Why this priority**: c'est le circuit d'amélioration continue voulu par Olivier.
 
 **Independent Test**: avec une fausse réponse de l'assistant qui propose un rapport, l'aperçu
-montre l'email exact ; rien ne part avant le clic de Youngmi.
+montre l'email exact ; rien ne part avant le clic de Youngmi. Avec une fausse réponse qui prépare
+un changement d'étape, rien ne change avant « Confirmer », et l'historique de la commande le note.
 
 **Acceptance Scenarios**:
 
@@ -214,6 +225,13 @@ montre l'email exact ; rien ne part avant le clic de Youngmi.
    **Then** l'email ne contient que le rapport.
 3. **Given** le plafond du mois atteint, **When** Youngmi pose une question, **Then** l'assistant
    ne répond plus jusqu'au mois suivant et le dit.
+4. **Given** une modification préparée par l'assistant, **When** Youngmi touche « Confirmer »,
+   **Then** la gestion la fait avec les mêmes contrôles qu'à l'écran, et l'historique note
+   « Préparée par l'assistant et confirmée ».
+5. **Given** une modification préparée il y a plus de 24 heures, déjà faite ou écartée, **When**
+   Youngmi touche « Confirmer », **Then** rien ne change et l'écran le dit.
+6. **Given** l'outil en coréen et le mode vocal allumé, **When** Youngmi pose sa question à voix
+   haute, **Then** l'assistant répond par écrit et à voix haute en coréen.
 
 ---
 
@@ -289,6 +307,10 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - Commentaire qui ressemble à une donnée de santé : l'écran rappelle de ne pas en écrire.
 - Clé de l'assistant refusée ou absente : l'assistant se dit « pas encore relié » ; rien d'autre
   ne change.
+- Fiche visée par une modification préparée qui a changé ou n'existe plus : « Impossible
+  maintenant », rien ne change, et l'assistant le sait à la question suivante.
+- Navigateur sans reconnaissance vocale, ou micro refusé : pas de mode vocal, ou un message qui
+  le dit ; l'écrit marche comme avant.
 - Écran au texte non traduit en coréen : il reste lisible en français plutôt que vide.
 
 ## Requirements *(mandatory)*
@@ -334,11 +356,13 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   texte saisi n'est jamais traduit ; les emails préparés pour les clients restent en français.
 - **FR-015**: L'outil MUST demander au navigateur de ne pas traduire ses écrans.
 - **FR-016**: Le manuel MUST décrire chaque écran en français et en coréen, être la seule source
-  de l'assistant, et dire l'état réel de l'outil.
-- **FR-017**: L'assistant MUST répondre dans la langue de l'écran, à partir du manuel seulement,
-  sans voir les données des clients ; il MUST dire clairement quand l'utilisatrice se trompe et
-  proposer un rapport seulement pour un vrai problème, une vraie idée ou une question sans
-  réponse dans le manuel.
+  de l'assistant sur l'usage de l'outil, et dire l'état réel de l'outil.
+- **FR-017**: L'assistant MUST répondre dans la langue de l'écran, à partir du manuel et des
+  données de la gestion (commandes, clients avec leurs coordonnées, gâteaux, recettes,
+  ingrédients, agenda, indispos, chiffres, visites du site), qu'il lit sans les changer ; il
+  MUST NOT inventer un nom, un chiffre ou une date absents des données ; il MUST dire clairement
+  quand l'utilisatrice se trompe et proposer un rapport seulement pour un vrai problème, une
+  vraie idée ou une question sans réponse dans le manuel.
 - **FR-018**: Un rapport MUST être montré tel qu'il partira, avec l'extrait des derniers messages
   joint seulement si l'utilisatrice coche la case, et partir seulement sur son clic, vers la
   boîte de Madame Cho, signé par le domaine ; « Écrire à Olivier » MUST marcher sans assistant.
@@ -346,7 +370,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   plafond de coût par mois réglable par une administratrice (0 = aucun), une question ratée
   comptant aussi ; une
   notice MUST informer l'utilisatrice avant sa première conversation (destinataire, pays,
-  durées, pas de donnée de santé).
+  données lues, voix, durées, pas de donnée de santé).
 - **FR-020**: Les comptes MUST être nominatifs, avec un mot de passe d'au moins 12 caractères ;
   lien de première connexion ou d'oubli valable une heure et une seule fois ; invitation par une
   administratrice ; rôles Administratrice et Membre ; 10 échecs bloquent 15 minutes ; « rester
@@ -358,7 +382,8 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   après son dernier échange ; le journal des connexions et les conversations de l'assistant
   après 6 mois ; les rapports après 12 mois ; les liens de connexion expirés ou utilisés.
   Réglages MUST montrer ce qui sera effacé, et la liste des demandes du site de plus de 11 mois
-  dont l'email est à supprimer aussi dans la boîte de Madame Cho.
+  dont l'email est à supprimer aussi dans la boîte de Madame Cho. L'effacement d'un client MUST
+  aussi retirer son nom et ses coordonnées des conversations de l'assistant.
 - **FR-022**: Les statistiques MUST donner, par mois, par canal et par produit, les commandes
   remises, le chiffre d'affaires, le panier moyen, la marge sur matières quand les recettes sont
   remplies, le taux de transformation, le délai médian de réponse aux demandes du site et la
@@ -378,6 +403,20 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   être fait une fois, et son résultat noté. Une administratrice MUST aussi pouvoir télécharger un
   export complet (clients, commandes, produits, ingrédients, recettes ; ni comptes, ni clés, ni
   conversations) pour une analyse ou une reprise ; ce n'est pas une sauvegarde.
+- **FR-027**: Une modification préparée par l'assistant MUST s'afficher sous sa réponse avec ce
+  qui va changer, « Confirmer » et « Ne pas faire » ; rien ne change sans le toucher de
+  l'utilisatrice ; elle MUST passer par les mêmes contrôles que l'écran, s'inscrire dans
+  l'historique (« Préparée par l'assistant et confirmée »), ne se faire qu'une fois et expirer
+  après 24 heures. Elle peut porter sur une commande (étape, paiement, fiche, problème, échange,
+  nouvelle commande), un client (fiche, échange, avis, actif, nouveau client), une indispo, la
+  fiche d'un gâteau, la gamme pro, une recette ou un ingrédient. L'assistant MUST NOT toucher aux
+  réglages, aux comptes, aux clés, à l'import, à l'export, à la fusion ni à l'effacement d'un
+  client, et MUST NOT envoyer d'email.
+- **FR-028**: Un mode vocal MUST permettre de parler à l'assistant et de l'entendre, dans la
+  langue choisie dans l'outil (français ou coréen), avec la reconnaissance et la voix du
+  navigateur ; « stop », « 그만 » ou le bouton Arrêter l'arrêtent ; le micro MUST être autorisé
+  pour la gestion seulement ; une modification préparée MUST attendre le toucher de
+  « Confirmer », même en mode vocal.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -395,6 +434,8 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - **Compte** : email, nom, rôle, état, dernière connexion ; **jeton** de première connexion,
   d'oubli ou d'invitation.
 - **Conversation de l'assistant**, **rapport** : messages, coût, rapport proposé ou envoyé.
+- **Modification préparée** : action, fiche visée, champs, résumé, état (à confirmer, faite, pas
+  faite, expirée, remplacée), dates, retour de la gestion.
 
 ## Success Criteria *(mandatory)*
 
@@ -412,6 +453,7 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - **SC-006**: 0 email envoyé à un client par l'outil ; 0 rapport envoyé sans le clic de
   l'utilisatrice.
 - **SC-007**: Le coût de l'assistant ne dépasse jamais le plafond du mois fixé dans Réglages.
+- **SC-008**: 0 donnée changée par l'assistant sans le toucher de « Confirmer » de l'utilisatrice.
 
 ## Assumptions
 
@@ -420,6 +462,8 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   comptes. Aucun besoin de montée en charge.
 - Le pilote de 30 à 45 minutes avec Youngmi a lieu avant d'activer l'assistant et les demandes du
   site ; la clé de l'assistant est payée par Olivier, comme ses autres outils informatiques.
+- La reconnaissance vocale est celle du navigateur (Google sur Chrome, Apple sur Safari) : la voix
+  y est transcrite en texte ; la gestion ne garde que le texte, comme une question écrite.
 - Le miroir pour le Drive (copie réduite pour les agents) est prêt mais pas branché, et le point
   commandes de l'agent Mathieu est prévu mais pas en place : ils ne font pas partie de cette
   version.

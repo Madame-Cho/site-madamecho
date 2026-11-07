@@ -1027,6 +1027,12 @@ montants HT, comme leurs factures | 금액은 청구서처럼 부가세 별도
 Montants TTC | 금액은 부가세 포함
 montants HT | 금액 부가세 별도
 montants TTC | 금액 부가세 포함
+
+# L'assistant : modifications préparées, confirmées d'un toucher (07/11/2026)
+Cette modification a déjà été faite ou écartée. | 이 수정은 이미 했거나 하지 않기로 했어요.
+Cette modification a été préparée il y a plus de 24 heures : redemandez-la à l'assistant. | 이 수정은 24시간도 더 전에 준비됐어요. 어시스턴트에게 다시 부탁하세요.
+Cette modification ne correspond pas à cette page. | 이 수정은 이 페이지와 맞지 않아요.
+La gestion a ouvert le formulaire avec un point à corriger : rien n'a été enregistré. | 고칠 점이 있어서 관리 화면이 양식을 열었어요. 아무것도 저장되지 않았어요.
 TXT;
 }
 
@@ -1083,6 +1089,16 @@ function coreen_champs(string $s): string {
     return implode(', ', array_map(fn($c) => KO_CHAMPS[trim($c)] ?? trim($c), explode(',', $s)));
 }
 
+/** Le titre coréen d'une modification préparée par l'assistant (PROPOSITIONS_TITRES, avec ou sans majuscule), ou null. */
+function coreen_titre_proposition(string $fr): ?string {
+    if (!defined(__NAMESPACE__ . '\\PROPOSITIONS_TITRES')) return null;
+    foreach (PROPOSITIONS_TITRES as [$f, $k]) if (mb_strtolower($f) === mb_strtolower($fr)) return $k;
+    return null;
+}
+/** Pourquoi une modification préparée ne peut pas se faire maintenant (proposition_formulaire). */
+const KO_PROPOSITION_RAISONS = ['action inconnue' => '알 수 없는 작업이에요', 'la fiche n\'existe plus ou a changé' => '대상이 없어졌거나 바뀌었어요',
+                                'c\'est déjà fait' => '이미 했어요', 'le client n\'existe plus' => '고객 정보가 더 이상 없어요', 'c\'est déjà le cas' => '이미 그렇게 되어 있어요'];
+
 /* ---------- Phrases qui contiennent un nombre, une date ou un nom ---------- */
 /** Le résumé d'une reprise (reprise_resume), morceau par morceau ; null si un morceau est inconnu. */
 const KO_REPRISE_RAISONS = ['le fichier n\'a pas pu être lu (2 Mo au plus)' => '파일을 읽을 수 없었어요 (최대 2 MB)',
@@ -1129,6 +1145,14 @@ function coreen_motifs(): array {
         return $j . ', ' . ($a[2] === 'toute la journée' ? '하루 종일' : $plage($a[2])) . (($a[3] ?? '') !== '' ? ' (' . $a[3] . ')' : '');
     };
     $p = [
+        // L'assistant : modifications préparées et confirmées (07/11/2026)
+        ['/^Préparée par l\'assistant et confirmée : ([^()]+?)(?: \(([^()]*)\))?$/u', fn($m) => ($x = coreen_titre_proposition($m[1])) !== null
+            ? '어시스턴트가 준비하고 확인함: ' . $x . (($m[2] ?? '') !== '' ? ' (' . $m[2] . ')' : '') : null],
+        ['/^C\'est fait : (.+)\.$/u', fn($m) => ($x = coreen_titre_proposition($m[1])) !== null ? '완료: ' . $x . '.' : null],
+        ['/^Impossible maintenant : (.+)\. Redemandez à l\'assistant\.$/u', fn($m) => isset(KO_PROPOSITION_RAISONS[$m[1]])
+            ? '지금은 할 수 없어요: ' . KO_PROPOSITION_RAISONS[$m[1]] . '. 어시스턴트에게 다시 부탁하세요.' : null],
+        // Une indispo seule, écrite en toutes lettres (carte de l'assistant)
+        ['/^.+, (?:toute la journée|\d{1,2} h(?: \d{2})? – \d{1,2} h(?: \d{2})?)(?: \(.*\))?$/us', fn($m) => $indispo($m[0])],
         // Agenda, indispos et ventes par gâteau (07/11/2026)
         ['/^(\d{1,2}) h(?: (\d{2}))? – (\d{1,2}) h(?: (\d{2}))?$/u', fn($m) => $plage($m[0])],
         ['/^(\d+) commande\(s\) en cours$/', fn($m) => '진행 중인 주문 ' . $m[1] . '건'],
@@ -1377,6 +1401,8 @@ function coreen_motifs(): array {
             if (($m[4] ?? '') !== '') $x[] = '알레르기 유발 성분: ' . ($m[4] === 'aucun' ? '없음' : (coreen_allergenes($m[4]) ?? $m[4]));
             return $m[1] . ': ' . implode(', ', $x);
         }],
+        // Une liste d'allergènes seule, « Gluten, Lait » (carte de l'assistant)
+        ['/^\p{Lu}[^,]*(?:, \p{Lu}[^,]*)*$/u', fn($m) => coreen_allergenes($m[0])],
     ];
     return $p;
 }

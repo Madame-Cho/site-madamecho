@@ -114,16 +114,29 @@
     var f = composer(); if (!f) return;
     ajuster(f.querySelector("textarea"));
     etatEnvoi();
+    interfaceVocale();
   }
   function enBas(doux) { window.scrollTo({ top: d.documentElement.scrollHeight, behavior: doux && !calme ? "smooth" : "auto" }); }
-  function envoyer(texte) {
+  // La page de l'assistant renvoyée par le serveur remplace la conversation affichée ; null si ce n'est pas elle (session finie, erreur)
+  function remplacer(html) {
+    var doc = new DOMParser().parseFromString(html, "text/html");
+    var neuf = doc.getElementById("contenu");
+    if (!neuf || !doc.body.classList.contains("page-assistant")) return null;
+    d.getElementById("contenu").innerHTML = neuf.innerHTML;
+    return doc;
+  }
+  function texteFlash() { var f = d.querySelector(".page-assistant main > .flash"); return f ? (f.innerText || f.textContent || "").trim() : ""; }
+  // opts.vocal : la question a été dite (le serveur répond court) ; opts.fin(texte) reçoit ce qu'il faut lire à voix haute
+  function envoyer(texte, opts) {
+    opts = opts || {};
     var f = composer();
     texte = (texte || "").trim();
-    if (!f || occupe || texte === "") return;
+    if (!f || occupe || texte === "") { if (opts.fin) opts.fin(""); return; }
     var t = f.querySelector("textarea");
     if (!window.fetch || !window.FormData || !window.DOMParser) { t.value = texte; HTMLFormElement.prototype.submit.call(f); return; }
     var donnees = new FormData(f);
     donnees.set("message", texte);
+    if (opts.vocal) donnees.set("vocal", "1");
     var accueil = d.querySelector(".accueil-ia");
     if (accueil) accueil.parentNode.removeChild(accueil);
     var chat = d.getElementById("chat");
@@ -149,19 +162,24 @@
       .then(function (r) { return r.text().then(function (h) { return { url: r.url, html: h }; }); })
       .then(function (x) {
         clearTimeout(lent);
-        var doc = new DOMParser().parseFromString(x.html, "text/html");
-        var neuf = doc.getElementById("contenu");
-        if (!neuf || !doc.body.classList.contains("page-assistant")) { location.href = x.url; return; }   // session finie : on suit
         occupe = false;
-        d.getElementById("contenu").innerHTML = neuf.innerHTML;
-        var tous = d.querySelectorAll("#chat .msg");
-        for (var i = avant; i < tous.length; i++) if (!tous[i].classList.contains("msg-moi")) tous[i].classList.add("nouveau");
+        if (!remplacer(x.html)) { arreterVocal(""); location.href = x.url; return; }   // session finie : on suit
+        var tous = d.querySelectorAll("#chat .msg"), dire = [];
+        for (var i = avant; i < tous.length; i++) {
+          if (tous[i].classList.contains("msg-moi")) continue;
+          tous[i].classList.add("nouveau");
+          var ia = tous[i].querySelector(".texte-ia");
+          if (ia) dire.push(ia.innerText || ia.textContent || "");
+        }
         preparer();
         // La dernière question en haut de l'écran, la réponse dessous : on lit la réponse depuis son début
         var questions = d.querySelectorAll("#chat .msg-moi"), q = questions[questions.length - 1];
-        if (q && !d.querySelector(".page-assistant main > .flash")) q.scrollIntoView({ block: "start", behavior: calme ? "auto" : "smooth" }); else enBas(true);
+        var flash = texteFlash();
+        // En mode vocal, la réponse est lue : on va en bas, pour que les boutons d'une modification préparée soient à portée de doigt
+        if (q && !flash && !opts.vocal) q.scrollIntoView({ block: "start", behavior: calme ? "auto" : "smooth" }); else enBas(true);
         var t2 = composer() && composer().querySelector("textarea");
-        if (t2 && !tactile) t2.focus({ preventScroll: true });
+        if (t2 && !tactile && !opts.vocal) t2.focus({ preventScroll: true });
+        if (opts.fin) opts.fin(flash || dire.join(" "));
       })
       .catch(function () {
         clearTimeout(lent);
@@ -174,12 +192,15 @@
         chat.appendChild(p);
         if (moi.parentNode) moi.parentNode.removeChild(moi);
         t.value = texte; ajuster(t); etatEnvoi();
+        if (opts.fin) opts.fin(p.textContent, true);
       });
   }
   d.addEventListener("submit", function (e) {
     var f = e.target;
     if (f.id === "composer") { e.preventDefault(); envoyer(f.querySelector("textarea").value); }
     else if (f.classList.contains("form-suggestion")) { e.preventDefault(); envoyer(f.querySelector("[name=message]").value); }
+    // « Confirmer » ou « Ne pas faire » sous une modification préparée, en mode vocal : sans recharger la page (la voix continue)
+    else if (vocal.actif && (f.classList.contains("form-proposition") || f.classList.contains("form-proposition-non"))) { e.preventDefault(); repondreProposition(f); }
   });
   d.addEventListener("input", function (e) {
     if (e.target.tagName === "TEXTAREA" && e.target.closest("#composer")) { ajuster(e.target); etatEnvoi(); }
@@ -191,6 +212,171 @@
     e.preventDefault();   // pendant la saisie en coréen (isComposing), Entrée termine la syllabe : on n'envoie pas
     envoyer(t.value);
   });
+
+  // Le mode vocal (demande d'Olivier, 07/11/2026 : Youngmi les mains prises). Un toucher sur le micro ; elle parle ; la question part
+  // comme un message écrit ; la réponse est lue à voix haute ; puis l'assistant réécoute. « Stop » (ou « 그만 ») ou le bouton Arrêter
+  // le termine. La reconnaissance et la voix sont celles du navigateur (Chrome : Google ; Safari : Apple), dans la langue de l'écran.
+  // Une modification préparée se confirme toujours d'un toucher sur « Confirmer ».
+  var Reco = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var synth = window.speechSynthesis;
+  var vocalPossible = !!(Reco && synth && window.SpeechSynthesisUtterance && window.fetch && window.FormData && window.DOMParser);
+  var vocal = { actif: false, reco: null, verrou: null, vides: 0, etat: "", texte: "", parole: 0 };
+  var MOTS_STOP = ["stop", "arrete", "arreter", "arrete toi", "c est tout", "merci c est tout", "termine", "fin", "au revoir", "그만", "그만해", "그만해요", "끝", "끝내", "멈춰", "종료", "됐어", "됐어요"];
+  function barre() { return d.getElementById("vocal"); }
+  function libelle(k) { var b = barre(); return b ? (b.getAttribute("data-" + k) || "") : ""; }
+  // Après chaque réponse, la conversation est remplacée : la barre et le micro sont remis dans l'état du moment
+  function interfaceVocale() {
+    var m = d.getElementById("micro"), b = barre();
+    if (m) {
+      m.hidden = !vocalPossible;
+      m.classList.toggle("actif", vocal.actif);
+      m.setAttribute("aria-pressed", vocal.actif ? "true" : "false");
+    }
+    if (!b) return;
+    b.hidden = !vocal.actif;
+    b.setAttribute("data-etat", vocal.etat);
+    var e = d.getElementById("vocal-etat"), t = d.getElementById("vocal-texte");
+    if (e) e.textContent = vocal.etat ? libelle(vocal.etat) : "";
+    if (t) t.textContent = vocal.texte;
+  }
+  function etatVocal(e, texte) { vocal.etat = e; if (texte !== undefined) vocal.texte = texte; interfaceVocale(); }
+  function normaliser(s) {
+    s = (s || "").toLowerCase();
+    if (s.normalize) s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").normalize("NFC");   // sans accents ; le hangeul est recomposé
+    return s.replace(/[.,!?;:'’"«»…\-]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function estStop(s) { return MOTS_STOP.indexOf(normaliser(s)) !== -1; }
+  function message(texte) {
+    if (!texte) return;
+    var chat = d.getElementById("chat") || composer();
+    if (!chat) return;
+    var p = d.createElement("p");
+    p.className = "msg-echec"; p.setAttribute("role", "alert"); p.textContent = texte;
+    if (chat.id === "chat") chat.appendChild(p); else chat.parentNode.insertBefore(p, chat);
+  }
+  // La voix : une voix du système dans la langue du texte (coréen s'il contient du hangeul), de préférence sur l'appareil
+  function voixPour(lang) {
+    var vs = synth.getVoices ? synth.getVoices() : [], p = lang.slice(0, 2), choix = null;
+    for (var i = 0; i < vs.length; i++) {
+      if ((vs[i].lang || "").replace("_", "-").toLowerCase().indexOf(p) !== 0) continue;
+      if (!choix || (vs[i].localService && !choix.localService)) choix = vs[i];
+    }
+    return choix;
+  }
+  function pourLaVoix(t) {
+    return (t || "").replace(/\s*·\s*/g, ", ").replace(/https?:\/\/\S+/g, "").replace(/[*#•]/g, "").replace(/\s*\n+\s*/g, ". ").replace(/\s+/g, " ").trim();
+  }
+  function morceaux(t) {
+    var phrases = pourLaVoix(t).match(/[^.!?。？！]+[.!?。？！]*/g) || [], out = [], cur = "";
+    phrases.forEach(function (p) { p = p.trim(); if (!p) return; if ((cur + " " + p).length > 200 && cur) { out.push(cur); cur = p; } else cur = (cur ? cur + " " : "") + p; });
+    if (cur) out.push(cur);
+    return out;
+  }
+  function dire(texte, ensuite) {
+    var parts = morceaux(texte), i = 0, numero = ++vocal.parole;
+    try { synth.cancel(); } catch (x) {}
+    if (!parts.length) { if (ensuite) ensuite(); return; }
+    etatVocal("parle");
+    (function suivant() {
+      if (numero !== vocal.parole) return;     // une autre lecture a pris la place, ou le mode vocal est arrêté
+      if (!vocal.actif && ensuite) return;     // arrêté pendant la lecture
+      if (i >= parts.length) { if (ensuite) ensuite(); return; }
+      var u = new SpeechSynthesisUtterance(parts[i++]);
+      u.lang = /[\uac00-\ud7af]/.test(u.text) ? "ko-KR" : "fr-FR";
+      var v = voixPour(u.lang);
+      if (v) u.voice = v;
+      var fini = false;
+      // Certains navigateurs n'annoncent jamais la fin d'une phrase : on n'attend pas plus que sa durée probable
+      var garde = setTimeout(function () { if (!fini) { fini = true; try { synth.cancel(); } catch (x) {} suivant(); } }, 4000 + u.text.length * 110);
+      u.onend = u.onerror = function () { if (fini) return; fini = true; clearTimeout(garde); setTimeout(suivant, 60); };
+      synth.speak(u);
+    })();
+  }
+  function ecouter() {
+    if (!vocal.actif) return;
+    var b = barre(), r;
+    try { r = new Reco(); } catch (x) { arreterVocal(libelle("reseau")); return; }
+    r.lang = (b && b.getAttribute("data-langue")) || (ko ? "ko-KR" : "fr-FR");
+    r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+    var final = "", erreur = "";
+    r.onresult = function (e) {
+      var f = "", provisoire = "";
+      for (var i = 0; i < e.results.length; i++) { if (e.results[i].isFinal) f += e.results[i][0].transcript; else provisoire += e.results[i][0].transcript; }
+      if (f) final = f;
+      etatVocal("ecoute", (f + " " + provisoire).trim());
+    };
+    r.onerror = function (e) { erreur = e.error || ""; };
+    r.onend = function () {
+      vocal.reco = null;
+      if (!vocal.actif || erreur === "aborted") return;   // arrêté exprès (bouton, « Confirmer ») : on ne réécoute pas tout seul
+      if (erreur === "not-allowed" || erreur === "service-not-allowed" || erreur === "audio-capture") { arreterVocal(libelle("refus")); return; }
+      if (erreur === "network") { arreterVocal(libelle("reseau")); return; }
+      var dit = final.trim();
+      if (!dit) {
+        // Rien entendu : on réécoute, puis on s'arrête après trois silences (pas de micro ouvert sans fin)
+        if (++vocal.vides >= 3) { arreterVocal(libelle("pause")); return; }
+        setTimeout(ecouter, 250);
+        return;
+      }
+      vocal.vides = 0;
+      if (estStop(dit)) { var a = libelle("aurevoir"); arreterVocal(""); dire(a, null); return; }
+      etatVocal("reflechit", dit);
+      envoyer(dit, { vocal: true, fin: function (reponse) {
+        if (!vocal.actif) return;
+        vocal.texte = "";
+        if (reponse) dire(reponse, ecouter); else ecouter();
+      } });
+    };
+    vocal.reco = r;
+    etatVocal("ecoute", "");
+    try { r.start(); } catch (x) { setTimeout(ecouter, 600); }
+  }
+  function demarrerVocal() {
+    if (!vocalPossible || vocal.actif) return;
+    vocal.actif = true; vocal.vides = 0; vocal.texte = "";
+    // L'écran reste allumé pendant qu'on parle (si le navigateur le permet)
+    if (navigator.wakeLock && navigator.wakeLock.request) navigator.wakeLock.request("screen").then(function (l) { vocal.verrou = l; }, function () {});
+    etatVocal("parle");
+    // Une première phrase dite pendant le toucher : le navigateur autorise ensuite la voix sans nouveau toucher
+    dire(libelle("bonjour"), ecouter);
+  }
+  function arreterVocal(texte) {
+    var etait = vocal.actif;
+    vocal.actif = false; vocal.etat = ""; vocal.texte = ""; vocal.parole++;
+    if (vocal.reco) { try { vocal.reco.abort(); } catch (x) {} vocal.reco = null; }
+    try { synth && synth.cancel(); } catch (x) {}
+    if (vocal.verrou) { try { vocal.verrou.release(); } catch (x) {} vocal.verrou = null; }
+    interfaceVocale();
+    if (etait) message(texte);
+  }
+  // En mode vocal, « Confirmer » et « Ne pas faire » partent sans recharger la page ; la gestion dit ce qu'elle a fait
+  function repondreProposition(f) {
+    vocal.parole++;   // la lecture en cours s'arrête, sans réécouter derrière
+    try { synth.cancel(); } catch (x) {}
+    if (vocal.reco) { try { vocal.reco.abort(); } catch (x) {} }
+    var non = f.classList.contains("form-proposition-non"), b = f.querySelector("button[type=submit]");
+    if (b) b.disabled = true;
+    etatVocal("reflechit", "");
+    fetch(f.getAttribute("action") || location.href, { method: "POST", body: new FormData(f), credentials: "same-origin" })
+      .then(function (r) { return r.text().then(function (h) { return { url: r.url, html: h }; }); })
+      .then(function (x) {
+        // Pas la page de l'assistant : la session est finie (on va à la connexion), ou la gestion a ouvert un formulaire à corriger
+        // (la carte l'explique : on recharge la conversation). Le formulaire n'est jamais renvoyé une deuxième fois.
+        if (!remplacer(x.html)) { arreterVocal(""); if (/[?&]p=connexion/.test(x.url)) location.href = x.url; else location.reload(); return; }
+        preparer();
+        enBas(true);
+        dire(non ? libelle("rien") : (texteFlash() || libelle("fait")), ecouter);
+      })
+      .catch(function () { if (b) b.disabled = false; dire(libelle("echec"), ecouter); });
+  }
+  d.addEventListener("click", function (e) {
+    if (e.target.closest("#micro")) { e.preventDefault(); if (vocal.actif) arreterVocal(""); else demarrerVocal(); }
+    else if (e.target.closest("#vocal-stop")) { e.preventDefault(); arreterVocal(""); }
+  });
+  // On quitte l'écran (autre application, écran éteint) : le micro se ferme
+  d.addEventListener("visibilitychange", function () { if (d.hidden && vocal.actif) arreterVocal(""); });
+  if (vocalPossible && synth.getVoices) { synth.getVoices(); if ("onvoiceschanged" in synth) synth.onvoiceschanged = function () { synth.getVoices(); }; }
+
   if (composer()) {
     preparer();
     if (d.getElementById("chat") && !location.hash) enBas(false);   // comme une messagerie : on arrive sur les derniers messages

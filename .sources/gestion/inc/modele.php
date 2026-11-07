@@ -195,7 +195,45 @@ function client_effacer(int $id, string $motif, ?string $auteur = null): void {
        lettre_info = '', lettre_info_le = NULL, avis_demande_le = NULL, avis_recu_le = NULL, efface_le = ?, maj_le = ? WHERE id = ?", [$now, $now, $id]);
     q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification')", [$id]);
     foreach (lignes("SELECT id FROM commandes WHERE client_id = ?", [$id]) as $k) commande_anonymiser((int)$k['id'], $now);
+    assistant_oublier_client($c);
     evenement('effacement', 'Données personnelles effacées : ' . $motif, ['client' => $id], '', '', $auteur);
+}
+/** L'assistant lit les fiches des clients (noms et coordonnées) : quand un client est effacé, ce qu'il en a lu ou écrit dans les
+ *  conversations gardées (6 mois) et dans les modifications préparées est effacé aussi. */
+function assistant_oublier_client(array $c): void {
+    $num = (string)$c['numero'];
+    // Le nom complet dans les deux sens, le nom seul (4 lettres au moins), l'entreprise, le contact, l'email, le téléphone avec et sans espaces
+    $tel = preg_replace('/\D+/', '', (string)$c['telephone']) ?? '';
+    $mots = array_values(array_filter(array_unique([trim($c['prenom'] . ' ' . $c['nom']), trim($c['nom'] . ' ' . $c['prenom']), mb_strlen(trim((string)$c['nom'])) >= 4 ? trim((string)$c['nom']) : '',
+                                                    (string)$c['societe'], (string)$c['contact'], (string)$c['email'], (string)$c['telephone'], strlen($tel) >= 6 ? $tel : '']), fn($m) => mb_strlen($m) >= 3));
+    usort($mots, fn($a, $b) => mb_strlen($b) <=> mb_strlen($a));   // les plus longs d'abord : l'email entier avant le nom qu'il contient
+    $tous = array_merge([$num], $mots);
+    $ou = implode(' OR ', array_fill(0, count($tous), 'contenu LIKE ?'));
+    $json = fn($x): string => (string)json_encode($x, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    foreach (lignes("SELECT id, contenu FROM assistant_messages WHERE $ou", array_map(fn($m) => '%' . $m . '%', $tous)) as $m) {
+        $blocs = json_decode((string)$m['contenu'], true);
+        if (!is_array($blocs)) continue;
+        foreach ($blocs as &$b) {
+            if (!is_array($b)) continue;
+            $t = $b['type'] ?? '';
+            if ($t === 'tool_result') {
+                $r = is_string($b['content'] ?? null) ? $b['content'] : $json($b['content'] ?? '');
+                foreach ($tous as $x) if (mb_stripos($r, $x) !== false) { $b['content'] = '(résultat effacé : il contenait les données d\'un client effacé)'; break; }
+            } elseif ($t === 'text') {
+                $b['text'] = str_ireplace($mots, '(effacé)', (string)($b['text'] ?? ''));   // le numéro CL-… seul reste : il ne dit plus rien de la personne
+            } elseif ($t === 'tool_use') {
+                $in = json_decode(str_ireplace($mots, '(effacé)', $json($b['input'] ?? new \stdClass())), true);
+                $b['input'] = is_array($in) && $in ? $in : new \stdClass();
+            }
+        }
+        unset($b);
+        q("UPDATE assistant_messages SET contenu = ? WHERE id = ?", [$json($blocs), (int)$m['id']]);
+    }
+    $ou = implode(' OR ', array_fill(0, count($tous), 'champs LIKE ? OR resume LIKE ?'));
+    $p = [];
+    foreach ($tous as $x) { $p[] = '%' . $x . '%'; $p[] = '%' . $x . '%'; }
+    // Une modification pas encore confirmée qui le concernait est écartée : vidée, elle ne doit plus pouvoir se faire
+    q("UPDATE assistant_actions SET champs = '{}', resume = '(effacé)', retour = '', etat = CASE WHEN etat = 'propose' THEN 'annule' ELSE etat END WHERE cible = ? OR $ou", array_merge([$num], $p));
 }
 /** Données d'un client pour une demande d'accès ou de portabilité (tableau lisible, JSON). */
 function client_exporter(int $id): array {
@@ -932,6 +970,7 @@ function conservation_executer(?string $auteur = null): array {
     q("DELETE FROM connexions WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_JOURNAL_MOIS . ' months'))]);
     q("DELETE FROM jetons WHERE expire_le < ? OR utilise_le IS NOT NULL", [$now]);
     q("DELETE FROM assistant_messages WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_ASSISTANT_MOIS . ' months'))]);   // conversations avec l'assistant : 6 mois
+    q("DELETE FROM assistant_actions WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_ASSISTANT_MOIS . ' months'))]);    // modifications qu'il a préparées : 6 mois aussi
     q("DELETE FROM rapports WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_RAPPORTS_MOIS . ' months'))]);   // rapports de l'assistant : 12 mois
     $cr = ['demandes' => count($a['demandes']), 'clients' => count($vus), 'journal' => $a['journal'], 'le' => $now];
     parametre_ecrire('derniere_purge', json_encode($cr));

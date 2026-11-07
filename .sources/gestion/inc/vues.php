@@ -50,6 +50,10 @@ function icone(string $n): string {
         // Particulier (une personne) et professionnel (une boutique), sur les étiquettes de type
         'particulier' => '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/>',
         'pro' => '<path d="M4 10v10h16V10"/><path d="M3 10l2-6h14l2 6z"/><path d="M10 20v-5h4v5"/>',
+        // Le mode vocal de l'assistant (parler, arrêter) et la confirmation d'une modification préparée (07/11/2026)
+        'micro' => '<path d="M12 3.5a3 3 0 0 1 3 3V12a3 3 0 0 1-6 0V6.5a3 3 0 0 1 3-3z"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/>',
+        'stop' => '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
+        'valider' => '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
         default => '',
     };
     return '<svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';

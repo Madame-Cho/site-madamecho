@@ -569,6 +569,44 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .composer-note a{color:inherit}
 .page-assistant .flash{margin:16px 0 0}
 .msg-echec{margin:-14px 0 0;text-align:right;font-size:13px;color:var(--erreur)}
+/* Les modifications préparées par l'assistant (07/11/2026) : ce qui changera, puis « Confirmer » ou « Ne pas faire » ; rien ne change sans ce toucher */
+.proposition{border:1px solid var(--fort);background:var(--carte);border-radius:var(--r);padding:14px}
+.proposition>*+*{margin-top:10px}
+.proposition h3{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:500 16px/1.35 var(--police)}
+.proposition .pour-vous{font-weight:500;color:var(--chocolat)}
+.detail-proposition{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 14px;font-size:15px;line-height:1.45}
+.detail-proposition>div{display:contents}
+.detail-proposition dt{color:var(--doux)}
+.detail-proposition dd{margin:0;overflow-wrap:anywhere}
+.proposition .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.proposition .actions form{margin:0}
+.proposition .btn .ic,.proposition .ok .ic{width:18px;height:18px;margin-right:4px;vertical-align:-4px}
+.p-propose{border-color:#C9A27E;box-shadow:0 2px 10px rgba(59,29,14,.06)}
+.p-fait{border-color:#BFDCC6}
+.p-annule,.p-expire{color:var(--doux)}
+.s-proposition-propose{background:var(--ambre-f);color:var(--ambre)}
+.s-proposition-fait{background:var(--vert-f);color:var(--vert)}
+.s-proposition-annule,.s-proposition-expire,.s-proposition-remplace{background:var(--gris-f);color:var(--gris)}
+.refus-proposition{font-size:14px;color:var(--erreur)}
+/* Le mode vocal : le micro à côté de la flèche, et la barre qui dit ce qui se passe (écoute, recherche, réponse) */
+.composer-micro{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--fort);border-radius:50%;background:var(--carte);color:var(--chocolat);cursor:pointer}
+.composer-micro[hidden],.vocal[hidden]{display:none}
+.composer-micro .ic{width:20px;height:20px;vertical-align:0}
+.composer-micro:focus-visible{outline:2px solid var(--chocolat);outline-offset:2px}
+.composer-micro.actif{background:var(--erreur);border-color:var(--erreur);color:#fff}
+.vocal{margin-top:8px;padding:10px 12px 10px 14px;border:1px solid var(--fort);border-radius:18px;background:var(--carte)}
+.vocal-ligne{display:flex;align-items:center;gap:10px}
+.vocal-point{flex:none;width:12px;height:12px;border-radius:50%;background:var(--doux)}
+.vocal[data-etat=ecoute] .vocal-point{background:var(--erreur);animation:mc-pouls 1.2s ease-in-out infinite}
+.vocal[data-etat=reflechit] .vocal-point{background:var(--chocolat);animation:mc-pouls .9s ease-in-out infinite}
+.vocal[data-etat=parle] .vocal-point{background:var(--vert);animation:mc-pouls 1.6s ease-in-out infinite}
+.vocal-etat{flex:1;min-width:0;font-weight:500}
+.btn.vocal-stop{min-height:36px;padding:0 12px}
+.vocal-stop .ic{width:16px;height:16px;margin-right:4px;vertical-align:-3px}
+.vocal-texte{margin-top:6px;font-size:15px;line-height:1.45}
+.vocal-texte:empty{display:none}
+.vocal-note{margin-top:6px;font-size:12px;line-height:1.4;color:var(--doux)}
+@keyframes mc-pouls{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.6);opacity:.55}}
 /* L'attente : l'étoile qui respire et le mot qui scintille, comme Claude et ChatGPT pendant qu'ils réfléchissent */
 @keyframes mc-tourne{to{transform:rotate(360deg)}}
 @keyframes mc-respire{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.78) rotate(60deg)}}
@@ -578,7 +616,7 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .reflechit{display:inline-block;color:var(--doux);background:linear-gradient(100deg,var(--doux) 35%,var(--chocolat) 46%,#C79A6E 50%,var(--chocolat) 54%,var(--doux) 65%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:mc-reflet 2.2s linear infinite}
 .msg.nouveau{animation:mc-apparait .35s ease-out both}
 @media (prefers-reduced-motion:reduce){
- .attente .avatar-ia .ic,.reflechit,.msg.nouveau{animation:none}
+ .attente .avatar-ia .ic,.reflechit,.msg.nouveau,.vocal-point{animation:none!important}
  .reflechit{background:none;-webkit-text-fill-color:currentColor}
 }
 @media (min-width:900px){
@@ -589,6 +627,8 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
  .avatar-ia{width:26px;height:26px}
  .avatar-ia .ic{width:16px;height:16px}
  .msg-rapport{margin-left:0}
+ .detail-proposition{grid-template-columns:minmax(0,1fr);gap:0}
+ .detail-proposition dd{margin-bottom:6px}
  .accueil-ia{padding-top:6vh}
  .accueil-ia h2{font-size:22px}
 }

@@ -184,7 +184,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 4) return;
+    if ($v >= 5) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -252,13 +252,21 @@ CREATE INDEX IF NOT EXISTS indispos_dates ON indispos(debut, fin);
         try { $pdo->exec("ALTER TABLE produits ADD COLUMN propose_depuis TEXT"); }
         catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }   // deux pages ouvertes en même temps
     }
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '4')");
+    // Version 5 (07/11/2026, demande d'Olivier) : les modifications que l'assistant prépare et que la personne confirme d'un toucher
+    // (genre = l'action, cible = la fiche, champs = ce qui change ; etat : propose, fait, annule, expire, remplace ; lien = la fiche après coup)
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS assistant_actions (id INTEGER PRIMARY KEY, utilisateur_id INTEGER NOT NULL, fil INTEGER NOT NULL, message_id INTEGER, le TEXT NOT NULL,
+  genre TEXT NOT NULL, cible TEXT NOT NULL DEFAULT '', champs TEXT NOT NULL DEFAULT '{}', resume TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT 'propose',
+  fait_le TEXT, retour TEXT NOT NULL DEFAULT '', lien TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS assistant_actions_fil ON assistant_actions(utilisateur_id, fil);
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '5')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
 const COLONNES_ENTIERES = ['id' => 1, 'client_id' => 1, 'commande_id' => 1, 'utilisateur_id' => 1, 'ingredient_id' => 1, 'probleme' => 1, 'total_indicatif' => 1,
     'prix_final' => 1, 'acompte' => 1, 'prix' => 1, 'prix_unite' => 1, 'actif' => 1, 'emballage' => 1, 'tva' => 1, 'ok' => 1, 'n' => 1, 'remises' => 1,
-    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1, 'fil' => 1, 'question' => 1, 'rapport_id' => 1];
+    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1, 'fil' => 1, 'question' => 1, 'rapport_id' => 1, 'message_id' => 1];
 function entiers(array $r): array {
     foreach ($r as $k => $v) if (is_string($v) && isset(COLONNES_ENTIERES[$k]) && preg_match('/^-?\d+$/', $v)) $r[$k] = (int)$v;
     return $r;
@@ -415,7 +423,12 @@ function u(string $page, array $params = []): string {
     $p = ['p' => $page] + $params;
     return '?' . http_build_query($p);
 }
-function rediriger(string $page, array $params = [], string $ancre = ''): void { header('Location: ' . u($page, $params) . ($ancre !== '' ? '#' . rawurlencode($ancre) : '')); exit; }
+function rediriger(string $page, array $params = [], string $ancre = ''): void {
+    // Une modification préparée par l'assistant et confirmée : on la note faite (ou refusée) et on revient à l'assistant (assistant-donnees.php)
+    if (!empty($GLOBALS['mc_proposition']) && function_exists(__NAMESPACE__ . '\\proposition_apres')) [$page, $params, $ancre] = proposition_apres($page, $params, $ancre);
+    header('Location: ' . u($page, $params) . ($ancre !== '' ? '#' . rawurlencode($ancre) : ''));
+    exit;
+}
 
 /* ---------- Historique ---------- */
 function evenement(string $type, string $texte = '', array $liens = [], string $ancien = '', string $nouveau = '', ?string $auteur = null): void {

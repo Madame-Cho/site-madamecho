@@ -15,6 +15,7 @@ require_once __DIR__ . '/inc/email.php';
 require_once __DIR__ . '/inc/matomo.php';
 require_once __DIR__ . '/inc/manuel.php';
 require_once __DIR__ . '/inc/assistant.php';
+require_once __DIR__ . '/inc/assistant-donnees.php';
 require_once __DIR__ . '/inc/pages-connexion.php';
 require_once __DIR__ . '/inc/pages-commandes.php';
 require_once __DIR__ . '/inc/pages-agenda.php';
@@ -42,6 +43,7 @@ try {
         $retour = ($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($pages[$p]) && $p !== 'accueil' ? '?' . (string)($_SERVER['QUERY_STRING'] ?? '') : '';
         rediriger('connexion', $retour !== '' ? ['retour' => $retour] : []);
     } else {
+        proposition_avant(isset($pages[$p]) ? $p : 'accueil');   // « Confirmer » sous une réponse de l'assistant : le formulaire habituel, rempli maintenant
         (__NAMESPACE__ . '\\' . ($pages[$p] ?? 'page_accueil'))();
     }
 } catch (\Throwable $e) {
