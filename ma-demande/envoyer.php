@@ -86,6 +86,9 @@ $moment = champ('moment', 20);
 $pro = champ('pro', 1) === '1';
 $societe = $pro ? uneLigne(champ('societe', 100)) : '';
 $besoin = $pro ? champ('besoin', 1200) : '';
+// Provenance (07/11/2026) : la campagne Matomo de la visite, « qr-code packaging » après un scan du QR code d'un emballage ; vide sinon
+$via = uneLigne(champ('via', 90));
+if (!preg_match('/^[\w.-]{1,40}(?: [\w.-]{1,40})?$/', $via)) $via = '';
 
 if ($deuxChamps) {
     if ($prenom === '') $erreurs[] = 'Indiquez votre prénom.';
@@ -205,7 +208,7 @@ $dateTexte = $jours[(int)$jour->format('w')] . ' ' . (int)$jour->format('j') . '
 $euros = fn(int $c) => ($c % 100) ? intdiv($c, 100) . ',' . sprintf('%02d', $c % 100) . ' €' : intdiv($c, 100) . ' €';
 
 $t = [];
-$t[] = 'Nouvelle demande sans engagement reçue par le site madamecho.com.';
+$t[] = 'Nouvelle demande sans engagement reçue par le site madamecho.com' . (strncmp($via, 'qr-code', 7) === 0 ? ', après un scan du QR code d\'un emballage.' : '.');
 $t[] = 'Référence : ' . $ref . ' (envoyée le ' . date('d/m/Y à H:i') . ')';
 $t[] = '';
 $t[] = 'RETRAIT SOUHAITÉ';
@@ -276,7 +279,7 @@ if (PHP_VERSION_ID >= 80000 && is_file(GESTION_ENREGISTRER)) {   // l'espace de 
     try {
         require_once GESTION_ENREGISTRER;
         \MadameCho\Gestion\enregistrer_demande(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
-            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin]);
+            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin, 'via' => $via]);
     } catch (\Throwable $e) {
         error_log('madamecho formulaire : demande ' . $ref . ' non enregistrée dans la gestion (' . get_class($e) . ')');
     }

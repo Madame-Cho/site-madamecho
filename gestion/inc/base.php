@@ -41,6 +41,7 @@ define('GESTION_MATOMO', GESTION_ESSAI && getenv('MC_MATOMO') ? (string)getenv('
 const GESTION_MATOMO_SITE = 1;             // madamecho.com dans Matomo
 const GESTION_MATOMO_CACHE = 900;          // chiffres de Matomo gardés 15 minutes
 define('GESTION_MATOMO_DEBUT', GESTION_ESSAI && getenv('MC_MATOMO_DEBUT') ? (string)getenv('MC_MATOMO_DEBUT') : '2026-11-06');   // mesure du site en ligne depuis le 06/11/2026 (T-06)
+const GESTION_QR_CAMPAGNE = 'qr-code';     // campagne Matomo des QR codes imprimés : madamecho.com/qr renvoie vers la carte avec ce nom de campagne, mot-clé = support (packaging…)
 
 const STATUTS = ['demande' => 'Demande reçue', 'proposition' => 'Proposition envoyée', 'confirmee' => 'Confirmée',
                  'remise' => 'Remise', 'sans_suite' => 'Sans suite', 'annulee' => 'Annulée'];
@@ -50,7 +51,7 @@ const STATUTS_EN_COURS = ['demande', 'proposition', 'confirmee'];
 const PAIEMENTS = ['aucun' => 'Pas encore payé', 'acompte_demande' => 'Acompte demandé', 'acompte_recu' => 'Acompte reçu',
                    'paye' => 'Payé', 'rembourse' => 'Remboursé'];
 const MOYENS = ['' => 'Moyen non noté', 'carte' => 'Carte (Tap to Pay)', 'virement' => 'Virement', 'especes' => 'Espèces', 'autre' => 'Autre'];
-const CANAUX = ['site' => 'Site', 'email' => 'Email', 'instagram' => 'Instagram', 'telephone' => 'Téléphone',
+const CANAUX = ['site' => 'Site', 'qr' => 'QR code', 'email' => 'Email', 'instagram' => 'Instagram', 'telephone' => 'Téléphone',
                 'marche' => 'Marché', 'sur_place' => 'Sur place', 'restaurant' => 'Restaurant', 'autre' => 'Autre'];
 const TYPES_COMMANDE = ['carte' => 'Carte', 'perso' => 'Personnalisée', 'pro' => 'Professionnel'];
 const TYPES_CLIENT = ['particulier' => 'Particulier', 'professionnel' => 'Professionnel'];

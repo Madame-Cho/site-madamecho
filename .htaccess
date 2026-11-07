@@ -21,6 +21,10 @@ RewriteRule (^|/)\.(?!well-known(/|$)) - [R=404,L]
 RewriteRule ^atelier-site/site/(.*)$ /$1 [R=301,L]
 RewriteRule ^atelier-(site|logo)(/|$) - [G,L]
 
+# QR code imprimé sur les emballages (décision d'Olivier du 07/11/2026) : adresse fixe madamecho.com/qr, redirection temporaire (302)
+# pour changer un jour la destination sans réimprimer ; Matomo compte chaque scan dans la campagne « qr-code », mot-clé « packaging »
+RewriteRule ^qr/?$ /carte/?mtm_campaign=qr-code&mtm_kwd=packaging [R=302,L,NC,NE]
+
 # Page introuvable (et anciennes pages retirées)
 ErrorDocument 404 /404.html
 ErrorDocument 410 /404.html

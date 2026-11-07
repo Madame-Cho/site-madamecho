@@ -181,6 +181,21 @@ function page_statistiques_site(): void {
     usort($src, fn($a, $b) => matomo_val($b, 'nb_visits') <=> matomo_val($a, 'nb_visits'));
     $c .= bloc('D\'où viennent les visiteurs', tableau_parts($m['types'] ?? [], 'Origine')
         . ($src ? '<p class="aide">En détail : ' . h(implode(' · ', array_map(fn($x) => trim((string)($x['label'] ?? '')) . ' (' . entier_fr(matomo_val($x, 'nb_visits')) . ')', array_slice($src, 0, 8)))) . '</p>' : ''));
+    // QR code imprimé sur les emballages : madamecho.com/qr renvoie vers la carte, Matomo compte le scan dans la campagne « qr-code » (07/11/2026)
+    $qr30 = matomo_qr($m['qr30'] ?? null);
+    if ($qr30 !== null) {
+        $qr7 = matomo_qr($m['qr7'] ?? null);
+        $buts = $m['qrbuts30'] ?? null;
+        // Les demandes que le formulaire du site a marquées « reçues par le QR code » (provenance transmise par le site), comptées par la gestion elle-même
+        $qrDemandes = (int)val("SELECT COUNT(*) FROM commandes WHERE canal = 'qr' AND recue_le >= ?", [date('Y-m-d H:i:s', strtotime('-30 days'))]);
+        $c .= bloc('QR code sur les emballages', ($qr30['visites'] > 0 || $qrDemandes > 0
+                ? '<div class="tuiles petites">' . tuile('Scans sur 7 jours', entier_fr($qr7['visites'] ?? 0.0))
+                  . tuile('Scans sur 30 jours', entier_fr($qr30['visites']), is_array($buts) ? entier_fr(matomo_val($buts, 'nb_conversions')) . ' demande(s) envoyée(s) après un scan' : '')
+                  . tuile('Demandes reçues par le QR code', entier_fr($qrDemandes), 'dans la gestion, 30 jours') . '</div>'
+                : '<p class="vide">Pas encore de scan sur les 30 derniers jours.</p>')
+            . '<p class="aide">Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n\'est pas compté.</p>'
+            . '<p class="aide">Les demandes « reçues par le QR code » sont celles que le formulaire du site a marquées après un scan ; elles comptent aussi dans Ventes, « D\'où viennent les commandes ».</p>');
+    }
     // Pages les plus vues
     $rows = '';
     foreach (array_slice(array_values(array_filter(is_array($m['pages'] ?? null) ? $m['pages'] : [], fn($x) => is_array($x) && matomo_val($x, 'nb_hits') > 0)), 0, 10) as $x) {
