@@ -425,6 +425,14 @@
     });
   });
 
+  // Bandeaux de message (vert ou rouge) : une croix pour les fermer une fois lus (demande d'Olivier du 07/11/2026).
+  d.querySelectorAll(".flash").forEach(function (b) {
+    var x = d.createElement("button"); x.type = "button"; x.className = "flash-fermer";
+    x.setAttribute("aria-label", ko ? "닫기" : "Fermer"); x.title = ko ? "닫기" : "Fermer"; x.textContent = "×";
+    x.addEventListener("click", function () { b.remove(); });
+    b.appendChild(x);
+  });
+
   // Sous chaque zone de saisie marquée (note d'échange, phrase d'accueil, petit mot, message au client) : « Dicter » (la voix du
   // navigateur, dans la langue de l'écran) et « Corriger mon français » (l'assistant propose un texte corrigé, avec la traduction
   // coréenne ; Youngmi touche « Utiliser » ou garde le sien). Rien n'est inscrit ni envoyé sans son toucher sur « Ajouter » ou « Envoyer ».
