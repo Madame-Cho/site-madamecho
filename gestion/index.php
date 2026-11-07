@@ -27,7 +27,7 @@ $pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'm
 $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition',
           'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition', 'releve' => 'page_releve',
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',
-          'statistiques' => 'page_statistiques', 'taxe' => 'page_taxe', 'plus' => 'page_plus', 'manuel' => 'page_manuel', 'aide' => 'page_manuel', 'assistant' => 'page_assistant', 'olivier' => 'page_olivier', 'reglages' => 'page_reglages', 'export' => 'page_export'];
+          'statistiques' => 'page_statistiques', 'taxe' => 'page_taxe', 'plus' => 'page_plus', 'rapprochement' => 'page_rapprochement', 'manuel' => 'page_manuel', 'aide' => 'page_manuel', 'assistant' => 'page_assistant', 'olivier' => 'page_olivier', 'reglages' => 'page_reglages', 'export' => 'page_export'];
 
 $p = is_string($_GET['p'] ?? null) ? $_GET['p'] : 'accueil';
 try {

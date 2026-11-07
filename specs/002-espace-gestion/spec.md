@@ -44,6 +44,12 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
 - Q: Le plafond du mois est-il strict ? → A : oui ; avant chaque appel au modèle, la gestion
   réserve son coût le plus haut possible et s'arrête si le plafond serait dépassé (audit n° 2,
   C8, FR-019, SC-007).
+- Q: Un paiement Tap to Pay noté par Youngmi et le versement reçu dans Qonto, est-ce la même
+  chose ? → A : non ; « payé, constaté par Youngmi » (avec qui et quand) et « rapproché Qonto »
+  (avec la référence de la transaction) sont deux états séparés ; le versement ne crée ni une
+  seconde vente ni un second paiement ; les espèces n'ont pas de rapprochement (audit n° 2, C14 ;
+  Olivier : « oui je veux préciser », 2026-11-07, FR-030). Rapprochement à la main d'abord, par la
+  liaison Qonto en lecture ensuite (proposé, en attente du choix d'Olivier).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -444,6 +450,11 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   navigateur ; « stop », « 그만 » ou le bouton Arrêter l'arrêtent ; le micro MUST être autorisé
   pour la gestion seulement ; une modification préparée MUST attendre le toucher de
   « Confirmer », même en mode vocal.
+- **FR-030**: Un paiement MUST garder qui l'a constaté et quand ; un état « rapproché Qonto »,
+  séparé du paiement, MUST se noter avec la référence de la transaction Qonto, jamais par le nom
+  ou le montant seuls ; les espèces MUST en être dispensées ; une liste MUST montrer les paiements
+  par carte ou virement pas encore rapprochés ; un versement Qonto MUST NOT créer de vente ni de
+  paiement ; Qonto reste en lecture seule (R-24).
 - **FR-029**: Un gâteau déjà dans une commande MUST garder le prix et la TVA enregistrés à la
   commande quand on change la date, l'heure, le mode ou la quantité, à la main comme par
   l'assistant ; seul un gâteau ajouté prend le prix actuel de la carte.

@@ -343,6 +343,7 @@ function page_plus(): void {
     $l = [[u('statistiques'), 'stats', 'Statistiques', 'Ventes et visites du site'],
           [u('production'), 'imprimer', 'Fiche de production', 'À préparer, jour par jour'],
           [u('ingredients'), 'produits', 'Ingrédients', 'Prix et allergènes'],
+          [u('rapprochement'), 'stats', 'Rapprochement Qonto', 'Paiements à retrouver dans Qonto'],
           [u('manuel'), 'livre', 'Manuel', 'Mode d\'emploi, écran par écran'],
           [u('assistant'), 'ia', 'Assistant', 'Une IA : questions, problèmes, idées'],
           [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, emails, données']];
@@ -351,6 +352,57 @@ function page_plus(): void {
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';
     $c = titre_page('Plus', '') . '<nav class="menu" aria-label="Plus">' . $s . '</nav><p class="aide centre">Gestion Madame Cho · version du ' . h(date_fr(GESTION_VERSION, 'longue')) . '</p>';
     mise_en_page('Plus', $c, 'plus');
+}
+
+/* ---------- Rapprochement avec Qonto (audit n° 2, C14, FR-030) ----------
+ * À la main pour l'instant : Youngmi retrouve le paiement dans Qonto et colle la référence de l'opération.
+ * Un versement Qonto ne crée jamais de vente ni de paiement ; Qonto reste en lecture seule (R-24). */
+function page_rapprochement(): void {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        csrf_verifier();
+        if (texte('_action', 40) === 'rapprocher') {
+            $ids = array_values(array_unique(array_filter(array_map('intval', is_array($_POST['ids'] ?? null) ? $_POST['ids'] : []))));
+            $ref = une_ligne(texte('qonto_ref', 120));
+            $erreur = !$ids ? 'Cochez au moins un paiement.' : '';
+            foreach ($ids as $i) {   // tout ou rien : on vérifie chaque commande avant d'écrire
+                if ($erreur !== '') break;
+                $k = commande($i);
+                if (!$k || !rapprochement_attendu($k) || (string)$k['qonto_ref'] !== '') $erreur = 'Un des paiements cochés n\'est plus à rapprocher : rechargez la page.';
+                elseif (($e = reference_qonto_erreur($ref, $k)) !== null) $erreur = $e;
+            }
+            if ($erreur === '') {
+                foreach ($ids as $i) commande_rapprocher($i, $ref);
+                flash('ok', count($ids) . ' paiement(s) rapproché(s) avec Qonto.');
+            } else flash('erreur', $erreur . ' Rien n\'a été noté.');
+        }
+        rediriger('rapprochement');
+    }
+    $l = a_rapprocher();
+    $total = array_sum(array_map('MadameCho\\Gestion\\rapprochement_montant', $l));
+    $c = titre_page('Rapprochement Qonto', 'Payé (constaté par vous) et retrouvé dans Qonto sont deux choses séparées', '', u('plus'));
+    $c .= '<div class="tuiles">' . tuile('À rapprocher', (string)count($l), euros($total)) . '</div>';
+    if (!$l) $c .= '<p class="ok">Tous les paiements par carte et virement sont retrouvés dans Qonto.</p>';
+    else {
+        $rows = '';
+        foreach ($l as $k) {
+            $rows .= '<label class="case ligne-rapprochement"><input type="checkbox" name="ids[]" value="' . (int)$k['id'] . '"><span>'
+                   . '<b>' . h(euros(rapprochement_montant($k))) . '</b> · ' . h(PAIEMENTS[$k['paiement']] ?? '') . ' · ' . h(MOYENS[$k['moyen']] ?? '')
+                   . '<br><span class="petit"><span translate="no">' . h(commande_client_nom($k)) . '</span> · <a href="' . h(u('commande', ['id' => $k['id']])) . '">' . h($k['reference']) . '</a> · '
+                   . h(date_fr($k['paiement_le'] ?: ($k['remise_le'] ?: $k['maj_le']), 'heure')) . '</span></span></label>';
+        }
+        $c .= bloc('Paiements pas encore retrouvés dans Qonto', formulaire('rapprocher', '<div class="liste-cases">' . $rows . '</div>'
+            . champ('qonto_ref', 'Référence de l\'opération dans Qonto', '', ['maxlength' => '120', 'autocomplete' => 'off', 'required' => true],
+                'Cochez le ou les paiements que cette opération Qonto regroupe (un versement Tap to Pay peut en réunir plusieurs), puis collez la référence de l\'opération. Un nom ou un montant seuls ne suffisent pas.')
+            . bouton('Noter rapprochés', 'principal')));
+    }
+    $r = rapprochements_recents();
+    if ($r) {
+        $rows = '';
+        foreach ($r as $k) $rows .= '<li><a href="' . h(u('commande', ['id' => $k['id']])) . '">' . h($k['reference']) . '</a> · ' . h(euros(rapprochement_montant($k))) . ' · <span translate="no">' . h($k['qonto_ref']) . '</span> · ' . h(date_fr($k['qonto_le'], 'heure')) . '</li>';
+        $c .= '<details class="replie"><summary>Derniers rapprochements</summary><ul class="liste-simple">' . $rows . '</ul></details>';
+    }
+    $c .= '<p class="aide">Les espèces ne passent pas par Qonto : elles ne sont pas dans cette liste. Si un paiement change, son rapprochement est à refaire.</p>';
+    mise_en_page('Rapprochement Qonto', $c, 'plus');
 }
 
 /* ---------- Exports ---------- */

@@ -211,6 +211,10 @@ function outil_commande(array $in): array {
     $r['paiement'] = PAIEMENTS[$k['paiement']] ?? $k['paiement'];
     if ($k['moyen'] !== '') $r['moyen'] = MOYENS[$k['moyen']] ?? $k['moyen'];
     if ($k['facture'] !== '') $r['facture'] = $k['facture'];
+    if ((string)($k['paiement_par'] ?? '') !== '') $r['paiement_constate'] = $k['paiement_par'] . ', ' . substr((string)$k['paiement_le'], 0, 16);
+    // Rapprochement Qonto (FR-030) : noté à la main dans la gestion, jamais par l'assistant
+    $r['qonto'] = (string)($k['qonto_ref'] ?? '') !== '' ? 'rapproché (' . $k['qonto_ref'] . ', ' . substr((string)$k['qonto_le'], 0, 10) . ')'
+                : (rapprochement_attendu($k) ? 'à rapprocher' : ($k['moyen'] === 'especes' && $k['paiement'] !== 'aucun' ? 'espèces : pas de rapprochement' : 'sans objet'));
     if ((int)$k['probleme']) $r['probleme'] = $k['probleme_note'] !== '' ? $k['probleme_note'] : 'signalé';
     $r['dates'] = array_filter(['recue_le' => substr((string)$k['recue_le'], 0, 16), 'dernier_echange' => substr((string)$k['dernier_echange'], 0, 16),
                                 'remise_le' => substr((string)($k['remise_le'] ?? ''), 0, 16), 'annulee_le' => substr((string)($k['annulee_le'] ?? ''), 0, 16),

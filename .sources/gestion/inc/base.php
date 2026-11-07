@@ -184,7 +184,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 6) return;
+    if ($v >= 7) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -267,7 +267,15 @@ CREATE INDEX IF NOT EXISTS assistant_actions_fil ON assistant_actions(utilisateu
         try { $pdo->exec("ALTER TABLE assistant_actions ADD COLUMN empreinte TEXT NOT NULL DEFAULT ''"); }
         catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }
     }
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '6')");
+    // Version 7 (07/11/2026, audit n° 2, C14, FR-030) : qui a constaté le paiement et quand ; le rapprochement avec Qonto, séparé du paiement
+    // (référence de l'opération Qonto, qui l'a noté et quand) ; les espèces n'en ont pas besoin
+    $colonnes = array_column($pdo->query("PRAGMA table_info(commandes)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+    foreach (['paiement_par' => "TEXT NOT NULL DEFAULT ''", 'paiement_le' => 'TEXT', 'qonto_ref' => "TEXT NOT NULL DEFAULT ''", 'qonto_le' => 'TEXT', 'qonto_par' => "TEXT NOT NULL DEFAULT ''"] as $col => $def) {
+        if (in_array($col, $colonnes, true)) continue;
+        try { $pdo->exec("ALTER TABLE commandes ADD COLUMN $col $def"); }
+        catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }
+    }
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '7')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.

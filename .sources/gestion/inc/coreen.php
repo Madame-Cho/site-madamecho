@@ -1035,6 +1035,41 @@ Cette modification ne correspond pas à cette page. | 이 수정은 이 페이�
 La gestion a ouvert le formulaire avec un point à corriger : rien n'a été enregistré. | 고칠 점이 있어서 관리 화면이 양식을 열었어요. 아무것도 저장되지 않았어요.
 La fiche a changé depuis que l'assistant a préparé cette modification : rien n'a été fait. Redemandez-la à l'assistant. | 어시스턴트가 이 수정을 준비한 뒤에 내용이 바뀌었어요. 아무것도 하지 않았어요. 어시스턴트에게 다시 부탁하세요.
 La fiche a changé depuis que la modification a été préparée : rien n'a été fait. | 수정을 준비한 뒤에 내용이 바뀌었어요. 아무것도 하지 않았어요.
+# Rapprochement avec Qonto (audit n° 2, C14, 07/11/2026)
+Rapprochement Qonto | Qonto 대조
+Paiements à retrouver dans Qonto | Qonto에서 찾을 결제
+Payé (constaté par vous) et retrouvé dans Qonto sont deux choses séparées | ‘결제 완료’(직접 확인)와 ‘Qonto에서 확인’은 서로 달라요
+À rapprocher | 대조 필요
+Rapproché | 대조 완료
+Tous les paiements par carte et virement sont retrouvés dans Qonto. | 카드와 계좌 이체 결제를 모두 Qonto에서 확인했어요.
+Paiements pas encore retrouvés dans Qonto | 아직 Qonto에서 확인하지 않은 결제
+Référence de l'opération dans Qonto | Qonto 거래 참조 번호
+Cochez le ou les paiements que cette opération Qonto regroupe (un versement Tap to Pay peut en réunir plusieurs), puis collez la référence de l'opération. | 이 Qonto 거래에 들어 있는 결제를 체크하고(Tap to Pay 입금 하나에 여러 건이 들어 있을 수 있어요), 거래 참조 번호를 붙여 넣으세요.
+Un nom ou un montant seuls ne suffisent pas. | 이름이나 금액만으로는 안 돼요.
+Dans Qonto, ouvrez l'opération (versement Tap to Pay ou virement reçu) et copiez sa référence. | Qonto에서 거래(Tap to Pay 입금이나 받은 계좌 이체)를 열고 참조 번호를 복사하세요.
+Noter rapprochés | 대조 완료로 표시
+Noter rapprochée | 대조 완료로 표시
+Rapprocher avec Qonto | Qonto와 대조
+Retirer le rapprochement | 대조 취소
+Si la référence est fausse, retirez-la : le paiement revient dans la liste « À rapprocher ». | 참조 번호가 틀렸으면 지우세요. 결제가 다시 ‘대조 필요’ 목록에 들어가요.
+Derniers rapprochements | 최근 대조
+Les espèces ne passent pas par Qonto : elles ne sont pas dans cette liste. | 현금은 Qonto를 거치지 않아서 이 목록에 없어요.
+Si un paiement change, son rapprochement est à refaire. | 결제 내용이 바뀌면 다시 대조해야 해요.
+Constaté par | 확인한 사람
+Espèces : pas de rapprochement | 현금: 대조 없음
+Pas noté (avant le 7 novembre 2026) | 기록 없음 (2026년 11월 7일 이전)
+Paiement rapproché avec Qonto. | 결제를 Qonto와 대조했어요.
+Rapprochement Qonto retiré : le paiement est de nouveau à rapprocher. | Qonto 대조를 취소했어요. 이 결제는 다시 대조해야 해요.
+Cochez au moins un paiement. | 결제를 하나 이상 체크하세요.
+Rien n'a été noté. | 아무것도 적지 않았어요.
+Un des paiements cochés n'est plus à rapprocher : rechargez la page. | 체크한 결제 중 하나는 더 이상 대조할 필요가 없어요. 페이지를 새로 고침하세요.
+Collez la référence de l'opération dans Qonto (au moins 4 caractères). | Qonto 거래 참조 번호를 붙여 넣으세요(4자 이상).
+Un montant ne suffit pas : collez la référence de l'opération dans Qonto. | 금액만으로는 안 돼요. Qonto 거래 참조 번호를 붙여 넣으세요.
+Un nom ne suffit pas : collez la référence de l'opération dans Qonto. | 이름만으로는 안 돼요. Qonto 거래 참조 번호를 붙여 넣으세요.
+Les espèces n'ont pas de rapprochement Qonto. | 현금은 Qonto 대조가 없어요.
+Cette commande n'a pas de paiement à retrouver dans Qonto. | 이 주문에는 Qonto에서 찾을 결제가 없어요.
+Rapprochement Qonto retiré | Qonto 대조 취소
+Rapprochement Qonto à refaire : le paiement a changé | Qonto 대조 다시 필요: 결제 내용이 바뀌었어요
 TXT;
 }
 
@@ -1376,6 +1411,9 @@ function coreen_motifs(): array {
         ['/^Plafond enregistré : (\d+) \$ par mois\.$/u', fn($m) => '한도를 저장했어요: 한 달 ' . $m[1] . ' $.'],
         ['/^(\d+) question\(s\) · ≈ (.+) \$$/u', fn($m) => '질문 ' . $m[1] . '건 · ≈ ' . $m[2] . ' $'],
         ['/^Rapport envoyé à Olivier : (.+)$/u', fn($m) => 'Olivier에게 보고서 보냄: ' . $m[1]],
+        ['/^(\d+) paiement\(s\) rapproché\(s\) avec Qonto\.$/u', fn($m) => '결제 ' . $m[1] . '건을 Qonto와 대조했어요.'],
+        ['/^Montant à retrouver : ([\d  .,]+ ?€)\.$/u', fn($m) => '찾을 금액: ' . $m[1] . '.'],
+        ['/^Rapprochée avec Qonto : (.+)$/u', fn($m) => 'Qonto와 대조 완료: ' . $m[1]],
         // Historique
         ['/^Fiche modifiée : (.+)$/u', fn($m) => '고객 정보 수정: ' . coreen_champs($m[1])],
         ['/^Commande modifiée : (.+)$/u', fn($m) => '주문 수정: ' . coreen_champs($m[1])],

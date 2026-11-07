@@ -376,11 +376,71 @@ function commande_paiement(int $id, string $paiement, string $moyen, ?int $acomp
     $k = commande($id);
     if (!$k || !isset(PAIEMENTS[$paiement])) return;
     $now = maintenant();
+    $moyen = isset(MOYENS[$moyen]) ? $moyen : '';
+    // Qui a constaté le paiement et quand (FR-030) ; s'il change, un rapprochement Qonto déjà noté est à refaire
+    $change = $k['paiement'] !== $paiement || $k['moyen'] !== $moyen;
     q("UPDATE commandes SET paiement = ?, moyen = ?, acompte = ?, facture = ?, maj_le = ? WHERE id = ?",
-      [$paiement, isset(MOYENS[$moyen]) ? $moyen : '', $acompte ?? (int)$k['acompte'], $facture, $now, $id]);
+      [$paiement, $moyen, $acompte ?? (int)$k['acompte'], $facture, $now, $id]);
+    if ($change) {
+        q("UPDATE commandes SET paiement_par = ?, paiement_le = ? WHERE id = ?", [auteur() . (!empty($GLOBALS['mc_proposition']) ? ' (avec l\'assistant)' : ''), $now, $id]);
+        if ((string)($k['qonto_ref'] ?? '') !== '') {
+            q("UPDATE commandes SET qonto_ref = '', qonto_le = NULL, qonto_par = '' WHERE id = ?", [$id]);
+            evenement('rapprochement', 'Rapprochement Qonto à refaire : le paiement a changé', ['commande' => $id, 'client' => (int)$k['client_id']], (string)$k['qonto_ref'], '');
+        }
+    }
     $detail = PAIEMENTS[$paiement] . ($moyen !== '' ? ' · ' . MOYENS[$moyen] : '') . ($acompte ? ' · acompte ' . euros($acompte) : '') . ($facture !== '' ? ' · facture ' . $facture : '');
-    if ($k['paiement'] !== $paiement || $k['facture'] !== $facture || (int)$k['acompte'] !== ($acompte ?? (int)$k['acompte']) || $k['moyen'] !== $moyen)
+    if ($change || $k['facture'] !== $facture || (int)$k['acompte'] !== ($acompte ?? (int)$k['acompte']))
         evenement('paiement', $detail, ['commande' => $id, 'client' => (int)$k['client_id']], $k['paiement'], $paiement);
+}
+
+/* ---------- Rapprochement avec Qonto (audit n° 2, C14, FR-030) ----------
+ * « Payé » = constaté par Youngmi (Tap to Pay, virement…) ; « rapproché » = retrouvé dans Qonto, avec la référence de l'opération.
+ * Deux états séparés : un versement Qonto ne crée jamais de vente ni de paiement. Qonto reste en lecture seule (R-24). */
+/** Le paiement de cette commande doit-il se retrouver dans Qonto ? Les espèces en sont dispensées. */
+function rapprochement_attendu(array $k): bool {
+    return in_array($k['paiement'], ['paye', 'acompte_recu'], true) && $k['moyen'] !== 'especes' && $k['statut'] !== 'annulee' && empty($k['efface_le']);
+}
+/** Montant à retrouver dans Qonto : l'acompte reçu, ou le prix de la commande une fois payée. */
+function rapprochement_montant(array $k): int {
+    return $k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : montant_commande($k);
+}
+/** Une référence d'opération Qonto, jamais un nom ou un montant seuls ; null si elle convient, sinon le message à afficher. */
+function reference_qonto_erreur(string $ref, array $k): ?string {
+    if (mb_strlen($ref) < 4) return 'Collez la référence de l\'opération dans Qonto (au moins 4 caractères).';
+    if (preg_match('/^[\d\s.,]+\s*(€|eur|euros?)?$/iu', $ref)) return 'Un montant ne suffit pas : collez la référence de l\'opération dans Qonto.';
+    $noms = array_filter([mb_strtolower(trim((string)($k['client_nom'] ?? ''))), mb_strtolower(trim((string)($k['client_societe'] ?? '')))]);
+    if (in_array(mb_strtolower($ref), $noms, true)) return 'Un nom ne suffit pas : collez la référence de l\'opération dans Qonto.';
+    return null;
+}
+/** Note le rapprochement ; renvoie '' si c'est fait, sinon le message d'erreur (rien n'est écrit). */
+function commande_rapprocher(int $id, string $ref): string {
+    $k = commande($id);
+    if (!$k) return 'Commande introuvable.';
+    if (!rapprochement_attendu($k)) return $k['moyen'] === 'especes' ? 'Les espèces n\'ont pas de rapprochement Qonto.' : 'Cette commande n\'a pas de paiement à retrouver dans Qonto.';
+    $ref = une_ligne(mb_substr(trim($ref), 0, 120));
+    if (($e = reference_qonto_erreur($ref, $k)) !== null) return $e;
+    $now = maintenant();
+    q("UPDATE commandes SET qonto_ref = ?, qonto_le = ?, qonto_par = ?, maj_le = ? WHERE id = ?", [$ref, $now, auteur(), $now, $id]);
+    evenement('rapprochement', 'Rapprochée avec Qonto : ' . $ref, ['commande' => $id, 'client' => (int)$k['client_id']], (string)$k['qonto_ref'], $ref);
+    return '';
+}
+function commande_derapprocher(int $id): void {
+    $k = commande($id);
+    if (!$k || (string)$k['qonto_ref'] === '') return;
+    $now = maintenant();
+    q("UPDATE commandes SET qonto_ref = '', qonto_le = NULL, qonto_par = '', maj_le = ? WHERE id = ?", [$now, $id]);
+    evenement('rapprochement', 'Rapprochement Qonto retiré', ['commande' => $id, 'client' => (int)$k['client_id']], (string)$k['qonto_ref'], '');
+}
+/** Les paiements par carte, virement ou autre (ou moyen non noté) pas encore retrouvés dans Qonto, les plus anciens d'abord. */
+function a_rapprocher(): array {
+    $ids = q("SELECT id FROM commandes WHERE paiement IN ('paye', 'acompte_recu') AND moyen <> 'especes' AND qonto_ref = '' AND statut <> 'annulee' AND efface_le IS NULL
+              ORDER BY COALESCE(paiement_le, remise_le, maj_le), id")->fetchAll(\PDO::FETCH_COLUMN);
+    return array_values(array_filter(array_map(fn($i) => commande((int)$i), $ids)));
+}
+/** Les derniers rapprochements notés. */
+function rapprochements_recents(int $n = 20): array {
+    $ids = q("SELECT id FROM commandes WHERE qonto_ref <> '' ORDER BY qonto_le DESC, id DESC LIMIT " . max(1, $n))->fetchAll(\PDO::FETCH_COLUMN);
+    return array_values(array_filter(array_map(fn($i) => commande((int)$i), $ids)));
 }
 function commande_probleme(int $id, bool $ouvert, string $note): void {
     $k = commande($id);

@@ -52,7 +52,7 @@
 
 - [ ] T021 C12 : verser les scripts d'essai dans le dépôt (AM-42) et protéger `main` et `production` (T-24, Olivier)
 - [ ] T022 C13 : mettre AM-39 et AM-44 à jour avec la version 2 de l'assistant, à valider par Olivier
-- [ ] T023 C14 : décider avec Olivier : « payé, constaté par Youngmi » puis « rapproché Qonto » séparément (Qonto en lecture seule, R-24)
+- [X] T023 C14 (FR-030, voulu par Olivier le 2026-11-07, « à la main d'abord, auto ensuite ») : schéma 7 (`paiement_par`, `paiement_le`, `qonto_ref`, `qonto_le`, `qonto_par`) ; « Constaté par » et état Qonto sur la commande ; Plus › Rapprochement Qonto (liste, plusieurs paiements pour une opération, tout ou rien) ; référence obligatoire, jamais un nom ou un montant seuls ; espèces dispensées ; un paiement changé est à rapprocher de nouveau ; manuel FR/KO ; essais 26 + 21 vérifications. Reste : la liaison Qonto en lecture remplira le même état (portail développeur de Qonto fermé aux inscriptions)
 - [ ] T024 Pilote avec Youngmi (T-22) et relecture coréenne (T-23) avant d'ajouter des fonctions
 
 ## Dependencies & Execution Order

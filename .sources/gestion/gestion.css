@@ -175,6 +175,8 @@ a.tuile .t-detail{color:var(--chocolat)}
 .ligne-champs{display:grid;gap:0 12px}
 .case{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 0;cursor:pointer;font-size:15px}
 .case input{width:22px;height:22px;margin:0;flex:none;accent-color:var(--chocolat)}
+.liste-cases .ligne-rapprochement{border-bottom:1px solid var(--ligne,#e8e2da)}
+.liste-simple{margin:8px 0;padding-left:18px;font-size:14px;line-height:1.7}
 fieldset.cases{border:0;padding:0;margin:0 0 12px}
 fieldset.cases legend{font-size:14px;font-weight:500;padding:0;margin-bottom:4px}
 .grille-cases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px}

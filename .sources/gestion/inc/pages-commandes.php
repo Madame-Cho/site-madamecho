@@ -153,6 +153,14 @@ function page_commande(): void {
                 if ($pf !== '') commande_modifier($id, ['prix_final' => centimes($pf)]);
                 flash('ok', 'Paiement enregistré.');
                 break;
+            case 'rapprocher':
+                $e = commande_rapprocher($id, texte('qonto_ref', 120));
+                flash($e === '' ? 'ok' : 'erreur', $e === '' ? 'Paiement rapproché avec Qonto.' : $e);
+                break;
+            case 'derapprocher':
+                commande_derapprocher($id);
+                flash('ok', 'Rapprochement Qonto retiré : le paiement est de nouveau à rapprocher.');
+                break;
             case 'probleme':
                 commande_probleme($id, true, texte('note', 1000));
                 flash('ok', 'Problème signalé : il reste visible partout jusqu\'à ce qu\'il soit résolu.');
@@ -246,7 +254,10 @@ function page_commande(): void {
     $c .= bloc('Montant et paiement', definition(['Prix final' => h($k['prix_final'] !== null ? euros((int)$k['prix_final']) . ' TTC' : 'pas encore fixé (indicatif : ' . euros((int)$k['total_indicatif']) . ')'),
                                      'Acompte' => h((int)$k['acompte'] ? euros((int)$k['acompte']) : ''), 'Paiement' => h(PAIEMENTS[$k['paiement']] ?? '') . ($k['moyen'] !== '' ? ' · ' . h(MOYENS[$k['moyen']] ?? '') : ''),
                                      'Reste à payer' => in_array($k['paiement'], ['paye', 'rembourse'], true) ? '' : h(euros($reste)),
+                                     'Constaté par' => $k['paiement'] === 'aucun' ? '' : ((string)$k['paiement_par'] !== '' ? '<span translate="no">' . h($k['paiement_par']) . '</span> · ' . h(date_fr($k['paiement_le'], 'heure')) : 'Pas noté (avant le 7 novembre 2026)'),
+                                     'Qonto' => rapprochement_texte($k),
                                      'Facture Qonto' => h($k['facture'])])
+        . rapprochement_formulaire($k)
         . '<details class="replie"><summary>Modifier le paiement</summary>'
         . formulaire('paiement', '<div class="ligne-champs">' . liste_choix('paiement', 'Paiement', PAIEMENTS, $k['paiement']) . liste_choix('moyen', 'Moyen', MOYENS, $k['moyen']) . '</div>'
             . '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $k['prix_final'] !== null ? number_format((int)$k['prix_final'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal'])
@@ -582,4 +593,22 @@ function page_production(): void {
         $c .= bloc(h(ucfirst(date_fr($d, 'jour'))), $s, 'jour-prod');
     }
     mise_en_page('Production', $c, 'production', 'page-production');
+}
+
+/* ---------- Rapprochement avec Qonto, sur la fiche de la commande (FR-030) ---------- */
+function rapprochement_texte(array $k): string {
+    if ((string)$k['qonto_ref'] !== '') return '<span class="paiement p-paye">Rapproché</span> <span translate="no">' . h($k['qonto_ref']) . '</span> · <span translate="no">' . h($k['qonto_par']) . '</span> · ' . h(date_fr($k['qonto_le'], 'heure'));
+    if (in_array($k['paiement'], ['paye', 'acompte_recu'], true) && $k['moyen'] === 'especes') return 'Espèces : pas de rapprochement';
+    if (rapprochement_attendu($k)) return '<span class="paiement p-acompte-demande">À rapprocher</span>' . ($k['moyen'] === '' ? ' · ' . h('Moyen non noté') : '');
+    return '';
+}
+function rapprochement_formulaire(array $k): string {
+    if ((string)$k['qonto_ref'] !== '') return '<details class="replie"><summary>Retirer le rapprochement</summary>'
+        . formulaire('derapprocher', '<p class="aide">Si la référence est fausse, retirez-la : le paiement revient dans la liste « À rapprocher ».</p>' . bouton('Retirer le rapprochement', 'discret')) . '</details>';
+    if (!rapprochement_attendu($k)) return '';
+    return '<details class="replie"><summary>Rapprocher avec Qonto</summary>'
+        . formulaire('rapprocher', champ('qonto_ref', 'Référence de l\'opération dans Qonto', '', ['maxlength' => '120', 'autocomplete' => 'off', 'required' => true],
+            'Montant à retrouver : ' . h(euros(rapprochement_montant($k))) . '. Dans Qonto, ouvrez l\'opération (versement Tap to Pay ou virement reçu) et copiez sa référence. Un nom ou un montant seuls ne suffisent pas.')
+            . bouton('Noter rapprochée', 'secondaire'))
+        . '</details>';
 }
