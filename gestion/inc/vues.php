@@ -353,7 +353,7 @@ function mailto(string $a, array $e): string {
 function bloc_email(string $id, string $titre, array $e, string $a): string {
     $ouvrir = $a !== '' ? lien_bouton(mailto($a, $e), icone('email') . 'Ouvrir dans ma messagerie', 'principal') : '<p class="aide">Pas d\'email pour ce client : copiez le texte dans un message.</p>';
     return '<details class="email-pret" id="' . h($id) . '"><summary>' . icone('email') . h($titre) . '</summary>'
-         . '<p class="aide">Relisez et complétez avant d\'envoyer : c\'est vous qui envoyez, depuis contact@madamecho.com.</p>'
+         . '<p class="aide">À relire, puis à envoyer vous-même depuis contact@madamecho.com.</p>'
          . '<p class="sujet"><b>Objet :</b> <span translate="no" lang="fr">' . h($e['sujet']) . '</span></p><pre class="corps" id="' . h($id) . '-texte" translate="no" lang="fr">' . h($e['corps']) . '</pre>'
          . '<div class="actions">' . $ouvrir . '<button type="button" class="btn" data-copier="' . h($id) . '-texte">' . icone('copier') . 'Copier le texte</button></div></details>';
 }

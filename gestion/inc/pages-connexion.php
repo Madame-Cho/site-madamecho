@@ -67,7 +67,7 @@ function page_oubli(): void {
         }
         $c .= '<p class="lien-bas"><a href="' . h(u('connexion')) . '">Retour à la connexion</a></p>';
     } else {
-        $c .= '<p class="sous">Indiquez l\'adresse de votre accès : vous recevrez un lien pour choisir votre mot de passe. Pour Madame Cho, c\'est contact@madamecho.com.</p>'
+        $c .= '<p class="sous">Vous recevrez un lien pour choisir votre mot de passe. Pour Madame Cho : contact@madamecho.com.</p>'
             . formulaire('oubli', champ('email', 'Email', $email !== '' ? $email : '', ['type' => 'email', 'autocomplete' => 'username', 'required' => true, 'placeholder' => 'contact@madamecho.com', 'inputmode' => 'email'])
               . bouton('Recevoir le lien', 'principal large'))
             . '<p class="lien-bas"><a href="' . h(u('connexion')) . '">Retour à la connexion</a></p>';

@@ -69,8 +69,8 @@ function manuel_sections(): array {
              '- <b>다른 작업</b>: ‘수정’(내용, 픽업, 가격), ‘복사해서 새 주문 (단골 고객)’, ‘단계 직접 바꾸기’, ‘결제 수정’, ‘주문 취소’(고객 요청 또는 Madame Cho 결정, 이유와 함께), ‘문의 다시 열기’.'],
             ['- <b>Signaler un problème</b> : un retard, une réclamation, un paiement qui n\'arrive pas. Le problème reste visible sur Aujourd\'hui et dans Commandes › Problèmes jusqu\'à « Marquer résolu ».',
              '- <b>문제 신고</b>: 지연, 불만, 안 들어오는 결제. ‘해결됨으로 표시’를 누를 때까지 오늘 화면과 주문 › 문제 탭에 계속 보여요.'],
-            ['- <b>Commentaires et historique</b> : vos notes (utiles et factuelles) et tout ce que la gestion a enregistré, avec la date et la personne.',
-             '- <b>메모와 기록</b>: 내 메모(짧고 사실만)와 관리 시스템이 저장한 모든 일, 날짜와 사람과 함께.'],
+            ['- <b>Échanges avec le client</b> : « Ses emails dans Gmail » ouvre la boîte contact@ sur ses messages (référence et adresse du client), « Appeler » compose son numéro, et « Noter un échange » garde un appel, un SMS ou une demande pour le retrait. Le lien « Échanges » en haut de la commande y mène directement. Dessous, « Suivi de la commande » (replié) liste ce que la gestion a enregistré, avec la date et la personne.',
+             '- <b>고객과의 연락</b>: ‘Gmail에서 이메일 보기’는 contact@ 메일함에서 이 고객의 메시지(주문 번호와 고객 주소)를 열고, ‘전화하기’는 번호로 전화를 걸고, ‘연락 내용 적기’는 전화, 문자, 픽업 관련 요청을 남겨요. 주문 맨 위의 ‘연락 기록’ 링크로 바로 갈 수 있어요. 그 아래 ‘주문 진행 기록’(접혀 있음)에는 관리 시스템이 저장한 일이 날짜와 사람과 함께 있어요.'],
             ['Les emails préparés sont en français et partent de votre boîte contact@ : la gestion ne les envoie jamais elle-même.',
              '준비된 이메일은 프랑스어이고 contact@ 메일함에서 보내요. 관리 시스템이 스스로 보내는 일은 없어요.'],
         ]],
@@ -93,7 +93,7 @@ function manuel_sections(): array {
              '개인과 업체 고객 목록이에요. 이름, 이메일, 전화번호, 도시로 검색해요.'],
             ['- La <b>fiche</b> d\'un client : ses <b>coordonnées</b>, ses <b>commandes et demandes</b>, l\'<b>avis Google</b> (demandé, reçu), les <b>commentaires et l\'historique</b>.',
              '- 고객 <b>정보</b>: <b>연락처</b>, <b>주문과 문의</b>, <b>구글 리뷰</b>(요청함, 받음), <b>메모와 기록</b>.'],
-            ['- <b>Fiche et droits du client</b> : « Modifier » la fiche ; si le client demande ses données, « Télécharger ses données » donne le fichier à lui envoyer depuis contact@ dans le mois ; s\'il demande l\'effacement, « Effacer ses données » garde seulement le numéro, les dates et les montants.',
+            ['- <b>Fiche et droits du client</b> : « Modifier » la fiche ; si le client demande ses données (« Demande d\'accès à ses données »), « Télécharger ses données » donne le fichier à lui envoyer depuis contact@ dans le mois ; s\'il demande l\'effacement (« Demande d\'effacement »), « Effacer ses données » garde seulement le numéro, les dates et les montants.',
              '- <b>고객 정보와 권리</b>: ‘수정’으로 정보를 고쳐요. 고객이 자기 정보를 요청하면 ‘고객 정보 다운로드’로 받은 파일을 한 달 안에 contact@에서 보내요. 삭제를 요청하면 ‘고객 정보 삭제’로 번호, 날짜, 금액만 남겨요.'],
             ['- <b>Un client qui revient</b> est reconnu par son <b>email</b> ou son <b>téléphone</b>, jamais par son nom (deux personnes peuvent porter le même nom, et un nom peut être mal écrit).',
              '- <b>다시 온 고객</b>은 <b>이메일</b>이나 <b>전화번호</b>로 알아봐요. 이름으로는 알아보지 않아요(같은 이름이 둘일 수도 있고, 이름을 잘못 적을 수도 있으니까요).'],
@@ -121,8 +121,8 @@ function manuel_sections(): array {
              '- <b>제품 시트</b>: Drive 시트 링크와 확인 날짜.'],
             ['- <b>Allergènes</b> : ceux de la recette, comparés à ceux affichés sur le site. Un allergène présent dans la recette mais absent du site est signalé : à corriger sur le site.',
              '- <b>알레르기 유발 성분</b>: 레시피의 성분과 사이트에 적힌 성분을 비교해요. 레시피에는 있는데 사이트에 없는 성분은 표시돼요. 사이트를 고쳐야 해요.'],
-            ['- <b>Recettes, coûts et marges</b> : une recette par taille ou parfum, avec les ingrédients, le coût matières et la marge sur matières (le travail, l\'énergie et les pertes ne sont pas comptés). « Copier une recette vers une autre taille ou un autre parfum » évite de tout ressaisir.',
-             '- <b>레시피, 원가, 마진</b>: 크기나 맛마다 레시피 하나, 재료, 재료비, 재료 마진(인건비, 에너지, 손실은 포함되지 않아요). ‘레시피를 다른 크기나 맛으로 복사’하면 다시 입력하지 않아도 돼요.'],
+            ['- <b>Recettes, coûts et marges</b> : une recette par taille ou parfum, avec les ingrédients, le coût matières et la marge sur matières (le travail, l\'énergie et les pertes ne sont pas comptés). « Copier une recette » vers une autre taille ou un autre parfum évite de tout ressaisir.',
+             '- <b>레시피, 원가, 마진</b>: 크기나 맛마다 레시피 하나, 재료, 재료비, 재료 마진(인건비, 에너지, 손실은 포함되지 않아요). ‘레시피 복사’로 다른 크기나 맛에 옮기면 다시 입력하지 않아도 돼요.'],
             ['- <b>Ventes des 12 derniers mois</b> et <b>Historique</b> des modifications.',
              '- <b>최근 12개월 판매</b>와 수정 <b>기록</b>.'],
             ['- <b>Gamme pro (restaurants)</b> : les produits vendus aux restaurants, avec le prix hors taxes, l\'unité et la TVA. « Ajouter un produit à la gamme pro » pour un nouveau produit.',
@@ -248,7 +248,7 @@ function page_manuel(): void {
         $som .= '<a href="#' . h($s['id']) . '">' . manuel_titre($s) . '</a>';
         $corps .= bloc(manuel_titre($s), manuel_html($s) . '<p class="aide"><a href="#sommaire">' . fr_ko('↑ Sommaire', '↑ 차례') . '</a></p>', 'manuel', $s['id']);
     }
-    $c = titre_page('Manuel', fr_ko('Comment fonctionne la gestion, écran par écran', '관리 시스템 사용법, 화면별로'), '', u('plus'))
+    $c = titre_page('Manuel', fr_ko('Mode d\'emploi, écran par écran', '화면별 사용법'), '', u('plus'))
        . '<p class="aide">' . fr_ko('En cas de doute, ce manuel fait foi. Une question qui n\'y trouve pas sa réponse ? L\'<a href="' . h(u('assistant')) . '">assistant</a> est là pour ça.',
                                    '헷갈릴 때는 이 설명서가 기준이에요. 여기에 답이 없는 질문은 <a href="' . h(u('assistant')) . '">어시스턴트</a>에게 물어보세요.') . '</p>'
        . '<nav class="sommaire" id="sommaire" aria-label="Sommaire">' . $som . '</nav>' . $corps;

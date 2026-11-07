@@ -50,7 +50,7 @@ function page_produits(): void {
     }
     $ps = produits_lister();
     $ventes = ventes_par_produit(date('Y-m-d', strtotime('-12 months')));
-    $c = titre_page('Produits', 'La carte du site, avec les recettes, les coûts et les ventes', lien_bouton(u('ingredients'), 'Ingrédients', 'discret'));
+    $c = titre_page('Produits', '', lien_bouton(u('ingredients'), 'Ingrédients', 'discret'));
     $cartes = ''; $pros = '';
     foreach ($ps as $p) {
         $vars = produit_variantes($p);
@@ -75,7 +75,7 @@ function page_produits(): void {
                  . '<span class="l2">' . h($offre) . '</span><span class="l3">' . h(implode(' · ', $etat)) . '</span><span class="l4">' . h($vendu) . '</span>' . $alerte . '</a>';
     }
     $c .= $cartes !== '' ? '<div class="liste">' . $cartes . '</div>' : '<p class="vide">La carte du site n\'est pas encore chargée.</p>';
-    $c .= '<p class="aide centre">La liste suit la carte du site. Un nouveau gâteau, un prix ou un texte se change dans le site, pas ici.</p>';
+    $c .= '<p class="aide centre">Gâteaux, prix et textes se changent sur le site, pas ici.</p>';
     // Gamme pro : ce que les restaurants commandent, aux prix HT de Qonto Facturation ; jamais sur le site
     $ajout = '<details class="replie"><summary>' . icone('ajouter') . 'Ajouter un produit à la gamme pro</summary>'
         . formulaire('pro_ajouter', champ('nom', 'Nom (comme dans Qonto)', '', ['maxlength' => '80', 'required' => true, 'id' => 'pro-nom'])
@@ -84,7 +84,7 @@ function page_produits(): void {
             . liste_choix('tva', 'TVA', TVA, '55', ['id' => 'pro-tva']) . bouton('Ajouter', 'secondaire'), [], u('produits')) . '</details>';
     $c .= '<h2 class="titre-section" id="gamme-pro">Gamme pro (restaurants)</h2>'
         . ($pros !== '' ? '<div class="liste">' . $pros . '</div>' : '<p class="vide">Pas encore de produit pro : ajoutez-les, ou importez le catalogue de Qonto Facturation.</p>')
-        . $ajout . '<p class="aide centre">Prix HT, comme sur les factures Qonto. Ils restent dans la gestion et ne vont jamais sur le site.</p>';
+        . $ajout . '<p class="aide centre">Prix HT, comme dans Qonto. Jamais affichés sur le site.</p>';
     mise_en_page('Produits', $c, 'produits');
 }
 /** La carte d'un produit de la gamme pro dans la liste : prix HT, recette, ventes. */
@@ -199,7 +199,7 @@ function page_produit(): void {
     $site = definition(['Présentation' => $tel_quel($cat['phrase'] ?? ''), 'Composition' => !empty($cat['compo']) ? $tel_quel(implode(' · ', $cat['compo'])) : '',
                         'Allergènes' => $tel_quel($cat['allergenes'] ?? ''), 'Conservation' => $tel_quel($cat['conservation'] ?? ''),
                         'À commander' => h(isset($cat['delai']) ? $cat['delai'] . ' jour(s) avant le retrait' : '') . (!empty($cat['minimum']) ? h(' · au moins ' . $cat['minimum'] . ' pièces') : '')])
-          . '<ul class="puces">' . $prix . '</ul><p class="aide">Ces textes et ces prix viennent du site : pour les changer, demandez la modification du site (ils engagent Madame Cho, R-39).</p>';
+          . '<ul class="puces">' . $prix . '</ul><p class="aide">Textes et prix du site : pour les changer, demandez une modification du site.</p>';
     if (!$pro) $c .= bloc('Sur le site', $site);
     // Allergènes : recette contre site (gamme pro : la recette seule, à donner au restaurant)
     $avecRecette = array_filter($rec, fn($r) => $r['lignes']);
@@ -226,7 +226,7 @@ function page_produit(): void {
     $optVars = [];
     foreach ($vars as $code => $v) $optVars[$code] = $v['libelle'];
     $vOuvert = is_string($_GET['v'] ?? null) ? $_GET['v'] : '';
-    $r = '<p class="aide">Pour ' . ($pro ? 'une unité vendue' : (($cat['mode'] ?? '') === 'taille' ? 'un gâteau entier de chaque taille' : 'une pièce de chaque parfum')) . '. Quantités en grammes, millilitres ou pièces. Le coût utilise le prix de chaque ingrédient.</p>';
+    $r = '<p class="aide">Pour ' . ($pro ? 'une unité vendue' : (($cat['mode'] ?? '') === 'taille' ? 'un gâteau entier de chaque taille' : 'une pièce de chaque parfum')) . ', en g, ml ou pièces.</p>';
     foreach ($rec as $code => $v) {
         $rows = '';
         foreach ($v['lignes'] as $l) {
@@ -264,8 +264,8 @@ function page_produit(): void {
     if (count($vars) > 1) {
         $codes = array_keys($vars);
         $num = array_filter($codes, fn($x) => ctype_digit((string)$x));
-        $aide = count($num) === count($codes) ? 'Pour passer d\'un diamètre à un autre, multipliez par le rapport des surfaces : de 16 à 20 cm, (20 ÷ 16)² = 1,56.' : 'Le coefficient multiplie toutes les quantités.';
-        $r .= '<details class="replie"><summary>Copier une recette vers une autre taille ou un autre parfum</summary>'
+        $aide = count($num) === count($codes) ? 'Pour passer d\'un diamètre à un autre, multipliez par le rapport des surfaces : de 16 à 20 cm, (20 ÷ 16)² = 1,56.' : 'Multiplie toutes les quantités.';
+        $r .= '<details class="replie"><summary>Copier une recette</summary>'
             . formulaire('copier', '<div class="ligne-champs">' . liste_choix('de', 'Depuis', $optVars, (string)$codes[0]) . liste_choix('vers', 'Vers (remplace sa recette)', $optVars, (string)($codes[1] ?? $codes[0])) . '</div>'
                 . champ('coefficient', 'Coefficient', '1', ['inputmode' => 'decimal'], $aide) . bouton('Copier', 'secondaire'), ['data-confirmer' => 'Remplacer la recette de destination ?']) . '</details>';
     }
@@ -299,11 +299,11 @@ function formulaire_ingredient(?array $i): string {
     $cases = '';
     foreach (ALLERGENES as $k => $l) $cases .= '<label class="case"><input type="checkbox" name="allergenes[]" value="' . h($k) . '"' . (in_array($k, $all, true) ? ' checked' : '') . '><span>' . h(allergene_libelle($k)) . '</span></label>';
     return champ('nom', 'Nom', $i['nom'] ?? '', ['required' => true, 'maxlength' => '80', 'placeholder' => 'Chocolat noir 70 %'])
-         . '<div class="ligne-champs">' . liste_choix('unite', 'Compté en', UNITES, $i['unite'] ?? 'g', [], 'Grammes pour le sec, millilitres pour les liquides, pièces pour les œufs, gousses, boîtes…')
+         . '<div class="ligne-champs">' . liste_choix('unite', 'Compté en', UNITES, $i['unite'] ?? 'g', [])
          . champ('prix', 'Prix d\'achat TTC (€ le kg, le litre ou la pièce)', $i && (int)$i['prix'] ? number_format((int)$i['prix'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal', 'placeholder' => '12,50']) . '</div>'
          . '<fieldset class="cases"><legend>Allergènes que contient cet ingrédient</legend><div class="grille-cases">' . $cases . '</div></fieldset>'
          . '<div class="ligne-champs">' . champ('fournisseur', 'Fournisseur', $i['fournisseur'] ?? '', ['maxlength' => '100']) . champ('achat', 'Où et comment l\'acheter', $i['achat'] ?? '', ['maxlength' => '200']) . '</div>'
-         . zone('notes', 'Notes', $i['notes'] ?? '', ['rows' => '2', 'maxlength' => '1000'], 'Marque, référence, étiquette à garder pour les allergènes…');
+         . zone('notes', 'Notes', $i['notes'] ?? '', ['rows' => '2', 'maxlength' => '1000'], 'Marque, référence, étiquette (allergènes)…');
 }
 function page_ingredients(): void {
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
@@ -318,7 +318,7 @@ function page_ingredients(): void {
     $is = ingredients_lister($tous);
     $usage = [];
     foreach (lignes("SELECT ingredient_id, COUNT(DISTINCT produit_id) AS n FROM recettes GROUP BY ingredient_id") as $x) $usage[(int)$x['ingredient_id']] = (int)$x['n'];
-    $c = titre_page('Ingrédients', count($is) . ' ingrédient(s), avec leur prix et leurs allergènes', '', u('produits'));
+    $c = titre_page('Ingrédients', count($is) . (count($is) > 1 ? ' ingrédients' : ' ingrédient'), '', u('produits'));
     $rows = '';
     foreach ($is as $i) {
         $rows .= '<tr' . ($i['actif'] ? '' : ' class="retire"') . '><td translate="no"><a href="' . h(u('ingredient', ['id' => $i['id']])) . '">' . h($i['nom']) . '</a>' . ($i['fournisseur'] !== '' ? '<br><span class="petit">' . h($i['fournisseur']) . '</span>' : '') . '</td>'
@@ -358,6 +358,6 @@ function page_ingredient(): void {
         $l .= '<li><span translate="no"><a href="' . h(u('produit', ['id' => $x['produit_id'], 'v' => $x['variante']])) . '">' . h($x['nom']) . '</a>, ' . h($pv[$x['variante']]['libelle'] ?? $x['variante']) . '</span> : <span>' . h(nombre_fr((float)$x['quantite']) . ' ' . unite_texte($i['unite'], (float)$x['quantite'])) . '</span></li>';
     }
     $c .= bloc('Utilisé dans', $l !== '' ? '<ul class="puces">' . $l . '</ul>' : '<p class="vide">Dans aucune recette.</p>');
-    $c .= bloc('Modifier', formulaire('enregistrer', formulaire_ingredient($i) . case_a_cocher('retire', 'Retiré (n\'est plus acheté ; reste dans les anciennes recettes)', !$i['actif']) . bouton('Enregistrer', 'principal')));
+    $c .= bloc('Modifier', formulaire('enregistrer', formulaire_ingredient($i) . case_a_cocher('retire', 'Retiré (plus acheté)', !$i['actif']) . bouton('Enregistrer', 'principal')));
     mise_en_page($i['nom'], $c, 'ingredients');
 }

@@ -68,7 +68,7 @@ function page_commandes(): void {
         $n = isset($comptes[$k]) && $comptes[$k] ? ' <span class="compte">' . $comptes[$k] . '</span>' : '';
         $tabs .= '<a href="' . h(u('commandes', ['vue' => $k] + $f + ($r !== '' ? ['r' => $r] : []))) . '"' . ($k === $vue ? ' aria-current="page"' : '') . '>' . h($l) . $n . '</a>';
     }
-    $c = titre_page('Commandes', 'Demandes et commandes, de la demande à la remise', lien_bouton(u('commande-edition'), icone('ajouter') . 'Nouvelle', 'principal'));
+    $c = titre_page('Commandes', '', lien_bouton(u('commande-edition'), icone('ajouter') . 'Nouvelle', 'principal'));
     $caches = '';
     foreach ($f as $k => $v) $caches .= '<input type="hidden" name="' . h($k) . '" value="' . h($v) . '">';
     $c .= '<form class="recherche" method="get" action="">' . '<input type="hidden" name="p" value="commandes"><input type="hidden" name="vue" value="' . h($vue) . '">' . $caches
@@ -198,8 +198,9 @@ function page_commande(): void {
                                      'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . ($k['client_type'] === 'professionnel' ? euros($ch['total_ht']) . ' HT' : euros($ch['total']) . ' TTC') : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
                      . avertissement_doublon((int)$k['client_id'])
                      . '<p>' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret') . '</p>');
+    $quand = preg_replace('/ \(livraison\)$/', '', retrait_texte($k));   // le bloc s'appelle déjà « Livraison »
     $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
-    $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h(retrait_texte($k))]) : definition(['Quand' => h(retrait_texte($k)), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
+    $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h($quand)]) : definition(['Quand' => h($quand), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
                                      'Où' => h(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Au 4 avenue du Château, 92190 Meudon')])
                       . agenda_boutons($k));
     $c .= '</div>';
@@ -217,8 +218,8 @@ function page_commande(): void {
     $contenu = $rows !== '' ? '<table class="tableau lignes-cmd"><tbody>' . $rows . '</tbody><tfoot>' . $pied . '</tfoot></table>' : '';
     if (livraison_pro($k)) {
         $lien = h(u('releve', ['id' => $k['client_id'], 'mois' => substr((string)($k['retrait_date'] ?? $k['recue_le']), 0, 7)]));
-        $contenu .= '<p class="aide">' . fr_ko('Livraison à un restaurant : elle compte dans le <a href="' . $lien . '">relevé du mois</a>, facturé en fin de mois dans Qonto.',
-                                              '레스토랑 배달이에요. <a href="' . $lien . '">월별 내역서</a>에 들어가고, 월말에 Qonto로 청구해요.') . '</p>';
+        $contenu .= '<p class="aide">' . fr_ko('Comptée dans le <a href="' . $lien . '">relevé du mois</a>, facturé dans Qonto.',
+                                              '<a href="' . $lien . '">월별 내역서</a>에 들어가고 Qonto로 청구해요.') . '</p>';
     }
     if ($k['perso'] !== '') $contenu .= '<div class="texte-client"><h3>Gâteau personnalisé</h3><p translate="no" lang="fr">' . nl2br(h($k['perso'])) . '</p></div>';
     if ($k['besoin'] !== '') $contenu .= '<div class="texte-client"><h3>Demande d\'un professionnel</h3><p translate="no" lang="fr">' . nl2br(h($k['besoin'])) . '</p></div>';
@@ -255,7 +256,7 @@ function page_commande(): void {
     }
     // Autres actions
     $autres = '<div class="actions-colonne">'
-        . (!$k['probleme'] ? '<details class="replie"><summary>' . icone('alerte') . 'Signaler un problème</summary>' . formulaire('probleme', zone('note', 'Le problème', '', ['rows' => '2', 'maxlength' => '1000', 'required' => true], 'Retard, réclamation, paiement… Une allergie ou un malaise d\'un client : prévenez aussi tout de suite Youngmi (R-39), sans noter de détail médical.') . bouton('Signaler', 'secondaire')) . '</details>' : '')
+        . (!$k['probleme'] ? '<details class="replie"><summary>' . icone('alerte') . 'Signaler un problème</summary>' . formulaire('probleme', zone('note', 'Le problème', '', ['rows' => '2', 'maxlength' => '1000', 'required' => true], 'Retard, réclamation, paiement… Allergie ou malaise d\'un client : prévenez Youngmi tout de suite, sans détail médical.') . bouton('Signaler', 'secondaire')) . '</details>' : '')
         . (in_array($k['statut'], STATUTS_EN_COURS, true) ? '<details class="replie"><summary>Annuler la commande</summary>' . formulaire('annuler',
               liste_choix('qui', 'Annulée par', ['client' => 'le client', 'madamecho' => 'Madame Cho']) . champ('motif', 'Motif (facultatif)', '', ['maxlength' => '300'])
             . ((int)$k['acompte'] && $k['paiement'] === 'acompte_recu' ? liste_choix('acompte_sort', 'L\'acompte', ['' => 'Je décide plus tard', 'acquis' => 'Reste acquis (moins de 24 h avant)', 'rembourse' => 'Est remboursé']) : '')
@@ -286,7 +287,7 @@ function etape_suivante(array $k): string {
             $acompteDefaut = $k['perso'] !== '' ? number_format(round(montant_commande($k) * 0.3 / 100, 2), 2, ',', '') : '';
             $gmail = 'https://mail.google.com/mail/?authuser=contact@madamecho.com#search/' . rawurlencode($k['reference']);
             return '<section class="etape"><h2>Prochaine étape : envoyer une proposition</h2><p>' . $quand . '</p>'
-                 . '<p class="aide">Vérifiez vos disponibilités, puis répondez au client par écrit : prix TTC total, jour et heure du retrait, acompte s\'il y a une personnalisation.</p>'
+                 . '<p class="aide">Répondez par écrit : prix TTC, jour et heure du retrait, acompte si personnalisé.</p>'
                  . bloc_email('email-prop', 'Préparer la proposition', email_proposition($k), $email)
                  . '<div class="actions">' . lien_bouton($gmail, icone('email') . 'Retrouver la demande dans Gmail', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>'
                  . formulaire('proposition', '<div class="ligne-champs">' . champ('prix_final', 'Prix proposé (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])
@@ -308,8 +309,8 @@ function etape_suivante(array $k): string {
         case 'confirmee':
             if (livraison_pro($k)) {
                 $passe = $k['retrait_date'] && $k['retrait_date'] < aujourdhui();
-                return '<section class="etape' . ($passe ? ' etape-alerte' : '') . '"><h2>' . ($passe ? 'Livraison passée : elle a été faite ?' : 'Livraison prévue : ' . h(retrait_texte($k))) . '</h2>'
-                     . '<p class="aide">Pas de paiement à la livraison : le restaurant paie la facture Qonto du mois, faite à partir du relevé.</p>'
+                return '<section class="etape' . ($passe ? ' etape-alerte' : '') . '"><h2>' . ($passe ? 'Livraison passée : elle a été faite ?' : 'Livraison prévue : ' . h(preg_replace('/ \(livraison\)$/', '', retrait_texte($k)))) . '</h2>'
+                     . '<p class="aide">Pas de paiement à la livraison : le restaurant paie la facture Qonto du mois.</p>'
                      . formulaire('remise', '<input type="hidden" name="paiement" value="aucun"><input type="hidden" name="facture" value="' . h($k['facture']) . '">' . bouton('Livrée', 'principal'), ['class' => 'form-etape'])
                      . '</section>';
             }
@@ -338,7 +339,7 @@ function etape_suivante(array $k): string {
                 elseif ($c['avis_demande_le']) $avis = '<p>Avis Google demandé le ' . h(date_fr($c['avis_demande_le'], 'longue')) . '.</p>' . formulaire('avis_recu', bouton(icone('avis') . 'L\'avis est arrivé', 'secondaire'));
                 elseif ($lien === '') $avis = '<p class="aide">' . fr_ko('Pour demander un avis Google, ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
                     '구글 리뷰를 부탁하려면 먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>';
-                else $avis = '<p class="aide">À proposer à tous les clients de la même façon, sans trier, sans contrepartie et sans demander une bonne note (règles de Google).</p>' . bloc_email('email-avis', 'Demander un avis Google', email_avis($k, $lien), $email)
+                else $avis = '<p class="aide">À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google).</p>' . bloc_email('email-avis', 'Demander un avis Google', email_avis($k, $lien), $email)
                             . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
             }
             return '<section class="etape etape-finie"><h2>Remise le ' . h(date_fr($k['remise_le'] ?? $k['maj_le'], 'longue')) . '</h2>' . $avis . '</section>';
@@ -427,7 +428,7 @@ function page_commande_edition(): void {
     $val = fn(string $n, $def = '') => isset($src[$n]) && is_string($src[$n]) ? $src[$n] : $def;
     $titre = $k ? 'Modifier ' . $k['reference'] : ($livraison ? 'Nouvelle livraison' : 'Nouvelle commande');
     $c = titre_page(h($titre), $k ? '<span translate="no">' . h(commande_client_nom($k)) . '</span>'
-                    : ($livraison ? '<span translate="no">' . h(client_nom($clientFixe)) . '</span> · prix HT de la gamme pro, facturés en fin de mois' : 'Une demande reçue par Instagram, téléphone, email, sur un marché… ou une vente déjà faite'), '',
+                    : ($livraison ? '<span translate="no">' . h(client_nom($clientFixe)) . '</span> · prix HT de la gamme pro, facturés en fin de mois' : 'Demande reçue hors du site, ou vente déjà faite'), '',
                     $k ? u('commande', ['id' => $k['id']]) : ($clientFixe ? u('client', ['id' => $clientFixe['id']]) : u('commandes')));
     if ($erreurs) $c .= '<div class="erreur" role="alert">' . implode('<br>', array_map(fn($e) => h($e), $erreurs)) . '</div>';
     $f = '';
@@ -448,7 +449,7 @@ function page_commande_edition(): void {
     // Demande
     $f .= bloc($livraison ? 'La livraison' : 'La demande', '<div class="ligne-champs">' . liste_choix('canal', 'Reçue par', CANAUX, $val('canal', $k['canal'] ?? ($livraison ? 'restaurant' : (is_string($_GET['ref'] ?? null) ? 'site' : 'instagram'))))
         . liste_choix('type', 'Type', TYPES_COMMANDE, $val('type', $k['type'] ?? ($livraison ? 'pro' : 'carte'))) . '</div>'
-        . ($k ? '' : champ('reference', 'Référence MC-… (si elle existe déjà, sinon laissez vide)', $val('reference', is_string($_GET['ref'] ?? null) ? strtoupper($_GET['ref']) : ''), ['placeholder' => 'MC-261106-1A2B', 'pattern' => 'MC-[0-9]{6}-[0-9A-Fa-f]{4}'])));
+        . ($k ? '' : champ('reference', 'Référence MC-… si elle existe', $val('reference', is_string($_GET['ref'] ?? null) ? strtoupper($_GET['ref']) : ''), ['placeholder' => 'MC-261106-1A2B', 'pattern' => 'MC-[0-9]{6}-[0-9A-Fa-f]{4}'])));
     // Gâteaux
     $groupes = []; $gpro = [];
     foreach ($V as $cle => $v) {
@@ -480,7 +481,7 @@ function page_commande_edition(): void {
     $f .= bloc($livraison ? 'Les produits' : 'Les gâteaux', '<div id="lignes" data-prochain="' . $i . '">' . $rows . '</div>'
         . '<template id="modele-ligne">' . $ligne(999, '', '', '') . '</template>'
         . '<button type="button" class="btn discret" data-ajouter-ligne="modele-ligne" data-cible="lignes">' . icone('ajouter') . 'Une ligne de plus</button>'
-        . zone('perso', 'Gâteau personnalisé', $val('perso', $k['perso'] ?? ''), ['rows' => '3', 'maxlength' => '2000'], 'Nombre de personnes, saveurs, couleurs, décoration. Pas d\'information de santé : pour une allergie, seulement l\'ingrédient à éviter.')
+        . zone('perso', 'Gâteau personnalisé', $val('perso', $k['perso'] ?? ''), ['rows' => '3', 'maxlength' => '2000'], 'Personnes, saveurs, couleurs, décor. Allergie : l\'ingrédient à éviter, sans info de santé.')
         . zone('besoin', 'Demande d\'un professionnel', $val('besoin', $k['besoin'] ?? ''), ['rows' => '2', 'maxlength' => '2000']));
     // Retrait
     $f .= bloc($livraison ? 'Le jour' : 'Le retrait', '<div class="ligne-champs">' . champ('retrait_date', 'Jour', $val('retrait_date', (string)($k['retrait_date'] ?? ($livraison ? aujourdhui() : ''))), ['type' => 'date'])
@@ -544,7 +545,7 @@ function page_production(): void {
         }
     }
     ksort($total);
-    $c = titre_page('Fiche de production', 'Commandes confirmées, sans email ni téléphone : à imprimer pour l\'atelier',
+    $c = titre_page('Fiche de production', 'Commandes confirmées, à imprimer pour l\'atelier',
         '<button type="button" class="btn discret" data-imprimer>' . icone('imprimer') . 'Imprimer</button>');
     $c .= '<form class="filtres" method="get" action=""><input type="hidden" name="p" value="production">'
         . champ('du', 'À partir du', $du, ['type' => 'date', 'data-auto' => true]) . liste_choix('jours', 'Sur', ['1' => 'Ce jour', '2' => '2 jours', '7' => '7 jours'], $jours, ['data-auto' => true])

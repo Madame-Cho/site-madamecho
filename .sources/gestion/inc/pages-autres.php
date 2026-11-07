@@ -48,17 +48,17 @@ function page_statistiques(): void {
     $avis = ligne("SELECT SUM(CASE WHEN avis_demande_le IS NOT NULL THEN 1 ELSE 0 END) AS demandes, SUM(CASE WHEN avis_recu_le IS NOT NULL THEN 1 ELSE 0 END) AS recus FROM clients WHERE statut <> 'efface'") ?? [];
     // Chaque chiffre mène à la liste qui le détaille (demande d'Olivier, 07/11/2026)
     $remises = fn(array $f = []) => u('commandes', ['vue' => 'toutes', 'statut' => 'remise'] + $f);
-    $c = titre_page('Statistiques', 'Depuis le début de la gestion · particuliers en TTC, professionnels en HT', '', u('plus')) . onglets_statistiques('ventes');
+    $c = titre_page('Statistiques', 'Depuis le début · particuliers en TTC, pros en HT', '', u('plus')) . onglets_statistiques('ventes');
     $c .= '<div class="tuiles">'
-        . tuile('Chiffre d\'affaires total', euros($P['ht'] + $B['ht']), 'HT, particuliers et professionnels', $remises())
-        . tuile('Particuliers, TTC', euros($P['ttc']), $P['n'] . ' commande(s) remise(s)', $remises(['groupe' => 'particuliers']))
-        . tuile('Professionnels, HT', euros($B['ht']), $B['n'] . ' livraison(s) remise(s)', $remises(['groupe' => 'pros']))
-        . tuile('Panier moyen, particuliers', $P['n'] ? euros(intdiv($P['ttc'], $P['n'])) : '—', 'TTC, par commande remise', $remises(['groupe' => 'particuliers']))
-        . tuile('Livraison moyenne, professionnels', $B['n'] ? euros(intdiv($B['ht'], $B['n'])) : '—', 'HT, par livraison remise', $remises(['groupe' => 'pros']))
-        . tuile('Demandes abouties, particuliers', $transfo === null ? '—' : number_format($transfo * 100, 0) . ' %', 'remises ÷ (remises + sans suite + annulées)', u('commandes', ['vue' => 'terminees', 'groupe' => 'particuliers']))
+        . tuile('Chiffre d\'affaires total', euros($P['ht'] + $B['ht']), 'HT, tous clients', $remises())
+        . tuile('Particuliers, TTC', euros($P['ttc']), $P['n'] . ($P['n'] > 1 ? ' commandes remises' : ' commande remise'), $remises(['groupe' => 'particuliers']))
+        . tuile('Professionnels, HT', euros($B['ht']), $B['n'] . ($B['n'] > 1 ? ' livraisons remises' : ' livraison remise'), $remises(['groupe' => 'pros']))
+        . tuile('Panier moyen, particuliers', $P['n'] ? euros(intdiv($P['ttc'], $P['n'])) : '—', 'TTC', $remises(['groupe' => 'particuliers']))
+        . tuile('Livraison moyenne, professionnels', $B['n'] ? euros(intdiv($B['ht'], $B['n'])) : '—', 'HT', $remises(['groupe' => 'pros']))
+        . tuile('Demandes abouties, particuliers', $transfo === null ? '—' : number_format($transfo * 100, 0) . ' %', 'des demandes closes', u('commandes', ['vue' => 'terminees', 'groupe' => 'particuliers']))
         . tuile('Réponse aux demandes du site', $rep['mediane'] === null ? '—' : ($rep['mediane'] < 1 ? 'moins d\'1 h' : number_format($rep['mediane'], 0) . ' h'), $rep['n'] ? $rep['sous_24h'] . ' sur ' . $rep['n'] . ' en moins de 24 h' : 'médiane', u('commandes', ['vue' => 'toutes', 'canal' => 'site']))
         . tuile('Clients', (string)(int)$s['clients']['n'], (int)$s['clients']['pros'] . ' professionnel(s)', u('clients'))
-        . tuile('Clients fidèles', (string)$s['fideles'], 'particuliers, au moins 2 commandes remises', u('clients', ['f' => 'particuliers']))
+        . tuile('Clients fidèles', (string)$s['fideles'], 'particuliers, 2 commandes ou plus', u('clients', ['f' => 'particuliers']))
         . tuile('Avis Google', (string)(int)($avis['recus'] ?? 0), (int)($avis['demandes'] ?? 0) . ' demandé(s)', u('clients'))
         . '</div>';
     // Chiffre d'affaires des 12 derniers mois (mois sans vente compris), un graphique par groupe : jamais additionnés à l'œil
@@ -86,7 +86,7 @@ function page_statistiques(): void {
     }
     $c .= bloc('Chiffre d\'affaires par mois', $graphe
         . ($rows !== '' ? '<details class="replie"' . ($graphe !== '' ? '' : ' open') . '><summary>Le tableau</summary><div class="defile"><table class="tableau"><thead><tr><th>Mois</th><th class="nombre">Particuliers, TTC</th><th class="nombre">Panier</th><th class="nombre">Professionnels, HT</th><th class="nombre">Total, HT</th></tr></thead><tbody>' . $rows . '</tbody></table></div>'
-            . '<p class="aide">Le panier est celui des particuliers ; le total additionne les deux groupes, hors taxes.</p></details>' : '<p class="vide">Pas encore de commande remise.</p>'));
+            . '</details>' : '<p class="vide">Pas encore de commande remise.</p>'));
     // Canaux : les demandes de chaque canal, et ce qu'elles ont rapporté, groupe par groupe
     $rows = '';
     foreach ($s['par_canal'] as $k) {
@@ -105,14 +105,14 @@ function page_statistiques(): void {
         return '<table class="tableau"><thead><tr><th>Gâteau</th><th class="nombre">Quantité</th><th class="nombre">' . h($entete) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>';
     };
     if ($s['produits']['part']) $c .= bloc('Gâteaux vendus aux particuliers', $produits($s['produits']['part'], 'Montant TTC')
-        . '<p class="aide">Les gâteaux personnalisés sans ligne de la carte ne sont comptés que dans le chiffre d\'affaires.</p>');
+        . '<p class="aide">Gâteaux personnalisés hors carte : comptés seulement dans le chiffre d\'affaires.</p>');
     if ($s['produits']['pro']) $c .= bloc('Gamme livrée aux professionnels', $produits($s['produits']['pro'], 'Montant HT'));
     // Étapes
     $rows = '';
     usort($s['statuts'], fn($a, $b) => array_search($a['statut'], array_keys(STATUTS), true) <=> array_search($b['statut'], array_keys(STATUTS), true));
     foreach ($s['statuts'] as $k) $rows .= '<tr><td><a class="lien-chip" href="' . h(u('commandes', ['vue' => 'toutes', 'statut' => (string)$k['statut']])) . '">' . chip_statut($k['statut'], false) . '</a></td><td class="nombre">' . (int)$k['n'] . '</td></tr>';
     if ($rows !== '') $c .= bloc('Où en sont les demandes', '<table class="tableau"><tbody>' . $rows . '</tbody></table>');
-    $c .= bloc('Exporter', '<p class="aide">Pour un tableur : sans email ni téléphone. Le fichier contient des noms de clients : à ranger dans le Drive de Madame Cho, pas ailleurs.</p><div class="actions">'
+    $c .= bloc('Exporter', '<p class="aide">Pour un tableur, sans email ni téléphone. Contient des noms de clients : à ranger dans le Drive de Madame Cho.</p><div class="actions">'
         . lien_bouton(u('export', ['jeu' => 'commandes']), 'Commandes (CSV)', 'discret') . lien_bouton(u('export', ['jeu' => 'clients']), 'Clients (CSV)', 'discret') . '</div>');
     mise_en_page('Statistiques', $c, 'statistiques');
 }
@@ -152,7 +152,7 @@ function tableau_parts(mixed $lignes, string $entete, int $max = 8, array $noms 
 function page_statistiques_site(): void {
     $admin = est_admin();
     $m = matomo_chiffres(isset($_GET['actualiser']));
-    $c = titre_page('Statistiques', 'Le site madamecho.com · 30 derniers jours, d\'après Matomo', '', u('plus')) . onglets_statistiques('site');
+    $c = titre_page('Statistiques', '30 derniers jours, d\'après Matomo', '', u('plus')) . onglets_statistiques('site');
     $actions = fn() => '<div class="actions">' . lien_bouton(u('statistiques', ['vue' => 'site', 'actualiser' => '1']), 'Actualiser', 'discret')
         . lien_bouton(GESTION_MATOMO, 'Ouvrir Matomo', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>';
     if (($m['etat'] ?? '') === 'non-relie') {
@@ -197,8 +197,8 @@ function page_statistiques_site(): void {
     $phrase = [];
     if ($meilleur) $phrase[] = 'Meilleur jour : ' . date_fr($meilleur[0], 'jour') . ', ' . visites_texte($meilleur[1]) . '.';
     if ($pts) $phrase[] = 'Aujourd\'hui : ' . visites_texte((int)end($pts)[1]) . '.';
-    if ($premier !== '' && $premier < GESTION_MATOMO_DEBUT) $phrase[] = 'Matomo mesure le site depuis le ' . date_fr(GESTION_MATOMO_DEBUT, 'jour') . ' : les jours d\'avant sont vides.';
-    $c .= bloc('Visites par jour', $pts && $v30 > 0 ? barres($pts, 'Visites par jour, 30 derniers jours', false) . '<p class="aide">' . h(implode(' ', $phrase)) . '</p><p class="aide">Les dates sous le graphique sont des lundis.</p>'
+    if ($premier !== '' && $premier < GESTION_MATOMO_DEBUT) $phrase[] = 'Mesure depuis le ' . date_fr(GESTION_MATOMO_DEBUT, 'jour') . '.';
+    $c .= bloc('Visites par jour', $pts && $v30 > 0 ? barres($pts, 'Visites par jour, 30 derniers jours', false) . '<p class="aide">' . h(implode(' ', $phrase)) . '</p>'
                                                     : '<p class="vide">Pas encore de visite sur les 30 derniers jours.</p>');
     // D'où viennent les visiteurs
     $src = array_values(array_filter(is_array($m['sources'] ?? null) ? $m['sources'] : [], fn($x) => is_array($x) && matomo_val($x, 'nb_visits') > 0));
@@ -217,8 +217,8 @@ function page_statistiques_site(): void {
                   . tuile('Scans sur 30 jours', entier_fr($qr30['visites']), is_array($buts) ? entier_fr(matomo_val($buts, 'nb_conversions')) . ' demande(s) envoyée(s) après un scan' : '')
                   . tuile('Demandes reçues par le QR code', entier_fr($qrDemandes), 'dans la gestion, 30 jours') . '</div>'
                 : '<p class="vide">Pas encore de scan sur les 30 derniers jours.</p>')
-            . '<p class="aide">Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n\'est pas compté.</p>'
-            . '<p class="aide">Les demandes « reçues par le QR code » sont celles que le formulaire du site a marquées après un scan ; elles comptent aussi dans Ventes, « D\'où viennent les commandes ».</p>');
+            . '<p class="aide">Chaque scan passe par madamecho.com/qr (campagne Matomo « qr-code »).</p>'
+            . '<p class="aide">Demandes envoyées par le formulaire du site après un scan.</p>');
     }
     // Pages les plus vues
     $rows = '';
@@ -230,19 +230,19 @@ function page_statistiques_site(): void {
     $c .= bloc('Téléphone ou ordinateur', tableau_parts($m['appareils'] ?? [], 'Appareil', 8, ['Smartphone' => 'Téléphone portable', 'Phablette' => 'Grand téléphone']));
     $le = (int)($m['le'] ?? time());
     $c .= (!empty($m['erreur']) ? '<p class="erreur">Lecture impossible pour l\'instant (' . h((string)$m['erreur']) . ') : voici les chiffres lus à ' . date('H \\h i', $le) . '.</p>' : '')
-        . '<div class="site-maj"><p class="aide">Chiffres de Matomo, lus à ' . date('H \\h i', $le) . ' et gardés un quart d\'heure. Mesure sans cookie : les visiteurs qui refusent la mesure ne sont pas comptés.</p>' . $actions() . '</div>';
+        . '<div class="site-maj"><p class="aide">Matomo, lu à ' . date('H \\h i', $le) . '. Sans cookie ; les refus de mesure ne sont pas comptés.</p>' . $actions() . '</div>';
     mise_en_page('Statistiques', $c, 'statistiques');
 }
 
 /* ---------- Plus ---------- */
 function page_plus(): void {
     $u = utilisateur_courant();
-    $l = [[u('statistiques'), 'stats', 'Statistiques', 'Ventes, canaux, délais de réponse, avis'],
-          [u('production'), 'imprimer', 'Fiche de production', 'Ce qu\'il faut préparer, jour par jour'],
-          [u('ingredients'), 'produits', 'Ingrédients', 'Prix d\'achat et allergènes des recettes'],
-          [u('manuel'), 'livre', 'Manuel', 'Comment fonctionne la gestion, écran par écran'],
-          [u('assistant'), 'ia', 'Assistant', 'Une IA : questions, problèmes, idées d\'amélioration'],
-          [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, signature des emails, lien d\'avis, données']];
+    $l = [[u('statistiques'), 'stats', 'Statistiques', 'Ventes et visites du site'],
+          [u('production'), 'imprimer', 'Fiche de production', 'À préparer, jour par jour'],
+          [u('ingredients'), 'produits', 'Ingrédients', 'Prix et allergènes'],
+          [u('manuel'), 'livre', 'Manuel', 'Mode d\'emploi, écran par écran'],
+          [u('assistant'), 'ia', 'Assistant', 'Une IA : questions, problèmes, idées'],
+          [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, emails, données']];
     $s = '';
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';
@@ -433,7 +433,7 @@ function page_reglages(): void {
     $c = titre_page('Réglages', h($u['nom']) . ' · ' . h($u['email']), '', u('plus'));
     // Langue de l'écran (gardée sur cet appareil)
     $ko = coreen_actif();
-    $c .= bloc('Langue de l\'écran', '<p class="aide">Le choix est gardé sur cet appareil. Ce qu\'on écrit (commentaires, clients, recettes) et les emails préparés restent en français.</p>'
+    $c .= bloc('Langue de l\'écran', '<p class="aide">Gardé sur cet appareil. Notes, fiches et emails préparés restent en français.</p>'
         . '<div class="actions">' . lien_bouton(lien_langue('ko'), '한국어', $ko ? 'principal' : 'discret', ['lang' => 'ko', 'translate' => 'no', 'aria-current' => $ko ? 'true' : null])
         . lien_bouton(lien_langue('fr'), 'Français', $ko ? 'discret' : 'principal', ['lang' => 'fr', 'translate' => 'no', 'aria-current' => $ko ? null : 'true']) . '</div>', '', 'langue');
     // Mon compte
@@ -441,13 +441,13 @@ function page_reglages(): void {
         . champ('ancien', 'Mot de passe actuel', '', ['type' => 'password', 'autocomplete' => 'current-password', 'required' => true])
         . '<div class="ligne-champs">' . champ('mdp1', 'Nouveau mot de passe', '', ['type' => 'password', 'autocomplete' => 'new-password', 'required' => true, 'minlength' => (string)GESTION_MDP_MIN])
         . champ('mdp2', 'Le même, une seconde fois', '', ['type' => 'password', 'autocomplete' => 'new-password', 'required' => true, 'minlength' => (string)GESTION_MDP_MIN]) . '</div>'
-        . '<p class="aide">Au moins ' . GESTION_MDP_MIN . ' caractères. Gardez-le dans Bitwarden. Oublié ? « Mot de passe oublié » sur la page de connexion envoie un lien à ' . h($u['email']) . '.</p>'
+        . '<p class="aide">Au moins ' . GESTION_MDP_MIN . ' caractères, à garder dans Bitwarden.</p>'
         . bouton('Changer le mot de passe', 'secondaire')), '', 'compte');
     // Emails préparés et avis
     $c .= bloc('Emails préparés et avis Google', formulaire('emails',
           zone('signature', 'Signature des emails préparés', signature(), ['rows' => '3', 'maxlength' => '500'])
         . champ('lien_avis', 'Lien pour laisser un avis Google', (string)parametre('lien_avis', ''), ['type' => 'url', 'placeholder' => 'https://g.page/r/…/review'],
-                'Dans la fiche Google de Madame Cho : « Demander des avis », puis copier le lien. Tant qu\'il est vide, la gestion ne propose pas de demander d\'avis.')
+                'Fiche Google de Madame Cho › « Demander des avis » › copier le lien.')
         . bouton('Enregistrer', 'secondaire')), '', 'avis');
     // Comptes
     if ($admin) {
@@ -458,17 +458,17 @@ function page_reglages(): void {
                    . ((int)$x['id'] !== (int)$u['id'] ? formulaire('compte_actif', '<input type="hidden" name="compte" value="' . (int)$x['id'] . '">' . bouton($x['actif'] ? 'Désactiver' : 'Réactiver', 'discret')) : '') . '</td></tr>';
         }
         $c .= bloc('Qui a accès', '<table class="tableau"><tbody>' . $rows . '</tbody></table>'
-            . '<details class="replie"><summary>Donner un accès à quelqu\'un</summary><p class="aide">Seulement pour une personne qui travaille pour Madame Cho. Elle reçoit un lien pour choisir son mot de passe. Une IA n\'a jamais de compte ici.</p>'
+            . '<details class="replie"><summary>Donner un accès à quelqu\'un</summary><p class="aide">Pour une personne de Madame Cho seulement, jamais une IA. Elle reçoit un lien par email.</p>'
             . formulaire('inviter', '<div class="ligne-champs">' . champ('email', 'Email', '', ['type' => 'email', 'required' => true]) . champ('nom', 'Nom', '', ['required' => true]) . '</div>'
                 . liste_choix('role', 'Rôle', ['membre' => 'Membre (commandes, clients, produits)', 'admin' => 'Administratrice (aussi les accès et les données)'], 'membre') . bouton('Envoyer l\'invitation', 'secondaire')) . '</details>', '', 'comptes');
     }
     // Demandes du site
     if ($admin) {
         $on = parametre('demandes_site') === '1';
-        $c .= bloc('Demandes du site', '<p>' . ($on ? '<span class="ok">' . fr_ko('Activé', '켜짐') . '</span> ' . fr_ko(': chaque demande envoyée par le formulaire du site s\'ajoute ici toute seule, avec son client, une fois l\'email parti à contact@.',
-                                                                                           ': 사이트 문의 양식으로 온 문의가 contact@로 이메일이 간 뒤, 고객 정보와 함께 여기에 자동으로 추가돼요.')
-                : '<span class="dormant">' . fr_ko('Pas encore activé', '아직 꺼져 있음') . '</span> ' . fr_ko(': les demandes du site arrivent seulement par email ; le lien « Dans la gestion » de l\'email permet de les créer ici.',
-                                                                                           ': 사이트 문의는 이메일로만 와요. 이메일에 있는 « Dans la gestion » 링크로 여기에 만들 수 있어요.')) . '</p>'
+        $c .= bloc('Demandes du site', '<p>' . ($on ? '<span class="ok">' . fr_ko('Activé', '켜짐') . '</span> ' . fr_ko(': les demandes du site arrivent ici toutes seules.',
+                                                                                           ': 사이트 문의가 여기에 자동으로 들어와요.')
+                : '<span class="dormant">' . fr_ko('Pas encore activé', '아직 꺼져 있음') . '</span> ' . fr_ko(': les demandes du site arrivent par email, avec un lien pour les créer ici.',
+                                                                                           ': 사이트 문의는 이메일로 오고, 이메일의 링크로 여기에 만들 수 있어요.')) . '</p>'
             . formulaire('demandes_site', bouton($on ? 'Arrêter l\'enregistrement' : 'Activer l\'enregistrement des demandes du site', $on ? 'discret' : 'secondaire')), '', 'demandes-site');
     }
     // Statistiques du site (Matomo)
@@ -476,7 +476,7 @@ function page_reglages(): void {
         $relie = matomo_relie();
         $cache = json_decode((string)parametre('matomo_cache', ''), true);
         $lu = is_array($cache) && !empty($cache['le']) ? date_fr(date('Y-m-d H:i:s', (int)$cache['le']), 'heure') : 'pas encore';
-        $t = '<p>Les visites du site viennent de Matomo (stats.madamecho.com). Avec une clé d\'accès, la gestion les montre dans Statistiques › Site internet, à côté des ventes.</p>'
+        $t = '<p>Les visites du site (Statistiques › Site internet) viennent de Matomo.</p>'
            . definition(['État' => $relie ? '<span class="ok">relié</span>' : '<span class="dormant">pas encore relié</span>', 'Dernière lecture' => $relie ? h($lu) : '']);
         $t .= '<details class="replie"' . ($relie ? '' : ' open') . '><summary>' . ($relie ? 'Remplacer la clé' : 'Relier Matomo') . '</summary>'
             . '<ol class="aide marche">'
@@ -486,7 +486,7 @@ function page_reglages(): void {
             . '<li>En bas, « Jetons d\'authentification » : « Créer un nouveau jeton ». Matomo redemande le mot de passe.</li>'
             . '<li>Description : « Gestion Madame Cho ». Copiez le jeton affiché et collez-le ici.</li></ol>'
             . formulaire('matomo', champ('matomo_jeton', 'Clé d\'accès de Matomo', '', ['autocomplete' => 'off', 'spellcheck' => 'false', 'autocapitalize' => 'off', 'required' => true, 'maxlength' => '200'],
-                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans l\'export.')
+                   'Gardée hors du site, jamais réaffichée.')
                 . bouton('Vérifier et enregistrer', 'secondaire'))
             . '</details>';
         if ($relie) $t .= formulaire('matomo', '<input type="hidden" name="retirer" value="1">' . bouton('Retirer la clé', 'discret'), ['data-confirmer' => 'Retirer la clé de Matomo ? Les visites du site ne s\'afficheront plus dans la gestion.']);
@@ -495,8 +495,8 @@ function page_reglages(): void {
     // L'assistant de Youngmi (clé Anthropic)
     if ($admin) {
         $relie = assistant_relie();
-        $t = '<p>' . fr_ko('L\'assistant (menu Plus) répond aux questions sur la gestion à partir du manuel et prépare des rapports pour Olivier. Il marche avec Claude, le modèle d\'Anthropic : il faut une clé d\'accès, créée par Olivier et payée comme les autres outils informatiques. Chaque question coûte quelques centimes.',
-                           '어시스턴트(더보기 메뉴)는 설명서를 바탕으로 관리 시스템에 대한 질문에 답하고 Olivier에게 보낼 보고서를 준비해요. Anthropic의 모델 Claude로 작동해요. Olivier가 만들고 다른 IT 도구처럼 결제하는 접근 키가 필요해요. 질문 하나에 몇 센트가 들어요.') . '</p>'
+        $t = '<p>' . fr_ko('L\'assistant répond avec Claude (Anthropic), grâce à une clé créée et payée par Olivier. Quelques centimes par question.',
+                           '어시스턴트는 Anthropic의 Claude로 답해요. Olivier가 만들고 결제하는 키가 필요해요. 질문당 몇 센트예요.') . '</p>'
            . definition(['État' => $relie ? '<span class="ok">relié</span>' : '<span class="dormant">pas encore relié</span>', 'Modèle' => '<span translate="no">' . h(GESTION_ASSISTANT_MODELE) . '</span>',
                          'Ce mois-ci' => $relie ? h(mb_substr(assistant_mois_texte(), mb_strlen('Ce mois-ci : '))) : '']);
         $t .= '<details class="replie"' . ($relie ? '' : ' open') . '><summary>' . ($relie ? 'Remplacer la clé' : 'Relier l\'assistant') . '</summary>'
@@ -506,12 +506,12 @@ function page_reglages(): void {
             . '<li>Nom : « Gestion Madame Cho ». Copiez la clé affichée (elle commence par sk-ant-) : Anthropic ne la montre qu\'une fois.</li>'
             . '<li>Collez-la ici. La gestion vérifie qu\'elle marche avant de l\'enregistrer.</li></ol>'
             . formulaire('assistant', champ('assistant_cle', 'Clé d\'accès Anthropic', '', ['autocomplete' => 'off', 'spellcheck' => 'false', 'autocapitalize' => 'off', 'required' => true, 'maxlength' => '300'],
-                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans l\'export.')
+                   'Gardée hors du site, jamais réaffichée.')
                 . bouton('Vérifier et enregistrer', 'secondaire'))
             . '</details>';
         if ($relie) $t .= formulaire('assistant', '<input type="hidden" name="retirer" value="1">' . bouton('Retirer la clé', 'discret'), ['data-confirmer' => 'Retirer la clé de l\'assistant ? Il ne répondra plus.']);
         // Plafond du mois (audit du 07/11, C9) : au-delà, l'assistant ne répond plus jusqu'au mois suivant
-        $t .= '<p class="aide"><span>' . h(assistant_mois_texte()) . '</span> <span>(prix publics d\'Anthropic ; une question ratée est comptée aussi)</span></p>'
+        $t .= '<p class="aide">' . h(assistant_mois_texte()) . '</p>'
             . formulaire('assistant_plafond', '<div class="ligne-champs">' . champ('assistant_plafond', 'Plafond du mois, en dollars (0 = aucun)', (string)(int)parametre('assistant_plafond', (string)GESTION_ASSISTANT_PLAFOND), ['type' => 'number', 'min' => '0', 'max' => '500', 'step' => '1', 'inputmode' => 'numeric']) . '</div>'
                 . bouton('Enregistrer le plafond', 'secondaire'));
         $c .= bloc('Assistant', $t, '', 'assistant');
@@ -522,7 +522,7 @@ function page_reglages(): void {
         $der = json_decode((string)parametre('derniere_purge', ''), true);
         $nuit = parametre('derniere_nuit');
         $refs = conservation_references_emails();
-        $t = '<p>Chaque nuit, la gestion applique les durées annoncées dans la politique de confidentialité : demandes sans suite effacées 12 mois après le dernier échange, clients sans commande ni échange effacés au bout de 3 ans, journal des connexions gardé 6 mois.</p>'
+        $t = '<p>Chaque nuit : demandes sans suite effacées après 12 mois, clients inactifs après 3 ans, connexions après 6 mois.</p>'
            . definition(['Dernier passage de nuit' => h($nuit ? date_fr($nuit, 'heure') : 'pas encore'), 'Dernier effacement' => h(is_array($der) ? date_fr($der['le'], 'heure') . ' : ' . $der['demandes'] . ' demande(s), ' . $der['clients'] . ' client(s)' : 'aucun'),
                          'À effacer maintenant' => h(count($ap['demandes']) . ' demande(s), ' . count(array_unique(array_merge(array_column($ap['clients'], 'id'), array_column($ap['orphelins'], 'id')))) . ' client(s), ' . $ap['journal'] . ' ligne(s) de journal')]);
         if ($nuit && (time() - strtotime($nuit)) > 2 * 86400) $t .= '<p class="erreur">La tâche de nuit ne passe plus depuis le ' . h(date_fr($nuit)) . ' : prévenez Olivier (tâche planifiée OVH).</p>';
@@ -534,15 +534,15 @@ function page_reglages(): void {
         session_ouvrir();
         if (!empty($_SESSION['cle_miroir'])) { $cle = (string)$_SESSION['cle_miroir']; unset($_SESSION['cle_miroir']); }
         $actif = (string)parametre('miroir_empreinte', '') !== '';
-        $m = '<p>Le miroir recopie chaque nuit une version réduite des registres (sans email, téléphone ni commentaires) dans un tableur du Drive (dossier 10), pour Mathieu et les récapitulatifs.</p>'
+        $m = '<p>Chaque nuit, une copie réduite (sans email, téléphone ni notes) part dans un tableur du Drive (dossier 10).</p>'
            . definition(['État' => h($actif ? 'actif' : 'arrêté'), 'Dernière copie' => h(($d = parametre('miroir_dernier')) ? date_fr($d, 'heure') : 'jamais'), 'Adresse' => '<code>' . h(gestion_adresse() . '?p=miroir') . '</code>']);
         if ($cle !== '') $m .= '<div class="cle-miroir"><p><b>Clé à coller dans le script Google</b> (elle ne sera plus jamais affichée) :</p><pre id="cle-miroir">' . h($cle) . '</pre><button type="button" class="btn" data-copier="cle-miroir">' . icone('copier') . 'Copier</button></div>';
         $m .= formulaire('miroir', bouton($actif ? 'Créer une nouvelle clé (l\'ancienne cesse de marcher)' : 'Créer la clé du miroir', 'discret')) . ($actif ? formulaire('miroir', '<input type="hidden" name="arreter" value="1">' . bouton('Arrêter le miroir', 'discret')) : '');
         $c .= bloc('Miroir pour le Drive', $m, '', 'miroir');
         // Reprise et export complet
-        $c .= bloc('Reprise des données et export', '<p class="aide">Reprise : le fichier JSON préparé à partir de Qonto et des demandes déjà reçues (jamais dans le dépôt du site). Sans risque à relancer : ce qui est déjà là est sauté.</p>'
+        $c .= bloc('Reprise des données et export', '<p class="aide">Reprise : fichier JSON préparé depuis Qonto (jamais dans le dépôt du site). Sans risque à relancer.</p>'
             . formulaire('importer', '<label class="champ"><span class="etiq">Fichier de reprise (.json)</span><input type="file" name="fichier" accept="application/json,.json" required></label>' . bouton('Importer', 'secondaire'), ['enctype' => 'multipart/form-data'])
-            . '<p class="aide">Export complet : clients, commandes, produits, ingrédients et recettes dans un fichier JSON (sans les comptes, la clé de l\'assistant ni les conversations), pour une analyse ou une reprise. Ce n\'est pas une restauration de l\'espace : la sauvegarde, c\'est celle de l\'hébergement OVH (fichier de la base), qu\'Olivier vérifie. Le fichier contient des données de clients : à ranger dans le Drive de Madame Cho (P-24), jamais ailleurs.</p>'
+            . '<p class="aide">Export complet en JSON (sans comptes, clé ni conversations), pour une analyse. Ce n\'est pas une sauvegarde : celle-ci est chez OVH. Contient des données de clients : à ranger dans le Drive de Madame Cho.</p>'
             . '<p>' . lien_bouton(u('export', ['jeu' => 'sauvegarde']), 'Télécharger l\'export complet', 'discret') . '</p>', '', 'reprise');
     }
     // Contrôle technique
@@ -566,7 +566,7 @@ function page_reglages(): void {
     if ($admin) {
         $rows = '';
         foreach (lignes("SELECT * FROM connexions ORDER BY id DESC LIMIT 25") as $x) $rows .= '<tr><td>' . h(date_fr($x['le'], 'heure')) . '</td><td>' . h($x['email']) . '</td><td>' . ($x['ok'] ? 'oui' : '<span class="retard">non</span>') . ($x['detail'] !== '' ? ' · ' . h($x['detail']) : '') . '</td></tr>';
-        $c .= bloc('Dernières connexions', $rows !== '' ? '<div class="defile"><table class="tableau"><thead><tr><th>Quand</th><th>Email</th><th>Réussie</th></tr></thead><tbody>' . $rows . '</tbody></table></div><p class="aide">Gardées 6 mois. Une connexion que vous ne reconnaissez pas : changez le mot de passe et prévenez Olivier (P-17).</p>' : '<p class="vide">Aucune.</p>');
+        $c .= bloc('Dernières connexions', $rows !== '' ? '<div class="defile"><table class="tableau"><thead><tr><th>Quand</th><th>Email</th><th>Réussie</th></tr></thead><tbody>' . $rows . '</tbody></table></div><p class="aide">Gardées 6 mois. Connexion inconnue : changez le mot de passe et prévenez Olivier.</p>' : '<p class="vide">Aucune.</p>');
     }
     mise_en_page('Réglages', $c, 'reglages');
 }

@@ -468,7 +468,7 @@ function page_olivier(): void {
         rediriger('olivier');
     }
     $brouillon = (string)($_SESSION['olivier_brouillon'] ?? ''); unset($_SESSION['olivier_brouillon']);
-    $c = titre_page('Écrire à Olivier', fr_ko('Sans l\'assistant : votre message part tel quel à contact@madamecho.com.', '어시스턴트 없이, 메시지가 그대로 contact@madamecho.com으로 가요.'), '', u('assistant'));
+    $c = titre_page('Écrire à Olivier', fr_ko('Votre message part tel quel, sans passer par l\'IA.', 'AI를 거치지 않고 메시지가 그대로 가요.'), '', u('assistant'));
     $c .= essai_email_affiche();
     $c .= bloc('', formulaire('ecrire_olivier', zone('message_olivier', 'Votre message', $brouillon, ['rows' => '5', 'maxlength' => '2000', 'required' => true, 'data-langue-libre' => true,
                                                                                                   'placeholder' => fr_ko('En français ou en coréen', '한국어로 써도 돼요')])

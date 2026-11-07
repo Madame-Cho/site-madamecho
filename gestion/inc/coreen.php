@@ -76,7 +76,7 @@ Email ou mot de passe incorrect. | 이메일 또는 비밀번호가 맞지 않�
 Choisir mon mot de passe | 비밀번호 정하기
 Si cette adresse a un accès, un email vient de partir avec un lien valable une heure. Regardez aussi dans les indésirables. | 이 주소에 접근 권한이 있으면, 1시간 동안 쓸 수 있는 링크를 이메일로 방금 보냈어요. 스팸함도 확인해 보세요.
 Retour à la connexion | 로그인으로 돌아가기
-Indiquez l'adresse de votre accès : vous recevrez un lien pour choisir votre mot de passe. Pour Madame Cho, c'est contact@madamecho.com. | 접속에 쓰는 이메일 주소를 입력하세요. 비밀번호를 정하는 링크를 보내 드려요. Madame Cho는 contact@madamecho.com이에요.
+Vous recevrez un lien pour choisir votre mot de passe. Pour Madame Cho : contact@madamecho.com. | 비밀번호를 정하는 링크를 보내 드려요. Madame Cho는 contact@madamecho.com이에요.
 Recevoir le lien | 링크 받기
 Lien expiré | 만료된 링크
 Ce lien ne marche plus | 이 링크는 더 이상 쓸 수 없어요
@@ -200,9 +200,9 @@ Aucune commande. | 주문이 없어요.
 
 # Une commande
 Prochaine étape : envoyer une proposition | 다음 단계: 견적 보내기
-Vérifiez vos disponibilités, puis répondez au client par écrit : prix TTC total, jour et heure du retrait, acompte s'il y a une personnalisation. | 일정을 확인한 뒤 고객에게 글로 답장하세요: 부가세 포함 총액, 픽업 날짜와 시간, 맞춤 케이크라면 선금.
+Répondez par écrit : prix TTC, jour et heure du retrait, acompte si personnalisé. | 글로 답장하세요: 부가세 포함 가격, 픽업 날짜와 시간, 맞춤 케이크라면 선금.
 Préparer la proposition | 견적 이메일 준비
-Relisez et complétez avant d'envoyer : c'est vous qui envoyez, depuis contact@madamecho.com. | 보내기 전에 다시 읽고 채워 넣으세요. 보내는 건 직접, contact@madamecho.com에서 해요. 고객에게 가는 이메일이라 프랑스어예요.
+À relire, puis à envoyer vous-même depuis contact@madamecho.com. | 다시 읽고 contact@madamecho.com에서 직접 보내세요. 고객용이라 프랑스어예요.
 Objet : | 제목:
 Ouvrir dans ma messagerie | 메일 앱에서 열기
 Copier le texte | 텍스트 복사
@@ -228,7 +228,7 @@ Paiement | 결제
 N° de facture Qonto (si facture) | Qonto 청구서 번호 (청구서가 있으면)
 Commande remise au client | 고객에게 전달 완료
 L'avis est arrivé | 리뷰가 올라왔어요
-À proposer à tous les clients de la même façon, sans trier, sans contrepartie et sans demander une bonne note (règles de Google). | 모든 고객에게 똑같이 부탁하세요. 고르지 말고, 대가 없이, 좋은 별점을 요구하지 않고요 (구글 규칙).
+À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google). | 모든 고객에게, 고르지 말고 대가 없이, 별점 요구 없이 부탁하세요 (구글 규칙).
 Demander un avis Google | 구글 리뷰 부탁하기
 J'ai demandé un avis | 리뷰를 부탁했어요
 Rouvrir la demande | 문의 다시 열기
@@ -272,7 +272,7 @@ Rien pour l'instant. | 아직 아무것도 없어요.
 Autres actions | 다른 작업
 Signaler un problème | 문제 신고
 Le problème | 문제 내용
-Retard, réclamation, paiement… Une allergie ou un malaise d'un client : prévenez aussi tout de suite Youngmi (R-39), sans noter de détail médical. | 지연, 불만, 결제… 고객의 알레르기나 몸이 안 좋았던 일은 바로 Youngmi에게도 알려 주세요 (R-39). 의료 정보는 적지 마세요.
+Retard, réclamation, paiement… Allergie ou malaise d'un client : prévenez Youngmi tout de suite, sans détail médical. | 지연, 불만, 결제… 고객의 알레르기나 몸이 안 좋았던 일은 바로 Youngmi에게 알려 주세요. 의료 정보는 적지 마세요.
 Signaler | 신고
 Annuler la commande | 주문 취소
 Annulée par | 취소한 쪽
@@ -292,7 +292,7 @@ Personnalisé : | 맞춤:
 Pro : | 업체:
 
 # Nouvelle commande, modifier une commande
-Une demande reçue par Instagram, téléphone, email, sur un marché… ou une vente déjà faite | 인스타그램, 전화, 이메일, 마켓 등으로 받은 문의… 또는 이미 끝난 판매
+Demande reçue hors du site, ou vente déjà faite | 사이트 밖에서 받은 문의 또는 이미 한 판매
 Client déjà connu | 기존 고객
 Tapez un nom ou CL-… | 이름이나 CL-… 입력
 Ou un nouveau client | 또는 새 고객
@@ -300,7 +300,7 @@ Type | 종류
 Entreprise ou restaurant | 회사 또는 레스토랑
 La demande | 문의
 Reçue par | 접수 경로
-Référence MC-… (si elle existe déjà, sinon laissez vide) | 주문 번호 MC-… (이미 있을 때만, 없으면 비워 두세요)
+Référence MC-… si elle existe | 주문 번호 MC-… (있으면)
 Les gâteaux | 케이크
 — Choisir un gâteau — | — 케이크 선택 —
 Gâteau | 케이크
@@ -308,7 +308,7 @@ Quantité | 수량
 Plaque en chocolat | 초콜릿 플레이트
 Prénom, message (gâteaux entiers) | 이름, 메시지 (홀케이크)
 Une ligne de plus | 한 줄 더
-Nombre de personnes, saveurs, couleurs, décoration. Pas d'information de santé : pour une allergie, seulement l'ingrédient à éviter. | 인원수, 맛, 색, 장식. 건강 정보는 적지 마세요. 알레르기는 피해야 할 재료만 적어요.
+Personnes, saveurs, couleurs, décor. Allergie : l'ingrédient à éviter, sans info de santé. | 인원수, 맛, 색, 장식. 알레르기는 피해야 할 재료만, 건강 정보 없이 적어요.
 Le retrait | 픽업
 Jour | 날짜
 Moment | 시간대
@@ -327,7 +327,7 @@ Choisissez un client existant, ou indiquez au moins le nom du nouveau client. | 
 L'email du client n'est pas valide. | 고객 이메일 주소가 올바르지 않아요.
 
 # Fiche de production
-Commandes confirmées, sans email ni téléphone : à imprimer pour l'atelier | 확정된 주문 (이메일, 전화번호 제외): 작업실용으로 인쇄하세요
+Commandes confirmées, à imprimer pour l'atelier | 확정된 주문, 작업실에서 쓸 인쇄용
 Imprimer | 인쇄
 À partir du | 시작 날짜
 Sur | 기간
@@ -363,9 +363,9 @@ Oui | 예
 Modifier | 수정
 Avis Google | 구글 리뷰
 On propose un avis après une commande remise, à tous les clients de la même façon. | 리뷰는 주문을 전달한 뒤 모든 고객에게 똑같이 부탁해요.
-Goûts, habitudes, préférences de retrait… Jamais d'information de santé : pour une allergie, seulement l'ingrédient à éviter. | 취향, 습관, 선호하는 픽업 방식… 건강 정보는 적지 마세요. 알레르기는 피해야 할 재료만 적어요.
+Goûts, habitudes, retrait préféré… Allergie : l'ingrédient à éviter, sans info de santé. | 취향, 습관, 선호하는 픽업… 알레르기는 피해야 할 재료만, 건강 정보 없이 적어요.
 Fiche et droits du client | 고객 정보와 권리
-Un doublon ? Fusionner une autre fiche dans celle-ci | 중복인가요? 다른 고객 정보를 여기에 합치기
+Fusionner un doublon | 중복 고객 합치기
 Numéro de l'autre fiche (elle sera vidée) | 다른 고객 번호 (그쪽 정보는 비워져요)
 Fusionner | 합치기
 Fusionner l'autre fiche dans celle-ci ? Ses commandes passent ici. | 다른 고객 정보를 여기에 합칠까요? 그 고객의 주문이 이쪽으로 옮겨져요.
@@ -382,7 +382,7 @@ Ajouté à la gamme pro. | 업체용 제품에 추가했어요.
 Gamme pro enregistrée. | 업체용 제품을 저장했어요.
 Indiquez le nom et le prix HT (par exemple 3,50). | 이름과 부가세 별도 가격을 적어 주세요 (예: 3,50).
 Pas encore de produit pro : ajoutez-les, ou importez le catalogue de Qonto Facturation. | 아직 업체용 제품이 없어요. 직접 추가하거나 Qonto Facturation의 제품 목록을 가져오세요.
-Prix HT, comme sur les factures Qonto. Ils restent dans la gestion et ne vont jamais sur le site. | Qonto 청구서처럼 부가세 별도 가격이에요. 관리 화면에만 있고 사이트에는 절대 나오지 않아요.
+Prix HT, comme dans Qonto. Jamais affichés sur le site. | Qonto처럼 부가세 별도 가격이에요. 사이트에는 절대 나오지 않아요.
 Nom (comme dans Qonto) | 이름 (Qonto와 똑같이)
 Prix HT (€) | 부가세 별도 가격 (€)
 Vendu | 판매 단위
@@ -390,7 +390,7 @@ Dans la gamme | 판매 여부
 restaurants, prix HT | 레스토랑용, 부가세 별도 가격
 Modifier le prix, l'unité ou la TVA | 가격, 판매 단위, 부가세 수정
 Le prix doit rester le même que dans Qonto Facturation. Un changement vaut pour les prochaines livraisons ; celles déjà notées gardent leur prix. | 가격은 Qonto Facturation과 같아야 해요. 바꾸면 다음 배달부터 적용되고, 이미 적은 배달은 원래 가격 그대로예요.
-Pour une unité vendue. Quantités en grammes, millilitres ou pièces. Le coût utilise le prix de chaque ingrédient. | 판매 단위 1개 기준이에요. 수량은 g, ml 또는 개로 적어요. 원가는 재료별 가격으로 계산해요.
+Pour une unité vendue, en g, ml ou pièces. | 판매 단위 1개 기준, g, ml 또는 개 단위예요.
 À donner au restaurant avec la livraison : il doit pouvoir les indiquer à ses clients. C'est Youngmi qui tranche un doute (R-39). | 배달할 때 레스토랑에 알려 주세요. 레스토랑은 손님에게 알릴 수 있어야 해요. 애매하면 Youngmi가 정해요 (R-39).
 Recette | 레시피
 Aucune livraison en 12 mois | 최근 12개월 배달 없음
@@ -407,7 +407,7 @@ Livraison enregistrée. | 배달을 저장했어요.
 prix HT de la gamme pro, facturés en fin de mois | 업체용 제품의 부가세 별도 가격, 월말 청구
 Vide : le total des gâteaux. | 비워 두면 케이크 합계로 해요.
 Livraison passée : elle a été faite ? | 배달 날짜가 지났어요. 배달했나요?
-Pas de paiement à la livraison : le restaurant paie la facture Qonto du mois, faite à partir du relevé. | 배달할 때는 결제하지 않아요. 레스토랑은 월별 내역서로 만든 Qonto 청구서를 결제해요.
+Pas de paiement à la livraison : le restaurant paie la facture Qonto du mois. | 배달할 때는 결제하지 않아요. 레스토랑은 월말 Qonto 청구서로 결제해요.
 Livrée | 배달 완료
 Livraison notée : elle est dans le relevé du mois du restaurant. | 배달을 적었어요. 레스토랑의 월별 내역서에 들어가요.
 Pas encore facturée. | 아직 청구 안 함.
@@ -419,7 +419,7 @@ Total HT | 합계 (부가세 별도)
 Total TTC | 합계 (부가세 포함)
 Total TTC (TVA comprise) | 합계 (부가세 포함)
 Relevés du mois | 월별 내역서
-Une livraison = une commande. En fin de mois, le relevé donne les lignes et le total à recopier dans la facture Qonto. | 배달 1건이 주문 1건이에요. 월말에 내역서의 항목과 합계를 Qonto 청구서에 옮겨 적어요.
+Une livraison = une commande. Le relevé du mois sert à faire la facture Qonto. | 배달 1건이 주문 1건이에요. 월별 내역서로 Qonto 청구서를 만들어요.
 À facturer | 청구 전
 Facturé | 청구함
 Livraisons | 배달
@@ -429,22 +429,22 @@ Les prix HT viennent de la gamme pro (Produits). La TVA est calculée sur le tot
 Facture et paiement | 청구서와 결제
 Numéro de la facture Qonto | Qonto 청구서 번호
 Facture payée | 청구서 결제됨
-Une fois la facture faite dans Qonto, notez son numéro ici : il s'inscrit sur les livraisons livrées qui n'en ont pas encore, jamais par-dessus un autre numéro. Cochez « Facture payée » quand le virement arrive. | Qonto에서 청구서를 만들면 번호를 여기에 적으세요. 아직 번호가 없는 배달 완료 건에만 적히고, 다른 번호를 덮어쓰지 않아요. 이체가 들어오면 « 청구서 결제됨 »에 체크하세요.
+Notez ici le numéro de la facture Qonto. Cochez « Facture payée » quand le virement arrive. | Qonto 청구서 번호를 여기에 적으세요. 이체가 들어오면 ‘청구서 결제됨’에 체크하세요.
 Aucune livraison ce mois-là. | 그달에는 배달이 없어요.
 Payée par | 결제 수단
 Relevés à facturer | 청구할 내역서
 Noter le paiement | 결제 적기
 Rien à changer : c'était déjà noté. | 바꿀 게 없어요. 이미 적혀 있어요.
-Rien à facturer ce mois-ci : chaque livraison livrée a déjà sa facture. | 이번 달은 청구할 게 없어요. 배달 완료 건마다 이미 청구서가 있어요.
+Rien à facturer ce mois-ci. | 이번 달은 청구할 게 없어요.
 Toutes les livraisons livrées de ce mois ont déjà une facture : pour corriger un numéro, ouvrez la livraison. | 이번 달 배달 완료 건에는 이미 청구서가 다 있어요. 번호를 고치려면 해당 배달을 여세요.
 Marge sur les matières et l'emballage seulement : le travail, l'énergie, les pertes et les charges ne sont pas comptés. | 재료와 포장만 계산한 마진이에요. 인건비, 에너지, 손실, 고정비는 포함되지 않아요.
 Restaurants livrés le mois dernier ou avant : faites la facture dans Qonto à partir du relevé, puis notez son numéro. | 지난달이나 그 전에 배달한 레스토랑이에요. 내역서를 보고 Qonto에서 청구서를 만든 뒤 번호를 적으세요.
 Indiquez le numéro de la facture Qonto, ou cochez « Facture payée ». | Qonto 청구서 번호를 적거나 « 청구서 결제됨 »에 체크하세요.
-Le client demande ses données (droit d'accès) | 고객이 자기 정보를 요청했어요 (열람권)
-Le fichier contient tout ce que la gestion garde sur lui : à lui envoyer depuis contact@ dans le mois. | 이 파일에는 관리 화면에 있는 이 고객의 정보가 모두 들어 있어요. 한 달 안에 contact@에서 고객에게 보내세요.
+Demande d'accès à ses données | 개인정보 열람 요청
+Tout ce que la gestion garde sur lui, à lui envoyer depuis contact@ sous un mois. | 관리 화면에 있는 이 고객의 정보 전부예요. 한 달 안에 contact@에서 보내세요.
 Télécharger ses données | 고객 정보 다운로드
-Le client demande l'effacement | 고객이 삭제를 요청했어요
-Son nom, ses coordonnées, ses commentaires et les textes de ses demandes sont effacés tout de suite. Les montants et les dates restent, sans rien qui le désigne (comptes et statistiques). Les factures Qonto ne sont pas touchées : elles doivent être gardées 10 ans. | 이름, 연락처, 메모, 문의 내용은 바로 삭제돼요. 금액과 날짜는 누구인지 알 수 없게 남아요 (회계와 통계용). Qonto 청구서는 건드리지 않아요. 청구서는 10년 동안 보관해야 해요.
+Demande d'effacement | 삭제 요청
+Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures Qonto ne changent pas (gardées 10 ans). | 이름, 연락처, 메모, 문의 내용은 바로 삭제돼요. 금액과 날짜는 익명으로 남아요. Qonto 청구서는 그대로예요 (10년 보관).
 Motif | 이유
 Tapez EFFACER pour confirmer | 확인하려면 EFFACER를 입력하세요
 Effacer ses données | 고객 정보 삭제
@@ -456,7 +456,7 @@ Entreprise ou restaurant (professionnels) | 회사 또는 레스토랑 (업체)
 Personne à contacter (professionnels) | 담당자 (업체)
 Premier contact par | 첫 연락 경로
 Nom du client dans Qonto (s'il a une facture) | Qonto의 고객 이름 (청구서가 있으면)
-Ni date de naissance, ni adresse si elle ne sert pas, ni information de santé (R-38 et politique de confidentialité). | 생년월일, 쓰지 않을 주소, 건강 정보는 적지 마세요 (R-38, 개인정보 처리방침).
+Ni date de naissance, ni adresse inutile, ni info de santé. | 생년월일, 필요 없는 주소, 건강 정보는 적지 마세요.
 Créer le client | 고객 만들기
 Indiquez au moins un nom ou une entreprise. | 이름이나 회사 이름을 적어 주세요.
 L'email n'est pas valide. | 이메일 주소가 올바르지 않아요.
@@ -470,7 +470,7 @@ Recette à saisir | 레시피 입력 필요
 Fiche à valider par Youngmi | Youngmi 확인 필요
 Aucune vente remise en 12 mois | 최근 12개월 판매 없음
 La carte du site n'est pas encore chargée. | 사이트 메뉴를 아직 불러오지 못했어요.
-La liste suit la carte du site. Un nouveau gâteau, un prix ou un texte se change dans le site, pas ici. | 이 목록은 사이트 메뉴를 따라요. 새 케이크, 가격, 설명은 여기가 아니라 사이트에서 바꿔요.
+Gâteaux, prix et textes se changent sur le site, pas ici. | 케이크, 가격, 설명은 여기가 아니라 사이트에서 바꿔요.
 Voir sur le site | 사이트에서 보기
 Sur le site | 사이트에 보이는 내용
 Présentation | 소개
@@ -478,13 +478,13 @@ Composition | 구성
 Allergènes | 알레르기 유발 성분
 Conservation | 보관
 À commander | 주문 기한
-Ces textes et ces prix viennent du site : pour les changer, demandez la modification du site (ils engagent Madame Cho, R-39). | 이 설명과 가격은 사이트에서 가져와요. 바꾸려면 사이트 수정을 요청하세요 (Madame Cho가 책임지는 내용이에요, R-39).
+Textes et prix du site : pour les changer, demandez une modification du site. | 사이트의 설명과 가격이에요. 바꾸려면 사이트 수정을 요청하세요.
 D'après la recette : | 레시피 기준:
 aucun allergène | 알레르기 유발 성분 없음
 La recette et le site disent la même chose. | 레시피와 사이트 내용이 같아요.
 Recettes, coûts et marges | 레시피, 원가, 마진
-Pour un gâteau entier de chaque taille. Quantités en grammes, millilitres ou pièces. Le coût utilise le prix de chaque ingrédient. | 크기별 홀케이크 1개 기준이에요. 수량은 g, ml 또는 개로 적어요. 원가는 재료별 가격으로 계산해요.
-Pour une pièce de chaque parfum. Quantités en grammes, millilitres ou pièces. Le coût utilise le prix de chaque ingrédient. | 맛별 1개 기준이에요. 수량은 g, ml 또는 개로 적어요. 원가는 재료별 가격으로 계산해요.
+Pour un gâteau entier de chaque taille, en g, ml ou pièces. | 크기별 홀케이크 1개 기준, g, ml 또는 개 단위예요.
+Pour une pièce de chaque parfum, en g, ml ou pièces. | 맛별 1개 기준, g, ml 또는 개 단위예요.
 recette vide | 레시피 없음
 Coût | 원가
 Actions | 작업
@@ -507,11 +507,11 @@ Prix (€ le kg, le litre ou la pièce) | 가격 (€, kg·리터·개당)
 Note (facultatif) | 메모 (선택)
 pour la crème, pour le décor… | 크림용, 장식용…
 Ajouter à la recette | 레시피에 추가
-Copier une recette vers une autre taille ou un autre parfum | 레시피를 다른 크기나 맛으로 복사
+Copier une recette | 레시피 복사
 Depuis | 원본
 Vers (remplace sa recette) | 대상 (대상의 레시피를 덮어써요)
 Pour passer d'un diamètre à un autre, multipliez par le rapport des surfaces : de 16 à 20 cm, (20 ÷ 16)² = 1,56. | 지름을 바꿀 때는 면적 비율을 곱하세요. 16 cm에서 20 cm로: (20 ÷ 16)² = 1,56.
-Le coefficient multiplie toutes les quantités. | 모든 수량에 배수를 곱해요.
+Multiplie toutes les quantités. | 모든 수량에 곱해요.
 Copier | 복사
 Remplacer la recette de destination ? | 대상 레시피를 덮어쓸까요?
 Sur la carte | 메뉴 상태
@@ -544,11 +544,11 @@ Prix d'achat TTC (€ le kg, le litre ou la pièce) | 구입 가격 (€, 부가
 Allergènes que contient cet ingrédient | 이 재료에 든 알레르기 유발 성분
 Fournisseur | 공급업체
 Où et comment l'acheter | 어디서 어떻게 사는지
-Marque, référence, étiquette à garder pour les allergènes… | 브랜드, 제품 번호, 알레르기 확인용으로 보관할 라벨…
+Marque, référence, étiquette (allergènes)… | 브랜드, 제품 번호, 라벨 (알레르기)…
 Prix à indiquer | 가격 입력 필요
 Utilisé dans | 사용하는 제품
 Dans aucune recette. | 어떤 레시피에도 없어요.
-Retiré (n'est plus acheté ; reste dans les anciennes recettes) | 사용 중단 (더 이상 사지 않음, 기존 레시피에는 남아요)
+Retiré (plus acheté) | 사용 중단 (더 이상 사지 않음)
 Recette | 레시피
 
 # Statistiques
@@ -558,7 +558,7 @@ Site internet | 웹사이트
 Chiffre d'affaires | 매출
 TTC, 24 derniers mois | 부가세 포함, 최근 24개월
 Demandes abouties | 성사된 문의
-remises ÷ (remises + sans suite + annulées) | 전달 ÷ (전달 + 진행 안 됨 + 취소)
+des demandes closes | 마감된 문의 중
 Réponse aux demandes du site | 사이트 문의 답장 시간
 moins d'1 h | 1시간 미만
 médiane | 중앙값
@@ -580,12 +580,12 @@ Montant TTC | 금액 (부가세 포함)
 Les gâteaux personnalisés et les commandes professionnelles sans ligne de la carte ne sont comptés que dans le chiffre d'affaires. | 맞춤 케이크와 메뉴 항목이 없는 업체 주문은 매출에만 들어가요.
 Où en sont les demandes | 문의 진행 상황
 Exporter | 내보내기
-Pour un tableur : sans email ni téléphone. Le fichier contient des noms de clients : à ranger dans le Drive de Madame Cho, pas ailleurs. | 스프레드시트용 파일이에요 (이메일, 전화번호 제외). 고객 이름이 들어 있으니 Madame Cho의 Drive에만 보관하세요.
+Pour un tableur, sans email ni téléphone. Contient des noms de clients : à ranger dans le Drive de Madame Cho. | 스프레드시트용 (이메일, 전화번호 제외). 고객 이름이 있으니 Madame Cho의 Drive에만 보관하세요.
 Commandes (CSV) | 주문 (CSV)
 Clients (CSV) | 고객 (CSV)
-Depuis le début de la gestion · particuliers en TTC, professionnels en HT | 관리 시작부터 · 개인은 부가세 포함, 업체는 부가세 별도
+Depuis le début · particuliers en TTC, pros en HT | 처음부터 · 개인은 부가세 포함, 업체는 부가세 별도
 Chiffre d'affaires total | 총매출
-HT, particuliers et professionnels | 부가세 별도, 개인과 업체 합계
+HT, tous clients | 부가세 별도, 전체 고객
 Particuliers, TTC | 개인, 부가세 포함
 Professionnels, HT | 업체, 부가세 별도
 Panier moyen, particuliers | 개인 평균 주문 금액
@@ -593,7 +593,7 @@ TTC, par commande remise | 부가세 포함, 전달한 주문 1건당
 Livraison moyenne, professionnels | 업체 평균 배달 금액
 HT, par livraison remise | 부가세 별도, 배달 1건당
 Demandes abouties, particuliers | 성사된 문의 (개인)
-particuliers, au moins 2 commandes remises | 개인 고객, 전달한 주문 2건 이상
+particuliers, 2 commandes ou plus | 개인 고객, 주문 2건 이상
 Particuliers : chiffre d'affaires TTC des 12 derniers mois | 개인: 최근 12개월 매출 (부가세 포함)
 Professionnels : chiffre d'affaires HT des 12 derniers mois | 업체: 최근 12개월 매출 (부가세 별도)
 Total, HT | 합계, 부가세 별도
@@ -601,11 +601,11 @@ Le panier est celui des particuliers ; le total additionne les deux groupes, hor
 Gâteaux vendus aux particuliers | 개인에게 판매한 케이크
 Gamme livrée aux professionnels | 업체에 배달한 제품
 Montant HT | 금액 (부가세 별도)
-Les gâteaux personnalisés sans ligne de la carte ne sont comptés que dans le chiffre d'affaires. | 메뉴 항목이 없는 맞춤 케이크는 매출에만 들어가요.
+Gâteaux personnalisés hors carte : comptés seulement dans le chiffre d'affaires. | 메뉴에 없는 맞춤 케이크는 매출에만 들어가요.
 Filtre | 필터
 Retirer le filtre | 필터 지우기
 Aucune commande avec ce filtre. | 이 필터에 맞는 주문이 없어요.
-Le site madamecho.com · 30 derniers jours, d'après Matomo | madamecho.com 사이트 · 최근 30일, Matomo 기준
+30 derniers jours, d'après Matomo | 최근 30일, Matomo 기준
 Actualiser | 새로고침
 Ouvrir Matomo | Matomo 열기
 Les visites du site | 사이트 방문
@@ -641,8 +641,8 @@ Scans sur 30 jours | 최근 30일 스캔
 Demandes reçues par le QR code | QR 코드로 받은 문의
 dans la gestion, 30 jours | 관리 기준, 최근 30일
 Pas encore de scan sur les 30 derniers jours. | 최근 30일 동안 스캔이 없어요.
-Les demandes « reçues par le QR code » sont celles que le formulaire du site a marquées après un scan ; elles comptent aussi dans Ventes, « D'où viennent les commandes ». | ‘QR 코드로 받은 문의’는 스캔 후 사이트 문의 양식이 표시한 문의예요. 판매 › ‘주문이 들어온 경로’에도 함께 집계돼요.
-Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n'est pas compté. | 스캔할 때마다 madamecho.com/qr이 열리고, Matomo는 이를 ‘qr-code’ 캠페인으로 집계해요. 측정을 거부한 방문자는 집계되지 않아요.
+Demandes envoyées par le formulaire du site après un scan. | 스캔 후 사이트 문의 양식으로 보낸 문의예요.
+Chaque scan passe par madamecho.com/qr (campagne Matomo « qr-code »). | 스캔은 모두 madamecho.com/qr을 거쳐요 (Matomo 캠페인 « qr-code »).
 Assistants IA | AI 어시스턴트
 Pages les plus vues | 많이 본 페이지
 Page | 페이지
@@ -669,16 +669,16 @@ erreur de Matomo | Matomo 오류
 # Plus, manuel et assistant
 Sommaire | 차례
 Statistiques du site | 사이트 통계
-Ventes, canaux, délais de réponse, avis | 판매, 경로, 답장 시간, 리뷰
-Ce qu'il faut préparer, jour par jour | 날짜별로 준비할 것
-Prix d'achat et allergènes des recettes | 재료 구입 가격과 알레르기 유발 성분
-Langue, mot de passe, signature des emails, lien d'avis, données | 화면 언어, 비밀번호, 이메일 서명, 리뷰 링크, 데이터
+Ventes et visites du site | 판매와 사이트 방문
+À préparer, jour par jour | 날짜별 준비
+Prix et allergènes | 가격과 알레르기 유발 성분
+Langue, mot de passe, emails, données | 언어, 비밀번호, 이메일, 데이터
 Se déconnecter | 로그아웃
 Mon compte | 내 계정
 IA | AI
-Une IA : questions, problèmes, idées d'amélioration | AI: 질문, 문제, 개선 아이디어
+Une IA : questions, problèmes, idées | AI: 질문, 문제, 아이디어
 Manuel | 설명서
-Comment fonctionne la gestion, écran par écran | 관리 시스템 사용법, 화면별로
+Mode d'emploi, écran par écran | 화면별 사용법
 Assistant | 어시스턴트
 Questions, problèmes, idées d'amélioration | 질문, 문제, 개선 아이디어
 Nouvelle conversation | 새 대화
@@ -733,14 +733,14 @@ Question | 질문
 
 # Réglages
 Langue de l'écran | 화면 언어
-Le choix est gardé sur cet appareil. Ce qu'on écrit (commentaires, clients, recettes) et les emails préparés restent en français. | 이 선택은 이 기기에 저장돼요. 직접 적는 내용(메모, 고객 정보, 레시피)과 준비된 이메일은 프랑스어 그대로예요.
+Gardé sur cet appareil. Notes, fiches et emails préparés restent en français. | 이 기기에 저장돼요. 메모, 고객 정보, 준비된 이메일은 프랑스어 그대로예요.
 Mon mot de passe | 내 비밀번호
 Mot de passe actuel | 현재 비밀번호
 Changer le mot de passe | 비밀번호 바꾸기
 Emails préparés et avis Google | 준비된 이메일과 구글 리뷰
 Signature des emails préparés | 준비된 이메일의 서명
 Lien pour laisser un avis Google | 구글 리뷰 작성 링크
-Dans la fiche Google de Madame Cho : « Demander des avis », puis copier le lien. Tant qu'il est vide, la gestion ne propose pas de demander d'avis. | 구글의 Madame Cho 프로필에서 « Demander des avis »(리뷰 요청)를 누르고 링크를 복사해 넣으세요. 비어 있으면 관리 화면에서 리뷰 요청을 제안하지 않아요.
+Fiche Google de Madame Cho › « Demander des avis » › copier le lien. | 구글의 Madame Cho 프로필 › « Demander des avis » › 링크 복사.
 Qui a accès | 접근 권한이 있는 사람
 Administratrice | 관리자
 Membre | 멤버
@@ -749,7 +749,7 @@ invitation en attente | 초대 대기
 jamais connecté | 접속한 적 없음
 Désactiver | 비활성화
 Donner un accès à quelqu'un | 다른 사람에게 접근 권한 주기
-Seulement pour une personne qui travaille pour Madame Cho. Elle reçoit un lien pour choisir son mot de passe. Une IA n'a jamais de compte ici. | Madame Cho를 위해 일하는 사람에게만 주세요. 그 사람은 비밀번호를 정하는 링크를 받아요. AI는 여기에 계정을 가질 수 없어요.
+Pour une personne de Madame Cho seulement, jamais une IA. Elle reçoit un lien par email. | Madame Cho에서 일하는 사람만 (AI는 안 돼요). 이메일로 링크를 받아요.
 Rôle | 역할
 Membre (commandes, clients, produits) | 멤버 (주문, 고객, 제품)
 Administratrice (aussi les accès et les données) | 관리자 (접근 권한과 데이터도 관리)
@@ -758,7 +758,7 @@ Demandes du site | 사이트 문의
 Arrêter l'enregistrement | 자동 저장 끄기
 Activer l'enregistrement des demandes du site | 사이트 문의 자동 저장 켜기
 Statistiques du site (Matomo) | 사이트 통계 (Matomo)
-Les visites du site viennent de Matomo (stats.madamecho.com). Avec une clé d'accès, la gestion les montre dans Statistiques › Site internet, à côté des ventes. | 사이트 방문 숫자는 Matomo(stats.madamecho.com)에서 와요. 접근 키가 있으면 통계 › 웹사이트에서 판매 옆에 보여 줘요.
+Les visites du site (Statistiques › Site internet) viennent de Matomo. | 사이트 방문 숫자(통계 › 웹사이트)는 Matomo에서 와요.
 État | 상태
 relié | 연결됨
 pas encore relié | 아직 연결 안 됨
@@ -770,12 +770,12 @@ Roue dentée « Administration », puis « Personnel » › « Sécurité ». | 
 En bas, « Jetons d'authentification » : « Créer un nouveau jeton ». Matomo redemande le mot de passe. | 아래쪽 « Jetons d'authentification »에서 « Créer un nouveau jeton »을 누르세요. Matomo가 비밀번호를 다시 물어봐요.
 Description : « Gestion Madame Cho ». Copiez le jeton affiché et collez-le ici. | 설명(Description)에 « Gestion Madame Cho »라고 쓰세요. 화면에 나온 토큰을 복사해서 여기에 붙여 넣으세요.
 Clé d'accès de Matomo | Matomo 접근 키
-Elle reste dans la base de la gestion, hors du site. Elle n'est jamais réaffichée et ne part pas dans l'export. | 키는 사이트 밖에 있는 관리 데이터베이스에만 보관돼요. 다시 보여 주지 않고, 내보내기에도 들어가지 않아요.
+Gardée hors du site, jamais réaffichée. | 사이트 밖에 보관하고, 다시 보여 주지 않아요.
 Vérifier et enregistrer | 확인하고 저장
 Retirer la clé | 키 삭제
 Retirer la clé de Matomo ? Les visites du site ne s'afficheront plus dans la gestion. | Matomo 키를 삭제할까요? 관리 화면에 사이트 방문 숫자가 더 이상 보이지 않아요.
 Conservation des données (RGPD) | 데이터 보관 (GDPR)
-Chaque nuit, la gestion applique les durées annoncées dans la politique de confidentialité : demandes sans suite effacées 12 mois après le dernier échange, clients sans commande ni échange effacés au bout de 3 ans, journal des connexions gardé 6 mois. | 관리 화면은 매일 밤 개인정보 처리방침에 적힌 기간을 적용해요. 진행 안 된 문의는 마지막 연락 후 12개월 뒤 삭제, 주문도 연락도 없는 고객은 3년 뒤 삭제, 접속 기록은 6개월 보관.
+Chaque nuit : demandes sans suite effacées après 12 mois, clients inactifs après 3 ans, connexions après 6 mois. | 매일 밤: 진행 안 된 문의는 12개월, 활동 없는 고객은 3년, 접속 기록은 6개월 뒤 삭제돼요.
 Dernier passage de nuit | 마지막 야간 작업
 Dernier effacement | 마지막 삭제
 À effacer maintenant | 지금 삭제할 것
@@ -784,7 +784,7 @@ Demandes du site sans suite depuis plus de 11 mois : supprimez aussi leurs email
 Lancer l'effacement maintenant | 지금 삭제 실행
 Effacer maintenant ce qui a dépassé sa durée de conservation ? | 보관 기간이 지난 것을 지금 삭제할까요?
 Miroir pour le Drive | Drive용 사본
-Le miroir recopie chaque nuit une version réduite des registres (sans email, téléphone ni commentaires) dans un tableur du Drive (dossier 10), pour Mathieu et les récapitulatifs. | 사본은 매일 밤 기록을 간추려(이메일, 전화, 메모 제외) Drive의 스프레드시트(10번 폴더)에 복사해요. Mathieu와 요약 보고서용이에요.
+Chaque nuit, une copie réduite (sans email, téléphone ni notes) part dans un tableur du Drive (dossier 10). | 매일 밤 간추린 사본(이메일, 전화, 메모 제외)을 Drive 스프레드시트(10번 폴더)에 복사해요.
 actif | 켜짐
 arrêté | 꺼짐
 Dernière copie | 마지막 복사
@@ -796,10 +796,10 @@ Créer une nouvelle clé (l'ancienne cesse de marcher) | 새 키 만들기 (이�
 Créer la clé du miroir | 사본 키 만들기
 Arrêter le miroir | 사본 중지
 Reprise des données et export | 데이터 가져오기와 내보내기
-Reprise : le fichier JSON préparé à partir de Qonto et des demandes déjà reçues (jamais dans le dépôt du site). Sans risque à relancer : ce qui est déjà là est sauté. | 가져오기: Qonto와 이미 받은 문의로 만든 JSON 파일이에요 (사이트 저장소에는 절대 넣지 않아요). 다시 실행해도 괜찮아요. 이미 있는 것은 건너뛰어요.
+Reprise : fichier JSON préparé depuis Qonto (jamais dans le dépôt du site). Sans risque à relancer. | 가져오기: Qonto로 만든 JSON 파일이에요 (사이트 저장소에는 절대 넣지 않아요). 다시 실행해도 괜찮아요.
 Fichier de reprise (.json) | 가져오기 파일 (.json)
 Importer | 가져오기
-Export complet : clients, commandes, produits, ingrédients et recettes dans un fichier JSON (sans les comptes, la clé de l'assistant ni les conversations), pour une analyse ou une reprise. Ce n'est pas une restauration de l'espace : la sauvegarde, c'est celle de l'hébergement OVH (fichier de la base), qu'Olivier vérifie. Le fichier contient des données de clients : à ranger dans le Drive de Madame Cho (P-24), jamais ailleurs. | 전체 내보내기: 고객, 주문, 제품, 재료, 레시피를 JSON 파일 하나로 받아요(계정, 어시스턴트 키, 대화는 빠져요). 분석이나 가져오기용이에요. 관리 공간을 복원하는 백업이 아니에요. 진짜 백업은 OVH 호스팅 쪽 백업(데이터베이스 파일)이고 Olivier가 확인해요. 고객 정보가 들어 있으니 Madame Cho의 Drive에만 보관하세요 (P-24).
+Export complet en JSON (sans comptes, clé ni conversations), pour une analyse. Ce n'est pas une sauvegarde : celle-ci est chez OVH. Contient des données de clients : à ranger dans le Drive de Madame Cho. | 전체 내보내기: JSON 파일 하나(계정, 키, 대화 제외), 분석용이에요. 백업이 아니에요. 백업은 OVH에 있어요. 고객 정보가 있으니 Madame Cho의 Drive에만 보관하세요.
 Télécharger l'export complet | 전체 데이터 내보내기 다운로드
 Contrôle technique | 기술 점검
 Base de données | 데이터베이스
@@ -825,7 +825,7 @@ oubli | 비밀번호 찾기
 nouveau mot de passe | 새 비밀번호
 bloqué | 차단됨
 miroir | 사본
-Gardées 6 mois. Une connexion que vous ne reconnaissez pas : changez le mot de passe et prévenez Olivier (P-17). | 6개월 동안 보관해요. 모르는 접속이 있으면 비밀번호를 바꾸고 Olivier에게 알려 주세요 (P-17).
+Gardées 6 mois. Connexion inconnue : changez le mot de passe et prévenez Olivier. | 6개월 보관해요. 모르는 접속이 있으면 비밀번호를 바꾸고 Olivier에게 알려 주세요.
 Aucune. | 없어요.
 
 # Messages après une action
@@ -943,6 +943,8 @@ Allergie : seulement l'ingrédient à éviter, jamais d'information de santé. |
 Livraison moyenne | 평균 배달 금액
 HT | 부가세 별도
 Suivi de la commande | 주문 진행 기록
+la pièce, le kg, la plaque… | 개, kg, 판…
+Échanges et historique | 연락과 기록
 TXT;
 }
 
@@ -1044,8 +1046,8 @@ function coreen_motifs(): array {
         ['/^à encaisser : (' . $E . ')$/u', fn($m) => '받을 금액: ' . $m[1]],
         // Compteurs
         ['/^(\d+) commandes?$/', fn($m) => '주문 ' . $m[1] . '건'],
-        ['/^(\d+) commande\(s\) remise\(s\)$/', fn($m) => '전달 완료 주문 ' . $m[1] . '건'],
-        ['/^(\d+) livraison\(s\) remise\(s\)$/', fn($m) => '배달 완료 ' . $m[1] . '건'],
+        ['/^(\d+) commande(?:\(s\)|s)? remise(?:\(s\)|s)?$/', fn($m) => '전달 완료 주문 ' . $m[1] . '건'],
+        ['/^(\d+) livraison(?:\(s\)|s)? remise(?:\(s\)|s)?$/', fn($m) => '배달 완료 ' . $m[1] . '건'],
         ['/^(\d+) aujourd\'hui$/', fn($m) => '오늘 ' . $m[1]],
         ['/^(\d+) en cours$/', fn($m) => '진행 중 ' . $m[1] . '건'],
         ['/^(\d+) en retard$/', fn($m) => $m[1] . '건 늦음'],
@@ -1060,7 +1062,7 @@ function coreen_motifs(): array {
         ['/^(\d+) vendu\(s\) en 12 mois$/', fn($m) => '12개월 동안 ' . $m[1] . '개 판매'],
         ['/^(\d+) vendu\(s\)$/', fn($m) => $m[1] . '개 판매'],
         ['/^(\d+) ingrédient\(s\), coût (' . $E . ')$/u', fn($m) => '재료 ' . $m[1] . '개, 원가 ' . $m[2]],
-        ['/^(\d+) ingrédient\(s\), avec leur prix et leurs allergènes$/u', fn($m) => '재료 ' . $m[1] . '개 (가격과 알레르기 유발 성분)'],
+        ['/^(\d+) ingrédients?$/u', fn($m) => '재료 ' . $m[1] . '개'],
         ['/^(\d+) ingrédient\(s\) sans prix : le coût est sous-estimé\.$/u', fn($m) => '가격이 없는 재료 ' . $m[1] . '개: 원가가 실제보다 낮게 나와요.'],
         ['/^(\d+) jour\(s\) avant le retrait$/', fn($m) => '픽업 ' . $m[1] . '일 전까지'],
         ['/^(\d+) sur (\d+) en moins de 24 h$/', fn($m) => $m[2] . '건 중 ' . $m[1] . '건 24시간 안에 답장'],
@@ -1129,20 +1131,19 @@ function coreen_motifs(): array {
         ['/^Pour (\S+@\S+)\. Au moins (\d+) caractères : une petite phrase est plus facile à retenir et plus sûre\.$/u',
             fn($m) => $m[1] . ' 계정이에요. 최소 ' . $m[2] . '자. 짧은 문장이 기억하기 쉽고 더 안전해요.'],
         ['/^Le mot de passe doit faire au moins (\d+) caractères \(une phrase facile à retenir, par exemple\)\.$/u', fn($m) => '비밀번호는 최소 ' . $m[1] . '자여야 해요 (기억하기 쉬운 문장 등).'],
-        ['/^Au moins (\d+) caractères\. Gardez-le dans Bitwarden\. Oublié \? « Mot de passe oublié » sur la page de connexion envoie un lien à (.+)\.$/u',
-            fn($m) => '최소 ' . $m[1] . '자. Bitwarden에 저장해 두세요. 잊어버리면 로그인 화면의 ‘처음 접속하거나 비밀번호를 잊으셨나요?’에서 ' . $m[2] . ' 주소로 링크를 받을 수 있어요.'],
+        ['/^Au moins (\d+) caractères, à garder dans Bitwarden\.$/u', fn($m) => '최소 ' . $m[1] . '자. Bitwarden에 저장해 두세요.'],
         ['/^Essai : l\'email qui serait parti à (.+)$/u', fn($m) => '테스트: ' . $m[1] . ' 주소로 보냈을 이메일'],
         ['/^Gestion Madame Cho · version du (.+)$/u', fn($m) => 'Madame Cho 관리 · ' . ($date($m[1]) ?? $m[1]) . ' 버전'],
         // Statistiques du site
         ['/^Meilleur jour : (.+), (' . $N . ') visites?\.$/u', fn($m) => ($d = $date($m[1])) ? '가장 많이 온 날: ' . $d . ', 방문 ' . $m[2] . '회.' : null],
         ['/^Aujourd\'hui : (' . $N . ') visites?\.$/u', fn($m) => '오늘: 방문 ' . $m[1] . '회.'],
-        ['/^Matomo mesure le site depuis le (.+) : les jours d\'avant sont vides\.$/u', fn($m) => ($d = $date($m[1])) ? 'Matomo는 ' . $d . '부터 사이트를 측정해요. 그 전 날짜는 비어 있어요.' : null],
+        ['/^Mesure depuis le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . '부터 측정해요.' : null],
         ['/^En détail : (.+)$/u', fn($m) => '자세히: ' . $m[1]],
         ['/^Matomo ne répond pas, code (\d+)$/', fn($m) => 'Matomo가 응답하지 않아요 (코드 ' . $m[1] . ')'],
         ['/^Lecture impossible pour l\'instant : (.+?)\.( Réessayez dans quelques minutes\.)?$/u', fn($m) => '지금은 읽을 수 없어요: ' . $t($m[1]) . '.' . (!empty($m[2]) ? ' 몇 분 뒤에 다시 해 보세요.' : '')],
         ['/^Lecture impossible pour l\'instant \((.+)\) : voici les chiffres lus à (\d{2}) h (\d{2})\.$/u', fn($m) => '지금은 읽을 수 없어요 (' . $t($m[1]) . '). ' . $m[2] . ':' . $m[3] . '에 읽은 숫자예요.'],
-        ['/^Chiffres de Matomo, lus à (\d{2}) h (\d{2}) et gardés un quart d\'heure\. Mesure sans cookie : les visiteurs qui refusent la mesure ne sont pas comptés\.$/u',
-            fn($m) => 'Matomo 숫자예요. ' . $m[1] . ':' . $m[2] . '에 읽었고 15분 동안 보관해요. 쿠키 없이 측정하고, 측정을 거부한 방문자는 세지 않아요.'],
+        ['/^Matomo, lu à (\d{2}) h (\d{2})\. Sans cookie ; les refus de mesure ne sont pas comptés\.$/u',
+            fn($m) => 'Matomo, ' . $m[1] . ':' . $m[2] . '에 읽음. 쿠키 없이 측정하고, 거부한 방문자는 세지 않아요.'],
         // Réglages
         ['/^La tâche de nuit ne passe plus depuis le (.+) : prévenez Olivier \(tâche planifiée OVH\)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . '부터 야간 작업이 돌지 않아요. Olivier에게 알려 주세요 (OVH 예약 작업).' : null],
         // Messages après une action
@@ -1158,9 +1159,9 @@ function coreen_motifs(): array {
         ['/^· (' . $E . ') HT$/u', fn($m) => '· ' . $m[1] . ' (부가세 별도)'],
         ['/^Recette · coût (' . $E . ')(?: · marge (\d+) %)?$/u', fn($m) => '레시피 · 원가 ' . $m[1] . (isset($m[2]) ? ' · 마진 ' . $m[2] . ' %' : '')],
         ['/^(\d+) livrée\(s\)$/', fn($m) => '배달 완료 ' . $m[1] . '건'],
-        ['/^(\d+) livraison\(s\) pas encore marquée\(s\) « Livrée » : vérifiez-les avant de faire la facture, elles ne sont pas comptées\.$/u',
-            fn($m) => '아직 ‘배달 완료’로 표시하지 않은 배달이 ' . $m[1] . '건 있어요. 청구서를 만들기 전에 확인하세요. 합계에는 들어가지 않아요.'],
-        ['/^(\d+) livraison\(s\) déjà facturée\(s\) \((.+)\) : pas comptées dans le total\.$/u', fn($m) => '이미 청구한 배달 ' . $m[1] . '건 (' . $m[2] . '): 합계에 들어가지 않아요.'],
+        ['/^(\d+) livraisons? pas encore « Livrées? » : hors total, à vérifier avant la facture\.$/u',
+            fn($m) => '아직 ‘배달 완료’가 아닌 배달 ' . $m[1] . '건: 합계에서 빠져요. 청구서 전에 확인하세요.'],
+        ['/^(\d+) livraisons? déjà facturées? \((.+)\), hors total\.$/u', fn($m) => '이미 청구한 배달 ' . $m[1] . '건 (' . $m[2] . '), 합계에서 빠져요.'],
         ['/^(\d+) à facturer$/', fn($m) => '청구할 배달 ' . $m[1] . '건'],
         ['/^(\d+) livraison\(s\) sur (\d+) facturée\(s\)\.$/u', fn($m) => '배달 ' . $m[2] . '건 중 ' . $m[1] . '건 청구함.'],
         ['/^(\d+) livraison\(s\) · (' . $E . ') HT · (' . $E . ') TTC$/u', fn($m) => '배달 ' . $m[1] . '건 · ' . $m[2] . ' (부가세 별도) · ' . $m[3] . ' (부가세 포함)'],
@@ -1307,6 +1308,8 @@ function coreen_html(string $html): string {
             if ($nom === 'head') $tete = true;
             $protege = isset($fermes[$nom]) || str_contains($p, ' translate="no"');
             if (!$proteges && !$protege) $parts[$i] = coreen_attributs($p);
+            // Un champ de saisie protégé (on y tape en français) garde son contenu, mais son indication (placeholder) est de l'interface
+            elseif (!$proteges && ($nom === 'textarea' || $nom === 'input')) $parts[$i] = coreen_attributs($p, 'placeholder');
             if (!isset($vides[$nom]) && !str_ends_with($p, '/>')) {
                 $pile[] = [$nom, $protege, $tete && $nom === 'title'];
                 if ($protege) $proteges++;
@@ -1332,9 +1335,9 @@ function coreen_titre(string $t): string {
     else $s = coreen_texte($s) ?? $s;
     return htmlspecialchars($s, ENT_NOQUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
-function coreen_attributs(string $tag): string {
-    if (!preg_match('/\s(?:placeholder|aria-label|title|alt|data-confirmer)="/', $tag)) return $tag;
-    return preg_replace_callback('/(\s(?:placeholder|aria-label|title|alt|data-confirmer)=")([^"]*)(")/', function ($m) {
+function coreen_attributs(string $tag, string $noms = 'placeholder|aria-label|title|alt|data-confirmer'): string {
+    if (!preg_match('/\s(?:' . $noms . ')="/', $tag)) return $tag;
+    return preg_replace_callback('/(\s(?:' . $noms . ')=")([^"]*)(")/', function ($m) {
         $k = coreen_texte(html_entity_decode($m[2], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         return $k === null ? $m[0] : $m[1] . htmlspecialchars($k, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . $m[3];
     }, $tag) ?? $tag;

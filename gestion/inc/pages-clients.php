@@ -151,7 +151,7 @@ function page_client(): void {
                   . '<span class="l2">' . h($r['n'] . ' livraison(s) · ' . euros($r['ht']) . ' HT · ' . euros($r['ttc']) . ' TTC') . '</span><span class="l3">' . h($etat) . '</span></a>';
         }
         $c .= bloc('Relevés du mois', ($rel !== '' ? '<div class="liste">' . $rel . '</div>' : '<p class="vide">Aucune livraison notée.</p>')
-            . '<p class="aide">Une livraison = une commande. En fin de mois, le relevé donne les lignes et le total à recopier dans la facture Qonto.</p>');
+            . '<p class="aide">Une livraison = une commande. Le relevé du mois sert à faire la facture Qonto.</p>');
     }
     // Commandes
     $ks = commandes_du_client($id);
@@ -169,24 +169,24 @@ function page_client(): void {
             foreach ($ks as $k) if ($k['statut'] === 'remise') { $dk = $k; break; }
             $av = $lien === '' ? '<p class="aide">' . fr_ko('Ajoutez d\'abord le lien d\'avis de la fiche Google dans <a href="' . h(u('reglages')) . '#avis">Réglages</a>.',
                     '먼저 <a href="' . h(u('reglages')) . '#avis">설정</a>에 구글 프로필의 리뷰 링크를 넣어 주세요.') . '</p>'
-                : '<p class="aide">À proposer à tous les clients de la même façon, sans trier, sans contrepartie et sans demander une bonne note (règles de Google).</p>'
+                : '<p class="aide">À proposer à tous les clients, sans tri, sans contrepartie ni note demandée (règles de Google).</p>'
                   . bloc_email('email-avis', 'Demander un avis Google', email_avis($dk + ['client_prenom' => $cl['prenom'], 'client_nom' => $cl['nom'], 'client_type' => $cl['type'], 'client_contact' => $cl['contact']], $lien), $cl['email'])
                   . formulaire('avis_demande', bouton(icone('avis') . 'J\'ai demandé un avis', 'secondaire'));
         }
         $c .= bloc('Avis Google', $av);
     }
     // Commentaires et historique
-    $c .= bloc('Commentaires et historique', ($efface ? '' : formulaire_commentaire('Goûts, habitudes, préférences de retrait… Jamais d\'information de santé : pour une allergie, seulement l\'ingrédient à éviter.'))
+    $c .= bloc('Échanges et historique', ($efface ? '' : formulaire_commentaire('Goûts, habitudes, retrait préféré… Allergie : l\'ingrédient à éviter, sans info de santé.'))
         . fil_historique(historique(null, $id), true));
     // Droits et doublons
     if (!$efface) {
         $d = '<div class="actions-colonne">'
-           . '<details class="replie"><summary>Un doublon ? Fusionner une autre fiche dans celle-ci</summary>'
+           . '<details class="replie"><summary>Fusionner un doublon</summary>'
            . formulaire('fusionner', champ('doublon', 'Numéro de l\'autre fiche (elle sera vidée)', '', ['placeholder' => 'CL-0012', 'pattern' => 'CL-[0-9]{4,}', 'required' => true]) . bouton('Fusionner', 'secondaire'), ['data-confirmer' => 'Fusionner l\'autre fiche dans celle-ci ? Ses commandes passent ici.']) . '</details>'
-           . '<details class="replie"><summary>Le client demande ses données (droit d\'accès)</summary><p class="aide">Le fichier contient tout ce que la gestion garde sur lui : à lui envoyer depuis contact@ dans le mois.</p>'
+           . '<details class="replie"><summary>Demande d\'accès à ses données</summary><p class="aide">Tout ce que la gestion garde sur lui, à lui envoyer depuis contact@ sous un mois.</p>'
            . '<p>' . lien_bouton(u('client', ['id' => $id, 'export' => 'json']), 'Télécharger ses données', 'discret') . '</p></details>'
-           . '<details class="replie"><summary>Le client demande l\'effacement</summary>'
-           . '<p class="aide">Son nom, ses coordonnées, ses commentaires et les textes de ses demandes sont effacés tout de suite. Les montants et les dates restent, sans rien qui le désigne (comptes et statistiques). Les factures Qonto ne sont pas touchées : elles doivent être gardées 10 ans.</p>'
+           . '<details class="replie"><summary>Demande d\'effacement</summary>'
+           . '<p class="aide">Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures Qonto ne changent pas (gardées 10 ans).</p>'
            . formulaire('effacer', champ('motif', 'Motif', 'demande du client', ['maxlength' => '200']) . champ('confirmation', 'Tapez EFFACER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'EFFACER']) . bouton('Effacer ses données', 'danger')) . '</details>'
            . formulaire('inactif', bouton($cl['statut'] === 'actif' ? 'Marquer inactif (ne commande plus)' : 'Réactiver', 'discret'))
            . '</div>';
@@ -231,8 +231,8 @@ function page_releve(): void {
     $tvas = array_unique(array_column($r['lignes'], 'tva'));
     $c .= '<div class="tuiles">' . tuile('Livraisons', (string)$r['n'], $r['a_facturer'] . ' à facturer') . tuile('Total HT', euros($r['ht']))
         . tuile('TVA', euros($r['tva']), count($tvas) === 1 ? nombre_tva((int)reset($tvas)) : '') . tuile('Total TTC', euros($r['ttc'])) . '</div>';
-    if ($r['livrees'] < $r['n']) $c .= '<p class="erreur">' . icone('alerte') . ' ' . ($r['n'] - $r['livrees']) . ' livraison(s) pas encore marquée(s) « Livrée » : vérifiez-les avant de faire la facture, elles ne sont pas comptées.</p>';
-    if ($r['facturees']) $c .= '<p class="aide">' . $r['facturees'] . ' livraison(s) déjà facturée(s) (' . h(implode(', ', $r['factures'])) . ') : pas comptées dans le total.</p>';
+    if ($r['livrees'] < $r['n']) $c .= '<p class="erreur">' . icone('alerte') . ' ' . (($x = $r['n'] - $r['livrees']) > 1 ? $x . ' livraisons pas encore « Livrées » : hors total, à vérifier avant la facture.' : '1 livraison pas encore « Livrée » : hors total, à vérifier avant la facture.') . '</p>';
+    if ($r['facturees']) $c .= '<p class="aide">' . $r['facturees'] . ($r['facturees'] > 1 ? ' livraisons déjà facturées (' : ' livraison déjà facturée (') . h(implode(', ', $r['factures'])) . '), hors total.</p>';
     // Les lignes, regroupées comme sur la facture
     $rows = '';
     foreach ($r['lignes'] as $l) {
@@ -242,7 +242,7 @@ function page_releve(): void {
     $pied = '<tr><td colspan="3">Total HT</td><td class="nombre">' . h(euros($r['ht'])) . '</td></tr>'
           . '<tr><td colspan="3">TVA' . (count($tvas) === 1 ? ' ' . h(nombre_tva((int)reset($tvas))) : '') . '</td><td class="nombre">' . h(euros($r['tva'])) . '</td></tr>'
           . '<tr><td colspan="3"><b>Total TTC</b></td><td class="nombre"><b>' . h(euros($r['ttc'])) . '</b></td></tr>';
-    $c .= !$r['a_facturer'] ? '<p class="ok">Rien à facturer ce mois-ci : chaque livraison livrée a déjà sa facture.</p>' : bloc('À recopier dans la facture Qonto', '<table class="tableau releve"><thead><tr><th>Produit</th><th class="nombre">Quantité</th><th class="nombre">Prix HT</th><th class="nombre">Total HT</th></tr></thead><tbody>' . $rows . '</tbody><tfoot>' . $pied . '</tfoot></table>'
+    $c .= !$r['a_facturer'] ? '<p class="ok">Rien à facturer ce mois-ci.</p>' : bloc('À recopier dans la facture Qonto', '<table class="tableau releve"><thead><tr><th>Produit</th><th class="nombre">Quantité</th><th class="nombre">Prix HT</th><th class="nombre">Total HT</th></tr></thead><tbody>' . $rows . '</tbody><tfoot>' . $pied . '</tfoot></table>'
         . '<p class="aide">Les prix HT viennent de la gamme pro (Produits). La TVA est calculée sur le total HT, comme dans Qonto : la facture doit arriver au même total TTC, sinon un prix a changé.</p>');
     // Les livraisons du mois
     foreach ($r['livraisons'] as &$k) { $k['client_statut'] = $cl['statut']; $k['client_societe'] = $cl['societe']; $k['client_prenom'] = $cl['prenom']; $k['client_nom'] = $cl['nom']; $k['client_type'] = $cl['type']; $k['client_numero'] = $cl['numero']; }
@@ -256,7 +256,7 @@ function page_releve(): void {
             . liste_choix('moyen', 'Payée par', MOYENS, 'virement') . '</div>'
             . case_a_cocher('paye', 'Facture payée', $r['payees'] === $r['n'] && $r['n'] > 0)
             . bouton($r['a_facturer'] ? 'Noter la facture sur les ' . $r['a_facturer'] . ' livraison(s) à facturer' : 'Noter le paiement', 'secondaire'))
-        . '<p class="aide">Une fois la facture faite dans Qonto, notez son numéro ici : il s\'inscrit sur les livraisons livrées qui n\'en ont pas encore, jamais par-dessus un autre numéro. Cochez « Facture payée » quand le virement arrive.</p>');
+        . '<p class="aide">Notez ici le numéro de la facture Qonto. Cochez « Facture payée » quand le virement arrive.</p>');
     mise_en_page('Relevé de ' . mois_texte($mois), $c, 'clients');
 }
 
@@ -285,7 +285,7 @@ function page_client_edition(): void {
         }
     }
     $titre = $cl ? 'Modifier ' . client_nom($cl) : 'Nouveau client';
-    $c = titre_page(h($titre), $cl ? h($cl['numero']) : 'Seulement ce qui sert à préparer et remettre les commandes', '', $cl ? u('client', ['id' => $id]) : u('clients'));
+    $c = titre_page(h($titre), $cl ? h($cl['numero']) : '', '', $cl ? u('client', ['id' => $id]) : u('clients'));
     if ($erreurs) $c .= '<div class="erreur" role="alert">' . implode('<br>', $erreurs) . '</div>';
     $f = liste_choix('type', 'Type', TYPES_CLIENT, $d['type'])
        . '<div class="ligne-champs">' . champ('prenom', 'Prénom', $d['prenom'], ['autocomplete' => 'off']) . champ('nom', 'Nom de famille', $d['nom'], ['autocomplete' => 'off']) . '</div>'
@@ -294,7 +294,7 @@ function page_client_edition(): void {
        . '<div class="ligne-champs">' . champ('email', 'Email', $d['email'], ['type' => 'email', 'autocomplete' => 'off']) . champ('telephone', 'Téléphone', $d['telephone'], ['type' => 'tel', 'autocomplete' => 'off']) . '</div>'
        . '<div class="ligne-champs">' . champ('ville', 'Ville', $d['ville'], ['autocomplete' => 'off']) . liste_choix('canal', 'Premier contact par', CANAUX, $d['canal']) . '</div>'
        . champ('qonto', 'Nom du client dans Qonto (s\'il a une facture)', $d['qonto'], ['autocomplete' => 'off'])
-       . '<p class="aide">Ni date de naissance, ni adresse si elle ne sert pas, ni information de santé (R-38 et politique de confidentialité).</p>'
+       . '<p class="aide">Ni date de naissance, ni adresse inutile, ni info de santé.</p>'
        . '<div class="barre-enregistrer">' . bouton($cl ? 'Enregistrer' : 'Créer le client', 'principal large') . '</div>';
     $c .= formulaire('enregistrer', bloc('', $f));
     mise_en_page($titre, $c, 'clients');
