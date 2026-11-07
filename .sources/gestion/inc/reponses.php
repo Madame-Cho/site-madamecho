@@ -36,6 +36,8 @@ function reponse_sans_citation(string $t): string {
         $garde[] = rtrim($x);
     }
     $r = trim(implode("\n", $garde));
+    // Gmail note le gras ou l'italique de la version texte avec des astérisques (*Merci*) : on les retire
+    $r = preg_replace('/(?<![\w*])\*(?=\S)([^*\n]*\S)\*(?![\w*])/u', '$1', $r) ?? $r;
     $r = preg_replace("/\n{3,}/", "\n\n", $r) ?? $r;
     return $r !== '' ? $r : trim($t);
 }
