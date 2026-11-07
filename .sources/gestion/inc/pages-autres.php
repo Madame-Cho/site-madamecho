@@ -181,6 +181,17 @@ function page_statistiques_site(): void {
     usort($src, fn($a, $b) => matomo_val($b, 'nb_visits') <=> matomo_val($a, 'nb_visits'));
     $c .= bloc('D\'où viennent les visiteurs', tableau_parts($m['types'] ?? [], 'Origine')
         . ($src ? '<p class="aide">En détail : ' . h(implode(' · ', array_map(fn($x) => trim((string)($x['label'] ?? '')) . ' (' . entier_fr(matomo_val($x, 'nb_visits')) . ')', array_slice($src, 0, 8)))) . '</p>' : ''));
+    // QR code imprimé sur les emballages : madamecho.com/qr renvoie vers la carte, Matomo compte le scan dans la campagne « qr-code » (07/11/2026)
+    $qr30 = matomo_qr($m['qr30'] ?? null);
+    if ($qr30 !== null) {
+        $qr7 = matomo_qr($m['qr7'] ?? null);
+        $buts = $m['qrbuts30'] ?? null;
+        $c .= bloc('QR code sur les emballages', ($qr30['visites'] > 0
+                ? '<div class="tuiles petites">' . tuile('Scans sur 7 jours', entier_fr($qr7['visites'] ?? 0.0))
+                  . tuile('Scans sur 30 jours', entier_fr($qr30['visites']), is_array($buts) ? entier_fr(matomo_val($buts, 'nb_conversions')) . ' demande(s) envoyée(s) après un scan' : '') . '</div>'
+                : '<p class="vide">Pas encore de scan sur les 30 derniers jours.</p>')
+            . '<p class="aide">Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n\'est pas compté.</p>');
+    }
     // Pages les plus vues
     $rows = '';
     foreach (array_slice(array_values(array_filter(is_array($m['pages'] ?? null) ? $m['pages'] : [], fn($x) => is_array($x) && matomo_val($x, 'nb_hits') > 0)), 0, 10) as $x) {

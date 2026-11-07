@@ -141,8 +141,8 @@ function manuel_sections(): array {
         ['id' => 'statistiques', 'titre' => ['Statistiques', '통계'], 'textes' => [
             ['- <b>Ventes</b> : le chiffre d\'affaires, les commandes remises, le panier moyen, les clients et les fidèles, les demandes abouties, la réponse aux demandes du site en moins de 24 h, les avis Google, les gâteaux vendus, les canaux, et où en sont les demandes.',
              '- <b>판매</b>: 매출, 전달 완료 주문, 평균 주문 금액, 고객과 단골, 성사된 문의, 24시간 안에 답장한 사이트 문의, 구글 리뷰, 판매한 케이크, 경로, 문의 진행 상황.'],
-            ['- <b>Site internet</b> : les visites du site madamecho.com sur 30 jours (Matomo), les pages les plus vues, téléphone ou ordinateur, d\'où viennent les visiteurs.',
-             '- <b>웹사이트</b>: 30일 동안의 madamecho.com 방문(Matomo), 가장 많이 본 페이지, 휴대폰과 컴퓨터, 방문자가 온 경로.'],
+            ['- <b>Site internet</b> : les visites du site madamecho.com sur 30 jours (Matomo), les pages les plus vues, téléphone ou ordinateur, d\'où viennent les visiteurs, les scans du QR code imprimé sur les emballages.',
+             '- <b>웹사이트</b>: 30일 동안의 madamecho.com 방문(Matomo), 가장 많이 본 페이지, 휴대폰과 컴퓨터, 방문자가 온 경로, 포장에 인쇄된 QR 코드 스캔 수.'],
             ['Les montants sont ceux des commandes remises, TTC.',
              '금액은 전달 완료된 주문의 부가세 포함 금액이에요.'],
         ]],

@@ -88,6 +88,10 @@ function matomo_chiffres(bool $forcer = false): array {
         'types' => ['method' => 'Referrers.getReferrerType', 'period' => 'range', 'date' => 'last30'],
         'sources' => ['method' => 'Referrers.getAll', 'period' => 'range', 'date' => 'last30', 'filter_limit' => '8'],
         'appareils' => ['method' => 'DevicesDetection.getType', 'period' => 'range', 'date' => 'last30'],
+        // scans des QR codes imprimés (madamecho.com/qr) : campagne « qr-code », un mot-clé par support ; demandes envoyées après un scan
+        'qr7' => ['method' => 'Referrers.getCampaigns', 'period' => 'range', 'date' => 'last7', 'expanded' => '1', 'filter_limit' => '-1'],
+        'qr30' => ['method' => 'Referrers.getCampaigns', 'period' => 'range', 'date' => 'last30', 'expanded' => '1', 'filter_limit' => '-1'],
+        'qrbuts30' => ['method' => 'Goals.get', 'period' => 'range', 'date' => 'last30', 'segment' => 'referrerType==campaign;referrerName==' . GESTION_QR_CAMPAGNE],
     ];
     try {
         $r = matomo_appel(array_values($q), $jeton);
@@ -104,6 +108,20 @@ function matomo_chiffres(bool $forcer = false): array {
         if (is_array($cache) && ($cache['etat'] ?? '') === 'ok') return ['erreur' => $e->getMessage()] + $cache;
         return ['etat' => 'erreur', 'erreur' => $e->getMessage()];
     }
+}
+
+/** Scans des QR codes imprimés : la campagne « qr-code » du rapport des campagnes, avec ses visites en tout et par support (mot-clé) ; null si le rapport manque. */
+function matomo_qr(mixed $campagnes): ?array {
+    if (!is_array($campagnes)) return null;
+    foreach ($campagnes as $c) {
+        if (!is_array($c) || mb_strtolower(trim((string)($c['label'] ?? ''))) !== GESTION_QR_CAMPAGNE) continue;
+        $supports = [];
+        foreach (is_array($c['subtable'] ?? null) ? $c['subtable'] : [] as $s) {
+            if (is_array($s)) $supports[trim((string)($s['label'] ?? ''))] = matomo_val($s, 'nb_visits');
+        }
+        return ['visites' => matomo_val($c, 'nb_visits'), 'supports' => $supports];
+    }
+    return ['visites' => 0.0, 'supports' => []];
 }
 
 /** Valeur d'un rapport de Matomo, qu'il soit vide ([]) ou rempli. */

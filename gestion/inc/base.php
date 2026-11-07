@@ -39,6 +39,7 @@ define('GESTION_MATOMO', GESTION_ESSAI && getenv('MC_MATOMO') ? (string)getenv('
 const GESTION_MATOMO_SITE = 1;             // madamecho.com dans Matomo
 const GESTION_MATOMO_CACHE = 900;          // chiffres de Matomo gardés 15 minutes
 define('GESTION_MATOMO_DEBUT', GESTION_ESSAI && getenv('MC_MATOMO_DEBUT') ? (string)getenv('MC_MATOMO_DEBUT') : '2026-11-06');   // mesure du site en ligne depuis le 06/11/2026 (T-06)
+const GESTION_QR_CAMPAGNE = 'qr-code';     // campagne Matomo des QR codes imprimés : madamecho.com/qr renvoie vers la carte avec ce nom de campagne, mot-clé = support (packaging…)
 
 const STATUTS = ['demande' => 'Demande reçue', 'proposition' => 'Proposition envoyée', 'confirmee' => 'Confirmée',
                  'remise' => 'Remise', 'sans_suite' => 'Sans suite', 'annulee' => 'Annulée'];

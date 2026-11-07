@@ -607,6 +607,11 @@ Réseaux sociaux | 소셜 미디어
 Sites web | 다른 웹사이트
 Entrées directes | 직접 방문
 Campagnes | 캠페인
+QR code sur les emballages | 포장 QR 코드
+Scans sur 7 jours | 최근 7일 스캔
+Scans sur 30 jours | 최근 30일 스캔
+Pas encore de scan sur les 30 derniers jours. | 최근 30일 동안 스캔이 없어요.
+Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n'est pas compté. | 스캔할 때마다 madamecho.com/qr이 열리고, Matomo는 이를 ‘qr-code’ 캠페인으로 집계해요. 측정을 거부한 방문자는 집계되지 않아요.
 Assistants IA | AI 어시스턴트
 Pages les plus vues | 많이 본 페이지
 Page | 페이지
@@ -991,6 +996,7 @@ function coreen_motifs(): array {
         ['/^(\d+) jour\(s\) avant le retrait$/', fn($m) => '픽업 ' . $m[1] . '일 전까지'],
         ['/^(\d+) sur (\d+) en moins de 24 h$/', fn($m) => $m[2] . '건 중 ' . $m[1] . '건 24시간 안에 답장'],
         ['/^(' . $N . ') demande\(s\) envoyée\(s\)$/', fn($m) => '문의 ' . $m[1] . '건'],
+        ['/^(' . $N . ') demande\(s\) envoyée\(s\) après un scan$/', fn($m) => '스캔 후 문의 ' . $m[1] . '건'],
         ['/^(' . $N . ') pages vues$/', fn($m) => '페이지뷰 ' . $m[1] . '회'],
         ['/^([\d, ]+ %) des visites, 30 jours$/u', fn($m) => '방문의 ' . $m[1] . ' (30일)'],
         ['/^(' . $N . ') visites?$/', fn($m) => '방문 ' . $m[1] . '회'],

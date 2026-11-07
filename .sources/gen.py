@@ -488,9 +488,9 @@ def htaccess():
               "# la version d'essai renvoie vers la même page du site, l'atelier du logo et l'atelier du site n'existent plus (410)",
               "RewriteRule ^atelier-site/site/(.*)$ /$1 [R=301,L]",
               "RewriteRule ^atelier-(site|logo)(/|$) - [G,L]", "",
-              "# QR code imprimé sur le packaging (décision d'Olivier du 07/11/2026) : adresse fixe madamecho.com/qr,",
-              "# redirection temporaire (302) pour pouvoir changer la destination sans réimprimer ; la campagne compte les scans dans Matomo",
-              "RewriteRule ^qr/?$ /carte/?mtm_campaign=packaging&mtm_source=qr [R=302,L,NE]"]
+              "# QR code imprimé sur les emballages (décision d'Olivier du 07/11/2026) : adresse fixe madamecho.com/qr, redirection temporaire (302)",
+              "# pour changer un jour la destination sans réimprimer ; Matomo compte chaque scan dans la campagne « qr-code », mot-clé « packaging »",
+              "RewriteRule ^qr/?$ /carte/?mtm_campaign=qr-code&mtm_kwd=packaging [R=302,L,NC,NE]"]
     if ESSAI:
         l += ["", "# Version d'essai : le dossier atelier-site/ refuse les .js (scripts de feuille) ; ici, les scripts du site",
               "# (panier et formulaire) doivent être servis. Le reste des règles d'atelier-site/ s'applique.",
