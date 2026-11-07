@@ -73,6 +73,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
     if ($flash) $f = '<div class="flash flash-' . h($flash[0]) . '" role="status">' . nl2br(h($flash[1])) . '</div>';
     $essai = GESTION_ESSAI ? '<div class="bandeau-essai" role="note">Essai en local : aucun email ne part, les données sont fictives.</div>' : '';
     $page = '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+       . '<meta name="google" content="notranslate">'
        . '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
        . '<meta name="robots" content="noindex, nofollow, noarchive">'
        . '<title>' . h($titre) . ' · Gestion Madame Cho</title>'
@@ -93,14 +94,17 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . ($u ? '<nav class="onglets" aria-label="Menu principal">' . $onglets . '</nav>' : '')
        . '<script src="' . h(fichier_versionne('gestion.js')) . '"></script>'
        . '</body></html>';
-    echo traduire_page($page);
+    // Ni Chrome ni Edge ne doivent retraduire l'écran : l'outil a son propre choix FR/KO, et la traduction automatique
+    // remettait le coréen en français. translate="no" n'est posé sur <html> qu'après la traduction coréenne, qui laisse
+    // de côté tout ce qui porte cet attribut.
+    echo preg_replace('/<html lang="(fr|ko)">/', '<html lang="$1" translate="no">', traduire_page($page), 1);
     exit;
 }
 
 function page_indisponible(): void {
     entetes_securite();
     http_response_code(503);
-    echo '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+    echo '<!doctype html><html lang="fr" translate="no"><head><meta charset="utf-8"><meta name="google" content="notranslate"><meta name="viewport" content="width=device-width, initial-scale=1">'
        . '<meta name="robots" content="noindex, nofollow"><title>Indisponible · Gestion Madame Cho</title><link rel="stylesheet" href="' . h(fichier_versionne('gestion.css')) . '"></head>'
        . '<body class="deconnecte"><main class="page etroite"><h1>La gestion est momentanément indisponible</h1>'
        . '<p>La base de données ne répond pas. Les demandes du site continuent d\'arriver par email à contact@madamecho.com. Prévenez Olivier.</p>'
