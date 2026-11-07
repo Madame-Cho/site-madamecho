@@ -10,7 +10,7 @@ namespace MadameCho\Gestion;
 const TVA = [55 => '5,5 % (à emporter, consommation différée)', 100 => '10 % (à consommer sur place)', 200 => '20 %'];
 
 /** Quantités vendues (commandes remises) par produit et par variante depuis une date, en tout et pour chaque groupe :
- *  « part » (particuliers, B2C, montants TTC) et « pro » (professionnels, B2B, montants HT) (demande d'Olivier, 07/11/2026). */
+ *  « part » (particuliers, B2C) et « pro » (professionnels, B2B), chacun en HT et en TTC (demande d'Olivier, 07/11/2026). */
 function ventes_par_produit(string $depuis): array {
     $v = [];
     $tva = tva_produits();
@@ -24,20 +24,21 @@ function ventes_par_produit(string $depuis): array {
             $v[$pid]['q'] = ($v[$pid]['q'] ?? 0) + $q;
             $v[$pid]['ca'] = ($v[$pid]['ca'] ?? 0) + $q * (int)$l['prix'];
             $v[$pid]['variantes'][$code] = ($v[$pid]['variantes'][$code] ?? 0) + $q;
-            $montant = $g === 'part' ? $q * (int)$l['prix'] : (isset($l['ht']) ? (int)$l['ht'] * $q : ht_de_ttc($q * (int)$l['prix'], $tva[$pid] ?? 55));
+            $x = ligne_ht_ttc($l, $tva[$pid] ?? 55);
             $v[$pid][$g]['q'] = ($v[$pid][$g]['q'] ?? 0) + $q;
-            $v[$pid][$g]['montant'] = ($v[$pid][$g]['montant'] ?? 0) + $montant;
+            foreach (['ht', 'ttc'] as $b) $v[$pid][$g][$b] = ($v[$pid][$g][$b] ?? 0) + $x[$b];
             $v[$pid][$g]['variantes'][$code] = ($v[$pid][$g]['variantes'][$code] ?? 0) + $q;
         }
     }
     return $v;
 }
-/** Les ventes d'un gâteau en une ligne, particuliers (B2C, TTC) et professionnels (B2B, HT) séparés :
- *  « En 12 mois : 8 aux particuliers (B2C), 240 € TTC · 3 aux pros (B2B), 45 € HT ». */
+/** Les ventes d'un gâteau en une ligne, particuliers (B2C) et professionnels (B2B) séparés, dans la base choisie (HT ou TTC) :
+ *  « En 12 mois : 8 aux particuliers (B2C), 227 € HT · 3 aux pros (B2B), 45 € HT ». */
 function ventes_texte(?array $v, string $vide = 'Aucune vente remise en 12 mois'): string {
+    $t = taxe(); $T = TAXES[$t];
     $m = [];
-    if (!empty($v['part']['q'])) $m[] = (int)$v['part']['q'] . ' aux particuliers (B2C), ' . euros_ronds((int)$v['part']['montant']) . ' TTC';
-    if (!empty($v['pro']['q'])) $m[] = (int)$v['pro']['q'] . ' aux pros (B2B), ' . euros_ronds((int)$v['pro']['montant']) . ' HT';
+    if (!empty($v['part']['q'])) $m[] = (int)$v['part']['q'] . ' aux particuliers (B2C), ' . euros_ronds((int)($v['part'][$t] ?? 0)) . ' ' . $T;
+    if (!empty($v['pro']['q'])) $m[] = (int)$v['pro']['q'] . ' aux pros (B2B), ' . euros_ronds((int)($v['pro'][$t] ?? 0)) . ' ' . $T;
     return $m ? 'En 12 mois : ' . implode(' · ', $m) : $vide;
 }
 /** « Proposé depuis mars 2025 (1 an et 8 mois) », d'après la fiche ou, à défaut, la première demande ; vide si on ne sait pas. */
@@ -306,11 +307,12 @@ function page_produit(): void {
        . zone('notes', 'Notes', $p['notes'], ['rows' => '3', 'maxlength' => '3000'], 'Fournisseurs, astuces, ce qui a changé…')
        . bouton('Enregistrer la fiche', 'secondaire');
     $c .= bloc('Fiche technique', ($p['fiche_lien'] !== '' ? '<p>' . lien_bouton($p['fiche_lien'], 'Ouvrir la fiche technique', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</p>' : '') . formulaire('fiche', $f));
-    // Ventes : particuliers (B2C, TTC) et professionnels (B2B, HT) séparés, et depuis quand le gâteau est proposé (demande d'Olivier, 07/11/2026)
+    // Ventes : particuliers (B2C) et professionnels (B2B) séparés, dans la même base (HT ou TTC), et depuis quand le gâteau est proposé (demande d'Olivier, 07/11/2026)
     $depuis = produit_propose_depuis($p);
     $intro = $depuis ? '<p><b>' . h(depuis_texte($depuis)) . '</b>'
         . ($depuis['source'] === 'demande' ? '<br><span class="aide">D\'après la première demande qui contient ce gâteau ; la date exacte se note dans la fiche technique.</span>' : '') . '</p>' : '';
-    $cellule = fn(int $q, int $montant, string $taxe): string => $q ? '<b>' . $q . '</b><br><span class="petit">' . h(euros_ronds($montant) . ' ' . $taxe) . '</span>' : '—';
+    $t = taxe(); $T = TAXES[$t];
+    $cellule = fn(int $q, int $montant): string => $q ? '<b>' . $q . '</b><br><span class="petit">' . h(euros_ronds($montant) . ' ' . $T) . '</span>' : '—';
     $vt = '';
     $codes = array_unique(array_merge(array_keys($vars), array_keys($ventes['part']['variantes'] ?? []), array_keys($ventes['pro']['variantes'] ?? [])));
     foreach ($codes as $code) {
@@ -319,10 +321,10 @@ function page_produit(): void {
         $libelle = $vars[$code]['libelle'] ?? ($code === '' ? 'Sans variante' : (string)$code);
         $vt .= '<tr><td translate="no">' . h($libelle) . '</td><td class="nombre">' . ($qp ?: '—') . '</td><td class="nombre">' . ($qb ?: '—') . '</td></tr>';
     }
-    $P = ($ventes['part'] ?? []) + ['q' => 0, 'montant' => 0]; $B = ($ventes['pro'] ?? []) + ['q' => 0, 'montant' => 0];
+    $P = ($ventes['part'] ?? []) + ['q' => 0, 'ht' => 0, 'ttc' => 0]; $B = ($ventes['pro'] ?? []) + ['q' => 0, 'ht' => 0, 'ttc' => 0];
     $c .= bloc('Ventes des 12 derniers mois', $intro . ($vt !== ''
-        ? '<div class="defile"><table class="tableau ventes-gateaux"><thead><tr><th></th><th class="nombre">Particuliers (B2C)</th><th class="nombre">Pros (B2B)</th></tr></thead><tbody>' . $vt . '</tbody>'
-          . '<tfoot><tr><td>Total</td><td class="nombre">' . $cellule((int)$P['q'], (int)$P['montant'], 'TTC') . '</td><td class="nombre">' . $cellule((int)$B['q'], (int)$B['montant'], 'HT') . '</td></tr></tfoot></table></div>'
+        ? '<div class="choix-ligne">' . choix_taxe() . '</div><div class="defile"><table class="tableau ventes-gateaux"><thead><tr><th></th><th class="nombre">Particuliers (B2C)</th><th class="nombre">Pros (B2B)</th></tr></thead><tbody>' . $vt . '</tbody>'
+          . '<tfoot><tr><td>Total</td><td class="nombre">' . $cellule((int)$P['q'], (int)$P[$t]) . '</td><td class="nombre">' . $cellule((int)$B['q'], (int)$B[$t]) . '</td></tr></tfoot></table></div>'
           . '<p>' . lien_bouton(u('commandes', ['vue' => 'toutes', 'r' => $p['nom']]), 'Voir les commandes', 'discret') . '</p>'
         : '<p class="vide">Aucune commande remise.</p>'));
     $c .= bloc('Historique', fil_historique(historique(null, null, $id)));

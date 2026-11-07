@@ -448,13 +448,18 @@ function tableau_de_bord(): array {
     $r['propositions'] = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero
                              FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'proposition' ORDER BY k.dernier_echange ASC");
     $mois = date('Y-m');
-    // Le total du mois additionne tout (TTC) ; le panier moyen ne compte que les particuliers (demande d'Olivier, 07/11/2026)
-    $part = "NOT (k.type = 'pro' OR c.type = 'professionnel')";
-    $m = ligne("SELECT COUNT(*) AS n, SUM(COALESCE(k.prix_final, k.total_indicatif)) AS ca, SUM(CASE WHEN $part THEN 1 ELSE 0 END) AS n_part,
-                       SUM(CASE WHEN $part THEN COALESCE(k.prix_final, k.total_indicatif) ELSE 0 END) AS ca_part
-                FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'remise' AND substr(k.remise_le, 1, 7) = ?", [$mois]) ?? [];
-    $r['mois'] = ['n' => (int)($m['n'] ?? 0), 'ca' => (int)($m['ca'] ?? 0), 'n_part' => (int)($m['n_part'] ?? 0)];
-    $r['mois']['panier'] = $r['mois']['n_part'] ? intdiv((int)($m['ca_part'] ?? 0), $r['mois']['n_part']) : 0;
+    // Le total du mois additionne tout ; le panier moyen ne compte que les particuliers (demande d'Olivier, 07/11/2026). En HT et en TTC :
+    // l'écran montre l'un ou l'autre selon le choix « Montants HT | TTC », jamais les deux mélangés (taxe())
+    $tva = tva_produits();
+    $r['mois'] = ['n' => 0, 'n_part' => 0, 'ca' => ['ht' => 0, 'ttc' => 0], 'panier' => ['ht' => 0, 'ttc' => 0]];
+    $part = ['ht' => 0, 'ttc' => 0];
+    foreach (lignes("SELECT k.*, c.type AS client_type FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'remise' AND substr(k.remise_le, 1, 7) = ?", [$mois]) as $k) {
+        $x = commande_ht_ttc($k, $tva);
+        $r['mois']['n']++;
+        foreach (['ht', 'ttc'] as $b) $r['mois']['ca'][$b] += $x[$b];
+        if (!commande_est_pro($k)) { $r['mois']['n_part']++; foreach (['ht', 'ttc'] as $b) $part[$b] += $x[$b]; }
+    }
+    if ($r['mois']['n_part']) foreach (['ht', 'ttc'] as $b) $r['mois']['panier'][$b] = intdiv($part[$b], $r['mois']['n_part']);
     $r['demandes_mois'] = (int)val("SELECT COUNT(*) FROM commandes WHERE substr(recue_le, 1, 7) = ?", [$mois]);
     return $r;
 }
@@ -845,9 +850,17 @@ function commande_ht_ttc(array $k, array $tvaProduits): array {
     if ($ttcL > 0 && abs($ttc - $ttcL) <= count($lignes)) return ['ttc' => $ttc, 'ht' => $htL];
     return ['ttc' => $ttc, 'ht' => $ttcL > 0 ? (int)round($ttc * $htL / $ttcL) : ht_de_ttc($ttc, 55)];
 }
+/** Une ligne de commande en centimes, HT et TTC : le HT de la gamme pro quand la ligne l'a, sinon le TTC ramené au taux du gâteau. */
+function ligne_ht_ttc(array $l, int $tva): array {
+    $q = (int)($l['q'] ?? 0);
+    $tva = (int)($l['tva'] ?? $tva);
+    $ht = isset($l['ht']) ? (int)$l['ht'] * $q : null;
+    $ttc = isset($l['prix']) ? (int)$l['prix'] * $q : ($ht !== null ? ttc_de_ht($ht, $tva) : 0);
+    return ['ht' => $ht ?? ht_de_ttc($ttc, $tva), 'ttc' => $ttc];
+}
 /** Les ventes (commandes remises), séparées entre particuliers (« part ») et professionnels (« pro ») : demande d'Olivier du
- *  07/11/2026. Un total peut additionner les deux groupes (en HT) ; une moyenne, jamais. Particuliers en TTC (leurs prix),
- *  professionnels en HT (leurs factures). */
+ *  07/11/2026. Un total peut additionner les deux groupes ; une moyenne, jamais. Chaque montant en HT et en TTC : l'écran montre
+ *  l'un ou l'autre selon le choix « Montants HT | TTC » (taxe()), jamais les deux mélangés (demande d'Olivier, 07/11/2026). */
 function statistiques(): array {
     $tva = tva_produits();
     $zero = ['n' => 0, 'ht' => 0, 'ttc' => 0];
@@ -859,20 +872,20 @@ function statistiques(): array {
         $ajouter($s['groupes'][$g]);
         $mo = substr((string)$k['remise_le'], 0, 7);
         if ($mo !== '') { $s['mois'][$mo] ??= ['part' => $zero, 'pro' => $zero]; $ajouter($s['mois'][$mo][$g]); }
-        $s['canaux'][$k['canal']][$g] = ($s['canaux'][$k['canal']][$g] ?? 0) + ($g === 'pro' ? $m['ht'] : $m['ttc']);
+        $s['canaux'][$k['canal']][$g] ??= ['ht' => 0, 'ttc' => 0];
+        foreach (['ht', 'ttc'] as $b) $s['canaux'][$k['canal']][$g][$b] += $m[$b];
         foreach (json_decode((string)$k['lignes'], true) ?: [] as $l) {
             $pid = explode('|', (string)($l['v'] ?? ''))[0] ?: (string)($l['nom'] ?? '');
-            $q = (int)($l['q'] ?? 0);
-            $montant = $g === 'part' ? (int)($l['prix'] ?? 0) * $q : (isset($l['ht']) ? (int)$l['ht'] * $q : ht_de_ttc((int)($l['prix'] ?? 0) * $q, $tva[$pid] ?? 55));
-            $s['produits'][$g][$pid] ??= ['nom' => (string)($l['nom'] ?? ''), 'q' => 0, 'montant' => 0, 'ht' => 0, 'fiche' => isset($tva[$pid])];
-            $s['produits'][$g][$pid]['q'] += $q;
-            $s['produits'][$g][$pid]['montant'] += $montant;
-            $s['produits'][$g][$pid]['ht'] += $g === 'part' ? ht_de_ttc($montant, $tva[$pid] ?? 55) : $montant;
+            $x = ligne_ht_ttc($l, $tva[$pid] ?? 55);
+            $s['produits'][$g][$pid] ??= ['nom' => (string)($l['nom'] ?? ''), 'q' => 0, 'ht' => 0, 'ttc' => 0, 'fiche' => isset($tva[$pid])];
+            $s['produits'][$g][$pid]['q'] += (int)($l['q'] ?? 0);
+            $s['produits'][$g][$pid]['ht'] += $x['ht'];
+            $s['produits'][$g][$pid]['ttc'] += $x['ttc'];
         }
     }
     krsort($s['mois']);
     $s['mois'] = array_slice($s['mois'], 0, 24, true);
-    foreach (['part', 'pro'] as $g) uasort($s['produits'][$g], fn($a, $b) => $b['montant'] <=> $a['montant']);
+    foreach (['part', 'pro'] as $g) uasort($s['produits'][$g], fn($a, $b) => $b['ht'] <=> $a['ht']);
     // Demandes : combien, et combien ont abouti, par canal et par groupe (une livraison aux restaurants n'est pas une demande à convaincre)
     $GROUPE = "CASE WHEN k.type = 'pro' OR c.type = 'professionnel' THEN 'pro' ELSE 'part' END";
     $s['demandes'] = ['part' => ['n' => 0, 'remises' => 0, 'perdues' => 0], 'pro' => ['n' => 0, 'remises' => 0, 'perdues' => 0]];
@@ -1072,7 +1085,21 @@ function importer(array $data): array {
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
     }
-    evenement('import', 'Reprise : ' . $cr['clients_crees'] . ' client(s) créé(s), ' . $cr['clients_repris'] . ' repris, ' . $cr['commandes_creees'] . ' commande(s) créée(s), ' . $cr['commandes_sautees'] . ' déjà présente(s)'
-        . ($cr['produits_crees'] || $cr['produits_maj'] ? ', gamme pro : ' . $cr['produits_crees'] . ' produit(s) ajouté(s), ' . $cr['produits_maj'] . ' mis à jour' : '') . ($cr['lignes_reliees'] ? ', ' . $cr['lignes_reliees'] . ' ligne(s) rattachée(s)' : ''));
-    return $cr;
+    return $cr;   // le résultat est noté dans l'historique par l'écran de la reprise (reprise_noter), réussite ou échec
+}
+/** Le résumé d'une reprise en une phrase, le même dans le message affiché et dans « Dernières reprises ». */
+function reprise_resume(array $cr): string {
+    $m = [$cr['clients_crees'] . ' client(s) créé(s)', $cr['clients_repris'] . ' déjà connu(s)', $cr['commandes_creees'] . ' commande(s) créée(s)', $cr['commandes_sautees'] . ' déjà présente(s)'];
+    if ($cr['produits_crees'] || $cr['produits_maj']) array_push($m, $cr['produits_crees'] . ' produit(s) pro ajouté(s)', $cr['produits_maj'] . ' prix pro mis à jour');
+    if ($cr['lignes_reliees']) $m[] = $cr['lignes_reliees'] . ' ligne(s) rattachée(s) à la gamme pro';
+    return implode(', ', $m);
+}
+/** Chaque essai de reprise dans l'historique (demande d'Olivier, 07/11/2026) : réussie, réussie avec des points à revoir, ou échouée,
+ *  avec le fichier et ce qui s'est passé. « Dernières reprises », dans Réglages, les relit. */
+const REPRISE_ETATS = ['ok' => 'Réussie', 'a_revoir' => 'Réussie, à revoir', 'echec' => 'Échouée'];
+function reprise_noter(string $etat, string $fichier, string $texte): void {
+    evenement('import', mb_substr($texte, 0, 4000), [], mb_substr($fichier, 0, 120), $etat);
+}
+function reprises_dernieres(int $n = 5): array {
+    return lignes("SELECT le, auteur, texte, ancien AS fichier, nouveau AS etat FROM evenements WHERE type = 'import' ORDER BY id DESC LIMIT " . max(1, $n));
 }

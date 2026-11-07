@@ -597,6 +597,21 @@ particuliers, 2 commandes ou plus | 개인 고객, 주문 2건 이상
 Particuliers : chiffre d'affaires TTC des 12 derniers mois | 개인: 최근 12개월 매출 (부가세 포함)
 Professionnels : chiffre d'affaires HT des 12 derniers mois | 업체: 최근 12개월 매출 (부가세 별도)
 Total, HT | 합계, 부가세 별도
+Total, TTC | 합계, 부가세 포함
+Particuliers, HT | 개인, 부가세 별도
+Professionnels, TTC | 업체, 부가세 포함
+TTC, tous clients | 부가세 포함, 전체 고객
+Depuis le début · montants HT | 처음부터 · 부가세 별도 금액
+Depuis le début · montants TTC | 처음부터 · 부가세 포함 금액
+Montants | 금액
+Commandes remises, depuis le début, montants HT. | 처음부터 전달 완료된 주문, 부가세 별도 금액이에요.
+Commandes remises, depuis le début, montants TTC. | 처음부터 전달 완료된 주문, 부가세 포함 금액이에요.
+Gâteaux personnalisés hors carte, remises et régularisations : comptés seulement dans le chiffre d'affaires. | 메뉴에 없는 맞춤 케이크, 할인, 정산 조정은 매출에만 들어가요.
+Dernières reprises | 최근 가져오기
+Aucune reprise pour l'instant. | 아직 가져오기가 없어요.
+Réussie | 성공
+Réussie, à revoir | 성공, 확인 필요
+Échouée | 실패
 Le panier est celui des particuliers ; le total additionne les deux groupes, hors taxes. | 평균 금액은 개인 주문만 계산해요. 합계는 두 그룹을 더한 부가세 별도 금액이에요.
 Gâteaux vendus aux particuliers | 개인에게 판매한 케이크
 Gamme livrée aux professionnels | 업체에 배달한 제품
@@ -1069,6 +1084,22 @@ function coreen_champs(string $s): string {
 }
 
 /* ---------- Phrases qui contiennent un nombre, une date ou un nom ---------- */
+/** Le résumé d'une reprise (reprise_resume), morceau par morceau ; null si un morceau est inconnu. */
+const KO_REPRISE_RAISONS = ['le fichier n\'a pas pu être lu (2 Mo au plus)' => '파일을 읽을 수 없었어요 (최대 2 MB)',
+                            'ce fichier n\'est pas un JSON lisible' => '읽을 수 있는 JSON 파일이 아니에요', 'erreur pendant l\'enregistrement' => '저장 중 오류가 났어요'];
+function coreen_reprise(string $s): ?string {
+    $motifs = ['/^(\d+) client\(s\) créé\(s\)$/u' => '고객 %s명 생성', '/^(\d+) déjà connu\(s\)$/u' => '%s명은 이미 있음', '/^(\d+) commande\(s\) créée\(s\)$/u' => '주문 %s건 생성',
+               '/^(\d+) déjà présente\(s\)$/u' => '%s건은 이미 있음', '/^(\d+) produit\(s\) pro ajouté\(s\)$/u' => '업체용 제품 %s개 추가', '/^(\d+) prix pro mis à jour$/u' => '업체용 가격 %s개 수정',
+               '/^(\d+) ligne\(s\) rattachée\(s\) à la gamme pro$/u' => '업체용 제품에 연결된 줄 %s개'];
+    $r = [];
+    foreach (explode(', ', $s) as $x) {
+        $y = null;
+        foreach ($motifs as $re => $ko) if (preg_match($re, $x, $m)) { $y = sprintf($ko, $m[1]); break; }
+        if ($y === null) return null;
+        $r[] = $y;
+    }
+    return implode(', ', $r);
+}
 function coreen_motifs(): array {
     static $p = null;
     if ($p !== null) return $p;
@@ -1109,8 +1140,14 @@ function coreen_motifs(): array {
             fn($m) => ($x = $indispo($m[1])) ? '이날은 예약 불가예요: ' . $x . '. 고객과 확인하거나 날짜를 바꾸세요.' : null],
         ['/^(\d+) (?:ans?|mois|semaines|jours?)(?: et \d+ mois)?$/u', fn($m) => $duree($m[0])],
         ['/^Proposé depuis (' . $ML . ') (\d{4}) \((.+)\)$/u', fn($m) => ($mo = coreen_mois($m[1])) && ($d = $duree($m[3])) ? '판매 시작: ' . $m[2] . '년 ' . $mo . ' (' . $d . ')' : null],
-        ['/^(?:En 12 mois : )?(\d+) aux particuliers \(B2C\), (' . $E . ') TTC$/u', fn($m) => (str_starts_with($m[0], 'En 12') ? '최근 12개월: ' : '') . '개인(B2C) ' . $m[1] . '개, ' . $m[2] . ' (부가세 포함)'],
-        ['/^(?:En 12 mois : )?(\d+) aux pros \(B2B\), (' . $E . ') HT$/u', fn($m) => (str_starts_with($m[0], 'En 12') ? '최근 12개월: ' : '') . '업체(B2B) ' . $m[1] . '개, ' . $m[2] . ' (부가세 별도)'],
+        ['/^(?:En 12 mois : )?(\d+) aux particuliers \(B2C\), (' . $E . ') (HT|TTC)$/u', fn($m) => (str_starts_with($m[0], 'En 12') ? '최근 12개월: ' : '') . '개인(B2C) ' . $m[1] . '개, ' . $m[2] . ($m[3] === 'HT' ? ' (부가세 별도)' : ' (부가세 포함)')],
+        ['/^(?:En 12 mois : )?(\d+) aux pros \(B2B\), (' . $E . ') (HT|TTC)$/u', fn($m) => (str_starts_with($m[0], 'En 12') ? '최근 12개월: ' : '') . '업체(B2B) ' . $m[1] . '개, ' . $m[2] . ($m[3] === 'HT' ? ' (부가세 별도)' : ' (부가세 포함)')],
+        // Chiffre d'affaires d'un mois (infobulle du graphique), demande d'Olivier du 07/11/2026
+        ['/^(\p{Lu}\p{Ll}+) (\d{4}) : (' . $E . ') (HT|TTC) · particuliers (' . $E . ') \((\d+ %)\) · professionnels (' . $E . ') \((\d+ %)\)$/u',
+            fn($m) => ($mo = coreen_mois($m[1])) ? $m[2] . '년 ' . $mo . ': ' . $m[3] . ($m[4] === 'HT' ? ' (부가세 별도)' : ' (부가세 포함)') . ' · 개인 ' . $m[5] . ' (' . $m[6] . ') · 업체 ' . $m[7] . ' (' . $m[8] . ')' : null],
+        ['/^(\p{Lu}\p{Ll}+) (\d{4}) : aucune vente remise$/u', fn($m) => ($mo = coreen_mois($m[1])) ? $m[2] . '년 ' . $mo . ': 판매 없음' : null],
+        // Mois et base des montants (tuile « Panier moyen » d'Aujourd'hui)
+        ['/^(' . $ML . ') · (HT|TTC)$/u', fn($m) => ($mo = coreen_mois($m[1])) ? $mo . ' · ' . ($m[2] === 'HT' ? '부가세 별도' : '부가세 포함') : null],
         ['/^(\d+) clients? : (\d+) particuliers? \(B2C\), (\d+) professionnels? \(B2B\)$/', fn($m) => '고객 ' . $m[1] . '명: 개인(B2C) ' . $m[2] . '명, 업체(B2B) ' . $m[3] . '곳'],
         // Dates seules, moments de retrait, heures, durées
         ['~^\d{2}/\d{2}/\d{4}(?: à \d{2} h \d{2})?$~', fn($m) => coreen_date($m[0])],
@@ -1292,6 +1329,12 @@ function coreen_motifs(): array {
         ['/^Reprise : (\d+) client\(s\) créé\(s\), (\d+) déjà connu\(s\), (\d+) commande\(s\) créée\(s\), (\d+) déjà présente\(s\)\.$/u',
             fn($m) => '가져오기: 고객 ' . $m[1] . '명 생성, ' . $m[2] . '명은 이미 있음, 주문 ' . $m[3] . '건 생성, ' . $m[4] . '건은 이미 있음.'],
         ['/^À revoir : (.+)$/u', fn($m) => '다시 볼 것: ' . $m[1]],
+        // Reprise (07/11/2026) : message après l'import et « Dernières reprises »
+        ['/^Import réussi : (.+)\.$/u', fn($m) => ($r = coreen_reprise($m[1])) !== null ? '가져오기 성공: ' . $r . '.' : null],
+        ['/^Import fait, avec (\d+) point\(s\) à revoir : (.+)\.$/u', fn($m) => ($r = coreen_reprise($m[2])) !== null ? '가져오기 완료, 확인할 점 ' . $m[1] . '개: ' . $r . '.' : null],
+        ['/^(\d+ client\(s\) créé\(s\), .+)\.$/u', fn($m) => ($r = coreen_reprise($m[1])) !== null ? $r . '.' : null],
+        ['/^Import échoué, rien n\'a été enregistré : (.+)\.$/u', fn($m) => '가져오기 실패, 아무것도 저장되지 않았어요: ' . (KO_REPRISE_RAISONS[$m[1]] ?? $m[1]) . '.'],
+        ['/^Rien n\'a été enregistré : (.+)\.$/u', fn($m) => '아무것도 저장되지 않았어요: ' . (KO_REPRISE_RAISONS[$m[1]] ?? $m[1]) . '.'],
         ['/^La reprise a échoué : rien n\'a été enregistré\.(.*)$/u', fn($m) => '가져오기에 실패했어요. 아무것도 저장되지 않았어요.' . $m[1]],
         // Assistant et rapports
         ['/^Pas de réponse : (.+)\.$/u', fn($m) => '답이 없어요: ' . $t($m[1]) . '.'],

@@ -298,12 +298,58 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .filtre-actif{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:-4px 0 12px;font-size:14px;color:var(--doux)}
 .filtre-actif .chip{display:inline-flex;align-items:center;min-height:24px;padding:1px 9px;border-radius:12px;background:var(--ivoire);color:var(--chocolat);font-size:12px;font-weight:500}
 .filtre-actif a{display:inline-flex;align-items:center;min-height:44px;margin-left:4px;color:var(--chocolat)}
-/* Statistiques : un graphique par groupe (particuliers, professionnels), jamais additionnés */
+/* Statistiques : sous-titres (graphiques, dernières reprises) */
 .sous-titre-graphique{margin:16px 0 4px;font-size:14px;font-weight:500;color:var(--doux)}
 .sous-titre-graphique:first-child{margin-top:0}
 .lien-chip{text-decoration:none}
 
-/* Graphique (une seule série : le chiffre d'affaires par mois) */
+/* Montants HT ou TTC : un seul choix pour tout ce qu'on compare (demande d'Olivier, 07/11/2026) */
+.choix-taxe{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--doux)}
+.choix-taxe span{margin-right:2px}
+.choix-taxe a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid var(--fort);border-radius:20px;background:var(--carte);color:var(--texte);text-decoration:none;font-weight:500;white-space:nowrap}
+.choix-taxe a:hover{border-color:var(--chocolat)}
+.choix-taxe a[aria-current]{background:var(--chocolat);border-color:var(--chocolat);color:#fff}
+.choix-ligne{margin:0 0 10px}
+
+/* Chiffre d'affaires par mois : professionnels (cacao) en bas, particuliers (caramel) au-dessus, même échelle, même base.
+   Couleurs vérifiées : distinctes pour les daltoniens, contraste 3:1 au moins sur le blanc. Styles en classes seulement (CSP). */
+.ca-mois{--c-pro:#824121;--c-part:#C18434;margin:2px 0 8px}
+.ca-mois .legende{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:0 0 6px;font-size:13px;color:var(--doux)}
+.ca-mois .legende span{display:inline-flex;align-items:center;gap:6px}
+.ca-mois .cle{display:inline-block;width:12px;height:12px;border-radius:3px}
+.ca-mois .cle.pro{background:var(--c-pro)}
+.ca-mois .cle.part{background:var(--c-part)}
+.ca-mois .seg-pro{fill:var(--c-pro)}
+.ca-mois .seg-part{fill:var(--c-part)}
+.colonnes,.lignes-ca{list-style:none;margin:0;padding:0}
+.colonnes{display:grid;grid-template-columns:repeat(12,minmax(0,1fr))}
+.colonne{display:flex;flex-direction:column;align-items:stretch;min-width:0;border-radius:6px 6px 0 0;color:var(--texte);text-decoration:none}
+.colonne svg{display:block;width:100%;height:190px;overflow:visible}
+.colonne text{font:500 11px var(--police);fill:var(--texte)}
+.colonne .mois{display:block;border-top:1px solid var(--fort);padding-top:4px;text-align:center;font-size:11px;color:var(--doux);white-space:nowrap;overflow:hidden}
+.colonne text.vide{fill:var(--doux)}
+.colonne:hover,.ligne-ca:hover{background:var(--ivoire)}
+.lignes-ca{display:none}
+.ligne-ca{display:grid;grid-template-columns:3.4em minmax(0,1fr) 5.8em;align-items:center;column-gap:8px;min-height:34px;padding:0 4px;border-radius:6px;color:var(--texte);text-decoration:none}
+.ligne-ca .mois{font-size:13px;color:var(--doux);white-space:nowrap}
+.ligne-ca svg{display:block;width:100%;height:12px}
+.ligne-ca b{font-weight:500;font-size:14px;text-align:right;white-space:nowrap}
+@media (max-width:599px){
+ .ca-mois .colonnes{display:none}
+ .ca-mois .lignes-ca{display:block}
+}
+/* Dernières reprises (Réglages) */
+.reprises{list-style:none;margin:0;padding:0}
+.reprises li{padding:10px 0;border-bottom:1px solid var(--ligne)}
+.reprises li:last-child{border-bottom:0}
+.reprises p{margin:2px 0}
+.reprise-tete{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.reprise-etat{display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:12px;font-size:13px;font-weight:500}
+.reprise-etat.e-ok{background:var(--vert-f);color:var(--vert)}
+.reprise-etat.e-a-revoir{background:var(--ambre-f);color:var(--ambre)}
+.reprise-etat.e-echec{background:var(--rouge-f);color:var(--erreur)}
+
+/* Graphique (une seule série : les visites par jour) */
 .graphique{margin:4px 0 6px}
 .graphique svg{display:block;width:100%;height:150px;overflow:visible}
 .graphique .barre{fill:var(--chocolat)}
