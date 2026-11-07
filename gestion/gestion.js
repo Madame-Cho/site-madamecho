@@ -442,7 +442,7 @@
     lab.insertAdjacentElement("afterend", barreA);
     barreA.insertAdjacentElement("afterend", boite);
     if (Reco) {
-      var bd = d.createElement("button"); bd.type = "button"; bd.className = "btn discret petit-btn"; bd.textContent = "🎤 " + T.dicter;
+      var bd = d.createElement("button"); bd.type = "button"; bd.className = "btn secondaire petit-btn"; bd.textContent = "🎤 " + T.dicter;
       var reco = null;
       bd.addEventListener("click", function () {
         if (reco) { reco.stop(); return; }
@@ -462,7 +462,7 @@
       barreA.appendChild(bd);
     }
     if (urlCorriger) {
-      var bc = d.createElement("button"); bc.type = "button"; bc.className = "btn discret petit-btn"; bc.textContent = "✎ " + T.corriger;
+      var bc = d.createElement("button"); bc.type = "button"; bc.className = "btn secondaire petit-btn"; bc.textContent = "✎ " + T.corriger;
       bc.addEventListener("click", function () {
         var texte = z.value.trim();
         boite.hidden = false; boite.textContent = "";
@@ -478,7 +478,7 @@
             if (j.ko) { var s = d.createElement("p"); s.className = "aide"; s.setAttribute("translate", "no"); s.lang = "ko"; s.textContent = T.sens + " " + j.ko; boite.appendChild(s); }
             if (j.remarque) { var rq = d.createElement("p"); rq.className = "aide"; rq.lang = "ko"; rq.textContent = j.remarque; boite.appendChild(rq); }
             var act = d.createElement("div"); act.className = "actions";
-            var u = d.createElement("button"); u.type = "button"; u.className = "btn secondaire"; u.textContent = T.utiliser;
+            var u = d.createElement("button"); u.type = "button"; u.className = "btn principal"; u.textContent = T.utiliser;
             u.addEventListener("click", function () { changer(z, j.fr); boite.hidden = true; z.focus(); });
             var g = d.createElement("button"); g.type = "button"; g.className = "btn discret"; g.textContent = T.garder;
             g.addEventListener("click", function () { boite.hidden = true; });
