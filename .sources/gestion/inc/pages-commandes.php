@@ -12,16 +12,16 @@ function page_accueil(): void {
     $auj = aujourdhui();
     $moisNom = MOIS[(int)date('n')];
     $kpi = '<div class="tuiles">'
-         . tuile('À répondre', (string)count($t['a_repondre']), count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) ? count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) . ' en retard' : 'réponse promise sous 24 h')
-         . tuile('Retraits à venir', (string)count($t['retraits']), '7 prochains jours')
-         . tuile('Remises en ' . $moisNom, (string)$t['mois']['n'], euros($t['mois']['ca']) . ' TTC')
-         . tuile('Panier moyen', $t['mois']['n'] ? euros($t['mois']['panier']) : '—', $moisNom)
+         . tuile('À répondre', (string)count($t['a_repondre']), count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) ? count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) . ' en retard' : 'réponse promise sous 24 h', '#demandes')
+         . tuile('Retraits à venir', (string)count($t['retraits']), '7 prochains jours', '#retraits')
+         . tuile('Remises en ' . $moisNom, (string)$t['mois']['n'], euros($t['mois']['ca']) . ' TTC', u('statistiques'))
+         . tuile('Panier moyen', $t['mois']['n'] ? euros($t['mois']['panier']) : '—', $moisNom, u('statistiques'))
          . '</div>';
     $c = titre_page('Aujourd\'hui', h(ucfirst(date_fr($auj, 'jour'))), lien_bouton(u('production'), icone('imprimer') . 'Fiche de production', 'discret'));
     $c .= $kpi;
     if ($t['depasses']) $c .= bloc('Retraits passés à clôturer', '<p class="aide">Ces commandes confirmées ont une date de retrait passée : marquez-les remises ou annulées.</p>' . liste_commandes($t['depasses'], ''), 'alerte');
     if ($t['problemes']) $c .= bloc(icone('alerte') . ' Problèmes ouverts', liste_commandes($t['problemes'], ''), 'alerte');
-    $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'));
+    $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'), '', 'demandes');
     // Retraits groupés par jour
     $jours = [];
     foreach ($t['retraits'] as $k) $jours[$k['retrait_date']][] = $k;
@@ -30,7 +30,7 @@ function page_accueil(): void {
         $l = $d === $auj ? 'Aujourd\'hui' : ($d === date('Y-m-d', strtotime('+1 day')) ? 'Demain' : ucfirst(date_fr($d, 'jour')));
         $r .= '<h3 class="jour">' . h($l) . ' <span class="compte">' . count($ks) . '</span></h3>' . liste_commandes($ks, '');
     }
-    $c .= bloc('Retraits des 7 prochains jours', $r !== '' ? $r : '<p class="vide">Aucun retrait confirmé cette semaine.</p>');
+    $c .= bloc('Retraits des 7 prochains jours', $r !== '' ? $r : '<p class="vide">Aucun retrait confirmé cette semaine.</p>', '', 'retraits');
     if ($t['propositions']) $c .= bloc('Propositions en attente de réponse du client', liste_commandes($t['propositions'], ''));
     if ($t['acomptes']) $c .= bloc('Acomptes attendus', liste_commandes($t['acomptes'], ''));
     // Restaurants : les mois passés à facturer dans Qonto

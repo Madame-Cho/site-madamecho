@@ -12,10 +12,12 @@ namespace MadameCho\Gestion;
 const LANGUES = ['ko' => '한국어', 'fr' => 'Français'];
 const LANGUE_COOKIE = 'mc_langue';
 
-/** La langue de l'écran : celle choisie sur cet appareil ; sinon le coréen pour le compte de Youngmi et la page de connexion, le français pour les autres comptes. */
+/** La langue de l'écran : celle choisie sur cet appareil (cookie), sinon gardée en session, sinon le coréen pour le compte de Youngmi et la page de connexion, le français pour les autres comptes. */
 function langue(): string {
     $c = $_COOKIE[LANGUE_COOKIE] ?? '';
     if (is_string($c) && isset(LANGUES[$c])) return $c;
+    $s = $_SESSION[LANGUE_COOKIE] ?? '';
+    if (is_string($s) && isset(LANGUES[$s])) return $s;   // le cookie peut être perdu après la redirection (certains navigateurs mobiles) : la session garde le choix tant qu'on est connecté
     $u = utilisateur_courant();
     if (!$u) return 'ko';
     return $u['email'] === GESTION_COMPTE_INITIAL ? 'ko' : 'fr';
@@ -28,6 +30,7 @@ function fr_ko(string $fr, string $ko): string { return coreen_actif() ? $ko : $
 function langue_choisir(string $l): void {
     if (!isset(LANGUES[$l])) return;
     $_COOKIE[LANGUE_COOKIE] = $l;
+    if (session_status() === PHP_SESSION_ACTIVE) $_SESSION[LANGUE_COOKIE] = $l;
     if (!headers_sent()) setcookie(LANGUE_COOKIE, $l, ['expires' => time() + 400 * 86400, 'path' => gestion_chemin(), 'secure' => gestion_https(), 'httponly' => true, 'samesite' => 'Lax']);
 }
 
