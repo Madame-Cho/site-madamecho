@@ -330,9 +330,29 @@ function commande_creer(array $d): int {
     evenement('creation', $d['origine'] ?? 'Demande créée', ['commande' => $id, 'client' => (int)$d['client_id']], '', $d['statut'] ?? 'demande', $d['auteur'] ?? null);
     return $id;
 }
-function commande_modifier(int $id, array $d): void {
+/** Ce qui a changé, en clair, pour le bandeau vert (retour d'Olivier en test, 07/11/2026) : « heure du retrait : 09 h 00 → 10 h 00 ; gâteaux ». */
+function modifications_texte(array $k, array $diff): string {
+    $heure = fn($v) => (string)$v !== '' ? str_replace(':', ' h ', (string)$v) : 'aucune';
+    $fmt = [
+        'retrait_date' => ['jour du retrait', fn($v) => $v ? date_fr((string)$v, 'jour') : 'aucun'],
+        'retrait_heure' => ['heure du retrait', $heure],
+        'retrait_moment' => ['moment', fn($v) => MOMENTS_COURTS[$v] ?? 'aucun'],
+        'mode' => ['mode', fn($v) => MODES[$v] ?? (string)$v],
+        'prix_final' => ['prix final', fn($v) => $v === null || $v === '' ? 'aucun' : euros((int)$v)],
+        'acompte' => ['acompte', fn($v) => (int)$v ? euros((int)$v) : 'aucun'],
+    ];
+    $noms = ['lignes' => 'gâteaux', 'perso' => 'gâteau personnalisé', 'besoin' => 'demande du professionnel', 'canal' => 'canal', 'type' => 'type', 'facture' => 'facture', 'moyen' => 'moyen de paiement'];
+    $t = [];
+    foreach (array_keys($diff) as $c) {
+        if (isset($fmt[$c])) $t[] = $fmt[$c][0] . ' : ' . $fmt[$c][1]($k[$c]) . ' → ' . $fmt[$c][1]($diff[$c]);
+        elseif (isset($noms[$c])) $t[] = $noms[$c];
+    }
+    return implode(' ; ', $t);
+}
+/** Renvoie ce qui a changé, en clair ('' si rien). */
+function commande_modifier(int $id, array $d): string {
     $k = commande($id);
-    if (!$k) return;
+    if (!$k) return '';
     $diff = [];
     foreach (['canal', 'type', 'retrait_date', 'retrait_moment', 'retrait_heure', 'mode', 'perso', 'besoin', 'facture', 'moyen', 'acompte', 'prix_final'] as $c) {
         if (array_key_exists($c, $d) && (string)$d[$c] !== (string)$k[$c]) $diff[$c] = $d[$c];
@@ -342,12 +362,14 @@ function commande_modifier(int $id, array $d): void {
         $j = json_encode($l, JSON_UNESCAPED_UNICODE);
         if ($j !== $k['lignes']) { $diff['lignes'] = $j; $diff['total_indicatif'] = lignes_total($l); }
     }
-    if (!$diff) return;
+    if (!$diff) return '';
+    $clair = modifications_texte($k, $diff);
     $diff['maj_le'] = maintenant();
     $set = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($diff)));
     q("UPDATE commandes SET $set WHERE id = :id", $diff + ['id' => $id]);
     unset($diff['maj_le'], $diff['total_indicatif']);
     evenement('modification', 'Commande modifiée : ' . implode(', ', array_keys($diff)), ['commande' => $id, 'client' => (int)$k['client_id']]);
+    return $clair;
 }
 /** Changement d'étape, avec ce qui va avec (date de remise, motif, retrait). */
 function commande_statut(int $id, string $statut, array $extra = []): bool {

@@ -656,6 +656,29 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .correction{background:var(--ivoire);border-radius:10px;padding:12px 14px;margin:0 0 12px}
 .correction .corrige{white-space:pre-wrap;margin:0 0 8px;font-size:16px;line-height:1.5}
 .noter-echange{margin:10px 0}
+/* Échanges façon messagerie (retour d'Olivier en test, 07/11/2026) */
+.conversation{display:flex;flex-direction:column;gap:12px;margin:6px 0 16px;padding:0;list-style:none}
+.msg{max-width:85%;padding:10px 14px 8px;border-radius:14px}
+.msg-client{align-self:flex-start;background:#fff;border:1px solid var(--fort);border-bottom-left-radius:4px}
+.msg-mc{align-self:flex-end;background:var(--ivoire);border-bottom-right-radius:4px}
+.msg-note{align-self:center;max-width:92%;background:transparent;border:1px dashed var(--fort)}
+.msg-probleme{border-color:var(--erreur);background:var(--rouge-f)}
+.msg-nouveau{box-shadow:0 0 0 2px #6E2A10}
+.msg-trait{display:flex;align-items:center;gap:10px;color:#6E2A10;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.08em}
+.msg-trait::before,.msg-trait::after{content:"";flex:1;border-top:1.5px solid #6E2A10}
+.msg-tete{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-bottom:4px;font-size:13px;color:var(--doux)}
+.msg-etiq{display:inline-flex;align-items:center;gap:5px;font-weight:500;color:var(--chocolat);text-transform:uppercase;letter-spacing:.06em;font-size:12px}
+.msg-etiq svg{width:14px;height:14px}
+.msg-corps{margin:0;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.msg-heure{margin-top:4px;font-size:12px;color:var(--doux);text-align:right}
+.gestes-echange{display:grid;gap:10px;margin:4px 0 6px}
+details.geste>summary{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:6px 18px;border-radius:24px;border:1px solid var(--chocolat);color:var(--chocolat);background:var(--carte);font-weight:500;cursor:pointer;list-style:none;text-align:center}
+details.geste>summary:hover{background:var(--ivoire)}
+details.geste[open]>summary{background:var(--chocolat);color:#fff;margin-bottom:12px}
+details.geste>form{padding:0 2px 6px}
+.secours-echange{display:flex;flex-wrap:wrap;gap:4px 8px;margin:4px 0 8px}
+.confirmer-bas{margin:8px 0 6px;padding:12px 14px;border-radius:var(--r);background:var(--ivoire)}
+.confirmer-bas p{margin:0 0 10px}
 .apercu-mail .m-814d6317{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-bottom:14px}
 .apercu-mail .m-62b54660{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:22px;color:#2B2623;padding:2px 0}
 .apercu-mail .m-20c0cfd1{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#736A64;padding:0 0 2px}

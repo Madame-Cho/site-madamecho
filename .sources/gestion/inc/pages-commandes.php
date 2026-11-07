@@ -237,7 +237,9 @@ function page_commande(): void {
     $notes = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type IN ('commentaire', 'email_client', 'email_recu')", [$id]);
     $nonLues = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);
     $versEchanges = lien_bouton('#echanges', icone('assistant') . 'Échanges' . ($notes ? ' <span class="compte">' . $notes . '</span>' : '') . ($nonLues ? ' <span class="chip chip-nouveau">' . ($nonLues > 1 ? $nonLues . ' nouvelles réponses' : 'Nouvelle réponse') . '</span>' : ''), $nonLues ? 'secondaire' : 'discret');
-    $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>', $versEchanges, u('commandes'));
+    $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>',
+        // « Modifier la commande » en haut, bien visible (retour d'Olivier en test, 07/11/2026 : il ne le trouvait pas)
+        lien_bouton(u('commande-edition', ['id' => $id]), icone('crayon') . 'Modifier la commande', 'secondaire') . $versEchanges, u('commandes'));
     $c .= etape_suivante($k);
     // Client
     $tel = $k['client_tel'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $k['client_tel'])) . '">' . h($k['client_tel']) . '</a>' : '';
@@ -276,7 +278,7 @@ function page_commande(): void {
     if ($k['perso'] !== '') $contenu .= '<div class="texte-client"><h3>Gâteau personnalisé</h3><p translate="no" lang="fr">' . nl2br(h($k['perso'])) . '</p></div>';
     if ($k['besoin'] !== '') $contenu .= '<div class="texte-client"><h3>Demande d\'un professionnel</h3><p translate="no" lang="fr">' . nl2br(h($k['besoin'])) . '</p></div>';
     if ($contenu === '') $contenu = '<p class="vide">Aucun gâteau noté.</p>';
-    $c .= bloc('Contenu', $contenu . '<p>' . lien_bouton(u('commande-edition', ['id' => $id]), 'Modifier la commande', 'discret') . '</p>');
+    $c .= bloc('Contenu', $contenu . '<p>' . lien_bouton(u('commande-edition', ['id' => $id]), icone('crayon') . 'Modifier la commande', 'secondaire') . '</p>');
     // Échanges avec le client (demande d'Olivier, 07/11/2026) : retrouver d'un geste la conversation (personnalisation, demandes pour le retrait…).
     // Les emails restent dans la boîte contact@madamecho.com : le bouton y cherche la référence et l'adresse du client.
     $recherche = $k['reference'] . ($k['client_email'] !== '' ? ' OR from:' . $k['client_email'] . ' OR to:' . $k['client_email'] : '');
@@ -287,9 +289,13 @@ function page_commande(): void {
     $echanges = array_values(array_filter($evs, fn($e) => in_array($e['type'], $types, true)));
     $suivi = array_values(array_filter($evs, fn($e) => !in_array($e['type'], $types, true)));
     if ($nonLues) q("UPDATE evenements SET lu = 1 WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);   // vues : la pastille s'en va à la prochaine visite
-    $c .= bloc('Échanges avec le client', '<div class="actions">' . lien_bouton($gmail, icone('email') . 'Ses emails dans Gmail', 'secondaire', ['target' => '_blank', 'rel' => 'noopener'])
-            . ($k['client_tel'] !== '' ? lien_bouton('tel:' . preg_replace('/[^0-9+]/', '', $k['client_tel']), icone('tel') . 'Appeler', 'discret') : '') . '</div>'
-        . bloc_ecrire_client($k) . '<details class="replie noter-echange"' . ($echanges ? '' : ' open') . '><summary>Noter un échange (appel, SMS, WhatsApp, de vive voix…)</summary>' . formulaire_commentaire() . '</details>' . ($echanges ? fil_historique($echanges) : '')
+    // La conversation d'abord (façon messagerie), puis les deux gestes (retour d'Olivier en test, 07/11/2026), puis Gmail et l'appel en secours
+    $c .= bloc('Échanges avec le client', fil_conversation($echanges)
+        . '<div class="gestes-echange">' . bloc_ecrire_client($k)
+        . '<details class="geste noter-echange" id="noter"><summary>' . icone('crayon') . 'Noter un échange (appel, SMS, WhatsApp, de vive voix…)</summary>' . formulaire_commentaire() . '</details></div>'
+        . confirmer_en_bas($k)
+        . '<p class="secours-echange">' . lien_bouton($gmail, icone('email') . 'Ses emails dans Gmail', 'discret', ['target' => '_blank', 'rel' => 'noopener'])
+            . ($k['client_tel'] !== '' ? lien_bouton('tel:' . preg_replace('/[^0-9+]/', '', $k['client_tel']), icone('tel') . 'Appeler', 'discret') : '') . '</p>'
         . ($suivi ? '<details class="replie suivi"><summary>Suivi de la commande <span class="compte">' . count($suivi) . '</span></summary>' . fil_historique($suivi) . '</details>' : ''), 'echanges', 'echanges');
     // Montants et paiement
     $reste = montant_commande($k) - ($k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : 0);
@@ -366,7 +372,7 @@ function bloc_ecrire_client(array $k): string {
           . '<p class="etiq-apercu">Aperçu du mail (tel que le client le recevra)</p>'
           . '<div class="cadre-apercu" id="apercu-libre" data-source="' . h(u('apercu-mail', ['id' => $id, 'type' => 'message'])) . '">' . mail_commande($k, 'message', ['accueil' => $texteDefaut, 'apercu' => true])['html'] . '</div>'
           . '<div class="actions">' . bouton(icone('email') . 'Envoyer à <span translate="no">' . h($email) . '</span>', 'principal') . '</div>';
-    return '<details class="replie ecrire-client" id="ecrire"><summary>' . icone('email') . 'Écrire au client</summary>'
+    return '<details class="geste ecrire-client" id="ecrire"><summary>' . icone('email') . 'Écrire un mail au client</summary>'
          . formulaire('ecrire_client', $form, ['class' => 'form-ecrire', 'data-confirmer' => 'Envoyer ce mail à ' . $email . ' maintenant ?']) . '</details>';
 }
 
@@ -396,6 +402,18 @@ function agenda_boutons(array $k): string {
          . lien_bouton(u('agenda', ['id' => $k['id']]), 'Fichier agenda (.ics)', 'discret') . '</div>';
 }
 
+/** Sous la conversation, quand une proposition attend : « Confirmer la commande » aussi en bas, avec le jour et l'heure déjà notés
+ *  (retour d'Olivier en test, 07/11/2026 : Youngmi lit la réponse du client puis confirme sans remonter). Une fenêtre redit le jour et l'heure. */
+function confirmer_en_bas(array $k): string {
+    if ($k['statut'] !== 'proposition' || !$k['retrait_date']) return '';
+    $quand = retrait_texte($k);
+    $prix = number_format(montant_commande($k) / 100, 2, ',', '');
+    return '<div class="confirmer-bas"><p><b>Le client a accepté ?</b> <span>' . h($quand) . '</span> · <a href="#etape">changer le jour ou l\'heure en haut</a></p>'
+         . formulaire('confirmer', '<input type="hidden" name="retrait_date" value="' . h((string)$k['retrait_date']) . '"><input type="hidden" name="retrait_heure" value="' . h((string)$k['retrait_heure']) . '">'
+             . '<input type="hidden" name="prix_final" value="' . h($prix) . '">' . bouton('Confirmer la commande', 'principal'),
+             ['class' => 'form-etape', 'data-confirmer' => 'Confirmer la commande pour ' . $quand . ' ?']) . '</div>';
+}
+
 /** Le grand cadre « prochaine étape » d'une commande, selon où elle en est. */
 function etape_suivante(array $k): string {
     $id = (int)$k['id'];
@@ -421,7 +439,7 @@ function etape_suivante(array $k): string {
                  . '</section>';
         case 'proposition':
             $j = jours_depuis($k['dernier_echange']);
-            return '<section class="etape"><h2>Le client a accepté ?</h2>'
+            return '<section class="etape" id="etape"><h2>Le client a accepté ?</h2>'
                  . '<p>Proposition envoyée ' . h(date_fr($k['dernier_echange'], 'relative')) . ($j >= GESTION_SANS_SUITE_JOURS ? ' : <span class="dormant">sans nouvelles depuis ' . $j . ' jours, une relance ou « sans suite » ?</span>' : '.') . '</p>'
                  . formulaire('confirmer', '<div class="ligne-champs">' . champ('retrait_date', 'Jour du retrait', (string)$k['retrait_date'], ['type' => 'date', 'required' => true])
                       . champ('retrait_heure', 'Heure convenue', $k['retrait_heure'], ['type' => 'time', 'step' => '900']) . '</div>'
@@ -534,8 +552,8 @@ function page_commande_edition(): void {
             $prix = centimes(texte('prix_final', 12));
             $acompte = centimes(texte('acompte', 12));
             if ($k) {
-                commande_modifier($id, $d + ['prix_final' => $prix, 'acompte' => $acompte ?? 0]);
-                flash('ok', 'Commande modifiée.');
+                $chg = commande_modifier($id, $d + ['prix_final' => $prix, 'acompte' => $acompte ?? 0]);
+                flash('ok', $chg !== '' ? 'Commande modifiée. Changé : ' . $chg . '.' : 'Rien n\'a changé dans la commande.');
             } else {
                 $ref = strtoupper(une_ligne(texte('reference', 20)));
                 $statut = choix('statut', STATUTS, 'demande');

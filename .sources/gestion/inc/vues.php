@@ -86,16 +86,16 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
         $items = [['accueil', 'Aujourd\'hui', 'jour'], ['agenda', 'Agenda', 'mois'], ['commandes', 'Commandes', 'commandes'], ['clients', 'Clients', 'clients'], ['produits', 'Produits', 'produits']];
         foreach ($items as [$p, $l, $i]) {
             $a = $actif === $p ? ' aria-current="page"' : '';
-            $nav .= '<a href="' . h(u($p)) . '"' . $a . '>' . h($l) . '</a>';
+            $nav .= '<a href="' . h(u($p)) . '"' . $a . '>' . icone($i) . h($l) . '</a>';   // une icône par page, aussi sur ordinateur (demande d'Olivier, 07/11/2026)
             $onglets .= '<a href="' . h(u($p)) . '"' . $a . '>' . icone($i) . '<span>' . h($l) . '</span></a>';
         }
         // Sur ordinateur : les cinq pages du menu Plus en liens directs quand l'écran est large (≥ 1200 px),
         // un seul lien « Plus » sinon, pour que la barre reste sur une ligne
         $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant'], true);
-        foreach ([['statistiques', 'Statistiques'], ['production', 'Production'], ['manuel', 'Manuel'], ['assistant', 'Assistant'], ['reglages', 'Réglages']] as [$p, $l]) {
-            $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . ($p === 'assistant' ? icone('ia') : '') . h($l) . '</a>';
+        foreach ([['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Réglages', 'reglages']] as [$p, $l, $i]) {
+            $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . icone($i) . h($l) . '</a>';
         }
-        $nav .= '<a class="plus" href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>Plus</a>';
+        $nav .= '<a class="plus" href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . 'Plus</a>';
         $onglets .= '<a href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . '<span>Plus</span></a>';
     }
     $f = '';
@@ -323,6 +323,48 @@ function fil_historique(array $evs, bool $avecReference = false): string {
         $s .= '<li class="' . $cl . '"><div class="ev-texte"' . ($type === 'commentaire' ? ' translate="no" lang="fr"' : '') . '>' . $par . $txt . '</div><div class="ev-meta">' . h($e['auteur']) . ' · ' . h(date_fr($e['le'], 'heure')) . $ref . '</div></li>';
     }
     return '<ol class="fil">' . $s . '</ol>';
+}
+/** La conversation d'une commande, façon messagerie (retour d'Olivier en test, 07/11/2026) : du plus ancien au plus récent ;
+ *  le client à gauche, Madame Cho à droite, les échanges notés au milieu ; une étiquette (Proposition, WhatsApp…) et l'heure ;
+ *  le texte tout de suite (sans l'objet, toujours le même, ni la signature). $evs : du plus récent au plus ancien, comme historique(). */
+function fil_conversation(array $evs): string {
+    if (!$evs) return '<p class="vide">Pas encore d\'échange avec le client.</p>';
+    $sig = trim(strtok(signature(), "\n") ?: '');
+    $s = ''; $trait = false;
+    foreach (array_reverse($evs) as $e) {
+        $type = $e['type'];
+        $corps = trim((string)$e['nouveau']);
+        $nouveau = $type === 'email_recu' && isset($e['lu']) && !(int)$e['lu'];
+        if ($type === 'email_client') {
+            $t = preg_match('/^type:(\w+)/', (string)$e['ancien'], $m) ? $m[1] : '';
+            $etiq = $t === 'gmail' ? 'Mail envoyé depuis Gmail' : (isset(MAIL_TYPES[$t]) ? MAIL_TYPES[$t] : 'Mail');
+            // Sans la signature : à partir de sa première ligne (« Youngmi Cho »)
+            if ($sig !== '' && ($p = mb_strrpos($corps, "\n" . $sig)) !== false) $corps = rtrim(mb_substr($corps, 0, $p));
+            if ($corps === '') $corps = (string)$e['texte'];
+            $cl = 'msg-mc'; $qui = 'Madame Cho'; $ico = icone('email');
+            // L'objet seulement s'il sort de l'ordinaire (« Votre plaque en chocolat (MC-…) »)
+            if (preg_match('/« (.+) »$/u', (string)$e['texte'], $m) && !preg_match('/^(Re: )?Votre commande MC-\d{6}-[0-9A-F]{4} · Madame Cho$/u', $m[1])) $corps = 'Objet : ' . $m[1] . "\n\n" . $corps;
+        } elseif ($type === 'email_recu') {
+            $etiq = 'Mail du client'; $cl = 'msg-client'; $qui = (string)$e['auteur']; $ico = icone('email');
+            if ($corps === '') $corps = (string)$e['texte'];
+        } else {
+            $par = preg_match('/^par:(\w+)/', (string)$e['ancien'], $m) && isset(CANAUX_ECHANGE[$m[1]]) ? CANAUX_ECHANGE[$m[1]] : '';
+            $etiq = $type === 'probleme' ? 'Problème' : ($par !== '' ? $par : 'Note');
+            $cl = 'msg-note' . ($type === 'probleme' ? ' msg-probleme' : ''); $qui = (string)$e['auteur']; $ico = icone('crayon');
+            $corps = (string)$e['texte'];
+        }
+        $lignes = explode("\n", $corps);
+        $texte = count($lignes) > 9
+            ? '<p class="msg-corps" translate="no" lang="fr">' . nl2br(h(rtrim(implode("\n", array_slice($lignes, 0, 7))))) . '…</p>'
+              . '<details class="mini"><summary>Voir tout le mail</summary><p class="msg-corps" translate="no" lang="fr">' . nl2br(h($corps)) . '</p></details>'
+            : '<p class="msg-corps" translate="no" lang="fr">' . nl2br(h($corps)) . '</p>';
+        // Comme une messagerie : un trait « Nouveau » avant le premier message pas encore vu
+        if ($nouveau && !$trait) { $s .= '<li class="msg-trait"><span>Nouveaux messages</span></li>'; $trait = true; }
+        $s .= '<li class="msg ' . $cl . ($nouveau ? ' msg-nouveau' : '') . '"><div class="msg-tete">' . ($nouveau ? '<span class="chip chip-nouveau">Nouvelle réponse</span> ' : '')
+            . '<span class="msg-etiq">' . $ico . h($etiq) . '</span><span class="msg-qui" translate="no">' . h($qui) . '</span></div>'
+            . $texte . '<div class="msg-heure">' . h(date_fr($e['le'], 'heure')) . '</div></li>';
+    }
+    return '<ol class="conversation">' . $s . '</ol>';
 }
 /** « Noter un échange » : ce qui ne passe pas par les mails (appel, SMS, WhatsApp, de vive voix…). Micro et « Corriger mon français » sous la zone. */
 function formulaire_commentaire(string $aide = ''): string {

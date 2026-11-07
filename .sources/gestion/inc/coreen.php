@@ -235,6 +235,16 @@ Autre façon : ouvrir dans ma messagerie | 다른 방법: 메일 앱에서 열�
 Texte simple, à envoyer vous-même | 일반 텍스트, 직접 보내기
 Voir le mail | 이메일 보기
 Écrire au client | 고객에게 이메일 쓰기
+Écrire un mail au client | 고객에게 이메일 쓰기
+Pas encore d'échange avec le client. | 아직 고객과 연락한 내용이 없어요.
+Mail du client | 고객 이메일
+Nouveaux messages | 새 메시지
+Mail envoyé depuis Gmail | Gmail에서 보낸 이메일
+Mail | 이메일
+Voir tout le mail | 이메일 전체 보기
+changer le jour ou l'heure en haut | 위에서 날짜나 시간 바꾸기
+Commande confirmée | 주문 확정
+Merci | 감사 인사
 Objet | 제목
 Message | 메시지
 Le numéro de commande reste toujours dans l'objet. | 주문 번호는 항상 제목에 남아요.
@@ -914,6 +924,7 @@ Commande annulée. | 주문을 취소했어요.
 Commande confirmée : envoyez la confirmation au client et ajoutez le retrait à votre agenda. | 주문을 확정했어요. 고객에게 확정 이메일을 보내고 픽업을 캘린더에 추가하세요.
 Commande créée. | 주문을 만들었어요.
 Commande modifiée. | 주문을 수정했어요.
+Rien n'a changé dans la commande. | 주문에서 바뀐 것이 없어요.
 Commande remise. Pensez à proposer un avis Google au client. | 전달 완료로 기록했어요. 고객에게 구글 리뷰를 부탁해 보세요.
 Commentaire ajouté. | 메모를 추가했어요.
 Copie créée : choisissez la date de retrait. | 복사본을 만들었어요. 픽업 날짜를 고르세요.
@@ -1156,6 +1167,30 @@ function coreen_relatif(string $s): ?string {
     if (preg_match('/^le (.+)$/u', trim($s), $m)) return coreen_date($m[1]);
     return coreen_date($s);
 }
+/** « heure du retrait : 09 h 00 → 10 h 00 ; gâteaux » (bandeau après « Modifier la commande ») → coréen ; null si un morceau est inconnu. */
+function coreen_modifs(string $s): ?string {
+    $noms = ['jour du retrait' => '픽업 날짜', 'heure du retrait' => '픽업 시간', 'moment' => '시간대', 'mode' => '방식', 'prix final' => '최종 가격', 'acompte' => '선금',
+             'gâteaux' => '케이크', 'gâteau personnalisé' => '맞춤 케이크', 'demande du professionnel' => '업체 요청', 'canal' => '경로', 'type' => '종류', 'facture' => '청구서', 'moyen de paiement' => '결제 수단'];
+    $val = function (string $v): ?string {
+        if ($v === 'aucun' || $v === 'aucune') return '없음';
+        if (preg_match('/^(\d{1,2}) h (\d{2})$/', $v, $m)) return $m[1] . ':' . $m[2];
+        if (preg_match('/^[\d  .,]+ €$/u', $v)) return $v;
+        if (isset(KO_MOMENTS[$v])) return KO_MOMENTS[$v];
+        if ($v === 'Retrait à Meudon') return 'Meudon에서 픽업';
+        if ($v === 'Livraison') return '배달';
+        return coreen_date($v);
+    };
+    $out = [];
+    foreach (explode(' ; ', $s) as $p) {
+        if (preg_match('/^(.+?) : (.+) → (.+)$/u', $p, $m)) {
+            $n = $noms[$m[1]] ?? null; $a = $val($m[2]); $b = $val($m[3]);
+            if ($n === null || $a === null || $b === null) return null;
+            $out[] = $n . ': ' . $a . ' → ' . $b;
+        } elseif (isset($noms[$p])) $out[] = $noms[$p];
+        else return null;
+    }
+    return implode(' ; ', $out);
+}
 /** Le moment d'un retrait : « sam. 7 nov., 09 h 30 », « mardi 10 novembre, après-midi (livraison) ». */
 function coreen_retrait(string $s): ?string {
     if (!preg_match('/^(.+?)(?:, (matin|midi|après-midi|soir|\d{2} h \d{2}))?( \(livraison\))?$/u', trim($s), $m)) return null;
@@ -1358,6 +1393,8 @@ function coreen_motifs(): array {
         // Une commande
         ['/^Modifier (.+)$/u', fn($m) => $m[1] . ' 수정'],
         ['/^Retrait programmé : (.+)$/u', fn($m) => ($d = coreen_retrait($m[1])) ? '픽업 예정: ' . $d : null],
+        ['/^Commande modifiée\. Changé : (.+)\.$/us', fn($m) => ($x = coreen_modifs($m[1])) !== null ? '주문을 수정했어요. 바뀐 내용: ' . $x . '.' : null],
+        ['/^Confirmer la commande pour (.+) \?$/u', fn($m) => ($d = coreen_retrait($m[1])) ? $d . '로 주문을 확정할까요?' : null],
         ['/^Remise le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 전달 완료' : null],
         ['/^Livrée le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 배달 완료' : null],
         ['/^Annulée par le client(?:, (.+))?$/u', fn($m) => '고객이 취소' . (isset($m[1]) ? ': ' . $m[1] : '')],
