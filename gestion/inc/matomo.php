@@ -89,9 +89,11 @@ function matomo_chiffres(bool $forcer = false): array {
         'sources' => ['method' => 'Referrers.getAll', 'period' => 'range', 'date' => 'last30', 'filter_limit' => '8'],
         'appareils' => ['method' => 'DevicesDetection.getType', 'period' => 'range', 'date' => 'last30'],
         // scans des QR codes imprimés (madamecho.com/qr) : campagne « qr-code », un mot-clé par support ; demandes envoyées après un scan
-        'qr7' => ['method' => 'Referrers.getCampaigns', 'period' => 'range', 'date' => 'last7', 'expanded' => '1', 'filter_limit' => '-1'],
-        'qr30' => ['method' => 'Referrers.getCampaigns', 'period' => 'range', 'date' => 'last30', 'expanded' => '1', 'filter_limit' => '-1'],
-        'qrbuts30' => ['method' => 'Goals.get', 'period' => 'range', 'date' => 'last30', 'segment' => 'referrerType==campaign;referrerName==' . GESTION_QR_CAMPAGNE],
+        // QR code : lu jour par jour (period=day), pas en une période « range » : Matomo garde le calcul d'une période
+        // jusqu'à 15 minutes et un scan du jour pouvait manquer alors qu'il apparaissait déjà dans « Aujourd'hui » (07/11/2026)
+        'qr7' => ['method' => 'Referrers.getCampaigns', 'period' => 'day', 'date' => 'last7', 'expanded' => '1', 'filter_limit' => '-1'],
+        'qr30' => ['method' => 'Referrers.getCampaigns', 'period' => 'day', 'date' => 'last30', 'expanded' => '1', 'filter_limit' => '-1'],
+        'qrbuts30' => ['method' => 'Goals.get', 'period' => 'day', 'date' => 'last30', 'segment' => 'referrerType==campaign;referrerName==' . GESTION_QR_CAMPAGNE],
     ];
     try {
         $r = matomo_appel(array_values($q), $jeton);
@@ -140,15 +142,36 @@ function matomo_activite_jours(array $jours): array {
 /** Scans des QR codes imprimés : la campagne « qr-code » du rapport des campagnes, avec ses visites en tout et par support (mot-clé) ; null si le rapport manque. */
 function matomo_qr(mixed $campagnes): ?array {
     if (!is_array($campagnes)) return null;
-    foreach ($campagnes as $c) {
-        if (!is_array($c) || mb_strtolower(trim((string)($c['label'] ?? ''))) !== GESTION_QR_CAMPAGNE) continue;
-        $supports = [];
-        foreach (is_array($c['subtable'] ?? null) ? $c['subtable'] : [] as $s) {
-            if (is_array($s)) $supports[trim((string)($s['label'] ?? ''))] = matomo_val($s, 'nb_visits');
+    $visites = 0.0; $supports = [];
+    // Réponse jour par jour ({"2026-11-07": [lignes], …}) ou d'une seule période ([lignes])
+    foreach (matomo_par_jour($campagnes) ? $campagnes : [$campagnes] as $lignes) {
+        foreach (is_array($lignes) ? $lignes : [] as $c) {
+            if (!is_array($c) || mb_strtolower(trim((string)($c['label'] ?? ''))) !== GESTION_QR_CAMPAGNE) continue;
+            $visites += matomo_val($c, 'nb_visits');
+            foreach (is_array($c['subtable'] ?? null) ? $c['subtable'] : [] as $s) {
+                if (!is_array($s)) continue;
+                $k = trim((string)($s['label'] ?? ''));
+                $supports[$k] = ($supports[$k] ?? 0.0) + matomo_val($s, 'nb_visits');
+            }
         }
-        return ['visites' => matomo_val($c, 'nb_visits'), 'supports' => $supports];
     }
-    return ['visites' => 0.0, 'supports' => []];
+    return ['visites' => $visites, 'supports' => $supports];
+}
+
+/** Une réponse de Matomo est-elle découpée par jour (clés « AAAA-MM-JJ ») ? */
+function matomo_par_jour(array $r): bool {
+    if ($r === []) return false;
+    foreach (array_keys($r) as $k) if (!is_string($k) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $k)) return false;
+    return true;
+}
+
+/** Somme d'une valeur sur une réponse jour par jour (ou valeur simple d'une seule période). */
+function matomo_somme(mixed $r, string $cle): float {
+    if (!is_array($r)) return 0.0;
+    if (!matomo_par_jour($r)) return matomo_val($r, $cle);
+    $t = 0.0;
+    foreach ($r as $jour) $t += matomo_val($jour, $cle);
+    return $t;
 }
 
 /** Valeur d'un rapport de Matomo, qu'il soit vide ([]) ou rempli. */

@@ -214,7 +214,7 @@ function page_statistiques_site(): void {
         $qrDemandes = (int)val("SELECT COUNT(*) FROM commandes WHERE canal = 'qr' AND recue_le >= ?", [date('Y-m-d H:i:s', strtotime('-30 days'))]);
         // Les trois compteurs restent affichés même à zéro (demande d'Olivier du 07/11/2026), pour voir ce qui sera compté
         $c .= bloc('QR code sur les emballages', '<div class="tuiles petites">' . tuile('Scans sur 7 jours', entier_fr($qr7['visites'] ?? 0.0))
-                  . tuile('Scans sur 30 jours', entier_fr($qr30['visites']), is_array($buts) ? entier_fr(matomo_val($buts, 'nb_conversions')) . ' demande(s) envoyée(s) après un scan' : '')
+                  . tuile('Scans sur 30 jours', entier_fr($qr30['visites']), is_array($buts) ? entier_fr(matomo_somme($buts, 'nb_conversions')) . ' demande(s) envoyée(s) après un scan' : '')
                   . tuile('Demandes reçues par le QR code', entier_fr($qrDemandes), 'dans la gestion, 30 jours') . '</div>'
             . '<p class="aide">Chaque scan passe par madamecho.com/qr (campagne Matomo « qr-code »).</p>'
             . '<p class="aide">Demandes envoyées par le formulaire du site après un scan.</p>');
