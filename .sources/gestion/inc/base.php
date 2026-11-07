@@ -51,7 +51,7 @@ const STATUTS_EN_COURS = ['demande', 'proposition', 'confirmee'];
 const PAIEMENTS = ['aucun' => 'Pas encore payé', 'acompte_demande' => 'Acompte demandé', 'acompte_recu' => 'Acompte reçu',
                    'paye' => 'Payé', 'rembourse' => 'Remboursé'];
 const MOYENS = ['' => 'Moyen non noté', 'carte' => 'Carte (Tap to Pay)', 'virement' => 'Virement', 'especes' => 'Espèces', 'autre' => 'Autre'];
-const CANAUX = ['site' => 'Site', 'email' => 'Email', 'instagram' => 'Instagram', 'telephone' => 'Téléphone',
+const CANAUX = ['site' => 'Site', 'qr' => 'QR code', 'email' => 'Email', 'instagram' => 'Instagram', 'telephone' => 'Téléphone',
                 'marche' => 'Marché', 'sur_place' => 'Sur place', 'restaurant' => 'Restaurant', 'autre' => 'Autre'];
 const TYPES_COMMANDE = ['carte' => 'Carte', 'perso' => 'Personnalisée', 'pro' => 'Professionnel'];
 const TYPES_CLIENT = ['particulier' => 'Particulier', 'professionnel' => 'Professionnel'];

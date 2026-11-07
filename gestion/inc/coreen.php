@@ -143,6 +143,7 @@ Virement | 계좌 이체
 Espèces | 현금
 Autre | 기타
 Site | 사이트
+QR code | QR 코드
 Instagram | 인스타그램
 Téléphone | 전화
 Marché | 마켓
@@ -615,7 +616,10 @@ Campagnes | 캠페인
 QR code sur les emballages | 포장 QR 코드
 Scans sur 7 jours | 최근 7일 스캔
 Scans sur 30 jours | 최근 30일 스캔
+Demandes reçues par le QR code | QR 코드로 받은 문의
+dans la gestion, 30 jours | 관리 기준, 최근 30일
 Pas encore de scan sur les 30 derniers jours. | 최근 30일 동안 스캔이 없어요.
+Les demandes « reçues par le QR code » sont celles que le formulaire du site a marquées après un scan ; elles comptent aussi dans Ventes, « D'où viennent les commandes ». | ‘QR 코드로 받은 문의’는 스캔 후 사이트 문의 양식이 표시한 문의예요. 판매 › ‘주문이 들어온 경로’에도 함께 집계돼요.
 Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n'est pas compté. | 스캔할 때마다 madamecho.com/qr이 열리고, Matomo는 이를 ‘qr-code’ 캠페인으로 집계해요. 측정을 거부한 방문자는 집계되지 않아요.
 Assistants IA | AI 어시스턴트
 Pages les plus vues | 많이 본 페이지

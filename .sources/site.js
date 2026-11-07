@@ -14,6 +14,25 @@
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
 
+  /* ---------- Provenance (QR code des emballages, 07/11/2026) ----------
+     madamecho.com/qr ouvre la carte avec les paramètres de campagne de Matomo (mtm_campaign, mtm_kwd). Ils suivent la visite
+     de lien en lien, dans l'adresse seulement (rien n'est stocké), et « Ma demande » les envoie avec la demande : la gestion
+     sait alors qu'elle vient d'un scan. Matomo retire lui-même ces paramètres des adresses de pages qu'il compte. */
+  var PROVENANCE = '';
+  (function () {
+    var camp = /[?&]mtm_campaign=([\w.-]{1,40})(?:&|$)/.exec(location.search), mot = /[?&]mtm_kwd=([\w.-]{1,40})(?:&|$)/.exec(location.search);
+    if (!camp) return;
+    PROVENANCE = '?mtm_campaign=' + camp[1] + (mot ? '&mtm_kwd=' + mot[1] : '');
+    $$('a[href]').forEach(function (a) {
+      var h = a.getAttribute('href');
+      if (!h || /^(#|\/\/|[a-z][a-z0-9+.-]*:)/i.test(h) || /[?&]mtm_campaign=/.test(h)) return;
+      var m = /^([^#]*)(#.*)?$/.exec(h);
+      a.setAttribute('href', m[1] + (m[1].indexOf('?') >= 0 ? '&' + PROVENANCE.slice(1) : PROVENANCE) + (m[2] || ''));
+    });
+    var via = $('input[name="via"]');
+    if (via) via.value = camp[1] + (mot ? ' ' + mot[1] : '');
+  })();
+
   /* ---------- Panier ----------
      Une seule source : le stockage du navigateur quand il marche ; sinon, la mémoire de la page, et la demande passe
      dans l'adresse vers « Ma demande » (#d=…). Mêmes plafonds que le serveur : 10 par taille, 200 par parfum (audit C05). */
@@ -109,7 +128,7 @@
     if (!art) return;
     var id = art.getAttribute('data-produit'), p = CAT.produits[id], form = $('[data-ajout]', art);
     var conf = $('[data-confirmation]', art), bouton = $('[data-ajouter]', art);
-    var lienDemande = (APERCU ? '../../ma-demande/index.html' : '../../ma-demande/');
+    var lienDemande = (APERCU ? '../../ma-demande/index.html' : '../../ma-demande/') + PROVENANCE;
     function confirmer(texte, msgs) {
       conf.innerHTML = '';
       conf.appendChild(document.createTextNode(texte + ' ' + (msgs.length ? msgs.join(' ') + ' ' : '')));

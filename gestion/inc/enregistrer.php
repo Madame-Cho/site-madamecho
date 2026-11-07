@@ -14,7 +14,8 @@ require_once __DIR__ . '/modele.php';
 
 /**
  * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
- * perso, pro (bool), societe, besoin. Renvoie le numéro interne de la commande (0 : rien d'enregistré).
+ * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code).
+ * Renvoie le numéro interne de la commande (0 : rien d'enregistré).
  * Ne fait rien tant que l'espace n'est pas ouvert, ni avant que l'enregistrement soit activé dans Réglages (mise en ligne en deux temps).
  */
 function enregistrer_demande(array $d): int {
@@ -26,17 +27,23 @@ function enregistrer_demande(array $d): int {
     try {
         // Prénom et nom séparés depuis le 07/11/2026 ; une page du formulaire restée ouverte avant envoie encore « Prénom et nom » en un seul champ
         [$prenom, $nom] = isset($d['prenom']) ? [(string)$d['prenom'], (string)$d['nom']] : prenom_nom((string)$d['nom']);
-        $cid = client_trouver_ou_creer((string)$d['email'], $prenom, $nom, (string)$d['telephone'], 'site', (bool)$d['pro'], (string)$d['societe'], $quand);
+        // Provenance (07/11/2026) : après un scan du QR code d'un emballage, le site transmet la campagne Matomo « qr-code » ; la demande
+        // (et la fiche d'un nouveau client) est alors « reçue par » le QR code, ce qui la compte dans « D'où viennent les commandes »
+        $via = is_string($d['via'] ?? null) ? trim($d['via']) : '';
+        $qr = str_starts_with($via, 'qr-code');
+        $canal = $qr ? 'qr' : 'site';
+        $support = $qr ? trim(substr($via, 7)) : '';
+        $cid = client_trouver_ou_creer((string)$d['email'], $prenom, $nom, (string)$d['telephone'], $canal, (bool)$d['pro'], (string)$d['societe'], $quand);
         $lignes = [];
         foreach ($d['lignes'] as $l) {
             $q = max(1, (int)$l['q']);
             $lignes[] = ['v' => $l['p'] . '|' . $l['c'], 'q' => $q, 'prix' => intdiv((int)$l['prix'], $q), 'plaque' => (string)($l['plaque'] ?? '')];
         }
         $type = $d['pro'] ? 'pro' : (($d['perso'] !== '' || !$lignes) ? 'perso' : 'carte');
-        $id = commande_creer(['reference' => $d['ref'], 'client_id' => $cid, 'canal' => 'site', 'type' => $type,
+        $id = commande_creer(['reference' => $d['ref'], 'client_id' => $cid, 'canal' => $canal, 'type' => $type,
                               'retrait_date' => $d['date'], 'retrait_moment' => $d['moment'], 'lignes' => $lignes,
                               'perso' => (string)$d['perso'], 'besoin' => (string)$d['besoin'], 'recue_le' => $quand,
-                              'origine' => 'Demande envoyée par le formulaire du site', 'auteur' => 'site']);
+                              'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ''), 'auteur' => 'site']);
         $pdo->commit();
         return $id;
     } catch (\Throwable $e) {

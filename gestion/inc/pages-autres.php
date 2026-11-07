@@ -186,11 +186,15 @@ function page_statistiques_site(): void {
     if ($qr30 !== null) {
         $qr7 = matomo_qr($m['qr7'] ?? null);
         $buts = $m['qrbuts30'] ?? null;
-        $c .= bloc('QR code sur les emballages', ($qr30['visites'] > 0
+        // Les demandes que le formulaire du site a marquées « reçues par le QR code » (provenance transmise par le site), comptées par la gestion elle-même
+        $qrDemandes = (int)val("SELECT COUNT(*) FROM commandes WHERE canal = 'qr' AND recue_le >= ?", [date('Y-m-d H:i:s', strtotime('-30 days'))]);
+        $c .= bloc('QR code sur les emballages', ($qr30['visites'] > 0 || $qrDemandes > 0
                 ? '<div class="tuiles petites">' . tuile('Scans sur 7 jours', entier_fr($qr7['visites'] ?? 0.0))
-                  . tuile('Scans sur 30 jours', entier_fr($qr30['visites']), is_array($buts) ? entier_fr(matomo_val($buts, 'nb_conversions')) . ' demande(s) envoyée(s) après un scan' : '') . '</div>'
+                  . tuile('Scans sur 30 jours', entier_fr($qr30['visites']), is_array($buts) ? entier_fr(matomo_val($buts, 'nb_conversions')) . ' demande(s) envoyée(s) après un scan' : '')
+                  . tuile('Demandes reçues par le QR code', entier_fr($qrDemandes), 'dans la gestion, 30 jours') . '</div>'
                 : '<p class="vide">Pas encore de scan sur les 30 derniers jours.</p>')
-            . '<p class="aide">Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n\'est pas compté.</p>');
+            . '<p class="aide">Chaque scan ouvre madamecho.com/qr, que Matomo compte dans la campagne « qr-code » ; un visiteur qui refuse la mesure n\'est pas compté.</p>'
+            . '<p class="aide">Les demandes « reçues par le QR code » sont celles que le formulaire du site a marquées après un scan ; elles comptent aussi dans Ventes, « D\'où viennent les commandes ».</p>');
     }
     // Pages les plus vues
     $rows = '';
