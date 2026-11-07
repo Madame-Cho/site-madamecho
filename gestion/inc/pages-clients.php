@@ -161,7 +161,7 @@ function page_client(): void {
             $etat = $r['facturees'] === $r['n'] ? 'facture ' . implode(', ', $r['factures']) . ($r['payees'] === $r['n'] ? ', payée' : ', pas encore payée') : ($r['facturees'] ? 'facturé en partie' : 'pas encore facturé');
             $rel .= '<a class="carte-cmd" href="' . h(u('releve', ['id' => $id, 'mois' => $r['mois']])) . '"><span class="l1"><b>' . h(ucfirst(mois_texte($r['mois']))) . '</b>'
                   . '<span class="statut ' . ($r['payees'] === $r['n'] ? 's-confirmee' : ($r['facturees'] === $r['n'] ? 's-proposition' : 's-demande')) . '">' . h($r['payees'] === $r['n'] ? 'Payé' : ($r['facturees'] === $r['n'] ? 'Facturé' : 'À facturer')) . '</span></span>'
-                  . '<span class="l2">' . h($r['n'] . ' livraison(s) · ' . euros($r['ht']) . ' HT · ' . euros($r['ttc']) . ' TTC') . '</span><span class="l3">' . h($etat) . '</span></a>';
+                  . '<span class="l2">' . h($r['n'] . ' livraison(s) · ' . euros($r['livre_ht']) . ' HT · ' . euros($r['livre_ttc']) . ' TTC') . '</span><span class="l3">' . h($etat) . '</span></a>';
         }
         $c .= bloc('Relevés du mois', ($rel !== '' ? '<div class="liste">' . $rel . '</div>' : '<p class="vide">Aucune livraison notée.</p>')
             . '<p class="aide">Une livraison = une commande. Le relevé du mois sert à faire la facture Qonto.</p>');

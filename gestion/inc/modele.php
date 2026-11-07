@@ -573,14 +573,14 @@ function produit(string $id): ?array {
     if ($p) $p['cat'] = json_decode($p['catalogue'], true) ?: [];
     return $p;
 }
-/** La première demande qui contient chaque gâteau (jour de réception), pour « proposé depuis » quand la fiche ne le dit pas. */
+/** La première demande qui contient chaque gâteau (jour de réception), pour « proposé depuis » quand la fiche ne le dit pas ; un gâteau sans fiche est reconnu par son nom. */
 function produits_premieres_demandes(): array {
     static $r = null;
     if ($r !== null) return $r;
     $r = [];
     foreach (lignes("SELECT recue_le, lignes FROM commandes ORDER BY recue_le") as $k) {
         foreach (json_decode((string)$k['lignes'], true) ?: [] as $l) {
-            $pid = explode('|', (string)($l['v'] ?? ''))[0];
+            $pid = explode('|', (string)($l['v'] ?? ''))[0] ?: (string)($l['nom'] ?? '');   // sans fiche (lignes reprises des factures) : le nom, comme dans les statistiques
             if ($pid !== '' && !isset($r[$pid])) $r[$pid] = substr((string)$k['recue_le'], 0, 10);
         }
     }
@@ -737,10 +737,14 @@ function releve(int $clientId, string $mois): array {
     unset($k);
     $totalHt = array_sum($ht); $totalTva = 0;
     foreach ($ht as $tva => $somme) $totalTva += ttc_de_ht($somme, (int)$tva) - $somme;
+    // Tout ce qui a été livré dans le mois, facturé ou non (prix final de chaque livraison) : le résumé du mois sur la fiche du client
+    $livre = ['ht' => 0, 'ttc' => 0];
+    foreach ($ks as $k) if ($k['statut'] === 'remise') { $m = commande_ht_ttc($k, tva_produits()); $livre['ht'] += $m['ht']; $livre['ttc'] += $m['ttc']; }
     uasort($groupes, fn($a, $b) => strcmp($a['nom'], $b['nom']));
     $n = count($ks);
     return ['mois' => $mois, 'livraisons' => $ks, 'lignes' => array_values($groupes), 'ht' => $totalHt, 'tva' => $totalTva, 'ttc' => $totalHt + $totalTva,
-            'factures' => array_keys($factures), 'facturees' => count(array_filter($ks, fn($k) => $k['facture'] !== '')), 'payees' => $payees, 'livrees' => $livrees, 'a_facturer' => $aFacturer, 'n' => $n];
+            'factures' => array_keys($factures), 'facturees' => count(array_filter($ks, fn($k) => $k['facture'] !== '')), 'payees' => $payees, 'livrees' => $livrees, 'a_facturer' => $aFacturer, 'n' => $n,
+            'livre_ht' => $livre['ht'], 'livre_ttc' => $livre['ttc']];
 }
 /** Note la facture Qonto sur les livraisons livrées qui n'en ont pas encore (jamais par-dessus une autre référence), et le paiement sur les livraisons de cette facture. */
 function releve_noter(array $r, string $facture, bool $paye, string $moyen = 'virement'): int {
@@ -828,7 +832,8 @@ function commande_est_pro(array $k): bool { return ($k['type'] ?? '') === 'pro' 
 function commande_ht_ttc(array $k, array $tvaProduits): array {
     $ttc = $k['prix_final'] !== null ? (int)$k['prix_final'] : (int)$k['total_indicatif'];
     $htL = 0; $ttcL = 0; $pro = [];
-    foreach (json_decode((string)$k['lignes'], true) ?: [] as $l) {
+    $lignes = json_decode((string)$k['lignes'], true) ?: [];
+    foreach ($lignes as $l) {
         $q = (int)($l['q'] ?? 0);
         if (isset($l['ht'])) { $tva = (int)($l['tva'] ?? 55); $pro[$tva] = ($pro[$tva] ?? 0) + (int)$l['ht'] * $q; continue; }
         $t = (int)($l['prix'] ?? 0) * $q;
@@ -836,6 +841,8 @@ function commande_ht_ttc(array $k, array $tvaProduits): array {
         $htL += ht_de_ttc($t, $tvaProduits[explode('|', (string)($l['v'] ?? ''))[0]] ?? 55);
     }
     foreach ($pro as $tva => $h) { $htL += $h; $ttcL += ttc_de_ht($h, (int)$tva); }   // TVA sur le total HT, comme sur la facture
+    // Prix final à quelques centimes des lignes : l'arrondi de la TVA (calculée ligne par ligne sur les factures), pas une remise ; le HT reste celui des lignes
+    if ($ttcL > 0 && abs($ttc - $ttcL) <= count($lignes)) return ['ttc' => $ttc, 'ht' => $htL];
     return ['ttc' => $ttc, 'ht' => $ttcL > 0 ? (int)round($ttc * $htL / $ttcL) : ht_de_ttc($ttc, 55)];
 }
 /** Les ventes (commandes remises), séparées entre particuliers (« part ») et professionnels (« pro ») : demande d'Olivier du
@@ -1039,6 +1046,9 @@ function importer(array $data): array {
             if (!empty($k['commentaire'])) evenement('commentaire', (string)$k['commentaire'], ['commande' => $id, 'client' => $cid]);
             $cr['commandes_creees']++;
         }
+        // Commandes reprises plus anciennes que la fiche (factures d'avant la gestion) : « client depuis » recule jusqu'à la première (07/11/2026)
+        q("UPDATE clients SET premier_contact = (SELECT MIN(k.recue_le) FROM commandes k WHERE k.client_id = clients.id)
+           WHERE statut <> 'efface' AND EXISTS (SELECT 1 FROM commandes k WHERE k.client_id = clients.id AND k.recue_le < clients.premier_contact)");
         // Lignes pro reprises en toutes lettres (« Tarte aux pignons ») : rattachées à la gamme pro, pour les ventes par produit et les relevés
         if (!empty($data['relier_lignes'])) {
             $V = variantes_pro(true);

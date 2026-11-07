@@ -1003,7 +1003,7 @@ Sans variante | 옵션 없음
 à venir | 예정
 depuis aujourd'hui | 오늘부터
 Pas encore de gâteau ni de vente. | 아직 케이크도 판매도 없어요.
-Commandes remises, depuis le début. Particuliers en TTC, pros en HT. Gâteaux personnalisés hors carte : comptés seulement dans le chiffre d'affaires. | 처음부터 전달 완료된 주문이에요. 개인은 부가세 포함, 업체는 부가세 별도 금액이에요. 메뉴에 없는 맞춤 케이크는 매출에만 들어가요.
+Commandes remises, depuis le début. Particuliers en TTC, pros en HT. Gâteaux personnalisés hors carte, remises et régularisations : comptés seulement dans le chiffre d'affaires. | 처음부터 전달 완료된 주문이에요. 개인은 부가세 포함, 업체는 부가세 별도 금액이에요. 메뉴에 없는 맞춤 케이크, 할인, 정산 조정은 매출에만 들어가요.
 * D'après la première demande qui contient ce gâteau ; la date exacte se note dans sa fiche technique. | * 이 케이크가 들어간 첫 문의 날짜예요. 정확한 날짜는 제품 기술 시트에 적을 수 있어요.
 D'après la première demande qui contient ce gâteau ; la date exacte se note dans la fiche technique. | 이 케이크가 들어간 첫 문의 날짜예요. 정확한 날짜는 기술 시트에 적을 수 있어요.
 Vide : la date de la première demande qui contient ce gâteau. | 비워 두면 이 케이크가 들어간 첫 문의 날짜를 써요.

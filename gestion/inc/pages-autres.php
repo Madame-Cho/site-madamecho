@@ -117,7 +117,10 @@ function tableau_ventes_gateaux(array $sp): string {
         if ($p['statut'] === 'retire' && !$vendu) continue;
         $L[(string)$p['id']] = ['nom' => (string)$p['nom'], 'fiche' => true, 'depuis' => produit_propose_depuis($p), 'retire' => $p['statut'] === 'retire'];
     }
-    foreach (['part', 'pro'] as $g) foreach ($sp[$g] as $pid => $x) $L[(string)$pid] ??= ['nom' => (string)$x['nom'], 'fiche' => false, 'depuis' => null, 'retire' => false];
+    // Gâteau sans fiche (ancien produit des factures reprises) : « proposé depuis » d'après la première commande qui le contient
+    $premieres = produits_premieres_demandes();
+    foreach (['part', 'pro'] as $g) foreach ($sp[$g] as $pid => $x) $L[(string)$pid] ??= ['nom' => (string)$x['nom'], 'fiche' => false,
+        'depuis' => isset($premieres[(string)$pid]) ? ['date' => $premieres[(string)$pid], 'source' => 'demande'] : null, 'retire' => false];
     $vide = ['q' => 0, 'montant' => 0, 'ht' => 0];
     foreach ($L as $pid => &$l) {
         $l['part'] = ($sp['part'][$pid] ?? []) + $vide; $l['pro'] = ($sp['pro'][$pid] ?? []) + $vide;
@@ -139,7 +142,7 @@ function tableau_ventes_gateaux(array $sp): string {
     }
     return '<div class="defile"><table class="tableau ventes-gateaux"><thead><tr><th>Gâteau</th><th class="nombre">Particuliers (B2C)</th><th class="nombre">Pros (B2B)</th><th>Proposé depuis</th></tr></thead>'
         . '<tbody>' . $rows . '</tbody><tfoot><tr><td>Total</td><td class="nombre">' . $cellule($tot['part'], 'TTC') . '</td><td class="nombre">' . $cellule($tot['pro'], 'HT') . '</td><td></td></tr></tfoot></table></div>'
-        . '<p class="aide">Commandes remises, depuis le début. Particuliers en TTC, pros en HT. Gâteaux personnalisés hors carte : comptés seulement dans le chiffre d\'affaires.</p>'
+        . '<p class="aide">Commandes remises, depuis le début. Particuliers en TTC, pros en HT. Gâteaux personnalisés hors carte, remises et régularisations : comptés seulement dans le chiffre d\'affaires.</p>'
         . ($estime ? '<p class="aide">* D\'après la première demande qui contient ce gâteau ; la date exacte se note dans sa fiche technique.</p>' : '');
 }
 function entier_fr(float $n): string { return number_format($n, 0, ',', "\u{202F}"); }
