@@ -95,18 +95,8 @@ function page_statistiques(): void {
                . '<td class="nombre">' . h(isset($m['part']) ? euros_ronds((int)$m['part']) : '—') . '</td><td class="nombre">' . h(isset($m['pro']) ? euros_ronds((int)$m['pro']) : '—') . '</td></tr>';
     }
     if ($rows !== '') $c .= bloc('D\'où viennent les commandes', '<div class="defile"><table class="tableau"><thead><tr><th>Canal</th><th class="nombre">Demandes</th><th class="nombre">Remises</th><th class="nombre">Abouties</th><th class="nombre">Particuliers, TTC</th><th class="nombre">Professionnels, HT</th></tr></thead><tbody>' . $rows . '</tbody></table></div>');
-    // Produits : la carte vendue aux particuliers (TTC), la gamme livrée aux professionnels (HT)
-    $produits = function (array $liste, string $entete) {
-        $rows = '';
-        foreach ($liste as $pid => $p) {
-            $nom = $p['fiche'] && preg_match('/^[a-z0-9\-]{1,60}$/', (string)$pid) ? '<a href="' . h(u('produit', ['id' => (string)$pid])) . '">' . h($p['nom']) . '</a>' : h($p['nom']);
-            $rows .= '<tr><td translate="no">' . $nom . '</td><td class="nombre">' . (int)$p['q'] . '</td><td class="nombre">' . h(euros((int)$p['montant'])) . '</td></tr>';
-        }
-        return '<table class="tableau"><thead><tr><th>Gâteau</th><th class="nombre">Quantité</th><th class="nombre">' . h($entete) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>';
-    };
-    if ($s['produits']['part']) $c .= bloc('Gâteaux vendus aux particuliers', $produits($s['produits']['part'], 'Montant TTC')
-        . '<p class="aide">Gâteaux personnalisés hors carte : comptés seulement dans le chiffre d\'affaires.</p>');
-    if ($s['produits']['pro']) $c .= bloc('Gamme livrée aux professionnels', $produits($s['produits']['pro'], 'Montant HT'));
+    // Ventes par gâteau (demande d'Olivier, 07/11/2026) : particuliers (B2C, TTC) et professionnels (B2B, HT) côte à côte, et depuis quand chaque gâteau est proposé
+    $c .= bloc('Ventes par gâteau', tableau_ventes_gateaux($s['produits']), '', 'gateaux');
     // Étapes
     $rows = '';
     usort($s['statuts'], fn($a, $b) => array_search($a['statut'], array_keys(STATUTS), true) <=> array_search($b['statut'], array_keys(STATUTS), true));
@@ -118,6 +108,40 @@ function page_statistiques(): void {
 }
 
 /* ---------- Statistiques du site (Matomo) ---------- */
+/** Le tableau « Ventes par gâteau » : chaque gâteau de la carte, de la gamme pro ou déjà vendu, ses ventes aux particuliers (B2C, TTC)
+ *  et aux professionnels (B2B, HT), et depuis quand il est proposé. Trié par chiffre d'affaires HT, puis par nom. */
+function tableau_ventes_gateaux(array $sp): string {
+    $L = [];
+    foreach (produits_lister() as $p) {
+        $vendu = isset($sp['part'][$p['id']]) || isset($sp['pro'][$p['id']]);
+        if ($p['statut'] === 'retire' && !$vendu) continue;
+        $L[(string)$p['id']] = ['nom' => (string)$p['nom'], 'fiche' => true, 'depuis' => produit_propose_depuis($p), 'retire' => $p['statut'] === 'retire'];
+    }
+    foreach (['part', 'pro'] as $g) foreach ($sp[$g] as $pid => $x) $L[(string)$pid] ??= ['nom' => (string)$x['nom'], 'fiche' => false, 'depuis' => null, 'retire' => false];
+    $vide = ['q' => 0, 'montant' => 0, 'ht' => 0];
+    foreach ($L as $pid => &$l) {
+        $l['part'] = ($sp['part'][$pid] ?? []) + $vide; $l['pro'] = ($sp['pro'][$pid] ?? []) + $vide;
+        $l['ht'] = (int)$l['part']['ht'] + (int)$l['pro']['ht'];
+    }
+    unset($l);
+    uasort($L, fn($a, $b) => [$b['ht'], mb_strtolower($a['nom'])] <=> [$a['ht'], mb_strtolower($b['nom'])]);
+    if (!$L) return '<p class="vide">Pas encore de gâteau ni de vente.</p>';
+    $cellule = fn(array $x, string $taxe): string => (int)$x['q'] ? '<b>' . (int)$x['q'] . '</b><br><span class="petit">' . h(euros_ronds((int)$x['montant']) . ' ' . $taxe) . '</span>' : '—';
+    $rows = ''; $tot = ['part' => $vide, 'pro' => $vide]; $estime = false;
+    foreach ($L as $pid => $l) {
+        $nom = $l['fiche'] && preg_match('/^[a-z0-9\-]{1,60}$/', (string)$pid) ? '<a href="' . h(u('produit', ['id' => (string)$pid])) . '">' . h($l['nom']) . '</a>' : h($l['nom']);
+        $d = $l['depuis'];
+        if ($d && $d['source'] === 'demande') $estime = true;
+        $depuis = $d ? h(mois_annee($d['date'])) . ($d['source'] === 'demande' ? '<sup>*</sup>' : '') . '<br><span class="petit">' . h(duree_depuis($d['date'])) . '</span>' : '—';
+        $rows .= '<tr><td><span translate="no">' . $nom . '</span>' . ($l['retire'] ? ' <span class="petit">(retiré)</span>' : '') . '</td>'
+               . '<td class="nombre">' . $cellule($l['part'], 'TTC') . '</td><td class="nombre">' . $cellule($l['pro'], 'HT') . '</td><td>' . $depuis . '</td></tr>';
+        foreach (['part', 'pro'] as $g) { $tot[$g]['q'] += (int)$l[$g]['q']; $tot[$g]['montant'] += (int)$l[$g]['montant']; }
+    }
+    return '<div class="defile"><table class="tableau ventes-gateaux"><thead><tr><th>Gâteau</th><th class="nombre">Particuliers (B2C)</th><th class="nombre">Pros (B2B)</th><th>Proposé depuis</th></tr></thead>'
+        . '<tbody>' . $rows . '</tbody><tfoot><tr><td>Total</td><td class="nombre">' . $cellule($tot['part'], 'TTC') . '</td><td class="nombre">' . $cellule($tot['pro'], 'HT') . '</td><td></td></tr></tfoot></table></div>'
+        . '<p class="aide">Commandes remises, depuis le début. Particuliers en TTC, pros en HT. Gâteaux personnalisés hors carte : comptés seulement dans le chiffre d\'affaires.</p>'
+        . ($estime ? '<p class="aide">* D\'après la première demande qui contient ce gâteau ; la date exacte se note dans sa fiche technique.</p>' : '');
+}
 function entier_fr(float $n): string { return number_format($n, 0, ',', "\u{202F}"); }
 function visites_texte(int $v): string { return entier_fr($v) . ' visite' . ($v > 1 ? 's' : ''); }
 /** Durée lisible : 75 s → « 1 min 15 s ». */
@@ -255,7 +279,7 @@ function page_export(): void {
     if ($jeu === 'sauvegarde') {
         if (!est_admin()) rediriger('reglages');
         $d = ['madamecho_gestion' => GESTION_VERSION, 'exportee_le' => maintenant()];
-        foreach (['clients', 'commandes', 'evenements', 'produits', 'ingredients', 'recettes'] as $t) $d[$t] = q("SELECT * FROM $t")->fetchAll();
+        foreach (['clients', 'commandes', 'evenements', 'produits', 'ingredients', 'recettes', 'indispos'] as $t) $d[$t] = q("SELECT * FROM $t")->fetchAll();
         $d['parametres'] = q("SELECT * FROM parametres WHERE cle IN ('signature', 'lien_avis', 'schema')")->fetchAll();
         evenement('export', 'Export complet téléchargé');
         header('Content-Type: application/json; charset=utf-8');

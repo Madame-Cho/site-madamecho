@@ -9,19 +9,40 @@ namespace MadameCho\Gestion;
 
 const TVA = [55 => '5,5 % (à emporter, consommation différée)', 100 => '10 % (à consommer sur place)', 200 => '20 %'];
 
-/** Quantités vendues (commandes remises) par produit et par variante depuis une date. */
+/** Quantités vendues (commandes remises) par produit et par variante depuis une date, en tout et pour chaque groupe :
+ *  « part » (particuliers, B2C, montants TTC) et « pro » (professionnels, B2B, montants HT) (demande d'Olivier, 07/11/2026). */
 function ventes_par_produit(string $depuis): array {
     $v = [];
-    foreach (lignes("SELECT lignes FROM commandes WHERE statut = 'remise' AND COALESCE(remise_le, recue_le) >= ?", [$depuis]) as $k) {
+    $tva = tva_produits();
+    foreach (lignes("SELECT k.lignes, k.type, c.type AS client_type FROM commandes k JOIN clients c ON c.id = k.client_id
+                     WHERE k.statut = 'remise' AND COALESCE(k.remise_le, k.recue_le) >= ?", [$depuis]) as $k) {
+        $g = commande_est_pro($k) ? 'pro' : 'part';
         foreach (json_decode($k['lignes'], true) ?: [] as $l) {
             [$pid, $code] = array_pad(explode('|', (string)($l['v'] ?? '')), 2, '');
             if ($pid === '') continue;
-            $v[$pid]['q'] = ($v[$pid]['q'] ?? 0) + (int)$l['q'];
-            $v[$pid]['ca'] = ($v[$pid]['ca'] ?? 0) + (int)$l['q'] * (int)$l['prix'];
-            $v[$pid]['variantes'][$code] = ($v[$pid]['variantes'][$code] ?? 0) + (int)$l['q'];
+            $q = (int)$l['q'];
+            $v[$pid]['q'] = ($v[$pid]['q'] ?? 0) + $q;
+            $v[$pid]['ca'] = ($v[$pid]['ca'] ?? 0) + $q * (int)$l['prix'];
+            $v[$pid]['variantes'][$code] = ($v[$pid]['variantes'][$code] ?? 0) + $q;
+            $montant = $g === 'part' ? $q * (int)$l['prix'] : (isset($l['ht']) ? (int)$l['ht'] * $q : ht_de_ttc($q * (int)$l['prix'], $tva[$pid] ?? 55));
+            $v[$pid][$g]['q'] = ($v[$pid][$g]['q'] ?? 0) + $q;
+            $v[$pid][$g]['montant'] = ($v[$pid][$g]['montant'] ?? 0) + $montant;
+            $v[$pid][$g]['variantes'][$code] = ($v[$pid][$g]['variantes'][$code] ?? 0) + $q;
         }
     }
     return $v;
+}
+/** Les ventes d'un gâteau en une ligne, particuliers (B2C, TTC) et professionnels (B2B, HT) séparés :
+ *  « En 12 mois : 8 aux particuliers (B2C), 240 € TTC · 3 aux pros (B2B), 45 € HT ». */
+function ventes_texte(?array $v, string $vide = 'Aucune vente remise en 12 mois'): string {
+    $m = [];
+    if (!empty($v['part']['q'])) $m[] = (int)$v['part']['q'] . ' aux particuliers (B2C), ' . euros_ronds((int)$v['part']['montant']) . ' TTC';
+    if (!empty($v['pro']['q'])) $m[] = (int)$v['pro']['q'] . ' aux pros (B2B), ' . euros_ronds((int)$v['pro']['montant']) . ' HT';
+    return $m ? 'En 12 mois : ' . implode(' · ', $m) : $vide;
+}
+/** « Proposé depuis mars 2025 (1 an et 8 mois) », d'après la fiche ou, à défaut, la première demande ; vide si on ne sait pas. */
+function depuis_texte(?array $d): string {
+    return $d ? 'Proposé depuis ' . mb_strtolower(mois_annee($d['date'])) . ' (' . duree_depuis($d['date']) . ')' : '';
 }
 function pourcent(int $part, int $tout): string { return $tout ? number_format($part / $tout * 100, 0, ',', ' ') . ' %' : '—'; }
 function nombre_fr(float $n, int $dec = 2): string { $s = number_format($n, $dec, ',', ' '); return $dec ? rtrim(rtrim($s, '0'), ',') : $s; }
@@ -69,10 +90,12 @@ function page_produits(): void {
             $cmp = allergenes_comparer($p, $rec);
             if ($cmp['manquants']) $alerte = '<span class="l5"><span class="drapeau">' . icone('alerte') . 'Allergène absent du site : ' . h(allergenes_affiches($cmp['manquants'])) . '</span></span>';
         }
-        $vendu = isset($ventes[$p['id']]) ? $ventes[$p['id']]['q'] . ' vendu(s) en 12 mois · ' . euros($ventes[$p['id']]['ca']) : 'Aucune vente remise en 12 mois';
+        $vendu = ventes_texte($ventes[$p['id']] ?? null);
+        $depuis = depuis_texte(produit_propose_depuis($p));
         $cartes .= '<a class="carte-cmd carte-produit" href="' . h(u('produit', ['id' => $p['id']])) . '">'
                  . '<span class="l1"><b translate="no">' . h($p['nom']) . '</b><span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? $p['statut']) . '</span></span>'
-                 . '<span class="l2">' . h($offre) . '</span><span class="l3">' . h(implode(' · ', $etat)) . '</span><span class="l4">' . h($vendu) . '</span>' . $alerte . '</a>';
+                 . '<span class="l2">' . h($offre) . '</span><span class="l3">' . h(implode(' · ', $etat)) . '</span>'
+                 . ($depuis !== '' ? '<span class="l4">' . h($depuis) . '</span>' : '') . '<span class="l4">' . h($vendu) . '</span>' . $alerte . '</a>';
     }
     $c .= $cartes !== '' ? '<div class="liste">' . $cartes . '</div>' : '<p class="vide">La carte du site n\'est pas encore chargée.</p>';
     $c .= '<p class="aide centre">Gâteaux, prix et textes se changent sur le site, pas ici.</p>';
@@ -92,10 +115,12 @@ function carte_produit_pro(array $p, array $vars, array $ventes): string {
     $v = $vars['u'] ?? ['libelle' => '', 'ht' => 0];
     $rec = recette($p)['u'] ?? null;
     $etat = $rec && $rec['lignes'] ? 'Recette · coût ' . euros($rec['cout']) . ($rec['marge'] !== null && $rec['ht'] ? ' · marge ' . number_format($rec['marge'] / $rec['ht'] * 100, 0) . ' %' : '') : 'Recette à saisir';
-    $vendu = isset($ventes[$p['id']]) ? $ventes[$p['id']]['q'] . ' vendu(s) en 12 mois' : 'Aucune livraison en 12 mois';
+    $vendu = ventes_texte($ventes[$p['id']] ?? null, 'Aucune livraison en 12 mois');
+    $depuis = depuis_texte(produit_propose_depuis($p));
     return '<a class="carte-cmd carte-produit" href="' . h(u('produit', ['id' => $p['id']])) . '">'
          . '<span class="l1"><b translate="no">' . h($p['nom']) . '</b><span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? $p['statut']) . '</span></span>'
-         . '<span class="l2">' . h(euros((int)$v['ht'])) . ' HT · <span translate="no">' . h($v['libelle']) . '</span></span><span class="l3">' . h($etat) . '</span><span class="l4">' . h($vendu) . '</span></a>';
+         . '<span class="l2">' . h(euros((int)$v['ht'])) . ' HT · <span translate="no">' . h($v['libelle']) . '</span></span><span class="l3">' . h($etat) . '</span>'
+         . ($depuis !== '' ? '<span class="l4">' . h($depuis) . '</span>' : '') . '<span class="l4">' . h($vendu) . '</span></a>';
 }
 
 /* ---------- Un produit ---------- */
@@ -122,7 +147,8 @@ function page_produit(): void {
                 $tva = isset($_POST['tva']) ? (int)texte('tva', 3) : (int)$p['tva'];
                 produit_modifier($id, ['statut' => est_pro($p) ? $p['statut'] : choix('statut', array_diff_key(STATUTS_PRODUIT, ['pro' => 1]), $p['statut']), 'fiche_lien' => $lien, 'valide_le' => date_valide(texte('valide_le', 10)) ?? '',
                                        'valide_par' => une_ligne(texte('valide_par', 60)), 'emballage' => centimes(texte('emballage', 12)) ?? 0,
-                                       'tva' => isset(TVA[$tva]) ? $tva : 55, 'notes' => texte('notes', 3000), 'recette' => texte('recette', 8000)]);
+                                       'tva' => isset(TVA[$tva]) ? $tva : 55, 'notes' => texte('notes', 3000), 'recette' => texte('recette', 8000),
+                                       'propose_depuis' => date_valide(texte('propose_depuis', 10)) ?? '']);
                 flash('ok', 'Fiche enregistrée.');
                 break;
             case 'ligne_ajouter':
@@ -175,7 +201,7 @@ function page_produit(): void {
     $p = produit($id);
     $cat = $p['cat'];
     $rec = recette($p);
-    $ventes = ventes_par_produit(date('Y-m-d', strtotime('-12 months')))[$id] ?? ['q' => 0, 'ca' => 0, 'variantes' => []];
+    $ventes = ventes_par_produit(date('Y-m-d', strtotime('-12 months')))[$id] ?? ['q' => 0, 'ca' => 0, 'variantes' => [], 'part' => [], 'pro' => []];
     $pro = est_pro($p);
     $c = titre_page('<span translate="no">' . h($p['nom']) . '</span>', '<span class="statut s-produit-' . h($p['statut']) . '">' . h(STATUTS_PRODUIT[$p['statut']] ?? '') . '</span> · '
         . ($pro ? 'restaurants, prix HT' : '<a href="../' . h($cat['url'] ?? ('carte/' . $id . '/')) . '" target="_blank" rel="noopener">Voir sur le site</a>'), '', $pro ? u('produits') . '#gamme-pro' : u('produits'));
@@ -274,16 +300,31 @@ function page_produit(): void {
     $f = ($pro ? '' : '<div class="ligne-champs">' . liste_choix('statut', 'Sur la carte', array_diff_key(STATUTS_PRODUIT, ['pro' => 1]), $p['statut']) . liste_choix('tva', 'TVA', TVA, (string)$p['tva']) . '</div>')
        . champ('fiche_lien', 'Lien de la fiche technique (dossier 10 du Drive)', $p['fiche_lien'], ['type' => 'url', 'placeholder' => 'https://docs.google.com/…'])
        . '<div class="ligne-champs">' . champ('valide_le', 'Fiche validée par Youngmi le', (string)$p['valide_le'], ['type' => 'date']) . champ('valide_par', 'Validée par', $p['valide_par'] !== '' ? $p['valide_par'] : '', ['placeholder' => 'Youngmi Cho']) . '</div>'
+       . champ('propose_depuis', 'Proposé depuis le', (string)($p['propose_depuis'] ?? ''), ['type' => 'date'], 'Vide : la date de la première demande qui contient ce gâteau.')
        . champ('emballage', 'Coût de l\'emballage (€ par gâteau ou par pièce)', (int)$p['emballage'] ? number_format((int)$p['emballage'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal', 'placeholder' => '1,20'])
        . zone('recette', 'Méthode (étapes, cuissons, montage)', $p['recette'], ['rows' => '6', 'maxlength' => '8000'])
        . zone('notes', 'Notes', $p['notes'], ['rows' => '3', 'maxlength' => '3000'], 'Fournisseurs, astuces, ce qui a changé…')
        . bouton('Enregistrer la fiche', 'secondaire');
     $c .= bloc('Fiche technique', ($p['fiche_lien'] !== '' ? '<p>' . lien_bouton($p['fiche_lien'], 'Ouvrir la fiche technique', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</p>' : '') . formulaire('fiche', $f));
-    // Ventes
+    // Ventes : particuliers (B2C, TTC) et professionnels (B2B, HT) séparés, et depuis quand le gâteau est proposé (demande d'Olivier, 07/11/2026)
+    $depuis = produit_propose_depuis($p);
+    $intro = $depuis ? '<p><b>' . h(depuis_texte($depuis)) . '</b>'
+        . ($depuis['source'] === 'demande' ? '<br><span class="aide">D\'après la première demande qui contient ce gâteau ; la date exacte se note dans la fiche technique.</span>' : '') . '</p>' : '';
+    $cellule = fn(int $q, int $montant, string $taxe): string => $q ? '<b>' . $q . '</b><br><span class="petit">' . h(euros_ronds($montant) . ' ' . $taxe) . '</span>' : '—';
     $vt = '';
-    foreach ($vars as $code => $v) if (!empty($ventes['variantes'][$code])) $vt .= '<tr><td translate="no">' . h($v['libelle']) . '</td><td class="nombre">' . (int)$ventes['variantes'][$code] . '</td></tr>';
-    $c .= bloc('Ventes des 12 derniers mois', $vt !== '' ? '<table class="tableau"><tbody>' . $vt . '</tbody><tfoot><tr><td>Total</td><td class="nombre">' . (int)$ventes['q'] . ' · ' . h(euros((int)$ventes['ca'])) . '</td></tr></tfoot></table>'
-        . '<p>' . lien_bouton(u('commandes', ['vue' => 'toutes', 'r' => $p['nom']]), 'Voir les commandes', 'discret') . '</p>' : '<p class="vide">Aucune commande remise.</p>');
+    $codes = array_unique(array_merge(array_keys($vars), array_keys($ventes['part']['variantes'] ?? []), array_keys($ventes['pro']['variantes'] ?? [])));
+    foreach ($codes as $code) {
+        $qp = (int)($ventes['part']['variantes'][$code] ?? 0); $qb = (int)($ventes['pro']['variantes'][$code] ?? 0);
+        if (!$qp && !$qb) continue;
+        $libelle = $vars[$code]['libelle'] ?? ($code === '' ? 'Sans variante' : (string)$code);
+        $vt .= '<tr><td translate="no">' . h($libelle) . '</td><td class="nombre">' . ($qp ?: '—') . '</td><td class="nombre">' . ($qb ?: '—') . '</td></tr>';
+    }
+    $P = ($ventes['part'] ?? []) + ['q' => 0, 'montant' => 0]; $B = ($ventes['pro'] ?? []) + ['q' => 0, 'montant' => 0];
+    $c .= bloc('Ventes des 12 derniers mois', $intro . ($vt !== ''
+        ? '<div class="defile"><table class="tableau ventes-gateaux"><thead><tr><th></th><th class="nombre">Particuliers (B2C)</th><th class="nombre">Pros (B2B)</th></tr></thead><tbody>' . $vt . '</tbody>'
+          . '<tfoot><tr><td>Total</td><td class="nombre">' . $cellule((int)$P['q'], (int)$P['montant'], 'TTC') . '</td><td class="nombre">' . $cellule((int)$B['q'], (int)$B['montant'], 'HT') . '</td></tr></tfoot></table></div>'
+          . '<p>' . lien_bouton(u('commandes', ['vue' => 'toutes', 'r' => $p['nom']]), 'Voir les commandes', 'discret') . '</p>'
+        : '<p class="vide">Aucune commande remise.</p>'));
     $c .= bloc('Historique', fil_historique(historique(null, null, $id)));
     mise_en_page($p['nom'], $c, 'produits');
 }

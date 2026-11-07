@@ -121,7 +121,9 @@ function page_commande(): void {
                 $prix = centimes(texte('prix_final', 12));
                 commande_statut($id, 'confirmee', ['retrait_date' => $d, 'retrait_heure' => $h] + ($prix !== null ? ['prix_final' => $prix] : []));
                 if (!empty($_POST['acompte_recu']) && in_array($k['paiement'], ['aucun', 'acompte_demande'], true)) commande_paiement($id, 'acompte_recu', choix('moyen', MOYENS, ''), (int)$k['acompte'] ?: null, (string)$k['facture']);
-                flash('ok', 'Commande confirmée : envoyez la confirmation au client et ajoutez le retrait à votre agenda.');
+                $ind = indispo_de_commande(commande($id) ?? []);
+                if ($ind) flash('erreur', 'Commande confirmée, mais le retrait tombe sur une indispo : ' . indispo_texte($ind) . '. Vérifiez avec le client, ou changez la date.');
+                else flash('ok', 'Commande confirmée : envoyez la confirmation au client et ajoutez le retrait à votre agenda.');
                 break;
             case 'remise':
                 $prix = centimes(texte('prix_final', 12));
@@ -202,6 +204,7 @@ function page_commande(): void {
     $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
     $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h($quand)]) : definition(['Quand' => h($quand), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
                                      'Où' => h(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Au 4 avenue du Château, 92190 Meudon')])
+                      . (($ind = indispo_de_commande($k)) ? '<p class="erreur">' . icone('alerte') . ' Indispo ce jour-là : ' . h(indispo_texte($ind)) . '. Vérifiez avec le client, ou changez la date. <a href="' . h(u('agenda', ['mois' => substr((string)$k['retrait_date'], 0, 7), 'jour' => (string)$k['retrait_date']])) . '#jour">Voir l\'agenda</a></p>' : '')
                       . agenda_boutons($k));
     $c .= '</div>';
     // Contenu
@@ -440,7 +443,7 @@ function page_commande_edition(): void {
         foreach (clients_lister('', 'actifs') as $cl) $opts .= '<option value="' . h($cl['numero'] . ' · ' . client_nom($cl)) . '">';
         $f .= bloc('Client', champ('client_ref', 'Client déjà connu', $val('client_ref'), ['list' => 'liste-clients', 'placeholder' => 'Tapez un nom ou CL-…', 'autocomplete' => 'off']) . '<datalist id="liste-clients">' . $opts . '</datalist>'
             . '<details class="replie"' . ($val('c_nom') !== '' || $val('c_societe') !== '' ? ' open' : '') . '><summary>Ou un nouveau client</summary>'
-            . liste_choix('c_type', 'Type', TYPES_CLIENT, $val('c_type', 'particulier'))
+            . liste_choix('c_type', 'Type', TYPES_CLIENT_LONGS, $val('c_type', 'particulier'))
             . '<div class="ligne-champs">' . champ('c_prenom', 'Prénom', $val('c_prenom'), ['autocomplete' => 'off']) . champ('c_nom', 'Nom de famille', $val('c_nom'), ['autocomplete' => 'off']) . '</div>'
             . champ('c_societe', 'Entreprise ou restaurant', $val('c_societe'), ['autocomplete' => 'off'])
             . '<div class="ligne-champs">' . champ('c_email', 'Email', $val('c_email'), ['type' => 'email', 'autocomplete' => 'off']) . champ('c_telephone', 'Téléphone', $val('c_telephone'), ['type' => 'tel', 'autocomplete' => 'off']) . '</div>'
@@ -507,8 +510,8 @@ function page_commande_edition(): void {
     mise_en_page($titre, $c, 'commandes');
 }
 
-/* ---------- Fichier agenda (.ics) ---------- */
-function page_agenda(): void {
+/* ---------- Fichier agenda (.ics) d'une commande : ?p=agenda&id=… (l'agenda lui-même est dans pages-agenda.php) ---------- */
+function page_agenda_ics(): void {
     $k = commande_depuis_requete();
     if (!$k || !($c = creneau($k))) rediriger('commandes');
     $f = fn($s) => date('Ymd\THis', strtotime($s));

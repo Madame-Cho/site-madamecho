@@ -20,20 +20,33 @@ function carte_client(array $c): string {
 }
 
 function page_clients(): void {
-    $filtres = ['actifs' => 'Tous', 'particuliers' => 'Particuliers', 'pros' => 'Professionnels', 'tous' => 'Avec les effacés'];
+    $filtres = ['actifs' => 'Tous', 'particuliers' => 'Particuliers (B2C)', 'pros' => 'Professionnels (B2B)', 'tous' => 'Avec les effacés'];
     $f = choix('f', $filtres, 'actifs');
     $r = une_ligne(texte('r', 80, $_GET));
     $cs = clients_lister($r, $f);
     $n = (int)val("SELECT COUNT(*) FROM clients WHERE statut <> 'efface'");
     $pros = (int)val("SELECT COUNT(*) FROM clients WHERE statut <> 'efface' AND type = 'professionnel'");
+    $parts = $n - $pros;
+    $comptes = ['actifs' => $n, 'particuliers' => $parts, 'pros' => $pros];
     $tabs = '';
-    foreach ($filtres as $k => $l) $tabs .= '<a href="' . h(u('clients', ['f' => $k] + ($r !== '' ? ['r' => $r] : []))) . '"' . ($k === $f ? ' aria-current="page"' : '') . '>' . h($l) . '</a>';
-    $c = titre_page('Clients', $n . ' client' . ($n > 1 ? 's' : '') . ($pros ? ', dont ' . $pros . ' professionnel' . ($pros > 1 ? 's' : '') : ''), lien_bouton(u('client-edition'), icone('ajouter') . 'Nouveau', 'principal'));
+    foreach ($filtres as $k => $l) $tabs .= '<a href="' . h(u('clients', ['f' => $k] + ($r !== '' ? ['r' => $r] : []))) . '"' . ($k === $f ? ' aria-current="page"' : '') . '>' . h($l)
+        . (isset($comptes[$k]) ? ' <span class="compte">' . $comptes[$k] . '</span>' : '') . '</a>';
+    $c = titre_page('Clients', $n . ' client' . ($n > 1 ? 's' : '') . ' : ' . $parts . ' particulier' . ($parts > 1 ? 's' : '') . ' (B2C), ' . $pros . ' professionnel' . ($pros > 1 ? 's' : '') . ' (B2B)',
+        lien_bouton(u('client-edition'), icone('ajouter') . 'Nouveau', 'principal'));
     $c .= '<form class="recherche" method="get" action=""><input type="hidden" name="p" value="clients"><input type="hidden" name="f" value="' . h($f) . '">'
         . '<label class="champ-recherche">' . icone('chercher') . '<span class="sr">Chercher</span><input type="search" name="r" value="' . h($r) . '" placeholder="Nom, email, téléphone, ville, CL-…"></label></form>';
     $c .= '<nav class="sous-onglets" aria-label="Filtrer les clients">' . $tabs . '</nav>';
-    $c .= $cs ? '<div class="liste">' . implode('', array_map(__NAMESPACE__ . '\\carte_client', $cs)) . '</div>'
-              : '<p class="vide">' . h($r !== '' ? 'Aucun client ne correspond à « ' . $r . ' ».' : 'Aucun client pour l\'instant : ils arrivent avec les demandes du site, ou par « Nouveau ».') . '</p>';
+    if (!$cs) $c .= '<p class="vide">' . h($r !== '' ? 'Aucun client ne correspond à « ' . $r . ' ».' : 'Aucun client pour l\'instant : ils arrivent avec les demandes du site, ou par « Nouveau ».') . '</p>';
+    elseif ($f === 'particuliers' || $f === 'pros') $c .= '<div class="liste">' . implode('', array_map(__NAMESPACE__ . '\\carte_client', $cs)) . '</div>';
+    else {
+        // « Tous » : deux listes bien séparées, les professionnels (B2B, montants HT) puis les particuliers (B2C, montants TTC)
+        foreach (['professionnel' => ['Professionnels (B2B)', 'Restaurants et entreprises · montants HT, comme leurs factures'], 'particulier' => ['Particuliers (B2C)', 'Montants TTC']] as $type => [$titre, $aide]) {
+            $liste = array_filter($cs, fn($x) => $x['type'] === $type);
+            if (!$liste) continue;
+            $c .= '<h2 class="titre-section type-' . $type . '">' . chip_type($type === 'professionnel') . ' ' . h($titre) . ' <span class="compte">' . count($liste) . '</span></h2>'
+                . '<p class="aide">' . h($aide) . '</p><div class="liste">' . implode('', array_map(__NAMESPACE__ . '\\carte_client', $liste)) . '</div>';
+        }
+    }
     mise_en_page('Clients', $c, 'clients');
 }
 
@@ -134,7 +147,7 @@ function page_client(): void {
         $tel = $cl['telephone'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $cl['telephone'])) . '">' . icone('tel') . h($cl['telephone']) . '</a>' : '';
         $mail = $cl['email'] !== '' ? '<a href="mailto:' . h($cl['email']) . '">' . icone('email') . h($cl['email']) . '</a>' : '';
         $tel_quel = fn(string $t): string => $t !== '' ? '<span translate="no">' . h($t) . '</span>' : '';   // noms et ville : jamais traduits
-        $c .= bloc('Coordonnées', definition(['Entreprise' => $tel_quel($cl['societe']), 'Contact' => $tel_quel($cl['contact']), 'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $tel_quel($cl['ville']),
+        $c .= bloc('Coordonnées', definition(['Type' => h(TYPES_CLIENT_LONGS[$cl['type']] ?? $cl['type']) . ' · ' . ($cl['type'] === 'professionnel' ? 'montants HT' : 'montants TTC'), 'Entreprise' => $tel_quel($cl['societe']), 'Contact' => $tel_quel($cl['contact']), 'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $tel_quel($cl['ville']),
                                                'Premier contact' => h(CANAUX[$cl['canal']] ?? $cl['canal']) . ', le ' . h(date_fr($cl['premier_contact'], 'longue')),
                                                'Dernier échange' => h(date_fr($cl['dernier_echange'], 'heure')), 'Dans Qonto' => $cl['qonto'] !== '' ? 'Oui' : ''])
              . '<p>' . lien_bouton(u('client-edition', ['id' => $id]), 'Modifier', 'discret') . '</p>');
@@ -287,7 +300,7 @@ function page_client_edition(): void {
     $titre = $cl ? 'Modifier ' . client_nom($cl) : 'Nouveau client';
     $c = titre_page(h($titre), $cl ? h($cl['numero']) : '', '', $cl ? u('client', ['id' => $id]) : u('clients'));
     if ($erreurs) $c .= '<div class="erreur" role="alert">' . implode('<br>', $erreurs) . '</div>';
-    $f = liste_choix('type', 'Type', TYPES_CLIENT, $d['type'])
+    $f = liste_choix('type', 'Type', TYPES_CLIENT_LONGS, $d['type'])
        . '<div class="ligne-champs">' . champ('prenom', 'Prénom', $d['prenom'], ['autocomplete' => 'off']) . champ('nom', 'Nom de famille', $d['nom'], ['autocomplete' => 'off']) . '</div>'
        . champ('societe', 'Entreprise ou restaurant (professionnels)', $d['societe'], ['autocomplete' => 'off'])
        . champ('contact', 'Personne à contacter (professionnels)', $d['contact'], ['autocomplete' => 'off'])

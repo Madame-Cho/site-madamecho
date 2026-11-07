@@ -945,6 +945,73 @@ HT | 부가세 별도
 Suivi de la commande | 주문 진행 기록
 la pièce, le kg, la plaque… | 개, kg, 판…
 Échanges et historique | 연락과 기록
+# Agenda et indispos (07/11/2026)
+Agenda | 일정
+Retraits, livraisons et indispos | 픽업, 배달, 예약 불가
+Ajouter une indispo | 예약 불가 추가
+Ajouter l'indispo | 예약 불가 추가하기
+Mois précédent | 이전 달
+Mois suivant | 다음 달
+lun. | 월
+mar. | 화
+mer. | 수
+jeu. | 목
+ven. | 금
+sam. | 토
+dim. | 일
+Indispo | 예약 불가
+indispo | 예약 불가
+aucune commande | 주문 없음
+Aucune commande ce jour-là. | 이날은 주문이 없어요.
+Sans date de retrait : | 픽업 날짜 없음:
+Indispo ce jour-là | 이날 예약 불가로 하기
+Indispos à venir | 다가오는 예약 불가
+Aucune indispo à venir. | 다가오는 예약 불가가 없어요.
+Un jour entier ou une plage horaire (de 14 h à 18 h, par exemple), sur un ou plusieurs jours. La gestion prévient si une commande tombe dessus. Le formulaire du site n'en tient pas encore compte. | 하루 종일 또는 시간대(예: 14시~18시)로, 하루나 여러 날에 걸쳐 정할 수 있어요. 주문이 겹치면 관리 화면이 알려 줘요. 사이트 문의 양식에는 아직 반영되지 않아요.
+Toute la journée | 하루 종일
+toute la journée | 하루 종일
+Une plage horaire | 시간대
+Du | 시작일
+Jusqu'au (compris) | 종료일 (포함)
+Vide : un seul jour. | 비워 두면 하루만이에요.
+De | 시작 시간
+À | 종료 시간
+Vacances, salon, déjà complet… | 휴가, 박람회, 이미 꽉 참…
+Visible dans la gestion seulement. | 관리 화면에서만 보여요.
+Supprimer cette indispo | 이 예약 불가 삭제
+Supprimer cette indispo ? | 이 예약 불가를 삭제할까요?
+Indispo supprimée. | 예약 불가를 삭제했어요.
+Indispo ajoutée. | 예약 불가를 추가했어요.
+Indispo modifiée. | 예약 불가를 수정했어요.
+Choisissez le premier jour de l'indispo. | 예약 불가 첫날을 골라 주세요.
+La date de fin n'est pas lisible. | 종료일을 읽을 수 없어요.
+La date de fin est avant la date de début. | 종료일이 시작일보다 앞이에요.
+Une indispo dure au plus un an. | 예약 불가는 최대 1년까지예요.
+Indiquez l'heure de début et l'heure de fin (par exemple 14:00 et 18:00), ou choisissez « Toute la journée ». | 시작 시간과 종료 시간을 적거나 (예: 14:00과 18:00) ‘하루 종일’을 고르세요.
+Voir l'agenda | 일정 보기
+# Ventes par gâteau, particuliers (B2C) et pros (B2B), « proposé depuis » (07/11/2026)
+Ventes par gâteau | 케이크별 판매
+Particuliers (B2C) | 개인 (B2C)
+Professionnels (B2B) | 업체 (B2B)
+Particulier (B2C) | 개인 (B2C)
+Professionnel (B2B) | 업체 (B2B)
+Pros (B2B) | 업체 (B2B)
+Proposé depuis | 판매 시작
+Proposé depuis le | 판매 시작일
+(retiré) | (판매 중지)
+Sans variante | 옵션 없음
+à venir | 예정
+depuis aujourd'hui | 오늘부터
+Pas encore de gâteau ni de vente. | 아직 케이크도 판매도 없어요.
+Commandes remises, depuis le début. Particuliers en TTC, pros en HT. Gâteaux personnalisés hors carte : comptés seulement dans le chiffre d'affaires. | 처음부터 전달 완료된 주문이에요. 개인은 부가세 포함, 업체는 부가세 별도 금액이에요. 메뉴에 없는 맞춤 케이크는 매출에만 들어가요.
+* D'après la première demande qui contient ce gâteau ; la date exacte se note dans sa fiche technique. | * 이 케이크가 들어간 첫 문의 날짜예요. 정확한 날짜는 제품 기술 시트에 적을 수 있어요.
+D'après la première demande qui contient ce gâteau ; la date exacte se note dans la fiche technique. | 이 케이크가 들어간 첫 문의 날짜예요. 정확한 날짜는 기술 시트에 적을 수 있어요.
+Vide : la date de la première demande qui contient ce gâteau. | 비워 두면 이 케이크가 들어간 첫 문의 날짜를 써요.
+Restaurants et entreprises | 레스토랑과 회사
+montants HT, comme leurs factures | 금액은 청구서처럼 부가세 별도
+Montants TTC | 금액은 부가세 포함
+montants HT | 금액 부가세 별도
+montants TTC | 금액 부가세 포함
 TXT;
 }
 
@@ -1010,7 +1077,41 @@ function coreen_motifs(): array {
     $E = '[−-]?\d[\d ]*(?:,\d{1,2})? €';
     $N = '\d[\d ]*';
     $ML = 'janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre';
+    // « 14 h – 18 h », « 9 h 30 – 12 h » → « 14:00–18:00 », « 9:30–12:00 »
+    $plage = fn(string $x): ?string => preg_match('/^(\d{1,2}) h(?: (\d{2}))? – (\d{1,2}) h(?: (\d{2}))?$/u', $x, $a)
+        ? sprintf('%d:%02d–%d:%02d', (int)$a[1], (int)($a[2] ?? 0), (int)$a[3], (int)($a[4] ?? 0)) : null;
+    // « 5 jours », « 3 semaines », « 8 mois », « 1 an et 8 mois », « à venir »
+    $duree = function (string $x): ?string {
+        if ($x === 'à venir') return '예정';
+        if ($x === 'depuis aujourd\'hui') return '오늘부터';
+        if (preg_match('/^(\d+) jours?$/', $x, $a)) return $a[1] . '일';
+        if (preg_match('/^(\d+) semaines$/', $x, $a)) return $a[1] . '주';
+        if (preg_match('/^(\d+) mois$/', $x, $a)) return $a[1] . '개월';
+        if (preg_match('/^(\d+) ans?(?: et (\d+) mois)?$/', $x, $a)) return $a[1] . '년' . (isset($a[2]) ? ' ' . $a[2] . '개월' : '');
+        return null;
+    };
+    // Une indispo écrite en toutes lettres : « Samedi 14 novembre, toute la journée (Vacances) », « Du … au …, 14 h – 18 h »
+    $indispo = function (string $x) use ($date, $plage): ?string {
+        if (!preg_match('/^(.+?), (toute la journée|\d{1,2} h(?: \d{2})? – \d{1,2} h(?: \d{2})?)(?: \((.*)\))?$/us', $x, $a)) return null;
+        $j = preg_match('/^Du (.+) au (.+)$/u', $a[1], $b) ? (($d1 = $date($b[1])) && ($d2 = $date($b[2])) ? $d1 . ' ~ ' . $d2 : null) : $date($a[1]);
+        if ($j === null) return null;
+        return $j . ', ' . ($a[2] === 'toute la journée' ? '하루 종일' : $plage($a[2])) . (($a[3] ?? '') !== '' ? ' (' . $a[3] . ')' : '');
+    };
     $p = [
+        // Agenda, indispos et ventes par gâteau (07/11/2026)
+        ['/^(\d{1,2}) h(?: (\d{2}))? – (\d{1,2}) h(?: (\d{2}))?$/u', fn($m) => $plage($m[0])],
+        ['/^(\d+) commande\(s\) en cours$/', fn($m) => '진행 중인 주문 ' . $m[1] . '건'],
+        ['/^Indispo (ajoutée|modifiée)\. Attention : (\d+) commandes? en cours tombe(?:nt)? dessus, à voir avec le client\.$/u',
+            fn($m) => '예약 불가를 ' . ($m[1] === 'ajoutée' ? '추가' : '수정') . '했어요. 주의: 진행 중인 주문 ' . $m[2] . '건이 겹쳐요. 고객과 상의하세요.'],
+        ['/^Commande confirmée, mais le retrait tombe sur une indispo : (.+)\. Vérifiez avec le client, ou changez la date\.$/us',
+            fn($m) => ($x = $indispo($m[1])) ? '주문을 확정했어요. 하지만 픽업이 예약 불가와 겹쳐요: ' . $x . '. 고객과 확인하거나 날짜를 바꾸세요.' : null],
+        ['/^Indispo ce jour-là : (.+)\. Vérifiez avec le client, ou changez la date\.$/us',
+            fn($m) => ($x = $indispo($m[1])) ? '이날은 예약 불가예요: ' . $x . '. 고객과 확인하거나 날짜를 바꾸세요.' : null],
+        ['/^(\d+) (?:ans?|mois|semaines|jours?)(?: et \d+ mois)?$/u', fn($m) => $duree($m[0])],
+        ['/^Proposé depuis (' . $ML . ') (\d{4}) \((.+)\)$/u', fn($m) => ($mo = coreen_mois($m[1])) && ($d = $duree($m[3])) ? '판매 시작: ' . $m[2] . '년 ' . $mo . ' (' . $d . ')' : null],
+        ['/^(?:En 12 mois : )?(\d+) aux particuliers \(B2C\), (' . $E . ') TTC$/u', fn($m) => (str_starts_with($m[0], 'En 12') ? '최근 12개월: ' : '') . '개인(B2C) ' . $m[1] . '개, ' . $m[2] . ' (부가세 포함)'],
+        ['/^(?:En 12 mois : )?(\d+) aux pros \(B2B\), (' . $E . ') HT$/u', fn($m) => (str_starts_with($m[0], 'En 12') ? '최근 12개월: ' : '') . '업체(B2B) ' . $m[1] . '개, ' . $m[2] . ' (부가세 별도)'],
+        ['/^(\d+) clients? : (\d+) particuliers? \(B2C\), (\d+) professionnels? \(B2B\)$/', fn($m) => '고객 ' . $m[1] . '명: 개인(B2C) ' . $m[2] . '명, 업체(B2B) ' . $m[3] . '곳'],
         // Dates seules, moments de retrait, heures, durées
         ['~^\d{2}/\d{2}/\d{4}(?: à \d{2} h \d{2})?$~', fn($m) => coreen_date($m[0])],
         ['/^(?:\p{L}+\.? )?\d{1,2} \p{L}+\.?(?: \d{4})?(?:, (?:matin|midi|après-midi|soir|\d{2} h \d{2}))?(?: \(livraison\))?$/u', fn($m) => coreen_retrait($m[0])],

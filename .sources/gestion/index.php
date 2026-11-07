@@ -17,6 +17,7 @@ require_once __DIR__ . '/inc/manuel.php';
 require_once __DIR__ . '/inc/assistant.php';
 require_once __DIR__ . '/inc/pages-connexion.php';
 require_once __DIR__ . '/inc/pages-commandes.php';
+require_once __DIR__ . '/inc/pages-agenda.php';
 require_once __DIR__ . '/inc/pages-clients.php';
 require_once __DIR__ . '/inc/pages-produits.php';
 require_once __DIR__ . '/inc/pages-autres.php';

@@ -25,6 +25,9 @@ function icone(string $n): string {
         'plus' => '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
         'ajouter' => '<path d="M12 5v14M5 12h14"/>',
         'retour' => '<path d="M15 5l-7 7 7 7"/>',
+        'suivant' => '<path d="M9 5l7 7-7 7"/>',
+        // L'agenda : un calendrier et ses jours
+        'mois' => '<path d="M4 5h16v15H4z"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M8 13.5h.01M12 13.5h.01M16 13.5h.01M8 17h.01M12 17h.01"/>',
         'email' => '<path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/>',
         'tel' => '<path d="M6.5 3.5l3 3-2 2.5c1.3 2.6 3.4 4.7 6 6l2.5-2 3 3-2 2.5C10.6 18.4 5.6 13.4 4 6.5z"/>',
         'agenda' => '<path d="M4 5h16v15H4z"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M12 13v4M10 15h4"/>',
@@ -54,7 +57,7 @@ function icone(string $n): string {
 
 /** Adresse d'un fichier d'habillage avec sa version (date du fichier) : le navigateur reprend le nouveau dès qu'il change. */
 function fichier_versionne(string $f): string { return $f . '?v=' . (@filemtime(dirname(__DIR__) . '/' . $f) ?: GESTION_VERSION); }
-/** Une page complète. $actif : l'onglet allumé (accueil, commandes, clients, produits, plus). */
+/** Une page complète. $actif : l'onglet allumé (accueil, agenda, commandes, clients, produits, plus). */
 /** Le compte connecté, au bout de la barre du haut sur tous les écrans : nom, email, mot de passe et « Se déconnecter »
  *  (demande d'Olivier, 07/11/2026 : sur un grand écran, le menu Plus, qui portait la déconnexion, n'apparaît plus). */
 function menu_compte(array $u): string {
@@ -75,7 +78,8 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
     $nav = '';
     $onglets = '';
     if ($u) {
-        $items = [['accueil', 'Aujourd\'hui', 'jour'], ['commandes', 'Commandes', 'commandes'], ['clients', 'Clients', 'clients'], ['produits', 'Produits', 'produits']];
+        // L'agenda, à côté d'Aujourd'hui (demande d'Olivier, 07/11/2026)
+        $items = [['accueil', 'Aujourd\'hui', 'jour'], ['agenda', 'Agenda', 'mois'], ['commandes', 'Commandes', 'commandes'], ['clients', 'Clients', 'clients'], ['produits', 'Produits', 'produits']];
         foreach ($items as [$p, $l, $i]) {
             $a = $actif === $p ? ' aria-current="page"' : '';
             $nav .= '<a href="' . h(u($p)) . '"' . $a . '>' . h($l) . '</a>';
@@ -111,7 +115,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '<header class="barre"><a class="marque" href="' . h($u ? u('accueil') : u('connexion')) . '"><img src="../assets/logo-chocolat.svg" alt="Madame Cho" width="112" height="33"><span>' . h(GESTION_NOM) . '</span></a>'
        . ($u ? '<nav class="nav-haut" aria-label="Menu">' . $nav . '</nav>' : '')
        . bouton_langue()
-       . ($u ? '<a class="nouvelle" href="' . h(u('commande-edition')) . '" aria-label="Nouvelle commande">' . icone('ajouter') . '<span>Nouvelle commande</span></a>' . menu_compte($u) : '')
+       . ($u ? '<a class="nouvelle" href="' . h(u('commande-edition')) . '" aria-label="Nouvelle commande" title="Nouvelle commande">' . icone('ajouter') . '<span>Nouvelle commande</span></a>' . menu_compte($u) : '')
        . '</header>'
        . '<main id="contenu" class="page">' . $f . rappel_francais($corps) . $corps . '</main>'
        . ($u ? '<nav class="onglets" aria-label="Menu principal">' . $onglets . '</nav>' : '')
@@ -147,7 +151,7 @@ function chip_statut(string $s, bool $court = true, bool $livraison = false): st
 }
 /** Particulier (B2C) ou Pro (B2B), au premier coup d'œil, sur chaque carte et chaque fiche (demande d'Olivier, 07/11/2026). */
 function chip_type(bool $pro): string {
-    return $pro ? '<span class="type-client t-pro">' . icone('pro') . 'Pro</span>' : '<span class="type-client t-part">' . icone('particulier') . 'Particulier</span>';
+    return $pro ? '<span class="type-client t-pro">' . icone('pro') . 'Pro · B2B</span>' : '<span class="type-client t-part">' . icone('particulier') . 'Particulier · B2C</span>';
 }
 /** Le montant d'une commande tel qu'on le lit : TTC pour un particulier, HT pour un professionnel (comme sa facture). */
 function montant_lu(array $k): string {
@@ -363,11 +367,10 @@ function bloc_email(string $id, string $titre, array $e, string $a): string {
 /* ---------- Agenda ---------- */
 function creneau(array $k): ?array {
     if (!$k['retrait_date']) return null;
-    $plages = ['matin' => ['09:00', '12:00'], 'midi' => ['12:00', '14:00'], 'apres-midi' => ['14:00', '18:00'], 'soir' => ['18:00', '19:00']];
     if (preg_match('/^\d{2}:\d{2}$/', (string)$k['retrait_heure'])) {
         $debut = $k['retrait_heure'];
         $fin = date('H:i', strtotime($k['retrait_date'] . ' ' . $debut) + 1800);
-    } else [$debut, $fin] = $plages[$k['retrait_moment']] ?? ['09:00', '10:00'];
+    } else [$debut, $fin] = MOMENTS_PLAGES[$k['retrait_moment']] ?? ['09:00', '10:00'];
     return [$k['retrait_date'] . ' ' . $debut, $k['retrait_date'] . ' ' . $fin];
 }
 function agenda_titre(array $k): string {

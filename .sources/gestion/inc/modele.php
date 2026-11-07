@@ -475,6 +475,81 @@ function activite_commandes(): array {
     ];
 }
 
+/* ---------- Agenda et indispos (demande d'Olivier, 07/11/2026) ---------- */
+/** Les commandes dont le retrait ou la livraison tombe entre deux jours (annulées et sans suite exclues), dans l'ordre de chaque journée. */
+function agenda_commandes(string $du, string $au): array {
+    $r = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero
+                 FROM commandes k JOIN clients c ON c.id = k.client_id
+                 WHERE k.retrait_date BETWEEN ? AND ? AND k.statut IN ('demande', 'proposition', 'confirmee', 'remise')
+                 ORDER BY k.retrait_date, " . ORDRE_DANS_LA_JOURNEE . ", k.id", [$du, $au]);
+    foreach ($r as &$k) $k['lignes_tab'] = json_decode($k['lignes'], true) ?: [];
+    return $r;
+}
+/** Les indispos qui touchent au moins un jour entre deux dates. Une indispo va du jour « debut » au jour « fin » compris ;
+ *  sans heures, elle prend toute la journée, sinon la même plage horaire chaque jour. */
+function indispos_entre(string $du, string $au): array {
+    return lignes("SELECT * FROM indispos WHERE fin >= ? AND debut <= ? ORDER BY debut, heure_debut, id", [$du, $au]);
+}
+function indispo(int $id): ?array { return ligne("SELECT * FROM indispos WHERE id = ?", [$id]); }
+function indispo_journee(array $i): bool { return $i['heure_debut'] === '' || $i['heure_fin'] === ''; }
+function indispos_du_jour(array $toutes, string $jour): array { return array_values(array_filter($toutes, fn($i) => $i['debut'] <= $jour && $i['fin'] >= $jour)); }
+/** « 14 h – 18 h », « 9 h 30 – 12 h ». */
+function plage_texte(string $de, string $a): string {
+    $f = fn(string $t): string => (int)substr($t, 0, 2) . ' h' . (substr($t, 3, 2) !== '00' ? ' ' . substr($t, 3, 2) : '');
+    return $f($de) . ' – ' . $f($a);
+}
+/** Les jours d'une indispo : « Samedi 14 novembre », « Du lundi 21 décembre au mercredi 23 décembre ». */
+function indispo_jours_texte(array $i): string {
+    return $i['debut'] === $i['fin'] ? ucfirst(date_fr($i['debut'], 'jour')) : 'Du ' . date_fr($i['debut'], 'jour') . ' au ' . date_fr($i['fin'], 'jour');
+}
+function indispo_texte(array $i): string {
+    return indispo_jours_texte($i) . ', ' . (indispo_journee($i) ? 'toute la journée' : plage_texte($i['heure_debut'], $i['heure_fin'])) . ($i['motif'] !== '' ? ' (' . $i['motif'] . ')' : '');
+}
+/** L'indispo saisie dans un formulaire : [données, null] ou [null, message d'erreur]. */
+function indispo_lue(): array {
+    $debut = date_valide(texte('debut', 10));
+    $finTexte = texte('fin', 10);
+    $fin = $finTexte === '' ? $debut : date_valide($finTexte);
+    $plage = choix('quand', ['journee' => 1, 'plage' => 1], 'journee') === 'plage';
+    $de = texte('heure_debut', 5); $a = texte('heure_fin', 5);
+    if (!$debut) return [null, 'Choisissez le premier jour de l\'indispo.'];
+    if (!$fin) return [null, 'La date de fin n\'est pas lisible.'];
+    if ($fin < $debut) return [null, 'La date de fin est avant la date de début.'];
+    if ((strtotime($fin) - strtotime($debut)) / 86400 > 366) return [null, 'Une indispo dure au plus un an.'];
+    $heure = '/^([01]\d|2[0-3]):[0-5]\d$/';
+    if ($plage && (!preg_match($heure, $de) || !preg_match($heure, $a) || $de >= $a)) return [null, 'Indiquez l\'heure de début et l\'heure de fin (par exemple 14:00 et 18:00), ou choisissez « Toute la journée ».'];
+    if (!$plage) { $de = ''; $a = ''; }
+    return [['debut' => $debut, 'fin' => $fin, 'heure_debut' => $de, 'heure_fin' => $a, 'motif' => mb_substr(une_ligne(texte('motif', 200)), 0, 80)], null];
+}
+function indispo_enregistrer(?int $id, array $d): int {
+    $now = maintenant();
+    if ($id) q("UPDATE indispos SET debut = ?, fin = ?, heure_debut = ?, heure_fin = ?, motif = ?, maj_le = ? WHERE id = ?",
+               [$d['debut'], $d['fin'], $d['heure_debut'], $d['heure_fin'], $d['motif'], $now, $id]);
+    else {
+        q("INSERT INTO indispos (debut, fin, heure_debut, heure_fin, motif, auteur, cree_le, maj_le) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [$d['debut'], $d['fin'], $d['heure_debut'], $d['heure_fin'], $d['motif'], auteur(), $now, $now]);
+    }
+    evenement('agenda', ($id ? 'Indispo modifiée : ' : 'Indispo ajoutée : ') . indispo_texte($d));
+    return $id ?: (int)db()->lastInsertId();
+}
+function indispo_supprimer(int $id): void {
+    $i = indispo($id);
+    if (!$i) return;
+    q("DELETE FROM indispos WHERE id = ?", [$id]);
+    evenement('agenda', 'Indispo supprimée : ' . indispo_texte($i));
+}
+/** L'indispo sur laquelle tombe le retrait (ou la livraison) d'une commande en cours, ou null. Sans heure convenue, on prend le
+ *  moment demandé ; sans moment, toute la journée. */
+function indispo_de_commande(array $k): ?array {
+    if (!in_array($k['statut'] ?? '', STATUTS_EN_COURS, true) || empty($k['retrait_date'])) return null;
+    if (preg_match('/^\d{2}:\d{2}$/', (string)$k['retrait_heure'])) [$de, $a] = [$k['retrait_heure'], date('H:i', strtotime('2000-01-01 ' . $k['retrait_heure']) + 1800)];
+    else [$de, $a] = MOMENTS_PLAGES[$k['retrait_moment']] ?? ['00:00', '23:59'];
+    foreach (indispos_entre($k['retrait_date'], $k['retrait_date']) as $i) {
+        if (indispo_journee($i) || ($i['heure_debut'] < $a && $i['heure_fin'] > $de)) return $i;
+    }
+    return null;
+}
+
 /* ---------- Produits, ingrédients, recettes ---------- */
 /** Aligne le registre des produits sur le catalogue du site (la partie publique n'est jamais recopiée à la main). */
 function produits_synchroniser(): void {
@@ -498,6 +573,42 @@ function produit(string $id): ?array {
     if ($p) $p['cat'] = json_decode($p['catalogue'], true) ?: [];
     return $p;
 }
+/** La première demande qui contient chaque gâteau (jour de réception), pour « proposé depuis » quand la fiche ne le dit pas. */
+function produits_premieres_demandes(): array {
+    static $r = null;
+    if ($r !== null) return $r;
+    $r = [];
+    foreach (lignes("SELECT recue_le, lignes FROM commandes ORDER BY recue_le") as $k) {
+        foreach (json_decode((string)$k['lignes'], true) ?: [] as $l) {
+            $pid = explode('|', (string)($l['v'] ?? ''))[0];
+            if ($pid !== '' && !isset($r[$pid])) $r[$pid] = substr((string)$k['recue_le'], 0, 10);
+        }
+    }
+    return $r;
+}
+/** Depuis quand un gâteau est proposé (demande d'Olivier, 07/11/2026) : la date notée sur sa fiche, sinon le jour de sa première
+ *  demande (« source » = fiche ou demande) ; null si on ne sait pas encore. */
+function produit_propose_depuis(array $p): ?array {
+    if (!empty($p['propose_depuis'])) return ['date' => (string)$p['propose_depuis'], 'source' => 'fiche'];
+    $d = produits_premieres_demandes()[(string)$p['id']] ?? null;
+    return $d ? ['date' => $d, 'source' => 'demande'] : null;
+}
+/** Le temps écoulé depuis une date : « 5 jours », « 3 semaines », « 8 mois », « 1 an et 8 mois », « à venir ». */
+function duree_depuis(string $date): string {
+    $d = date_create_immutable($date); $a = date_create_immutable(aujourdhui());
+    if (!$d || !$a) return '';
+    if ($d > $a) return 'à venir';
+    $e = $d->diff($a);
+    $jours = (int)$e->days;
+    if ($jours === 0) return 'depuis aujourd\'hui';
+    if ($jours < 14) return $jours . ($jours > 1 ? ' jours' : ' jour');
+    $mois = $e->y * 12 + $e->m;
+    if ($mois < 2) return intdiv($jours, 7) . ' semaines';
+    if ($e->y === 0) return $mois . ' mois';
+    return $e->y . ($e->y > 1 ? ' ans' : ' an') . ($e->m ? ' et ' . $e->m . ' mois' : '');
+}
+/** « Mars 2025 ». */
+function mois_annee(string $date): string { $t = strtotime($date); return $t ? ucfirst(MOIS[(int)date('n', $t)]) . ' ' . date('Y', $t) : ''; }
 function produit_variantes(array $p): array {
     $c = $p['cat']; $v = [];
     if (($c['mode'] ?? '') === 'pro') return ['u' => ['libelle' => (string)($c['unite'] ?? 'la pièce'), 'prix' => ttc_de_ht((int)($c['prix_ht'] ?? 0), (int)$p['tva']), 'ht' => (int)($c['prix_ht'] ?? 0)]];
@@ -511,6 +622,7 @@ function produit_modifier(string $id, array $d): void {
     $diff = [];
     foreach (['statut', 'fiche_lien', 'recette', 'notes', 'emballage', 'tva', 'valide_par'] as $c) if (array_key_exists($c, $d) && (string)$d[$c] !== (string)$p[$c]) $diff[$c] = $d[$c];
     if (array_key_exists('valide_le', $d) && (string)$d['valide_le'] !== (string)$p['valide_le']) $diff['valide_le'] = $d['valide_le'] ?: null;
+    if (array_key_exists('propose_depuis', $d) && (string)$d['propose_depuis'] !== (string)($p['propose_depuis'] ?? '')) $diff['propose_depuis'] = $d['propose_depuis'] ?: null;
     if (!$diff) return;
     $diff['maj_le'] = maintenant();
     $set = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($diff)));
@@ -745,9 +857,10 @@ function statistiques(): array {
             $pid = explode('|', (string)($l['v'] ?? ''))[0] ?: (string)($l['nom'] ?? '');
             $q = (int)($l['q'] ?? 0);
             $montant = $g === 'part' ? (int)($l['prix'] ?? 0) * $q : (isset($l['ht']) ? (int)$l['ht'] * $q : ht_de_ttc((int)($l['prix'] ?? 0) * $q, $tva[$pid] ?? 55));
-            $s['produits'][$g][$pid] ??= ['nom' => (string)($l['nom'] ?? ''), 'q' => 0, 'montant' => 0, 'fiche' => isset($tva[$pid])];
+            $s['produits'][$g][$pid] ??= ['nom' => (string)($l['nom'] ?? ''), 'q' => 0, 'montant' => 0, 'ht' => 0, 'fiche' => isset($tva[$pid])];
             $s['produits'][$g][$pid]['q'] += $q;
             $s['produits'][$g][$pid]['montant'] += $montant;
+            $s['produits'][$g][$pid]['ht'] += $g === 'part' ? ht_de_ttc($montant, $tva[$pid] ?? 55) : $montant;
         }
     }
     krsort($s['mois']);

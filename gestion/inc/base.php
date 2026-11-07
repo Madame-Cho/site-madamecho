@@ -55,9 +55,14 @@ const CANAUX = ['site' => 'Site', 'qr' => 'QR code', 'email' => 'Email', 'instag
                 'marche' => 'Marché', 'sur_place' => 'Sur place', 'restaurant' => 'Restaurant', 'autre' => 'Autre'];
 const TYPES_COMMANDE = ['carte' => 'Carte', 'perso' => 'Personnalisée', 'pro' => 'Professionnel'];
 const TYPES_CLIENT = ['particulier' => 'Particulier', 'professionnel' => 'Professionnel'];
+// B2C et B2B écrits partout où l'on choisit ou lit le type (demande d'Olivier, 07/11/2026 : « bien clair entre B2B et B2C »)
+const TYPES_CLIENT_LONGS = ['particulier' => 'Particulier (B2C)', 'professionnel' => 'Professionnel (B2B)'];
 const MOMENTS = ['matin' => 'Le matin, de 9 h à 12 h', 'midi' => 'À midi, de 12 h à 14 h',
                  'apres-midi' => 'L\'après-midi, de 14 h à 18 h', 'soir' => 'Le soir, de 18 h à 19 h'];
 const MOMENTS_COURTS = ['matin' => 'matin', 'midi' => 'midi', 'apres-midi' => 'après-midi', 'soir' => 'soir'];
+const MOMENTS_PLAGES = ['matin' => ['09:00', '12:00'], 'midi' => ['12:00', '14:00'], 'apres-midi' => ['14:00', '18:00'], 'soir' => ['18:00', '19:00']];
+// L'ordre d'une journée : l'heure convenue, sinon le début du moment demandé (les commandes sans heure ni moment en dernier)
+const ORDRE_DANS_LA_JOURNEE = "CASE WHEN k.retrait_heure <> '' THEN k.retrait_heure ELSE CASE k.retrait_moment WHEN 'matin' THEN '09:00' WHEN 'midi' THEN '12:00' WHEN 'apres-midi' THEN '14:00' WHEN 'soir' THEN '18:00' ELSE '99' END END";
 const MODES = ['retrait' => 'Retrait à Meudon', 'livraison' => 'Livraison'];
 const STATUTS_CLIENT = ['actif' => 'Actif', 'inactif' => 'Inactif', 'efface' => 'Effacé'];
 const STATUTS_PRODUIT = ['carte' => 'À la carte', 'demande' => 'Sur demande seulement', 'pro' => 'Gamme pro', 'retire' => 'Retiré'];
@@ -179,7 +184,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 3) return;
+    if ($v >= 4) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -235,7 +240,19 @@ CREATE TABLE IF NOT EXISTS rapports (id INTEGER PRIMARY KEY, utilisateur_id INTE
         $pdo->exec("ALTER TABLE assistant_messages ADD COLUMN echec INTEGER NOT NULL DEFAULT 0");
         $pdo->exec("ALTER TABLE rapports ADD COLUMN pour_vous TEXT NOT NULL DEFAULT ''");
     }
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '3')");
+    // Version 4 (07/11/2026, demande d'Olivier) : les indispos de l'agenda (jours entiers ou plages horaires, du jour « debut »
+    // au jour « fin » compris ; heures vides = toute la journée) et la date depuis laquelle chaque gâteau est proposé
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS indispos (id INTEGER PRIMARY KEY, debut TEXT NOT NULL, fin TEXT NOT NULL, heure_debut TEXT NOT NULL DEFAULT '',
+  heure_fin TEXT NOT NULL DEFAULT '', motif TEXT NOT NULL DEFAULT '', auteur TEXT NOT NULL DEFAULT '', cree_le TEXT NOT NULL, maj_le TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS indispos_dates ON indispos(debut, fin);
+");
+    $colonnes = array_column($pdo->query("PRAGMA table_info(produits)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+    if (!in_array('propose_depuis', $colonnes, true)) {
+        try { $pdo->exec("ALTER TABLE produits ADD COLUMN propose_depuis TEXT"); }
+        catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }   // deux pages ouvertes en même temps
+    }
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '4')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
