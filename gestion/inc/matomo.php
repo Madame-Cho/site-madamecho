@@ -110,6 +110,33 @@ function matomo_chiffres(bool $forcer = false): array {
     }
 }
 
+/** Les visites du site pour Aujourd'hui (demande d'Olivier, 07/11/2026) : prises dans les chiffres des Statistiques s'ils sont frais, sinon un seul
+ *  petit appel à Matomo (4 secondes au plus). Réussi ou raté, le résultat est gardé 15 minutes : Aujourd'hui n'attend jamais Matomo plus d'une fois.
+ *  null : Matomo n'est pas relié ; ['erreur' => …] : il n'a pas répondu. */
+function matomo_activite(): ?array {
+    if (!matomo_relie()) return null;
+    $cache = json_decode((string)parametre('matomo_cache', ''), true);
+    if (is_array($cache) && ($cache['etat'] ?? '') === 'ok' && (int)($cache['le'] ?? 0) > time() - GESTION_MATOMO_CACHE && is_array($cache['jours'] ?? null)) return matomo_activite_jours($cache['jours']);
+    $a = json_decode((string)parametre('matomo_activite', ''), true);
+    if (is_array($a) && (int)($a['le'] ?? 0) > time() - GESTION_MATOMO_CACHE) return is_array($a['jours'] ?? null) ? matomo_activite_jours($a['jours']) : ['erreur' => 'Matomo ne répond pas'];
+    try {
+        $r = matomo_appel([['method' => 'VisitsSummary.get', 'period' => 'day', 'date' => 'last7']], (string)parametre('matomo_jeton', ''), 4);
+        if (matomo_erreur($r[0] ?? null)) throw new \RuntimeException(matomo_message(is_array($r[0] ?? null) ? (string)($r[0]['message'] ?? '') : ''));
+        parametre_ecrire('matomo_activite', (string)json_encode(['le' => time(), 'jours' => $r[0]]));
+        return matomo_activite_jours($r[0]);
+    } catch (\Throwable $e) {
+        error_log('madamecho gestion matomo (Aujourd\'hui) : ' . $e->getMessage());
+        parametre_ecrire('matomo_activite', (string)json_encode(['le' => time(), 'jours' => null]));
+        return ['erreur' => $e->getMessage()];
+    }
+}
+/** Aujourd'hui et les 7 derniers jours (aujourd'hui compris), à partir des visites jour par jour. */
+function matomo_activite_jours(array $jours): array {
+    $r = ['auj' => (int)matomo_val($jours[date('Y-m-d')] ?? null, 'nb_visits'), 'j7' => 0];
+    for ($i = 0; $i < 7; $i++) $r['j7'] += (int)matomo_val($jours[date('Y-m-d', strtotime("-$i day"))] ?? null, 'nb_visits');
+    return $r;
+}
+
 /** Scans des QR codes imprimés : la campagne « qr-code » du rapport des campagnes, avec ses visites en tout et par support (mot-clé) ; null si le rapport manque. */
 function matomo_qr(mixed $campagnes): ?array {
     if (!is_array($campagnes)) return null;

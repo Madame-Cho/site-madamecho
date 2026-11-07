@@ -41,52 +41,76 @@ function onglets_statistiques(string $vue): string {
 function page_statistiques(): void {
     if (($_GET['vue'] ?? '') === 'site') { page_statistiques_site(); return; }
     $s = statistiques();
-    $t = $s['total'];
-    $ca = array_sum(array_map(fn($m) => (int)$m['ca'], $s['mois']));
-    $transfo = ($t['remises'] + $t['perdues']) ? $t['remises'] / ($t['remises'] + $t['perdues']) : null;
+    $P = $s['groupes']['part']; $B = $s['groupes']['pro'];
+    $dp = $s['demandes']['part'];
+    $transfo = ($dp['remises'] + $dp['perdues']) ? $dp['remises'] / ($dp['remises'] + $dp['perdues']) : null;
     $rep = $s['reponse'];
     $avis = ligne("SELECT SUM(CASE WHEN avis_demande_le IS NOT NULL THEN 1 ELSE 0 END) AS demandes, SUM(CASE WHEN avis_recu_le IS NOT NULL THEN 1 ELSE 0 END) AS recus FROM clients WHERE statut <> 'efface'") ?? [];
-    $c = titre_page('Statistiques', 'Depuis le début de la gestion · montants TTC des commandes remises', '', u('plus')) . onglets_statistiques('ventes');
+    // Chaque chiffre mène à la liste qui le détaille (demande d'Olivier, 07/11/2026)
+    $remises = fn(array $f = []) => u('commandes', ['vue' => 'toutes', 'statut' => 'remise'] + $f);
+    $c = titre_page('Statistiques', 'Depuis le début de la gestion · particuliers en TTC, professionnels en HT', '', u('plus')) . onglets_statistiques('ventes');
     $c .= '<div class="tuiles">'
-        . tuile('Commandes remises', (string)$t['remises'], $t['n'] . ' demande(s) en tout')
-        . tuile('Chiffre d\'affaires', euros($ca), 'TTC, 24 derniers mois')
-        . tuile('Panier moyen', $t['remises'] ? euros(intdiv($ca, max(1, array_sum(array_map(fn($m) => (int)$m['n'], $s['mois']))))) : '—')
-        . tuile('Demandes abouties', $transfo === null ? '—' : number_format($transfo * 100, 0) . ' %', 'remises ÷ (remises + sans suite + annulées)')
-        . tuile('Réponse aux demandes du site', $rep['mediane'] === null ? '—' : ($rep['mediane'] < 1 ? 'moins d\'1 h' : number_format($rep['mediane'], 0) . ' h'), $rep['n'] ? $rep['sous_24h'] . ' sur ' . $rep['n'] . ' en moins de 24 h' : 'médiane')
-        . tuile('Clients', (string)(int)$s['clients']['n'], (int)$s['clients']['pros'] . ' professionnel(s)')
-        . tuile('Clients fidèles', (string)$s['fideles'], 'au moins 2 commandes remises')
-        . tuile('Avis Google', (string)(int)($avis['recus'] ?? 0), (int)($avis['demandes'] ?? 0) . ' demandé(s)')
+        . tuile('Chiffre d\'affaires total', euros($P['ht'] + $B['ht']), 'HT, particuliers et professionnels', $remises())
+        . tuile('Particuliers, TTC', euros($P['ttc']), $P['n'] . ' commande(s) remise(s)', $remises(['groupe' => 'particuliers']))
+        . tuile('Professionnels, HT', euros($B['ht']), $B['n'] . ' livraison(s) remise(s)', $remises(['groupe' => 'pros']))
+        . tuile('Panier moyen, particuliers', $P['n'] ? euros(intdiv($P['ttc'], $P['n'])) : '—', 'TTC, par commande remise', $remises(['groupe' => 'particuliers']))
+        . tuile('Livraison moyenne, professionnels', $B['n'] ? euros(intdiv($B['ht'], $B['n'])) : '—', 'HT, par livraison remise', $remises(['groupe' => 'pros']))
+        . tuile('Demandes abouties, particuliers', $transfo === null ? '—' : number_format($transfo * 100, 0) . ' %', 'remises ÷ (remises + sans suite + annulées)', u('commandes', ['vue' => 'terminees', 'groupe' => 'particuliers']))
+        . tuile('Réponse aux demandes du site', $rep['mediane'] === null ? '—' : ($rep['mediane'] < 1 ? 'moins d\'1 h' : number_format($rep['mediane'], 0) . ' h'), $rep['n'] ? $rep['sous_24h'] . ' sur ' . $rep['n'] . ' en moins de 24 h' : 'médiane', u('commandes', ['vue' => 'toutes', 'canal' => 'site']))
+        . tuile('Clients', (string)(int)$s['clients']['n'], (int)$s['clients']['pros'] . ' professionnel(s)', u('clients'))
+        . tuile('Clients fidèles', (string)$s['fideles'], 'particuliers, au moins 2 commandes remises', u('clients', ['f' => 'particuliers']))
+        . tuile('Avis Google', (string)(int)($avis['recus'] ?? 0), (int)($avis['demandes'] ?? 0) . ' demandé(s)', u('clients'))
         . '</div>';
-    // Chiffre d'affaires des 12 derniers mois (mois sans vente compris)
-    $parMois = [];
-    foreach ($s['mois'] as $m) $parMois[$m['mois']] = $m;
-    $pts = [];
+    // Chiffre d'affaires des 12 derniers mois (mois sans vente compris), un graphique par groupe : jamais additionnés à l'œil
+    $pts = ['part' => [], 'pro' => []];
     for ($i = 11; $i >= 0; $i--) {
         $cle = date('Y-m', strtotime(date('Y-m-01') . " -$i months"));
-        $m = $parMois[$cle] ?? ['n' => 0, 'ca' => 0];
         $mo = (int)substr($cle, 5, 2);
-        $pts[] = [MOIS_COURTS[$mo], (int)$m['ca'], ucfirst(MOIS[$mo]) . ' ' . substr($cle, 0, 4) . ' : ' . euros((int)$m['ca']) . ', ' . (int)$m['n'] . ' commande(s)'];
+        $nomMois = ucfirst(MOIS[$mo]) . ' ' . substr($cle, 0, 4);
+        $x = $s['mois'][$cle] ?? null;
+        $pts['part'][] = [MOIS_COURTS[$mo], (int)($x['part']['ttc'] ?? 0), $nomMois . ' : ' . euros((int)($x['part']['ttc'] ?? 0)) . ' TTC, ' . (int)($x['part']['n'] ?? 0) . ' commande(s)'];
+        $pts['pro'][] = [MOIS_COURTS[$mo], (int)($x['pro']['ht'] ?? 0), $nomMois . ' : ' . euros((int)($x['pro']['ht'] ?? 0)) . ' HT, ' . (int)($x['pro']['n'] ?? 0) . ' livraison(s)'];
+    }
+    $graphe = '';
+    foreach (['part' => ['Particuliers, TTC', 'Particuliers : chiffre d\'affaires TTC des 12 derniers mois'], 'pro' => ['Professionnels, HT', 'Professionnels : chiffre d\'affaires HT des 12 derniers mois']] as $g => [$titre, $aria]) {
+        if (array_sum(array_column($pts[$g], 1)) > 0) $graphe .= '<h3 class="sous-titre-graphique">' . h($titre) . '</h3>' . barres($pts[$g], $aria);
     }
     $rows = '';
-    foreach ($s['mois'] as $m) {
-        $mo = (int)substr($m['mois'], 5, 2);
-        $rows .= '<tr><td>' . h(ucfirst(MOIS[$mo]) . ' ' . substr($m['mois'], 0, 4)) . '</td><td class="nombre">' . (int)$m['n'] . '</td><td class="nombre">' . h(euros_ronds((int)$m['ca'])) . '</td><td class="nombre">' . h(euros_ronds((int)$m['panier'])) . '</td></tr>';
+    foreach ($s['mois'] as $cle => $x) {
+        $mo = (int)substr((string)$cle, 5, 2);
+        $rows .= '<tr><td><a href="' . h($remises(['mois' => (string)$cle])) . '">' . h(ucfirst(MOIS[$mo]) . ' ' . substr((string)$cle, 0, 4)) . '</a></td>'
+               . '<td class="nombre">' . h($x['part']['n'] ? euros_ronds($x['part']['ttc']) : '—') . '</td>'
+               . '<td class="nombre">' . h($x['part']['n'] ? euros_ronds(intdiv($x['part']['ttc'], $x['part']['n'])) : '—') . '</td>'
+               . '<td class="nombre">' . h($x['pro']['n'] ? euros_ronds($x['pro']['ht']) : '—') . '</td>'
+               . '<td class="nombre">' . h(euros_ronds($x['part']['ht'] + $x['pro']['ht'])) . '</td></tr>';
     }
-    $c .= bloc('Chiffre d\'affaires par mois', ($ca ? barres($pts, 'Chiffre d\'affaires des 12 derniers mois') : '')
-        . ($rows !== '' ? '<details class="replie"' . ($ca ? '' : ' open') . '><summary>Le tableau</summary><table class="tableau"><thead><tr><th>Mois</th><th class="nombre">Commandes</th><th class="nombre">TTC</th><th class="nombre">Panier</th></tr></thead><tbody>' . $rows . '</tbody></table></details>' : '<p class="vide">Pas encore de commande remise.</p>'));
-    // Canaux
+    $c .= bloc('Chiffre d\'affaires par mois', $graphe
+        . ($rows !== '' ? '<details class="replie"' . ($graphe !== '' ? '' : ' open') . '><summary>Le tableau</summary><div class="defile"><table class="tableau"><thead><tr><th>Mois</th><th class="nombre">Particuliers, TTC</th><th class="nombre">Panier</th><th class="nombre">Professionnels, HT</th><th class="nombre">Total, HT</th></tr></thead><tbody>' . $rows . '</tbody></table></div>'
+            . '<p class="aide">Le panier est celui des particuliers ; le total additionne les deux groupes, hors taxes.</p></details>' : '<p class="vide">Pas encore de commande remise.</p>'));
+    // Canaux : les demandes de chaque canal, et ce qu'elles ont rapporté, groupe par groupe
     $rows = '';
-    foreach ($s['canaux'] as $k) $rows .= '<tr><td>' . h(CANAUX[$k['canal']] ?? $k['canal']) . '</td><td class="nombre">' . (int)$k['n'] . '</td><td class="nombre">' . (int)$k['remises'] . '</td><td class="nombre">' . h(pourcent((int)$k['remises'], (int)$k['n'])) . '</td><td class="nombre">' . h(euros_ronds((int)$k['ca'])) . '</td></tr>';
-    if ($rows !== '') $c .= bloc('D\'où viennent les commandes', '<div class="defile"><table class="tableau"><thead><tr><th>Canal</th><th class="nombre">Demandes</th><th class="nombre">Remises</th><th class="nombre">Abouties</th><th class="nombre">TTC</th></tr></thead><tbody>' . $rows . '</tbody></table></div>');
-    // Produits
-    $rows = '';
-    foreach ($s['produits'] as $p) $rows .= '<tr><td translate="no">' . h($p['nom']) . '</td><td class="nombre">' . (int)$p['q'] . '</td><td class="nombre">' . h(euros((int)$p['ca'])) . '</td></tr>';
-    if ($rows !== '') $c .= bloc('Gâteaux vendus', '<table class="tableau"><thead><tr><th>Gâteau</th><th class="nombre">Quantité</th><th class="nombre">Montant TTC</th></tr></thead><tbody>' . $rows . '</tbody></table>'
-        . '<p class="aide">Les gâteaux personnalisés et les commandes professionnelles sans ligne de la carte ne sont comptés que dans le chiffre d\'affaires.</p>');
+    foreach ($s['par_canal'] as $k) {
+        $m = $s['canaux'][$k['canal']] ?? [];
+        $rows .= '<tr><td><a href="' . h(u('commandes', ['vue' => 'toutes', 'canal' => (string)$k['canal']])) . '">' . h(CANAUX[$k['canal']] ?? $k['canal']) . '</a></td><td class="nombre">' . (int)$k['n'] . '</td><td class="nombre">' . (int)$k['remises'] . '</td><td class="nombre">' . h(pourcent((int)$k['remises'], (int)$k['n'])) . '</td>'
+               . '<td class="nombre">' . h(isset($m['part']) ? euros_ronds((int)$m['part']) : '—') . '</td><td class="nombre">' . h(isset($m['pro']) ? euros_ronds((int)$m['pro']) : '—') . '</td></tr>';
+    }
+    if ($rows !== '') $c .= bloc('D\'où viennent les commandes', '<div class="defile"><table class="tableau"><thead><tr><th>Canal</th><th class="nombre">Demandes</th><th class="nombre">Remises</th><th class="nombre">Abouties</th><th class="nombre">Particuliers, TTC</th><th class="nombre">Professionnels, HT</th></tr></thead><tbody>' . $rows . '</tbody></table></div>');
+    // Produits : la carte vendue aux particuliers (TTC), la gamme livrée aux professionnels (HT)
+    $produits = function (array $liste, string $entete) {
+        $rows = '';
+        foreach ($liste as $pid => $p) {
+            $nom = $p['fiche'] && preg_match('/^[a-z0-9\-]{1,60}$/', (string)$pid) ? '<a href="' . h(u('produit', ['id' => (string)$pid])) . '">' . h($p['nom']) . '</a>' : h($p['nom']);
+            $rows .= '<tr><td translate="no">' . $nom . '</td><td class="nombre">' . (int)$p['q'] . '</td><td class="nombre">' . h(euros((int)$p['montant'])) . '</td></tr>';
+        }
+        return '<table class="tableau"><thead><tr><th>Gâteau</th><th class="nombre">Quantité</th><th class="nombre">' . h($entete) . '</th></tr></thead><tbody>' . $rows . '</tbody></table>';
+    };
+    if ($s['produits']['part']) $c .= bloc('Gâteaux vendus aux particuliers', $produits($s['produits']['part'], 'Montant TTC')
+        . '<p class="aide">Les gâteaux personnalisés sans ligne de la carte ne sont comptés que dans le chiffre d\'affaires.</p>');
+    if ($s['produits']['pro']) $c .= bloc('Gamme livrée aux professionnels', $produits($s['produits']['pro'], 'Montant HT'));
     // Étapes
     $rows = '';
     usort($s['statuts'], fn($a, $b) => array_search($a['statut'], array_keys(STATUTS), true) <=> array_search($b['statut'], array_keys(STATUTS), true));
-    foreach ($s['statuts'] as $k) $rows .= '<tr><td>' . chip_statut($k['statut'], false) . '</td><td class="nombre">' . (int)$k['n'] . '</td></tr>';
+    foreach ($s['statuts'] as $k) $rows .= '<tr><td><a class="lien-chip" href="' . h(u('commandes', ['vue' => 'toutes', 'statut' => (string)$k['statut']])) . '">' . chip_statut($k['statut'], false) . '</a></td><td class="nombre">' . (int)$k['n'] . '</td></tr>';
     if ($rows !== '') $c .= bloc('Où en sont les demandes', '<table class="tableau"><tbody>' . $rows . '</tbody></table>');
     $c .= bloc('Exporter', '<p class="aide">Pour un tableur : sans email ni téléphone. Le fichier contient des noms de clients : à ranger dans le Drive de Madame Cho, pas ailleurs.</p><div class="actions">'
         . lien_bouton(u('export', ['jeu' => 'commandes']), 'Commandes (CSV)', 'discret') . lien_bouton(u('export', ['jeu' => 'clients']), 'Clients (CSV)', 'discret') . '</div>');
@@ -217,7 +241,7 @@ function page_plus(): void {
           [u('production'), 'imprimer', 'Fiche de production', 'Ce qu\'il faut préparer, jour par jour'],
           [u('ingredients'), 'produits', 'Ingrédients', 'Prix d\'achat et allergènes des recettes'],
           [u('manuel'), 'livre', 'Manuel', 'Comment fonctionne la gestion, écran par écran'],
-          [u('assistant'), 'assistant', 'Assistant', 'Questions, problèmes, idées d\'amélioration'],
+          [u('assistant'), 'ia', 'Assistant', 'Une IA : questions, problèmes, idées d\'amélioration'],
           [u('reglages'), 'reglages', 'Réglages', 'Langue, mot de passe, signature des emails, lien d\'avis, données']];
     $s = '';
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';

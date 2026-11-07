@@ -149,7 +149,9 @@ function client_chiffres(int $id): array {
                        MAX(CASE WHEN statut = 'remise' THEN COALESCE(retrait_date, substr(remise_le, 1, 10)) END) AS derniere
                 FROM commandes WHERE client_id = ?", [$id]) ?? [];
     $n = (int)($r['remises'] ?? 0); $t = (int)($r['total'] ?? 0);
-    return ['commandes' => (int)($r['n'] ?? 0), 'remises' => $n, 'total' => $t, 'panier' => $n ? intdiv($t, $n) : 0, 'derniere' => $r['derniere'] ?? null];
+    $ht = $n ? client_total_ht($id) : 0;
+    return ['commandes' => (int)($r['n'] ?? 0), 'remises' => $n, 'total' => $t, 'panier' => $n ? intdiv($t, $n) : 0, 'derniere' => $r['derniere'] ?? null,
+            'total_ht' => $ht, 'panier_ht' => $n ? intdiv($ht, $n) : 0];
 }
 function clients_lister(string $recherche = '', string $filtre = 'actifs'): array {
     $w = ["1=1"]; $p = [];
@@ -160,11 +162,14 @@ function clients_lister(string $recherche = '', string $filtre = 'actifs'): arra
         $w[] = "(c.nom LIKE :r OR c.prenom LIKE :r OR c.societe LIKE :r OR c.email LIKE :r OR c.telephone LIKE :r OR c.numero LIKE :r OR c.ville LIKE :r)";
         $p['r'] = '%' . $recherche . '%';
     }
-    return lignes("SELECT c.*, (SELECT COUNT(*) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS remises,
+    $r = lignes("SELECT c.*, (SELECT COUNT(*) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS remises,
                            (SELECT COUNT(*) FROM commandes k WHERE k.client_id = c.id AND k.statut IN ('demande','proposition','confirmee')) AS en_cours,
                            (SELECT SUM(COALESCE(prix_final, total_indicatif)) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS total,
                            (SELECT MAX(COALESCE(retrait_date, substr(remise_le, 1, 10))) FROM commandes k WHERE k.client_id = c.id AND k.statut = 'remise') AS derniere
                     FROM clients c WHERE " . implode(' AND ', $w) . " ORDER BY c.dernier_echange DESC, c.id DESC LIMIT 500", $p);
+    // Les professionnels en HT, comme leurs factures (demande d'Olivier, 07/11/2026)
+    foreach ($r as &$c) $c['total_ht'] = $c['type'] === 'professionnel' && (int)$c['remises'] ? client_total_ht((int)$c['id']) : 0;
+    return $r;
 }
 /** Fusionne le doublon $source dans $cible : commandes, historique, puis le doublon est marqué effacé. */
 function client_fusionner(int $cible, int $source): bool {
@@ -364,7 +369,19 @@ function commande_anonymiser(int $id, string $quand): void {
        probleme_note = '', annulee_motif = '', efface_le = ?, maj_le = ? WHERE id = ?", [json_encode($l, JSON_UNESCAPED_UNICODE), $quand, $quand, $id]);
     q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE commande_id = ? AND type IN ('commentaire', 'probleme', 'modification')", [$id]);
 }
-function commandes_lister(string $vue = 'en_cours', string $recherche = '', ?string $statut = null, int $limite = 300): array {
+/** Filtres de la liste des commandes venus d'un lien (Statistiques) : étape, canal, mois de remise, particuliers ou professionnels. */
+function commandes_filtres(array $g): array {
+    $f = [];
+    if (is_string($g['statut'] ?? null) && isset(STATUTS[$g['statut']])) $f['statut'] = $g['statut'];
+    if (is_string($g['canal'] ?? null) && isset(CANAUX[$g['canal']])) $f['canal'] = $g['canal'];
+    if (is_string($g['mois'] ?? null) && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $g['mois'])) $f['mois'] = $g['mois'];
+    if (in_array($g['groupe'] ?? null, ['particuliers', 'pros'], true)) $f['groupe'] = $g['groupe'];
+    if (in_array($g['j7'] ?? null, ['recues', 'confirmees', 'remises'], true)) $f['j7'] = $g['j7'];   // l'activité des 7 derniers jours (Aujourd'hui)
+    return $f;
+}
+/** Le premier jour des 7 derniers jours, aujourd'hui compris. */
+function debut_7_jours(): string { return date('Y-m-d', strtotime('-6 days')) . ' 00:00:00'; }
+function commandes_lister(string $vue = 'en_cours', string $recherche = '', ?string $statut = null, int $limite = 300, array $f = []): array {
     $w = []; $p = []; $ordre = "k.recue_le DESC";
     switch ($vue) {
         case 'en_cours': $w[] = "k.statut IN ('demande', 'proposition', 'confirmee')"; $ordre = "CASE k.statut WHEN 'demande' THEN 0 WHEN 'proposition' THEN 1 ELSE 2 END, COALESCE(k.retrait_date, '9999') ASC, k.recue_le ASC"; break;
@@ -374,6 +391,17 @@ function commandes_lister(string $vue = 'en_cours', string $recherche = '', ?str
         case 'a_repondre': $w[] = "k.statut = 'demande'"; $ordre = "k.recue_le ASC"; break;
     }
     if ($statut && isset(STATUTS[$statut])) { $w[] = "k.statut = :s"; $p['s'] = $statut; }
+    if (isset($f['canal'])) { $w[] = "k.canal = :canal"; $p['canal'] = $f['canal']; }
+    if (isset($f['mois'])) { $w[] = "substr(k.remise_le, 1, 7) = :mois"; $p['mois'] = $f['mois']; }
+    if (isset($f['groupe'])) $w[] = ($f['groupe'] === 'pros' ? '' : 'NOT ') . "(k.type = 'pro' OR c.type = 'professionnel')";
+    if (isset($f['j7'])) {
+        $w[] = match ($f['j7']) {
+            'recues' => "k.recue_le >= :j7",
+            'confirmees' => "k.id IN (SELECT e.commande_id FROM evenements e WHERE e.type = 'statut' AND e.nouveau = 'confirmee' AND e.le >= :j7)",
+            default => "k.statut = 'remise' AND k.remise_le >= :j7",
+        };
+        $p['j7'] = debut_7_jours();
+    }
     if ($recherche !== '') {
         $w[] = "(k.reference LIKE :r OR c.nom LIKE :r OR c.prenom LIKE :r OR c.societe LIKE :r OR c.email LIKE :r OR k.facture LIKE :r OR k.perso LIKE :r)";
         $p['r'] = '%' . $recherche . '%';
@@ -420,11 +448,31 @@ function tableau_de_bord(): array {
     $r['propositions'] = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero
                              FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'proposition' ORDER BY k.dernier_echange ASC");
     $mois = date('Y-m');
-    $m = ligne("SELECT COUNT(*) AS n, SUM(COALESCE(prix_final, total_indicatif)) AS ca FROM commandes WHERE statut = 'remise' AND substr(remise_le, 1, 7) = ?", [$mois]) ?? [];
-    $r['mois'] = ['n' => (int)($m['n'] ?? 0), 'ca' => (int)($m['ca'] ?? 0)];
-    $r['mois']['panier'] = $r['mois']['n'] ? intdiv($r['mois']['ca'], $r['mois']['n']) : 0;
+    // Le total du mois additionne tout (TTC) ; le panier moyen ne compte que les particuliers (demande d'Olivier, 07/11/2026)
+    $part = "NOT (k.type = 'pro' OR c.type = 'professionnel')";
+    $m = ligne("SELECT COUNT(*) AS n, SUM(COALESCE(k.prix_final, k.total_indicatif)) AS ca, SUM(CASE WHEN $part THEN 1 ELSE 0 END) AS n_part,
+                       SUM(CASE WHEN $part THEN COALESCE(k.prix_final, k.total_indicatif) ELSE 0 END) AS ca_part
+                FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'remise' AND substr(k.remise_le, 1, 7) = ?", [$mois]) ?? [];
+    $r['mois'] = ['n' => (int)($m['n'] ?? 0), 'ca' => (int)($m['ca'] ?? 0), 'n_part' => (int)($m['n_part'] ?? 0)];
+    $r['mois']['panier'] = $r['mois']['n_part'] ? intdiv((int)($m['ca_part'] ?? 0), $r['mois']['n_part']) : 0;
     $r['demandes_mois'] = (int)val("SELECT COUNT(*) FROM commandes WHERE substr(recue_le, 1, 7) = ?", [$mois]);
     return $r;
+}
+
+/** L'activité des commandes pour Aujourd'hui (demande d'Olivier, 07/11/2026) : sur les 7 derniers jours et aujourd'hui,
+ *  les demandes reçues (tous canaux), les commandes confirmées (date du passage à « Confirmée » dans l'historique) et les remises. */
+function activite_commandes(): array {
+    $d7 = debut_7_jours();
+    $auj = aujourdhui() . ' 00:00:00';
+    $compter = fn(string $sql): array => [
+        'j7' => (int)val("SELECT COUNT(*) FROM ($sql) WHERE le >= ?", [$d7]),
+        'auj' => (int)val("SELECT COUNT(*) FROM ($sql) WHERE le >= ?", [$auj]),
+    ];
+    return [
+        'recues' => $compter("SELECT recue_le AS le FROM commandes"),
+        'confirmees' => $compter("SELECT MAX(e.le) AS le FROM evenements e WHERE e.type = 'statut' AND e.nouveau = 'confirmee' AND e.commande_id IS NOT NULL GROUP BY e.commande_id"),
+        'remises' => $compter("SELECT remise_le AS le FROM commandes WHERE statut = 'remise' AND remise_le IS NOT NULL"),
+    ];
 }
 
 /* ---------- Produits, ingrédients, recettes ---------- */
@@ -649,32 +697,81 @@ function allergenes_comparer(array $p, array $recette): array {
 }
 
 /* ---------- Statistiques ---------- */
+/** Une commande compte pour les professionnels si c'est une livraison de la gamme pro ou si son client est un professionnel. */
+/** Le taux de TVA de chaque produit (en dixièmes de pour cent), lu une fois par page. */
+function tva_produits(): array {
+    static $t = null;
+    if ($t === null) { $t = []; foreach (lignes("SELECT id, tva FROM produits") as $p) $t[(string)$p['id']] = (int)$p['tva']; }
+    return $t;
+}
+/** Le HT des commandes remises d'un client (les professionnels se comptent en HT, comme leurs factures). */
+function client_total_ht(int $id): int {
+    $ht = 0;
+    foreach (lignes("SELECT * FROM commandes WHERE client_id = ? AND statut = 'remise'", [$id]) as $k) $ht += commande_ht_ttc($k, tva_produits())['ht'];
+    return $ht;
+}
+function commande_est_pro(array $k): bool { return ($k['type'] ?? '') === 'pro' || ($k['client_type'] ?? '') === 'professionnel'; }
+/** Montant d'une commande en centimes, TTC et HT. Le TTC est le prix final, sinon le total des gâteaux. Le HT vient des lignes
+ *  (HT de la gamme pro, ou TTC ramené au taux de TVA du gâteau) et suit le prix final quand il diffère du total des lignes. */
+function commande_ht_ttc(array $k, array $tvaProduits): array {
+    $ttc = $k['prix_final'] !== null ? (int)$k['prix_final'] : (int)$k['total_indicatif'];
+    $htL = 0; $ttcL = 0; $pro = [];
+    foreach (json_decode((string)$k['lignes'], true) ?: [] as $l) {
+        $q = (int)($l['q'] ?? 0);
+        if (isset($l['ht'])) { $tva = (int)($l['tva'] ?? 55); $pro[$tva] = ($pro[$tva] ?? 0) + (int)$l['ht'] * $q; continue; }
+        $t = (int)($l['prix'] ?? 0) * $q;
+        $ttcL += $t;
+        $htL += ht_de_ttc($t, $tvaProduits[explode('|', (string)($l['v'] ?? ''))[0]] ?? 55);
+    }
+    foreach ($pro as $tva => $h) { $htL += $h; $ttcL += ttc_de_ht($h, (int)$tva); }   // TVA sur le total HT, comme sur la facture
+    return ['ttc' => $ttc, 'ht' => $ttcL > 0 ? (int)round($ttc * $htL / $ttcL) : ht_de_ttc($ttc, 55)];
+}
+/** Les ventes (commandes remises), séparées entre particuliers (« part ») et professionnels (« pro ») : demande d'Olivier du
+ *  07/11/2026. Un total peut additionner les deux groupes (en HT) ; une moyenne, jamais. Particuliers en TTC (leurs prix),
+ *  professionnels en HT (leurs factures). */
 function statistiques(): array {
-    $s = [];
-    $s['mois'] = lignes("SELECT substr(remise_le, 1, 7) AS mois, COUNT(*) AS n, SUM(COALESCE(prix_final, total_indicatif)) AS ca FROM commandes WHERE statut = 'remise' GROUP BY mois ORDER BY mois DESC LIMIT 24");
-    foreach ($s['mois'] as &$m) $m['panier'] = $m['n'] ? intdiv((int)$m['ca'], (int)$m['n']) : 0;
-    unset($m);
-    $s['canaux'] = lignes("SELECT canal, COUNT(*) AS n, SUM(CASE WHEN statut = 'remise' THEN 1 ELSE 0 END) AS remises, SUM(CASE WHEN statut = 'remise' THEN COALESCE(prix_final, total_indicatif) ELSE 0 END) AS ca FROM commandes GROUP BY canal ORDER BY n DESC");
-    $s['statuts'] = lignes("SELECT statut, COUNT(*) AS n FROM commandes GROUP BY statut");
-    $prod = [];
-    foreach (lignes("SELECT lignes FROM commandes WHERE statut = 'remise'") as $k) {
-        foreach (json_decode($k['lignes'], true) ?: [] as $l) {
-            $pid = explode('|', (string)($l['v'] ?? ''))[0] ?: $l['nom'];
-            $prod[$pid] ??= ['nom' => $l['nom'], 'q' => 0, 'ca' => 0];
-            $prod[$pid]['q'] += (int)$l['q']; $prod[$pid]['ca'] += (int)$l['q'] * (int)$l['prix'];
+    $tva = tva_produits();
+    $zero = ['n' => 0, 'ht' => 0, 'ttc' => 0];
+    $s = ['groupes' => ['part' => $zero, 'pro' => $zero], 'mois' => [], 'canaux' => [], 'produits' => ['part' => [], 'pro' => []]];
+    foreach (lignes("SELECT k.*, c.type AS client_type FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'remise'") as $k) {
+        $g = commande_est_pro($k) ? 'pro' : 'part';
+        $m = commande_ht_ttc($k, $tva);
+        $ajouter = function (array &$x) use ($m): void { $x['n']++; $x['ht'] += $m['ht']; $x['ttc'] += $m['ttc']; };
+        $ajouter($s['groupes'][$g]);
+        $mo = substr((string)$k['remise_le'], 0, 7);
+        if ($mo !== '') { $s['mois'][$mo] ??= ['part' => $zero, 'pro' => $zero]; $ajouter($s['mois'][$mo][$g]); }
+        $s['canaux'][$k['canal']][$g] = ($s['canaux'][$k['canal']][$g] ?? 0) + ($g === 'pro' ? $m['ht'] : $m['ttc']);
+        foreach (json_decode((string)$k['lignes'], true) ?: [] as $l) {
+            $pid = explode('|', (string)($l['v'] ?? ''))[0] ?: (string)($l['nom'] ?? '');
+            $q = (int)($l['q'] ?? 0);
+            $montant = $g === 'part' ? (int)($l['prix'] ?? 0) * $q : (isset($l['ht']) ? (int)$l['ht'] * $q : ht_de_ttc((int)($l['prix'] ?? 0) * $q, $tva[$pid] ?? 55));
+            $s['produits'][$g][$pid] ??= ['nom' => (string)($l['nom'] ?? ''), 'q' => 0, 'montant' => 0, 'fiche' => isset($tva[$pid])];
+            $s['produits'][$g][$pid]['q'] += $q;
+            $s['produits'][$g][$pid]['montant'] += $montant;
         }
     }
-    uasort($prod, fn($a, $b) => $b['ca'] <=> $a['ca']);
-    $s['produits'] = $prod;
-    $t = ligne("SELECT COUNT(*) AS n, SUM(CASE WHEN statut = 'remise' THEN 1 ELSE 0 END) AS remises, SUM(CASE WHEN statut IN ('sans_suite','annulee') THEN 1 ELSE 0 END) AS perdues FROM commandes") ?? [];
-    $s['total'] = ['n' => (int)($t['n'] ?? 0), 'remises' => (int)($t['remises'] ?? 0), 'perdues' => (int)($t['perdues'] ?? 0)];
+    krsort($s['mois']);
+    $s['mois'] = array_slice($s['mois'], 0, 24, true);
+    foreach (['part', 'pro'] as $g) uasort($s['produits'][$g], fn($a, $b) => $b['montant'] <=> $a['montant']);
+    // Demandes : combien, et combien ont abouti, par canal et par groupe (une livraison aux restaurants n'est pas une demande à convaincre)
+    $GROUPE = "CASE WHEN k.type = 'pro' OR c.type = 'professionnel' THEN 'pro' ELSE 'part' END";
+    $s['demandes'] = ['part' => ['n' => 0, 'remises' => 0, 'perdues' => 0], 'pro' => ['n' => 0, 'remises' => 0, 'perdues' => 0]];
+    foreach (lignes("SELECT $GROUPE AS g, COUNT(*) AS n, SUM(CASE WHEN k.statut = 'remise' THEN 1 ELSE 0 END) AS remises,
+                            SUM(CASE WHEN k.statut IN ('sans_suite', 'annulee') THEN 1 ELSE 0 END) AS perdues
+                     FROM commandes k JOIN clients c ON c.id = k.client_id GROUP BY g") as $x) {
+        $s['demandes'][$x['g']] = ['n' => (int)$x['n'], 'remises' => (int)$x['remises'], 'perdues' => (int)$x['perdues']];
+    }
+    $s['par_canal'] = lignes("SELECT canal, COUNT(*) AS n, SUM(CASE WHEN statut = 'remise' THEN 1 ELSE 0 END) AS remises FROM commandes GROUP BY canal ORDER BY n DESC");
+    $s['statuts'] = lignes("SELECT statut, COUNT(*) AS n FROM commandes GROUP BY statut");
     $d = lignes("SELECT k.recue_le, MIN(e.le) AS repondu FROM commandes k JOIN evenements e ON e.commande_id = k.id AND e.type = 'statut' AND e.nouveau = 'proposition' WHERE k.canal = 'site' GROUP BY k.id");
     $h = [];
     foreach ($d as $x) $h[] = (strtotime($x['repondu']) - strtotime($x['recue_le'])) / 3600;
     sort($h);
     $s['reponse'] = ['n' => count($h), 'mediane' => $h ? $h[intdiv(count($h), 2)] : null, 'sous_24h' => $h ? count(array_filter($h, fn($x) => $x <= 24)) : 0];
     $s['clients'] = ligne("SELECT COUNT(*) AS n, SUM(CASE WHEN type = 'professionnel' THEN 1 ELSE 0 END) AS pros FROM clients WHERE statut <> 'efface'") ?? ['n' => 0, 'pros' => 0];
-    $s['fideles'] = (int)val("SELECT COUNT(*) FROM (SELECT client_id FROM commandes WHERE statut = 'remise' GROUP BY client_id HAVING COUNT(*) >= 2)");
+    // Fidèles : les particuliers qui ont reçu au moins 2 commandes (un restaurant est livré chaque semaine : il ne compte pas)
+    $s['fideles'] = (int)val("SELECT COUNT(*) FROM (SELECT k.client_id FROM commandes k JOIN clients c ON c.id = k.client_id
+                              WHERE k.statut = 'remise' AND NOT ($GROUPE = 'pro') GROUP BY k.client_id HAVING COUNT(*) >= 2)");
     return $s;
 }
 

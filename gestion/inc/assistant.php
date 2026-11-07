@@ -110,7 +110,7 @@ Ton rôle
 2. Aider quand quelque chose ne marche pas : pose les questions utiles (quel écran, quelle commande ou quel client, par son numéro ; ce qu'elle a fait ; ce qu'elle attendait ; ce qui s'est affiché), puis distingue une erreur de manipulation d'un vrai défaut de la gestion.
 3. Recueillir ses idées d'amélioration et les discuter honnêtement : ce que ça apporterait, ce que ça compliquerait, si ça respecte les règles.
 4. Quand un vrai problème ou un vrai besoin d'amélioration est établi, appelle l'outil proposer_rapport. Le rapport s'affiche sous ta réponse avec un bouton : c'est Youngmi qui l'envoie à Olivier. Tu ne peux rien envoyer toi-même : ne dis jamais que tu as envoyé ou transmis quelque chose. Pas de rapport pour une simple question de fonctionnement, pour une erreur de manipulation, ni pour une idée contraire aux règles. Une question à laquelle le manuel ne répond pas peut mériter un rapport de type « question ». Avant de proposer un rapport, assure-toi d'avoir compris : au besoin, une ou deux questions d'abord.
-5. Quand tu ne sais pas, ou quand la question dépasse le manuel, dis-le en une phrase, sans inventer. Sous la conversation, le formulaire « Écrire à Olivier » envoie son message tel quel à Olivier, sans passer par toi : indique-le-lui quand c'est le plus simple.
+5. Quand tu ne sais pas, ou quand la question dépasse le manuel, dis-le en une phrase, sans inventer. Le lien « Écrire à Olivier », en haut de ton écran, envoie un message tel quel à Olivier, sans passer par toi : indique-le quand c'est le plus simple.
 
 Franchise
 Si Youngmi se trompe (sur le fonctionnement, sur une règle, ou si ce qu'elle demande va contre les règles), dis-le clairement et gentiment, explique pourquoi, et propose la bonne façon de faire. Ne lui donne pas raison pour lui faire plaisir, ne flatte pas, ne t'excuse pas sans raison.
@@ -119,7 +119,7 @@ Langue
 Réponds dans la langue de son message : en coréen (해요체, naturel et simple) si elle écrit en coréen, sinon en français (vouvoiement). Quand tu cites un écran, un bouton ou un réglage, utilise le libellé dans la langue de son écran (il est indiqué plus bas), avec le libellé français entre parenthèses quand c'est utile. Les rapports sont toujours écrits en français.
 
 Style
-Réponses courtes et concrètes. Quand il y a quelque chose à faire, les étapes dans l'ordre. Pas de jargon, pas de titres. Une liste « - » quand elle aide. Le gras **…** pour un bouton ou un mot important. Une seule question à la fois.
+Court, comme dans une messagerie : une à trois phrases en général, jamais plus de cinq lignes, sauf des étapes à suivre (alors une liste numérotée, une ligne par étape). Pas de formule d'accueil, pas de « Bonjour » à chaque réponse, pas de présentation de ce que tu sais faire sauf si on te le demande : à un simple bonjour ou à un essai, une phrase suffit. Pas de jargon, pas de titres, pas de résumé final. Le gras **…** pour un bouton ou un mot important. Une seule question à la fois.
 
 Les règles de la maison, à connaître et à faire respecter
 - Aucun email ne part tout seul : la gestion prépare les textes, Youngmi les envoie depuis contact@madamecho.com.
@@ -302,10 +302,9 @@ function carte_rapport(array $r, ?array $u = null): string {
     if (!empty($r['pour_vous'])) $h .= '<p class="pour-vous" translate="no" lang="' . (preg_match('/\p{Hangul}/u', (string)$r['pour_vous']) ? 'ko' : 'fr') . '">' . nl2br(h((string)$r['pour_vous'])) . '</p>';
     if ($etat === 'propose' && $u) {
         // Ce qui partira, tel quel : l'email complet ; l'extrait de la conversation seulement si la case est cochée (audit C4)
-        $h .= '<details class="mini"><summary>' . fr_ko('Voir l\'email tel qu\'il partira à Olivier', 'Olivier에게 갈 이메일 그대로 보기') . '</summary><pre translate="no">' . h(rapport_email($r, $u, false)['corps']) . '</pre></details>'
-            . '<details class="mini"><summary>' . fr_ko('L\'extrait de la conversation (joint seulement si vous cochez la case)', '대화 발췌 (체크할 때만 함께 보내요)') . '</summary><pre translate="no">' . h(rapport_extrait($r, $u)) . '</pre></details>'
-            . '<p class="aide">' . fr_ko('Le rapport part à contact@madamecho.com ; Olivier le lit et regarde comment améliorer la gestion. Pour le compléter ou le corriger, répondez à l\'assistant : il en proposera un nouveau.',
-                                        '보고서는 contact@madamecho.com으로 가요. Olivier가 읽고 관리 시스템을 어떻게 고칠지 봐요. 보태거나 고치고 싶으면 어시스턴트에게 답해 주세요. 새 보고서를 만들어 줘요.') . '</p>'
+        $h .= '<details class="mini"><summary>' . fr_ko('Voir l\'email', '이메일 보기') . '</summary><pre translate="no">' . h(rapport_email($r, $u, false)['corps']) . '</pre></details>'
+            . '<details class="mini"><summary>' . fr_ko('Voir l\'extrait de la conversation', '대화 발췌 보기') . '</summary><pre translate="no">' . h(rapport_extrait($r, $u)) . '</pre></details>'
+            . '<p class="aide">' . fr_ko('Pour le corriger, répondez à l\'assistant : il en proposera un autre.', '고치려면 어시스턴트에게 답해 주세요. 새 보고서를 만들어 줘요.') . '</p>'
             . '<div class="actions">' . formulaire('rapport_envoyer', '<input type="hidden" name="id" value="' . (int)$r['id'] . '">' . case_a_cocher('extrait', 'Joindre les 10 derniers messages de la conversation', false)
                                                    . bouton(icone('email') . 'Envoyer le rapport à Olivier', 'principal'))
             . formulaire('rapport_ignorer', '<input type="hidden" name="id" value="' . (int)$r['id'] . '">' . bouton('Pas maintenant', 'discret')) . '</div>';
@@ -336,15 +335,55 @@ function assistant_mois_texte(): string {
     return 'Ce mois-ci : ' . $m['questions'] . ' question(s) · ≈ ' . number_format($m['usd'], 2, ',', ' ') . ' $';
 }
 
-/** Ce qu'il faut savoir avant d'écrire à l'assistant (information des personnes, registre des traitements T8 ; audit du 07/11, C10). */
+/** La petite ligne sous la zone de saisie, comme sous ChatGPT et Claude : l'IA peut se tromper, et où passent les messages.
+ *  Le détail (Anthropic, durées, droits, registre des traitements T8) est dans le manuel, section « L'assistant » (information des personnes ; audit du 07/11, C10). */
 function assistant_notice(): string {
-    return '<details class="mini notice"><summary>' . fr_ko('À savoir avant d\'écrire', '쓰기 전에 알아 두세요') . '</summary><p>'
-        . fr_ko('Vos messages et les réponses de l\'assistant passent par Anthropic (États-Unis), l\'entreprise qui le fait fonctionner, pour produire chaque réponse. Ils restent 6 mois dans la gestion, puis sont effacés ; un rapport reste 12 mois. Olivier ne lit que ce que vous lui envoyez. N\'écrivez ni nom de client, ni coordonnées, ni information de santé : parlez par numéros (CL-…, MC-…). Pour voir ou effacer vos messages : contact@madamecho.com. Détail : registre des traitements, ligne T8.',
-                '메시지와 어시스턴트의 답은 매번 답을 만들기 위해, 어시스턴트를 운영하는 회사 Anthropic(미국)을 거쳐요. 관리 시스템에 6개월 보관한 뒤 지워져요. 보고서는 12개월 보관해요. Olivier는 보내 주신 것만 읽어요. 고객 이름, 연락처, 건강 정보는 적지 말고 번호(CL-…, MC-…)로 말해 주세요. 내 메시지 보기·삭제: contact@madamecho.com. 자세한 내용: 처리 목록 T8.')
-        . '</p></details>';
+    return '<p class="composer-note">' . fr_ko('L\'IA peut se tromper. Vos messages passent par Anthropic et sont effacés après 6 mois.', 'AI도 틀릴 수 있어요. 메시지는 Anthropic을 거치고 6개월 뒤 지워져요.')
+         . ' <a href="' . h(u('manuel')) . '#assistant">' . fr_ko('En savoir plus', '자세히 보기') . '</a></p>';
 }
 
-/** ?p=assistant : la conversation avec l'assistant, et les rapports. */
+/** La zone de saisie, calquée sur ChatGPT et Claude (demande d'Olivier, 07/11/2026) : un champ arrondi qui grandit avec le texte et une flèche
+ *  pour envoyer ; Entrée envoie sur ordinateur (Maj + Entrée : à la ligne). L'attente animée et la réponse sans recharger la page sont dans gestion.js ;
+ *  sans JavaScript, le formulaire s'envoie comme les autres. */
+function assistant_saisie(string $brouillon): string {
+    return '<form method="post" action="' . h(u('assistant')) . '" class="composer" id="composer">' . csrf_champ() . '<input type="hidden" name="_action" value="message">'
+         . '<div class="composer-boite"><label class="sr" for="f-message">Votre message</label>'
+         . '<textarea name="message" id="f-message" rows="1" maxlength="' . GESTION_ASSISTANT_MAX_CAR . '" required data-langue-libre placeholder="' . h(fr_ko('Écrivez votre message…', '메시지를 입력하세요…')) . '">' . h($brouillon) . '</textarea>'
+         . '<button type="submit" class="composer-envoyer" aria-label="Envoyer" title="Envoyer">' . icone('envoyer') . '</button></div>'
+         . assistant_notice() . '</form>'
+         // L'attente que gestion.js affiche pendant que l'IA réfléchit
+         . '<template id="modele-attente"><div class="msg msg-ia attente" role="status"><span class="avatar-ia" aria-hidden="true">' . icone('ia') . '</span>'
+         . '<div class="texte-ia"><span class="reflechit" data-encore="' . h(fr_ko('Encore un instant…', '조금만 기다려 주세요…')) . '">' . fr_ko('Réflexion…', '생각 중…') . '</span></div></div></template>';
+}
+
+/** Trois façons de commencer, comme les suggestions de ChatGPT et Claude : un toucher envoie la phrase. */
+function assistant_suggestions(): string {
+    $s = '';
+    foreach ([['Comment changer la date d\'un retrait ?', '픽업 날짜는 어떻게 바꿔요?'], ['Quelque chose ne marche pas', '뭔가 잘 안 돼요'], ['J\'ai une idée d\'amélioration', '개선 아이디어가 있어요']] as [$fr, $ko]) {
+        $t = fr_ko($fr, $ko);
+        $s .= formulaire('message', '<input type="hidden" name="message" value="' . h($t) . '">' . bouton(h($t), 'suggestion'), ['class' => 'form-suggestion'], u('assistant'));
+    }
+    return '<div class="suggestions">' . $s . '</div>';
+}
+
+/** Un message à Olivier sans l'assistant : il part tel quel (audit C4 et C10) ; c'est la personne qui clique (R-01). */
+function olivier_envoyer(array $u, string $t): bool {
+    $corps = 'Message envoyé depuis l\'espace de gestion par ' . $u['nom'] . ' (' . $u['email'] . '), le ' . date_fr(maintenant(), 'heure') . ", sans passer par l'assistant.\n\n" . $t . "\n\n"
+           . '— Gestion Madame Cho · version du ' . date_fr(GESTION_VERSION, 'longue') . ' · écran en ' . (coreen_actif() ? 'coréen' : 'français') . "\n";
+    if (!envoyer_email(GESTION_COMPTE_INITIAL, 'Gestion · Message de ' . $u['nom'], $corps)) return false;
+    evenement('rapport', 'Message envoyé à Olivier sans l\'assistant');
+    return true;
+}
+
+/** En essai local : l'email qui serait parti, montré à l'écran. */
+function essai_email_affiche(): string {
+    if (!GESTION_ESSAI || empty($_SESSION['essai_email'])) return '';
+    $e = $_SESSION['essai_email']; unset($_SESSION['essai_email']);
+    return '<div class="essai-email"><p><b>Essai : l\'email qui serait parti à ' . h($e['a']) . '</b></p><pre>' . h($e['sujet'] . "\n\n" . $e['corps']) . '</pre></div>';
+}
+
+/** ?p=assistant : la conversation, comme dans ChatGPT et Claude : les messages, puis la zone de saisie, collée en bas de l'écran.
+ *  « Écrire à Olivier » et les rapports envoyés ont leur propre écran (?p=olivier) : rien ne se met sous la zone de saisie (demande d'Olivier, 07/11/2026). */
 function page_assistant(): void {
     $u = utilisateur_courant();
     $uid = (int)$u['id'];
@@ -363,15 +402,12 @@ function page_assistant(): void {
             case 'nouveau':
                 if (assistant_messages($uid, $fil)) parametre_ecrire('assistant_fil_' . $uid, (string)($fil + 1));
                 rediriger('assistant');
-            case 'ecrire_olivier':   // sans l'assistant : le message part tel quel (audit C4 et C10) ; c'est la personne qui clique (R-01)
+            case 'ecrire_olivier':   // un écran ouvert avant le 07/11/2026, quand le formulaire était sous la conversation : le message part quand même
                 $t = texte('message_olivier', 2000);
                 if ($t === '') break;
-                $corps = 'Message envoyé depuis l\'espace de gestion par ' . $u['nom'] . ' (' . $u['email'] . '), le ' . date_fr(maintenant(), 'heure') . ", sans passer par l'assistant.\n\n" . $t . "\n\n"
-                       . '— Gestion Madame Cho · version du ' . date_fr(GESTION_VERSION, 'longue') . ' · écran en ' . (coreen_actif() ? 'coréen' : 'français') . "\n";
-                if (!envoyer_email(GESTION_COMPTE_INITIAL, 'Gestion · Message de ' . $u['nom'], $corps)) { $_SESSION['olivier_brouillon'] = $t; flash('erreur', 'L\'email n\'est pas parti : réessayez, ou appelez Olivier.'); break; }
-                evenement('rapport', 'Message envoyé à Olivier sans l\'assistant');
-                flash('ok', 'Message envoyé à contact@madamecho.com.');
-                break;
+                if (olivier_envoyer($u, $t)) { flash('ok', 'Message envoyé à contact@madamecho.com.'); rediriger('olivier'); }
+                $_SESSION['olivier_brouillon'] = $t; flash('erreur', 'L\'email n\'est pas parti : réessayez, ou appelez Olivier.');
+                rediriger('olivier');
             case 'rapport_envoyer':
             case 'rapport_ignorer':
                 $r = ligne("SELECT * FROM rapports WHERE id = ? AND utilisateur_id = ? AND etat = 'propose'", [entier('id', 1), $uid]);
@@ -387,53 +423,61 @@ function page_assistant(): void {
         rediriger('assistant', [], 'bas');
     }
     $brouillon = (string)($_SESSION['assistant_brouillon'] ?? ''); unset($_SESSION['assistant_brouillon']);
-    $brouillonOlivier = (string)($_SESSION['olivier_brouillon'] ?? ''); unset($_SESSION['olivier_brouillon']);
+    $flash = flash_lire();   // montré juste au-dessus de la zone de saisie, là où l'on regarde, et non en haut de la page
     $messages = assistant_messages($uid, $fil);
     $rapports = [];
     foreach (lignes("SELECT * FROM rapports WHERE utilisateur_id = ? ORDER BY id", [$uid]) as $r) $rapports[(int)$r['id']] = $r;
-    $actions = $messages ? formulaire('nouveau', bouton('Nouvelle conversation', 'discret')) : '';
-    $c = titre_page('Assistant', fr_ko('Questions, problèmes, idées : il connaît le manuel', '질문, 문제, 아이디어: 설명서를 알고 있어요'), $actions, u('plus'));
+    $actions = ($messages ? formulaire('nouveau', bouton(icone('nouveau') . 'Nouvelle conversation', 'discret'), [], u('assistant')) : '')
+             . lien_bouton(u('olivier'), icone('email') . 'Écrire à Olivier', 'discret');
+    $c = titre_page('<span class="titre-ia">' . icone('ia') . '</span>Assistant', '', $actions, u('plus'));
     if (!assistant_relie()) {
-        $c .= bloc('Pas encore relié', '<p>' . fr_ko('L\'assistant marche avec une clé d\'accès que seul Olivier peut coller, dans Réglages. En attendant, le <a href="' . h(u('manuel')) . '">manuel</a> répond déjà à beaucoup de questions.',
-                                                   '어시스턴트는 Olivier만 설정에 붙여 넣을 수 있는 접근 키가 있어야 작동해요. 그동안은 <a href="' . h(u('manuel')) . '">설명서</a>가 많은 질문에 답해 줘요.') . '</p>'
+        $c .= bloc('', '<p>' . fr_ko('L\'assistant n\'est pas encore relié : Olivier doit coller sa clé dans Réglages.', '어시스턴트가 아직 연결되지 않았어요. Olivier가 설정에 키를 붙여 넣어야 해요.') . '</p>'
             . (est_admin() ? '<p>' . lien_bouton(u('reglages') . '#assistant', 'Relier l\'assistant dans Réglages', 'secondaire') . '</p>' : ''), 'alerte');
-    } elseif (!$messages) {
-        $c .= bloc('', '<p>' . fr_ko('Posez une question sur la gestion, décrivez ce qui ne marche pas, ou proposez une amélioration. L\'assistant connaît le <a href="' . h(u('manuel')) . '">manuel</a>, rien d\'autre : il ne voit ni vos commandes ni vos clients. Vous pouvez écrire en coréen.',
-                                      '관리 시스템에 대해 질문하거나, 안 되는 것을 설명하거나, 개선 아이디어를 말해 보세요. 어시스턴트는 <a href="' . h(u('manuel')) . '">설명서</a>만 알아요. 주문이나 고객 정보는 보지 못해요. 한국어로 써도 돼요.') . '</p>'
-            . '<p class="aide">' . fr_ko('Parlez des clients et des commandes par leur numéro (CL-…, MC-…), jamais d\'information de santé. Quand un vrai problème ou un vrai besoin apparaît, l\'assistant prépare un rapport que vous envoyez à Olivier d\'un bouton.',
-                                         '고객과 주문은 번호(CL-…, MC-…)로 말해 주세요. 건강 정보는 적지 마세요. 진짜 문제나 필요한 개선이 보이면 어시스턴트가 보고서를 준비하고, 버튼 하나로 Olivier에게 보낼 수 있어요.') . '</p>');
     }
     $chat = '';
     foreach ($messages as $m) {
         $t = assistant_texte($m['blocs']);
         if ($m['role'] === 'user') {
-            if ((int)$m['question'] === 1 && $t !== '') $chat .= '<div class="bulle bulle-moi" translate="no">' . nl2br(h($t)) . '</div>';
+            if ((int)$m['question'] === 1 && $t !== '') $chat .= '<div class="msg msg-moi"><div class="bulle-moi" translate="no">' . nl2br(h($t)) . '</div></div>';
         } else {
-            if ($t !== '') $chat .= '<div class="bulle bulle-ia" translate="no" lang="' . (preg_match('/\p{Hangul}/u', $t) ? 'ko' : 'fr') . '">' . assistant_html($t) . '</div>';
-            if (!empty($m['rapport_id']) && isset($rapports[(int)$m['rapport_id']])) $chat .= carte_rapport($rapports[(int)$m['rapport_id']], $u);
+            // La petite étoile de l'IA devant chaque réponse (demande d'Olivier, 07/11/2026)
+            if ($t !== '') $chat .= '<div class="msg msg-ia"><span class="avatar-ia" role="img" aria-label="IA" title="IA">' . icone('ia') . '</span>'
+                . '<div class="texte-ia" translate="no" lang="' . (preg_match('/\p{Hangul}/u', $t) ? 'ko' : 'fr') . '">' . assistant_html($t) . '</div></div>';
+            if (!empty($m['rapport_id']) && isset($rapports[(int)$m['rapport_id']])) $chat .= '<div class="msg msg-rapport">' . carte_rapport($rapports[(int)$m['rapport_id']], $u) . '</div>';
         }
     }
-    if (GESTION_ESSAI && !empty($_SESSION['essai_email'])) {
-        $e = $_SESSION['essai_email']; unset($_SESSION['essai_email']);
-        $chat .= '<div class="essai-email"><p><b>Essai : l\'email qui serait parti à ' . h($e['a']) . '</b></p><pre>' . h($e['sujet'] . "\n\n" . $e['corps']) . '</pre></div>';
-    }
+    $chat .= essai_email_affiche();
     if ($chat !== '') $c .= '<div class="chat" id="chat">' . $chat . '</div>';
+    elseif (assistant_relie()) $c .= '<div class="accueil-ia"><span class="avatar-ia grand" aria-hidden="true">' . icone('ia') . '</span><h2>' . fr_ko('Que puis-je faire pour vous ?', '무엇을 도와드릴까요?') . '</h2>' . assistant_suggestions() . '</div>';
+    if ($flash) $c .= '<div class="flash flash-' . h($flash[0]) . '" role="status">' . nl2br(h($flash[1])) . '</div>';
     $c .= '<span id="bas"></span>';
-    if (assistant_relie()) {
-        $c .= assistant_notice() . formulaire('message', zone('message', 'Votre message', $brouillon, ['rows' => '2', 'maxlength' => (string)GESTION_ASSISTANT_MAX_CAR, 'required' => true, 'data-langue-libre' => true,
-                                                                             'placeholder' => fr_ko('Par exemple : comment je change la date d\'un retrait ?', '예: 픽업 날짜는 어떻게 바꿔요?')])
-            . bouton(icone('email') . 'Envoyer', 'principal', ['data-attente' => fr_ko('L\'assistant réfléchit…', '어시스턴트가 생각 중이에요…')]), ['class' => 'form-assistant']);
+    if (assistant_relie()) $c .= assistant_saisie($brouillon);
+    mise_en_page('Assistant', $c, 'assistant', 'page-assistant');
+}
+
+/** ?p=olivier : écrire à Olivier sans passer par l'assistant (un canal humain, relié ou non ; audit C4 et C10), et les rapports déjà envoyés. */
+function page_olivier(): void {
+    $u = utilisateur_courant();
+    session_ouvrir();
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        csrf_verifier();
+        if (texte('_action', 40) === 'ecrire_olivier' && ($t = texte('message_olivier', 2000)) !== '') {
+            if (olivier_envoyer($u, $t)) flash('ok', 'Message envoyé à contact@madamecho.com.');
+            else { $_SESSION['olivier_brouillon'] = $t; flash('erreur', 'L\'email n\'est pas parti : réessayez, ou appelez Olivier.'); }
+        }
+        rediriger('olivier');
     }
-    $envoyes = array_values(array_filter($rapports, fn($r) => $r['etat'] === 'envoye'));
+    $brouillon = (string)($_SESSION['olivier_brouillon'] ?? ''); unset($_SESSION['olivier_brouillon']);
+    $c = titre_page('Écrire à Olivier', fr_ko('Sans l\'assistant : votre message part tel quel à contact@madamecho.com.', '어시스턴트 없이, 메시지가 그대로 contact@madamecho.com으로 가요.'), '', u('assistant'));
+    $c .= essai_email_affiche();
+    $c .= bloc('', formulaire('ecrire_olivier', zone('message_olivier', 'Votre message', $brouillon, ['rows' => '5', 'maxlength' => '2000', 'required' => true, 'data-langue-libre' => true,
+                                                                                                  'placeholder' => fr_ko('En français ou en coréen', '한국어로 써도 돼요')])
+                                                . bouton(icone('email') . 'Envoyer à Olivier', 'principal')));
+    $envoyes = lignes("SELECT * FROM rapports WHERE utilisateur_id = ? AND etat = 'envoye' ORDER BY id DESC LIMIT 12", [(int)$u['id']]);
     if ($envoyes) {
         $rows = '';
-        foreach (array_reverse(array_slice($envoyes, -12)) as $r) $rows .= '<tr><td>' . h(date_fr((string)$r['envoye_le'])) . '</td><td>' . rapport_type_libelle($r['type']) . '</td><td translate="no">' . h($r['titre']) . '</td></tr>';
+        foreach ($envoyes as $r) $rows .= '<tr><td>' . h(date_fr((string)$r['envoye_le'])) . '</td><td>' . rapport_type_libelle($r['type']) . '</td><td translate="no">' . h($r['titre']) . '</td></tr>';
         $c .= bloc('Rapports envoyés', '<table class="tableau"><tbody>' . $rows . '</tbody></table>');
     }
-    // Écrire à Olivier sans l'assistant : un canal humain, relié ou non (audit C4 et C10)
-    $c .= bloc('Écrire à Olivier', '<p class="aide">' . fr_ko('Sans passer par l\'assistant, en français ou en coréen : votre message part tel quel à contact@madamecho.com, et Olivier vous répond.',
-                                                        '어시스턴트를 거치지 않고, 한국어로 써도 괜찮아요. 메시지가 그대로 contact@madamecho.com으로 가고 Olivier가 답해 줘요.') . '</p>'
-        . formulaire('ecrire_olivier', zone('message_olivier', 'Votre message', $brouillonOlivier, ['rows' => '3', 'maxlength' => '2000', 'required' => true, 'data-langue-libre' => true]) . bouton(icone('email') . 'Envoyer à Olivier', 'secondaire')), '', 'olivier');
-    if (est_admin() && assistant_relie()) $c .= '<p class="aide centre"><span>' . h(assistant_mois_texte()) . '</span> · <a href="' . h(u('reglages')) . '#assistant">Réglages</a></p>';
-    mise_en_page('Assistant', $c, 'assistant', 'page-assistant');
+    mise_en_page('Écrire à Olivier', $c, 'assistant', 'page-olivier');
 }

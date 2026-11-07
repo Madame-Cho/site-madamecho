@@ -6,13 +6,13 @@ declare(strict_types=1);
 namespace MadameCho\Gestion;
 
 function carte_client(array $c): string {
-    $pro = $c['type'] === 'professionnel' ? '<span class="statut s-pro">Pro</span>' : '';
+    $estPro = $c['type'] === 'professionnel';
     $etat = $c['statut'] === 'efface' ? '<span class="statut s-efface">Effacé</span>' : ($c['statut'] === 'inactif' ? '<span class="statut s-inactif">Inactif</span>' : '');
     $avis = $c['avis_recu_le'] ? '<span class="avis-ok">' . icone('avis') . 'Avis reçu</span>' : ($c['avis_demande_le'] ? '<span class="avis-attente">' . icone('avis') . 'Avis demandé</span>' : '');
-    $chiffres = (int)$c['remises'] ? (int)$c['remises'] . ' commande' . ((int)$c['remises'] > 1 ? 's' : '') . ' · ' . euros((int)$c['total']) . ($c['derniere'] ? ' · dernière le ' . date_fr($c['derniere']) : '') : 'Pas encore de commande remise';
+    $chiffres = (int)$c['remises'] ? (int)$c['remises'] . ' commande' . ((int)$c['remises'] > 1 ? 's' : '') . ' · ' . ($estPro ? euros((int)$c['total_ht']) . ' HT' : euros((int)$c['total']) . ' TTC') . ($c['derniere'] ? ' · dernière le ' . date_fr($c['derniere']) : '') : 'Pas encore de commande remise';
     $enCours = (int)$c['en_cours'] ? '<span class="compte">' . (int)$c['en_cours'] . ' en cours</span>' : '';
     return '<a class="carte-cmd carte-client" href="' . h(u('client', ['id' => $c['id']])) . '">'
-         . '<span class="l1"><b translate="no">' . h(client_nom($c)) . '</b>' . $pro . $etat . $enCours . '</span>'
+         . '<span class="l1">' . chip_type($estPro) . '<b translate="no">' . h(client_nom($c)) . '</b>' . $etat . $enCours . '</span>'
          . '<span class="l2">' . h($chiffres) . '</span>'
          . '<span class="l4">' . h($c['numero']) . ($c['ville'] !== '' ? ' · <span translate="no">' . h($c['ville']) . '</span>' : '') . ' · ' . h(CANAUX[$c['canal']] ?? $c['canal']) . ' · dernier échange ' . h(date_fr($c['dernier_echange'], 'relative')) . '</span>'
          . ($avis !== '' ? '<span class="l5">' . $avis . '</span>' : '')
@@ -101,13 +101,15 @@ function page_client(): void {
     $cl = client($id);
     $ch = client_chiffres($id);
     $efface = $cl['statut'] === 'efface';
-    $chips = ($cl['type'] === 'professionnel' ? '<span class="statut s-pro">Pro</span>' : '') . ($efface ? '<span class="statut s-efface">Effacé</span>' : ($cl['statut'] === 'inactif' ? '<span class="statut s-inactif">Inactif</span>' : ''));
+    $chips = chip_type($cl['type'] === 'professionnel') . ($efface ? '<span class="statut s-efface">Effacé</span>' : ($cl['statut'] === 'inactif' ? '<span class="statut s-inactif">Inactif</span>' : ''));
     $c = titre_page('<span translate="no">' . h(client_nom($cl)) . '</span>', h($cl['numero']) . ' · client depuis le ' . h(date_fr($cl['premier_contact'], 'longue')) . '<span class="chips">' . $chips . '</span>',
         $efface ? '' : ($cl['type'] === 'professionnel'
             ? lien_bouton(u('commande-edition', ['client' => $id, 'livraison' => 1]), icone('ajouter') . 'Nouvelle livraison', 'principal') . lien_bouton(u('commande-edition', ['client' => $id]), 'Autre commande', 'discret')
             : lien_bouton(u('commande-edition', ['client' => $id]), icone('ajouter') . 'Nouvelle commande', 'principal')), u('clients'));
     $c .= '<div class="tuiles">' . tuile('Commandes remises', (string)$ch['remises'], $ch['commandes'] > $ch['remises'] ? ($ch['commandes'] - $ch['remises']) . ' autre(s) demande(s)' : '')
-        . tuile('Total', $ch['total'] ? euros($ch['total']) : '—', 'TTC') . tuile('Panier moyen', $ch['panier'] ? euros($ch['panier']) : '—')
+        . ($cl['type'] === 'professionnel'   // un professionnel en HT, comme ses factures ; un particulier en TTC (demande d'Olivier, 07/11/2026)
+            ? tuile('Total', $ch['total_ht'] ? euros($ch['total_ht']) : '—', 'HT') . tuile('Livraison moyenne', $ch['panier_ht'] ? euros($ch['panier_ht']) : '—', 'HT')
+            : tuile('Total', $ch['total'] ? euros($ch['total']) : '—', 'TTC') . tuile('Panier moyen', $ch['panier'] ? euros($ch['panier']) : '—', 'TTC'))
         . tuile('Dernière commande', $ch['derniere'] ? date_fr($ch['derniere']) : '—', $ch['derniere'] ? date_fr($ch['derniere'], 'relative') : '') . '</div>';
     // Doublon possible : même téléphone, mêmes prénom et nom, ou même entreprise ; rien n'est fusionné sans Youngmi
     $dbl = $efface ? [] : client_doublons($cl);

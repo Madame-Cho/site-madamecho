@@ -39,6 +39,14 @@ function icone(string $n): string {
         'crayon' => '<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"/><path d="M14 7l3 3"/>',
         'livre' => '<path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>',
         'assistant' => '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+        // Étincelles : le signe habituel d'une IA (demande d'Olivier, 07/11/2026) ; l'assistant est le seul endroit de la gestion où une IA répond
+        'ia' => '<path d="M10 3.5l1.6 4.4 4.4 1.6-4.4 1.6L10 15.5l-1.6-4.4L4 9.5l4.4-1.6z"/><path d="M18 13.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/><path d="M17.5 3v3M16 4.5h3"/>',
+        // La flèche d'envoi et la nouvelle conversation, comme dans ChatGPT et Claude
+        'envoyer' => '<path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/>',
+        'nouveau' => '<path d="M11 4H5v15h15v-6"/><path d="M18.5 3.5l2 2L12 14l-3 1 1-3z"/>',
+        // Particulier (une personne) et professionnel (une boutique), sur les étiquettes de type
+        'particulier' => '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/>',
+        'pro' => '<path d="M4 10v10h16V10"/><path d="M3 10l2-6h14l2 6z"/><path d="M10 20v-5h4v5"/>',
         default => '',
     };
     return '<svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';
@@ -47,6 +55,19 @@ function icone(string $n): string {
 /** Adresse d'un fichier d'habillage avec sa version (date du fichier) : le navigateur reprend le nouveau dès qu'il change. */
 function fichier_versionne(string $f): string { return $f . '?v=' . (@filemtime(dirname(__DIR__) . '/' . $f) ?: GESTION_VERSION); }
 /** Une page complète. $actif : l'onglet allumé (accueil, commandes, clients, produits, plus). */
+/** Le compte connecté, au bout de la barre du haut sur tous les écrans : nom, email, mot de passe et « Se déconnecter »
+ *  (demande d'Olivier, 07/11/2026 : sur un grand écran, le menu Plus, qui portait la déconnexion, n'apparaît plus). */
+function menu_compte(array $u): string {
+    $nom = trim((string)($u['nom'] ?? ''));
+    $initiale = mb_strtoupper(mb_substr($nom !== '' ? $nom : (string)$u['email'], 0, 1));
+    return '<details class="menu-compte"><summary aria-label="Mon compte" title="Mon compte"><span aria-hidden="true" translate="no">' . h($initiale) . '</span></summary>'
+         . '<div class="menu-compte-liste">'
+         . '<p class="menu-compte-qui" translate="no">' . ($nom !== '' ? '<b>' . h($nom) . '</b>' : '') . '<span>' . h((string)$u['email']) . '</span></p>'
+         . '<a href="' . h(u('reglages')) . '#compte">' . icone('reglages') . '<span>Mon mot de passe</span></a>'
+         . '<a href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span>Se déconnecter</span></a>'
+         . '</div></details>';
+}
+
 function mise_en_page(string $titre, string $corps, string $actif = '', string $classe = ''): void {
     entetes_securite();
     $u = utilisateur_courant();
@@ -64,7 +85,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
         // un seul lien « Plus » sinon, pour que la barre reste sur une ligne
         $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant'], true);
         foreach ([['statistiques', 'Statistiques'], ['production', 'Production'], ['manuel', 'Manuel'], ['assistant', 'Assistant'], ['reglages', 'Réglages']] as [$p, $l]) {
-            $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . h($l) . '</a>';
+            $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . ($p === 'assistant' ? icone('ia') : '') . h($l) . '</a>';
         }
         $nav .= '<a class="plus" href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>Plus</a>';
         $onglets .= '<a href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . '<span>Plus</span></a>';
@@ -88,7 +109,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '<header class="barre"><a class="marque" href="' . h($u ? u('accueil') : u('connexion')) . '"><img src="../assets/logo-chocolat.svg" alt="Madame Cho" width="112" height="33"><span>' . h(GESTION_NOM) . '</span></a>'
        . ($u ? '<nav class="nav-haut" aria-label="Menu">' . $nav . '</nav>' : '')
        . bouton_langue()
-       . ($u ? '<a class="nouvelle" href="' . h(u('commande-edition')) . '" aria-label="Nouvelle commande">' . icone('ajouter') . '<span>Nouvelle commande</span></a>' : '')
+       . ($u ? '<a class="nouvelle" href="' . h(u('commande-edition')) . '" aria-label="Nouvelle commande">' . icone('ajouter') . '<span>Nouvelle commande</span></a>' . menu_compte($u) : '')
        . '</header>'
        . '<main id="contenu" class="page">' . $f . rappel_francais($corps) . $corps . '</main>'
        . ($u ? '<nav class="onglets" aria-label="Menu principal">' . $onglets . '</nav>' : '')
@@ -121,6 +142,16 @@ function titre_page(string $titre, string $sous = '', string $actions = '', stri
 function chip_statut(string $s, bool $court = true, bool $livraison = false): string {
     $l = $livraison && $s === 'remise' ? 'Livrée' : (($court ? STATUTS_COURTS : STATUTS)[$s] ?? $s);   // une livraison à un restaurant est « livrée », pas « remise »
     return '<span class="statut s-' . h(str_replace('_', '-', $s)) . '">' . h($l) . '</span>';
+}
+/** Particulier (B2C) ou Pro (B2B), au premier coup d'œil, sur chaque carte et chaque fiche (demande d'Olivier, 07/11/2026). */
+function chip_type(bool $pro): string {
+    return $pro ? '<span class="type-client t-pro">' . icone('pro') . 'Pro</span>' : '<span class="type-client t-part">' . icone('particulier') . 'Particulier</span>';
+}
+/** Le montant d'une commande tel qu'on le lit : TTC pour un particulier, HT pour un professionnel (comme sa facture). */
+function montant_lu(array $k): string {
+    $m = montant_commande($k);
+    if (!$m) return '';
+    return commande_est_pro($k) ? euros(commande_ht_ttc($k, tva_produits())['ht']) . ' HT' : euros($m) . ' TTC';
 }
 function chip_paiement(string $p, int $acompte = 0): string {
     if ($p === 'aucun') return '';
@@ -173,10 +204,10 @@ function carte_commande(array $k, bool $avecClient = true): string {
     if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . heures_depuis($k['recue_le']) . ' h</span>';
     elseif (commande_dormante($k)) $alertes .= '<span class="dormant">Rien depuis ' . jours_depuis($k['dernier_echange']) . ' j</span>';
     $nom = $avecClient ? '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(livraison_pro($k) ? 'Livraison' : (TYPES_COMMANDE[$k['type']] ?? 'Commande')) . '</b>';
-    $montant = montant_commande($k);
+    $montant = montant_lu($k);
     return '<a class="carte-cmd" href="' . h(u('commande', ['id' => $k['id']])) . '">'
-         . '<span class="l1">' . $nom . chip_statut($k['statut'], true, livraison_pro($k)) . '</span>'
-         . '<span class="l2">' . h(retrait_texte($k, true)) . ($montant ? ' · ' . h(euros($montant)) : '') . chip_paiement($k['paiement'], (int)$k['acompte']) . '</span>'
+         . '<span class="l1">' . ($avecClient ? chip_type(commande_est_pro($k)) : '') . $nom . chip_statut($k['statut'], true, livraison_pro($k)) . '</span>'
+         . '<span class="l2">' . h(retrait_texte($k, true)) . ($montant !== '' ? ' · ' . h($montant) : '') . chip_paiement($k['paiement'], (int)$k['acompte']) . '</span>'
          . '<span class="l3">' . h(commande_contenu_texte($k, true)) . '</span>'
          . '<span class="l4">' . h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · reçue ' . h(date_fr($k['recue_le'], 'relative')) . '</span>'
          . ($alertes !== '' ? '<span class="l5">' . $alertes . '</span>' : '')
@@ -265,8 +296,8 @@ function fil_historique(array $evs, bool $avecReference = false): string {
     return '<ol class="fil">' . $s . '</ol>';
 }
 function formulaire_commentaire(string $aide = ''): string {
-    return formulaire('commentaire', zone('texte', 'Ajouter un commentaire', '', ['rows' => '2', 'maxlength' => '2000', 'required' => true],
-        $aide !== '' ? $aide : 'Utile et factuel. Jamais d\'information de santé : pour une allergie, notez seulement l\'ingrédient à éviter.') . bouton('Ajouter', 'secondaire'), ['class' => 'form-commentaire']);
+    return formulaire('commentaire', zone('texte', 'Noter un échange', '', ['rows' => '2', 'maxlength' => '2000', 'required' => true, 'placeholder' => 'Appel, SMS, demande pour le retrait…'],
+        $aide !== '' ? $aide : 'Allergie : seulement l\'ingrédient à éviter, jamais d\'information de santé.') . bouton('Ajouter', 'secondaire'), ['class' => 'form-commentaire']);
 }
 
 /* ---------- Textes d'email (brouillons que Youngmi relit et envoie elle-même, R-01) ---------- */

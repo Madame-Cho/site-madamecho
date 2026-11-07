@@ -15,11 +15,21 @@ function page_accueil(): void {
          . tuile('À répondre', (string)count($t['a_repondre']), count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) ? count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) . ' en retard' : 'réponse promise sous 24 h', '#demandes')
          . tuile('Retraits à venir', (string)count($t['retraits']), '7 prochains jours', '#retraits')
          . tuile('Remises en ' . $moisNom, (string)$t['mois']['n'], euros($t['mois']['ca']) . ' TTC', u('statistiques'))
-         . tuile('Panier moyen', $t['mois']['n'] ? euros($t['mois']['panier']) : '—', $moisNom, u('statistiques'))
+         . tuile('Panier moyen, particuliers', $t['mois']['n_part'] ? euros($t['mois']['panier']) : '—', $moisNom, u('statistiques'))
          . '</div>';
     $c = titre_page('Aujourd\'hui', h(ucfirst(date_fr($auj, 'jour'))), lien_bouton(u('production'), icone('imprimer') . 'Fiche de production', 'discret'));
     $c .= $kpi;
-    if ($t['depasses']) $c .= bloc('Retraits passés à clôturer', '<p class="aide">Ces commandes confirmées ont une date de retrait passée : marquez-les remises ou annulées.</p>' . liste_commandes($t['depasses'], ''), 'alerte');
+    // L'activité des 7 derniers jours : visites du site (Matomo) et commandes, chaque chiffre mène au détail (demande d'Olivier, 07/11/2026)
+    $act = activite_commandes();
+    $vis = matomo_activite();
+    $visites = $vis === null ? tuile('Visites du site', '—', 'Matomo à relier', est_admin() ? u('reglages') . '#matomo' : '')
+             : (isset($vis['erreur']) ? tuile('Visites du site', '—', 'Matomo ne répond pas', u('statistiques', ['vue' => 'site']))
+                                      : tuile('Visites du site', (string)$vis['j7'], $vis['auj'] . ' aujourd\'hui', u('statistiques', ['vue' => 'site'])));
+    $c .= bloc('Les 7 derniers jours', '<div class="tuiles petites">' . $visites
+        . tuile('Demandes reçues', (string)$act['recues']['j7'], $act['recues']['auj'] . ' aujourd\'hui', u('commandes', ['j7' => 'recues']))
+        . tuile('Confirmées', (string)$act['confirmees']['j7'], $act['confirmees']['auj'] . ' aujourd\'hui', u('commandes', ['j7' => 'confirmees']))
+        . tuile('Remises', (string)$act['remises']['j7'], $act['remises']['auj'] . ' aujourd\'hui', u('commandes', ['j7' => 'remises'])) . '</div>', 'activite');
+    if ($t['depasses']) $c .= bloc('Retraits passés à clôturer', '<p class="aide">Date passée : marquez-les remises ou annulées.</p>' . liste_commandes($t['depasses'], ''), 'alerte');
     if ($t['problemes']) $c .= bloc(icone('alerte') . ' Problèmes ouverts', liste_commandes($t['problemes'], ''), 'alerte');
     $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'), '', 'demandes');
     // Retraits groupés par jour
@@ -31,7 +41,7 @@ function page_accueil(): void {
         $r .= '<h3 class="jour">' . h($l) . ' <span class="compte">' . count($ks) . '</span></h3>' . liste_commandes($ks, '');
     }
     $c .= bloc('Retraits des 7 prochains jours', $r !== '' ? $r : '<p class="vide">Aucun retrait confirmé cette semaine.</p>', '', 'retraits');
-    if ($t['propositions']) $c .= bloc('Propositions en attente de réponse du client', liste_commandes($t['propositions'], ''));
+    if ($t['propositions']) $c .= bloc('Propositions sans réponse', liste_commandes($t['propositions'], ''));
     if ($t['acomptes']) $c .= bloc('Acomptes attendus', liste_commandes($t['acomptes'], ''));
     // Restaurants : les mois passés à facturer dans Qonto
     $af = releves_a_facturer();
@@ -39,31 +49,42 @@ function page_accueil(): void {
         $l = '';
         foreach ($af as $r) $l .= '<a class="carte-cmd" href="' . h(u('releve', ['id' => $r['client_id'], 'mois' => $r['mois']])) . '"><span class="l1"><b translate="no">' . h(client_nom($r)) . '</b>'
             . '<span class="statut s-demande">À facturer</span></span><span class="l2">' . h(ucfirst(mois_texte($r['mois']))) . ' · ' . h($r['n'] . ' livraison(s)') . '</span></a>';
-        $c .= bloc('Relevés à facturer', '<p class="aide">Restaurants livrés le mois dernier ou avant : faites la facture dans Qonto à partir du relevé, puis notez son numéro.</p><div class="liste">' . $l . '</div>');
+        $c .= bloc('Relevés à facturer', '<p class="aide">Faites la facture dans Qonto à partir du relevé, puis notez son numéro.</p><div class="liste">' . $l . '</div>');
     }
-    $c .= '<p class="aide centre">' . (int)$t['demandes_mois'] . ' demande(s) reçue(s) en ' . h($moisNom) . '. ' . '<a href="' . h(u('statistiques')) . '">Voir les statistiques</a></p>';
     mise_en_page('Aujourd\'hui', $c, 'accueil');
 }
 
 /* ---------- Commandes ---------- */
 function page_commandes(): void {
     $vues = ['en_cours' => 'En cours', 'a_venir' => 'À venir', 'terminees' => 'Terminées', 'problemes' => 'Problèmes', 'toutes' => 'Toutes'];
-    $vue = choix('vue', $vues, 'en_cours');
+    $f = commandes_filtres($_GET);   // venus d'un lien des Statistiques
+    $vue = choix('vue', $vues, $f ? 'toutes' : 'en_cours');
     $r = une_ligne(texte('r', 80, $_GET));
-    $ks = commandes_lister($vue, $r);
+    $ks = commandes_lister($vue, $r, $f['statut'] ?? null, 300, $f);
     $comptes = ['en_cours' => (int)val("SELECT COUNT(*) FROM commandes WHERE statut IN ('demande','proposition','confirmee')"),
                 'problemes' => (int)val("SELECT COUNT(*) FROM commandes WHERE probleme = 1")];
     $tabs = '';
     foreach ($vues as $k => $l) {
         $n = isset($comptes[$k]) && $comptes[$k] ? ' <span class="compte">' . $comptes[$k] . '</span>' : '';
-        $tabs .= '<a href="' . h(u('commandes', ['vue' => $k] + ($r !== '' ? ['r' => $r] : []))) . '"' . ($k === $vue ? ' aria-current="page"' : '') . '>' . h($l) . $n . '</a>';
+        $tabs .= '<a href="' . h(u('commandes', ['vue' => $k] + $f + ($r !== '' ? ['r' => $r] : []))) . '"' . ($k === $vue ? ' aria-current="page"' : '') . '>' . h($l) . $n . '</a>';
     }
     $c = titre_page('Commandes', 'Demandes et commandes, de la demande à la remise', lien_bouton(u('commande-edition'), icone('ajouter') . 'Nouvelle', 'principal'));
-    $c .= '<form class="recherche" method="get" action="">' . '<input type="hidden" name="p" value="commandes"><input type="hidden" name="vue" value="' . h($vue) . '">'
+    $caches = '';
+    foreach ($f as $k => $v) $caches .= '<input type="hidden" name="' . h($k) . '" value="' . h($v) . '">';
+    $c .= '<form class="recherche" method="get" action="">' . '<input type="hidden" name="p" value="commandes"><input type="hidden" name="vue" value="' . h($vue) . '">' . $caches
         . '<label class="champ-recherche">' . icone('chercher') . '<span class="sr">Chercher</span><input type="search" name="r" value="' . h($r) . '" placeholder="Nom, référence, facture…"></label></form>';
     $c .= '<nav class="sous-onglets" aria-label="Filtrer les commandes">' . $tabs . '</nav>';
-    $vide = $r !== '' ? 'Aucune commande ne correspond à « ' . $r . ' ».' : match ($vue) {
-        'en_cours' => 'Aucune commande en cours.', 'a_venir' => 'Aucun retrait confirmé à venir.', 'problemes' => 'Aucun problème ouvert.', default => 'Aucune commande.' };
+    if ($f) {
+        $chips = '';
+        if (isset($f['statut'])) $chips .= chip_statut($f['statut'], false);
+        if (isset($f['groupe'])) $chips .= '<span class="chip">' . h($f['groupe'] === 'pros' ? 'Professionnels' : 'Particuliers') . '</span>';
+        if (isset($f['canal'])) $chips .= '<span class="chip">' . h(CANAUX[$f['canal']]) . '</span>';
+        if (isset($f['mois'])) $chips .= '<span class="chip">' . h('Remises en ' . MOIS[(int)substr($f['mois'], 5, 2)] . ' ' . substr($f['mois'], 0, 4)) . '</span>';
+        if (isset($f['j7'])) $chips .= '<span class="chip">' . h(['recues' => 'Reçues', 'confirmees' => 'Confirmées', 'remises' => 'Remises'][$f['j7']] . ' ces 7 derniers jours') . '</span>';
+        $c .= '<p class="filtre-actif"><span>Filtre</span>' . $chips . '<a href="' . h(u('commandes', ['vue' => $vue] + ($r !== '' ? ['r' => $r] : []))) . '">Retirer le filtre</a></p>';
+    }
+    $vide = $r !== '' ? 'Aucune commande ne correspond à « ' . $r . ' ».' : ($f ? 'Aucune commande avec ce filtre.' : match ($vue) {
+        'en_cours' => 'Aucune commande en cours.', 'a_venir' => 'Aucun retrait confirmé à venir.', 'problemes' => 'Aucun problème ouvert.', default => 'Aucune commande.' });
     $c .= liste_commandes($ks, $vide);
     mise_en_page('Commandes', $c, 'commandes');
 }
@@ -162,8 +183,10 @@ function page_commande(): void {
     $k = commande($id);
     $client = client((int)$k['client_id']);
     $nom = commande_client_nom($k);
-    $chips = chip_statut($k['statut'], false, livraison_pro($k)) . chip_paiement($k['paiement'], (int)$k['acompte']) . ($k['probleme'] ? drapeau() : '');
-    $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>', '', u('commandes'));
+    $chips = chip_type(commande_est_pro($k)) . chip_statut($k['statut'], false, livraison_pro($k)) . chip_paiement($k['paiement'], (int)$k['acompte']) . ($k['probleme'] ? drapeau() : '');
+    $notes = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'commentaire'", [$id]);
+    $versEchanges = lien_bouton('#echanges', icone('assistant') . 'Échanges' . ($notes ? ' <span class="compte">' . $notes . '</span>' : ''), 'discret');
+    $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>', $versEchanges, u('commandes'));
     $c .= etape_suivante($k);
     // Client
     $tel = $k['client_tel'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $k['client_tel'])) . '">' . h($k['client_tel']) . '</a>' : '';
@@ -172,7 +195,7 @@ function page_commande(): void {
     $c .= '<div class="grille-2">';
     $c .= bloc('Client', definition(['Nom' => '<a href="' . h(u('client', ['id' => $k['client_id']])) . '" translate="no">' . h($nom) . '</a> <span class="petit">' . h($k['client_numero']) . '</span>',
                                      'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $k['client_ville'] !== '' ? '<span translate="no">' . h($k['client_ville']) . '</span>' : '',
-                                     'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . euros($ch['total']) : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
+                                     'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . ($k['client_type'] === 'professionnel' ? euros($ch['total_ht']) . ' HT' : euros($ch['total']) . ' TTC') : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
                      . avertissement_doublon((int)$k['client_id'])
                      . '<p>' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret') . '</p>');
     $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
@@ -201,6 +224,18 @@ function page_commande(): void {
     if ($k['besoin'] !== '') $contenu .= '<div class="texte-client"><h3>Demande d\'un professionnel</h3><p translate="no" lang="fr">' . nl2br(h($k['besoin'])) . '</p></div>';
     if ($contenu === '') $contenu = '<p class="vide">Aucun gâteau noté.</p>';
     $c .= bloc('Contenu', $contenu . '<p>' . lien_bouton(u('commande-edition', ['id' => $id]), 'Modifier la commande', 'discret') . '</p>');
+    // Échanges avec le client (demande d'Olivier, 07/11/2026) : retrouver d'un geste la conversation (personnalisation, demandes pour le retrait…).
+    // Les emails restent dans la boîte contact@madamecho.com : le bouton y cherche la référence et l'adresse du client.
+    $recherche = $k['reference'] . ($k['client_email'] !== '' ? ' OR from:' . $k['client_email'] . ' OR to:' . $k['client_email'] : '');
+    $gmail = 'https://mail.google.com/mail/?authuser=contact@madamecho.com#search/' . rawurlencode($recherche);
+    // Les notes d'échange d'abord ; le suivi automatique (statuts, paiements) replié dessous
+    $evs = historique($id, null);
+    $echanges = array_values(array_filter($evs, fn($e) => in_array($e['type'], ['commentaire', 'probleme'], true)));
+    $suivi = array_values(array_filter($evs, fn($e) => !in_array($e['type'], ['commentaire', 'probleme'], true)));
+    $c .= bloc('Échanges avec le client', '<div class="actions">' . lien_bouton($gmail, icone('email') . 'Ses emails dans Gmail', 'secondaire', ['target' => '_blank', 'rel' => 'noopener'])
+            . ($k['client_tel'] !== '' ? lien_bouton('tel:' . preg_replace('/[^0-9+]/', '', $k['client_tel']), icone('tel') . 'Appeler', 'discret') : '') . '</div>'
+        . formulaire_commentaire() . ($echanges ? fil_historique($echanges) : '')
+        . ($suivi ? '<details class="replie suivi"><summary>Suivi de la commande <span class="compte">' . count($suivi) . '</span></summary>' . fil_historique($suivi) . '</details>' : ''), 'echanges', 'echanges');
     // Montants et paiement
     $reste = montant_commande($k) - ($k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : 0);
     $c .= bloc('Montant et paiement', definition(['Prix final' => h($k['prix_final'] !== null ? euros((int)$k['prix_final']) . ' TTC' : 'pas encore fixé (indicatif : ' . euros((int)$k['total_indicatif']) . ')'),
@@ -218,8 +253,6 @@ function page_commande(): void {
         $c .= bloc(icone('alerte') . ' Problème', '<p class="probleme-note"' . ($k['probleme_note'] !== '' ? ' translate="no" lang="fr"' : '') . '>' . nl2br(h($k['probleme_note'] !== '' ? $k['probleme_note'] : 'Problème signalé.')) . '</p>'
             . formulaire('resolu', zone('note', 'Comment il a été résolu', '', ['rows' => '2', 'maxlength' => '1000']) . bouton('Marquer résolu', 'secondaire')), 'alerte');
     }
-    // Historique et commentaires
-    $c .= bloc('Commentaires et historique', formulaire_commentaire() . fil_historique(historique($id, null)));
     // Autres actions
     $autres = '<div class="actions-colonne">'
         . (!$k['probleme'] ? '<details class="replie"><summary>' . icone('alerte') . 'Signaler un problème</summary>' . formulaire('probleme', zone('note', 'Le problème', '', ['rows' => '2', 'maxlength' => '1000', 'required' => true], 'Retard, réclamation, paiement… Une allergie ou un malaise d\'un client : prévenez aussi tout de suite Youngmi (R-39), sans noter de détail médical.') . bouton('Signaler', 'secondaire')) . '</details>' : '')

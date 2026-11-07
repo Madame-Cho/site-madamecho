@@ -583,6 +583,28 @@ Exporter | 내보내기
 Pour un tableur : sans email ni téléphone. Le fichier contient des noms de clients : à ranger dans le Drive de Madame Cho, pas ailleurs. | 스프레드시트용 파일이에요 (이메일, 전화번호 제외). 고객 이름이 들어 있으니 Madame Cho의 Drive에만 보관하세요.
 Commandes (CSV) | 주문 (CSV)
 Clients (CSV) | 고객 (CSV)
+Depuis le début de la gestion · particuliers en TTC, professionnels en HT | 관리 시작부터 · 개인은 부가세 포함, 업체는 부가세 별도
+Chiffre d'affaires total | 총매출
+HT, particuliers et professionnels | 부가세 별도, 개인과 업체 합계
+Particuliers, TTC | 개인, 부가세 포함
+Professionnels, HT | 업체, 부가세 별도
+Panier moyen, particuliers | 개인 평균 주문 금액
+TTC, par commande remise | 부가세 포함, 전달한 주문 1건당
+Livraison moyenne, professionnels | 업체 평균 배달 금액
+HT, par livraison remise | 부가세 별도, 배달 1건당
+Demandes abouties, particuliers | 성사된 문의 (개인)
+particuliers, au moins 2 commandes remises | 개인 고객, 전달한 주문 2건 이상
+Particuliers : chiffre d'affaires TTC des 12 derniers mois | 개인: 최근 12개월 매출 (부가세 포함)
+Professionnels : chiffre d'affaires HT des 12 derniers mois | 업체: 최근 12개월 매출 (부가세 별도)
+Total, HT | 합계, 부가세 별도
+Le panier est celui des particuliers ; le total additionne les deux groupes, hors taxes. | 평균 금액은 개인 주문만 계산해요. 합계는 두 그룹을 더한 부가세 별도 금액이에요.
+Gâteaux vendus aux particuliers | 개인에게 판매한 케이크
+Gamme livrée aux professionnels | 업체에 배달한 제품
+Montant HT | 금액 (부가세 별도)
+Les gâteaux personnalisés sans ligne de la carte ne sont comptés que dans le chiffre d'affaires. | 메뉴 항목이 없는 맞춤 케이크는 매출에만 들어가요.
+Filtre | 필터
+Retirer le filtre | 필터 지우기
+Aucune commande avec ce filtre. | 이 필터에 맞는 주문이 없어요.
 Le site madamecho.com · 30 derniers jours, d'après Matomo | madamecho.com 사이트 · 최근 30일, Matomo 기준
 Actualiser | 새로고침
 Ouvrir Matomo | Matomo 열기
@@ -652,6 +674,9 @@ Ce qu'il faut préparer, jour par jour | 날짜별로 준비할 것
 Prix d'achat et allergènes des recettes | 재료 구입 가격과 알레르기 유발 성분
 Langue, mot de passe, signature des emails, lien d'avis, données | 화면 언어, 비밀번호, 이메일 서명, 리뷰 링크, 데이터
 Se déconnecter | 로그아웃
+Mon compte | 내 계정
+IA | AI
+Une IA : questions, problèmes, idées d'amélioration | AI: 질문, 문제, 개선 아이디어
 Manuel | 설명서
 Comment fonctionne la gestion, écran par écran | 관리 시스템 사용법, 화면별로
 Assistant | 어시스턴트
@@ -896,6 +921,28 @@ sept. | 9월
 oct. | 10월
 nov. | 11월
 déc. | 12월
+Les 7 derniers jours | 최근 7일
+Visites du site | 사이트 방문
+Demandes reçues | 받은 문의
+Confirmées | 확정
+Matomo à relier | Matomo 연결 필요
+Matomo ne répond pas | Matomo가 응답하지 않아요
+Date passée : marquez-les remises ou annulées. | 날짜가 지났어요. 전달 완료 또는 취소로 표시해 주세요.
+Propositions sans réponse | 답장 없는 견적
+Faites la facture dans Qonto à partir du relevé, puis notez son numéro. | 내역서로 Qonto에서 청구서를 만든 뒤 번호를 적어 주세요.
+Reçues ces 7 derniers jours | 최근 7일 동안 받은 주문
+Confirmées ces 7 derniers jours | 최근 7일 동안 확정된 주문
+Remises ces 7 derniers jours | 최근 7일 동안 전달한 주문
+Échanges | 연락 기록
+Échanges avec le client | 고객과의 연락
+Ses emails dans Gmail | Gmail에서 이메일 보기
+Appeler | 전화하기
+Noter un échange | 연락 내용 적기
+Appel, SMS, demande pour le retrait… | 전화, 문자, 픽업 관련 요청…
+Allergie : seulement l'ingrédient à éviter, jamais d'information de santé. | 알레르기: 피해야 할 재료만 적고, 건강 정보는 적지 않아요.
+Livraison moyenne | 평균 배달 금액
+HT | 부가세 별도
+Suivi de la commande | 주문 진행 기록
 TXT;
 }
 
@@ -998,6 +1045,8 @@ function coreen_motifs(): array {
         // Compteurs
         ['/^(\d+) commandes?$/', fn($m) => '주문 ' . $m[1] . '건'],
         ['/^(\d+) commande\(s\) remise\(s\)$/', fn($m) => '전달 완료 주문 ' . $m[1] . '건'],
+        ['/^(\d+) livraison\(s\) remise\(s\)$/', fn($m) => '배달 완료 ' . $m[1] . '건'],
+        ['/^(\d+) aujourd\'hui$/', fn($m) => '오늘 ' . $m[1]],
         ['/^(\d+) en cours$/', fn($m) => '진행 중 ' . $m[1] . '건'],
         ['/^(\d+) en retard$/', fn($m) => $m[1] . '건 늦음'],
         ['/^(\d+) autre\(s\) demande\(s\)$/', fn($m) => '다른 문의 ' . $m[1] . '건'],
@@ -1007,6 +1056,7 @@ function coreen_motifs(): array {
         ['/^(\d+) clients?(?:, dont (\d+) professionnels?)?$/', fn($m) => '고객 ' . $m[1] . '명' . (isset($m[2]) ? ', 그중 업체 ' . $m[2] . '곳' : '')],
         ['/^(\d+) demande\(s\) reçue\(s\) en (' . $ML . ')\.$/u', fn($m) => coreen_mois($m[2]) . '에 문의 ' . $m[1] . '건 접수.'],
         ['/^Remises en (' . $ML . ')$/u', fn($m) => coreen_mois($m[1]) . ' 전달 완료'],
+        ['/^Remises en (' . $ML . ') (\d{4})$/u', fn($m) => $m[2] . '년 ' . coreen_mois($m[1]) . ' 전달 완료'],
         ['/^(\d+) vendu\(s\) en 12 mois$/', fn($m) => '12개월 동안 ' . $m[1] . '개 판매'],
         ['/^(\d+) vendu\(s\)$/', fn($m) => $m[1] . '개 판매'],
         ['/^(\d+) ingrédient\(s\), coût (' . $E . ')$/u', fn($m) => '재료 ' . $m[1] . '개, 원가 ' . $m[2]],

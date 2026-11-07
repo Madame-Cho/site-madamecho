@@ -41,9 +41,22 @@ code{font-size:13px;background:var(--ivoire);padding:2px 6px;border-radius:6px;w
 .marque img{width:96px}
 .marque span{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--doux);padding-left:10px;border-left:1px solid var(--ligne)}
 .nav-haut{display:none}
-.nouvelle{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:20px;background:var(--chocolat);color:#fff;text-decoration:none;font-weight:500;font-size:14px}
-.langue{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;padding:0 10px;border:1px solid var(--fort);border-radius:20px;color:var(--texte);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:.04em}
+.nouvelle{display:inline-flex;align-items:center;flex-shrink:0;gap:6px;min-height:40px;padding:0 14px;border-radius:20px;background:var(--chocolat);color:#fff;text-decoration:none;font-weight:500;font-size:14px}
+.langue{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;white-space:nowrap;min-width:40px;min-height:40px;padding:0 10px;border:1px solid var(--fort);border-radius:20px;color:var(--texte);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:.04em}
 .langue:hover{border-color:var(--chocolat)}
+/* Le compte connecté (rond avec l'initiale) et son petit menu : nom, email, mot de passe, Se déconnecter.
+   (« .compte » tout court est le petit nombre des onglets : ne pas confondre) */
+.menu-compte{position:relative;flex-shrink:0}
+.menu-compte summary{list-style:none;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--ivoire);color:var(--chocolat);font-weight:500;font-size:16px;cursor:pointer;user-select:none}
+.menu-compte summary::-webkit-details-marker{display:none}
+.menu-compte summary:hover{box-shadow:inset 0 0 0 1px var(--chocolat)}
+.menu-compte summary:focus-visible{outline:2px solid var(--chocolat);outline-offset:2px}
+.menu-compte[open] summary{background:var(--chocolat);color:#fff}
+.menu-compte-liste{position:absolute;right:0;top:calc(100% + 8px);width:min(280px,calc(100vw - 2 * var(--g)));padding:6px;background:var(--carte);border:1px solid var(--ligne);border-radius:var(--r);box-shadow:0 10px 30px rgba(43,38,35,.16);z-index:30}
+.menu-compte-qui{display:flex;flex-direction:column;gap:2px;margin:0 0 6px;padding:10px 12px 12px;border-bottom:1px solid var(--ligne);font-size:14px;line-height:1.35;overflow-wrap:anywhere}
+.menu-compte-qui span{color:var(--doux)}
+.menu-compte-liste a{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-radius:8px;color:var(--texte);text-decoration:none;font-size:15px}
+.menu-compte-liste a:hover,.menu-compte-liste a:focus-visible{background:var(--fond)}
 /* L'écran en coréen : polices du téléphone pour le hangeul, et les mots coréens ne se coupent pas au milieu */
 html:lang(ko){--police:"Jost","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 html:lang(ko) body{word-break:keep-all}
@@ -126,6 +139,14 @@ a.tuile .t-detail{color:var(--chocolat)}
 .p-acompte-recu{border-color:#B9D9C1;color:var(--vert)}
 .drapeau{background:var(--rouge-f);color:var(--erreur)}
 .drapeau .ic,.statut .ic{width:15px;height:15px;vertical-align:-3px}
+/* Particulier ou Pro, au premier coup d'œil : devant le nom sur chaque carte, dans l'en-tête de chaque fiche (demande d'Olivier, 07/11/2026) */
+.type-client{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:1px 9px 1px 7px;border-radius:12px;font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap}
+.type-client .ic{width:14px;height:14px;vertical-align:0}
+.t-pro{background:var(--chocolat);color:#fff}
+.t-part{background:var(--carte);color:var(--chocolat);box-shadow:inset 0 0 0 1px var(--fort)}
+.carte-cmd .l1 .type-client{order:-1}
+.bloc.activite .tuiles.petites{margin:0}
+.bloc.activite>h2{font-size:15px;color:var(--doux);margin-bottom:10px}
 .avis-ok,.avis-attente{display:inline-flex;align-items:center;gap:4px;color:var(--doux)}
 .avis-ok{color:var(--vert)}
 .avis-ok .ic,.avis-attente .ic{width:16px;height:16px}
@@ -273,6 +294,15 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .cle-miroir{background:var(--ambre-f);border-radius:10px;padding:12px}
 .cle-miroir pre{margin:8px 0;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
 
+/* Liste des commandes filtrée depuis un lien des Statistiques */
+.filtre-actif{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:-4px 0 12px;font-size:14px;color:var(--doux)}
+.filtre-actif .chip{display:inline-flex;align-items:center;min-height:24px;padding:1px 9px;border-radius:12px;background:var(--ivoire);color:var(--chocolat);font-size:12px;font-weight:500}
+.filtre-actif a{display:inline-flex;align-items:center;min-height:44px;margin-left:4px;color:var(--chocolat)}
+/* Statistiques : un graphique par groupe (particuliers, professionnels), jamais additionnés */
+.sous-titre-graphique{margin:16px 0 4px;font-size:14px;font-weight:500;color:var(--doux)}
+.sous-titre-graphique:first-child{margin-top:0}
+.lien-chip{text-decoration:none}
+
 /* Graphique (une seule série : le chiffre d'affaires par mois) */
 .graphique{margin:4px 0 6px}
 .graphique svg{display:block;width:100%;height:150px;overflow:visible}
@@ -326,7 +356,6 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
  .tete h1{font-size:28px}
  .grille-2{grid-template-columns:repeat(2,minmax(0,1fr))}
  .barre-enregistrer{bottom:12px}
- .form-assistant{bottom:12px}
  .page-commande .page{max-width:1040px}
 }
 /* Barre du haut : le mot « Gestion » s'efface quand la place manque, les cinq pages du menu Plus
@@ -337,6 +366,14 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 @media (min-width:1200px){
  .nav-haut a.secondaire{display:inline-flex}
  .nav-haut a.plus{display:none}
+}
+@media (min-width:1200px) and (max-width:1439px){
+ .nav-haut a{padding:0 9px}
+ .barre{gap:12px}
+}
+@media (max-width:599px){
+ .marque span{display:none}
+ .barre{gap:10px}
 }
 
 /* Impression (fiche de production) */
@@ -359,28 +396,81 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .bloc.manuel p+p,.bloc.manuel ul+p,.bloc.manuel p+ul{margin-top:10px}
 .bloc.manuel .puces li{margin:6px 0}
 
-/* Assistant : une conversation, le formulaire qui reste en bas, les rapports */
-.chat{display:grid;gap:10px;margin-bottom:16px}
-.bulle{max-width:92%;padding:10px 14px;border-radius:16px;font-size:15px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
-.bulle-moi{justify-self:end;background:var(--chocolat);color:#fff;border-bottom-right-radius:4px}
-.bulle-ia{justify-self:start;background:var(--carte);border:1px solid var(--ligne);border-bottom-left-radius:4px}
-.bulle p+p,.bulle ul+p,.bulle ol+p,.bulle p+ul,.bulle p+ol{margin-top:8px}
-.bulle ul{padding-left:18px;list-style:disc}
-.bulle ol{padding-left:20px;list-style:decimal}
-.bulle li{margin:3px 0}
-.rapport{border:1px solid #E7C2B8;background:#FFFBFA;border-radius:var(--r);padding:14px;max-width:92%;justify-self:start}
+/* Assistant, calqué sur ChatGPT et Claude (demande d'Olivier, 07/11/2026) : une colonne de lecture, la question à droite dans une bulle,
+   la réponse de l'IA en texte libre derrière sa petite étoile, la zone de saisie arrondie collée en bas, rien en dessous */
+.page-assistant .page{max-width:800px}
+.page-assistant .tete-actions form{margin:0}
+.page-assistant .tete-actions .btn{min-height:40px}
+.titre-ia .ic{width:22px;height:22px;margin-right:6px;vertical-align:-3px;color:var(--chocolat)}
+.nav-haut a .ic{width:16px;height:16px;margin-right:4px;vertical-align:-3px}
+.chat{display:flex;flex-direction:column;gap:22px;padding:4px 0 8px}
+.msg-moi{display:flex;justify-content:flex-end}
+.bulle-moi{max-width:min(82%,560px);padding:10px 16px;border-radius:20px;background:var(--ivoire);font-size:16px;line-height:1.5;overflow-wrap:anywhere}
+.msg-ia{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:start}
+.avatar-ia{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--carte);border:1px solid var(--ligne);color:var(--chocolat)}
+.avatar-ia .ic{width:18px;height:18px;vertical-align:0}
+.texte-ia{min-width:0;padding-top:3px;font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.texte-ia p+p,.texte-ia ul+p,.texte-ia ol+p,.texte-ia p+ul,.texte-ia p+ol{margin-top:10px}
+.texte-ia ul{padding-left:20px;list-style:disc}
+.texte-ia ol{padding-left:22px;list-style:decimal}
+.texte-ia li{margin:4px 0}
+.texte-ia b{font-weight:500}
+.msg-rapport{margin-left:42px}
+.rapport{border:1px solid #E7C2B8;background:#FFFBFA;border-radius:var(--r);padding:14px}
 .rapport h3{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:500 16px/1.35 var(--police)}
 .rapport>*+*{margin-top:10px}
 .rapport pre{white-space:pre-wrap;font:400 14px/1.5 var(--police);margin:6px 0 0}
 .rapport details.mini[open]{background:#fff}
 .rapport .pour-vous{font-weight:500;color:var(--chocolat)}
 .rapport .case{margin-bottom:8px}
-details.mini.notice{margin-bottom:8px}
-details.mini.notice p{margin:0;font-size:14px;color:var(--doux)}
 .s-rapport-probleme{background:var(--rouge-f);color:var(--erreur)}
 .s-rapport-amelioration{background:var(--vert-f);color:var(--vert)}
 .s-rapport-question{background:var(--bleu-f);color:var(--bleu)}
-.form-assistant{position:sticky;bottom:calc(var(--bas) + 8px);z-index:5;background:var(--fond);padding:8px 0 4px;margin-bottom:14px;box-shadow:0 -12px 12px -8px var(--fond)}
-.form-assistant .champ{margin-bottom:8px}
-.form-assistant textarea{background:#fff}
-.page-assistant .tete-actions form{margin:0}
+/* Avant la première question : l'étoile, une question, trois suggestions */
+.accueil-ia{display:flex;flex-direction:column;align-items:center;gap:14px;padding:9vh 0 28px;text-align:center}
+.accueil-ia h2{font:500 26px/1.3 var(--police)}
+.avatar-ia.grand{width:52px;height:52px}
+.avatar-ia.grand .ic{width:28px;height:28px}
+.suggestions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:560px}
+.form-suggestion{margin:0}
+.btn.suggestion{min-height:40px;padding:0 16px;border-radius:20px;font-size:14px;font-weight:400}
+/* La zone de saisie */
+.composer{position:sticky;bottom:calc(var(--bas) + 8px);z-index:5;margin-top:14px;padding:6px 0 4px;background:var(--fond);box-shadow:0 -18px 14px -6px var(--fond)}
+.composer-boite{display:flex;align-items:flex-end;gap:8px;padding:6px 6px 6px 18px;background:var(--carte);border:1px solid var(--fort);border-radius:26px;box-shadow:0 4px 18px rgba(43,38,35,.08)}
+.composer-boite:focus-within{border-color:var(--chocolat);box-shadow:0 0 0 3px rgba(59,29,14,.10),0 4px 18px rgba(43,38,35,.10)}
+.composer textarea{flex:1;min-width:0;min-height:40px;max-height:240px;padding:8px 0;border:0;outline:0;background:transparent;resize:none;font-size:16px;line-height:1.5;overflow-y:auto;field-sizing:content}
+.composer textarea:focus-visible{outline:0}
+.composer-envoyer{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:0;border-radius:50%;background:var(--chocolat);color:#fff;cursor:pointer}
+.composer-envoyer .ic{width:20px;height:20px;stroke-width:2.2;vertical-align:0}
+.composer-envoyer:disabled{background:var(--fort);cursor:default}
+.composer-envoyer:focus-visible{outline:2px solid var(--chocolat);outline-offset:2px}
+.composer.occupe .composer-envoyer{background:var(--chocolat);cursor:progress}
+.composer.occupe .composer-envoyer .ic{display:none}
+.composer.occupe .composer-envoyer::after{content:"";width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:mc-tourne .8s linear infinite}
+.composer-note{margin-top:6px;text-align:center;font-size:12px;line-height:1.4;color:var(--doux)}
+.composer-note a{color:inherit}
+.page-assistant .flash{margin:16px 0 0}
+.msg-echec{margin:-14px 0 0;text-align:right;font-size:13px;color:var(--erreur)}
+/* L'attente : l'étoile qui respire et le mot qui scintille, comme Claude et ChatGPT pendant qu'ils réfléchissent */
+@keyframes mc-tourne{to{transform:rotate(360deg)}}
+@keyframes mc-respire{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.78) rotate(60deg)}}
+@keyframes mc-reflet{from{background-position:120% 0}to{background-position:-120% 0}}
+@keyframes mc-apparait{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.attente .avatar-ia .ic{animation:mc-respire 1.6s ease-in-out infinite}
+.reflechit{display:inline-block;color:var(--doux);background:linear-gradient(100deg,var(--doux) 35%,var(--chocolat) 46%,#C79A6E 50%,var(--chocolat) 54%,var(--doux) 65%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:mc-reflet 2.2s linear infinite}
+.msg.nouveau{animation:mc-apparait .35s ease-out both}
+@media (prefers-reduced-motion:reduce){
+ .attente .avatar-ia .ic,.reflechit,.msg.nouveau{animation:none}
+ .reflechit{background:none;-webkit-text-fill-color:currentColor}
+}
+@media (min-width:900px){
+ .composer{bottom:16px}
+}
+@media (max-width:599px){
+ .msg-ia{grid-template-columns:26px minmax(0,1fr);gap:10px}
+ .avatar-ia{width:26px;height:26px}
+ .avatar-ia .ic{width:16px;height:16px}
+ .msg-rapport{margin-left:0}
+ .accueil-ia{padding-top:6vh}
+ .accueil-ia h2{font-size:22px}
+}
