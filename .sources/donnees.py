@@ -120,7 +120,7 @@ ETAPES = [
  ("Vous retirez à Meudon", "Au 4 avenue du Château, à l'heure convenue."),
 ]
 PRATIQUE = [
- ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h. Pas de livraison. Nos clients viennent aussi de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart."),
+ ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h. Pas de livraison. À quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart."),
  ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre."),
  ("Paiement", "Au retrait, par carte bancaire, virement ou espèces. Pour une personnalisation au-delà de la plaque, un acompte de 30 % est demandé."),
  ("Conservation", "Indiquée sur la page de chaque gâteau."),
