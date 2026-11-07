@@ -361,8 +361,9 @@ function fil_historique(array $evs, bool $avecReference = false): string {
 function fil_conversation(array $evs): string {
     if (!$evs) return '<p class="vide">Pas encore d\'échange avec le client.</p>';
     $sig = trim(strtok(signature(), "\n") ?: '');
-    $s = ''; $trait = false;
-    foreach (array_reverse($evs) as $e) {
+    // Comme une messagerie : le plus récent en haut (retour d'Olivier, 07/11/2026)
+    $s = ''; $trait = false; $vus = false;
+    foreach ($evs as $e) {
         $type = $e['type'];
         $corps = trim((string)$e['nouveau']);
         $nouveau = $type === 'email_recu' && isset($e['lu']) && !(int)$e['lu'];
@@ -389,8 +390,9 @@ function fil_conversation(array $evs): string {
             ? '<p class="msg-corps" translate="no" lang="fr">' . nl2br(h(rtrim(implode("\n", array_slice($lignes, 0, 7))))) . '…</p>'
               . '<details class="mini"><summary>Voir tout le mail</summary><p class="msg-corps" translate="no" lang="fr">' . nl2br(h($corps)) . '</p></details>'
             : '<p class="msg-corps" translate="no" lang="fr">' . nl2br(h($corps)) . '</p>';
-        // Comme une messagerie : un trait « Nouveau » avant le premier message pas encore vu
+        // Les nouveaux en haut sous un trait « Nouveaux messages », puis un trait « Déjà vus » avant le reste
         if ($nouveau && !$trait) { $s .= '<li class="msg-trait"><span>Nouveaux messages</span></li>'; $trait = true; }
+        if (!$nouveau && $trait && !$vus) { $s .= '<li class="msg-trait msg-trait-vus"><span>Déjà vus</span></li>'; $vus = true; }
         $s .= '<li class="msg ' . $cl . ($nouveau ? ' msg-nouveau' : '') . '"><div class="msg-tete">' . ($nouveau ? '<span class="chip chip-nouveau">Nouvelle réponse</span> ' : '')
             . '<span class="msg-etiq">' . $ico . h($etiq) . '</span><span class="msg-qui" translate="no">' . h($qui) . '</span></div>'
             . $texte . '<div class="msg-heure">' . h(date_fr($e['le'], 'heure')) . '</div></li>';

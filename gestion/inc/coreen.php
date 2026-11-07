@@ -247,6 +247,7 @@ Avis demandé | 리뷰 부탁함
 Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre. | 확정 이메일을 보냈어요. 다음 단계: 픽업 날, 이 칸 아래의 ‘고객에게 전달 완료’를 누르세요.
 À faire maintenant : envoyer la confirmation au client (ci-dessous). | 지금 할 일: 아래에서 고객에게 확정 이메일 보내기.
 Nouveaux messages | 새 메시지
+Déjà vus | 이미 본 메시지
 Mail envoyé depuis Gmail | Gmail에서 보낸 이메일
 Mail | 이메일
 Voir tout le mail | 이메일 전체 보기
