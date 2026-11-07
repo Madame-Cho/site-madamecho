@@ -487,7 +487,10 @@ def htaccess():
               "# Anciennes pages de travail, retirées à la mise en ligne du 03/11/2026 :",
               "# la version d'essai renvoie vers la même page du site, l'atelier du logo et l'atelier du site n'existent plus (410)",
               "RewriteRule ^atelier-site/site/(.*)$ /$1 [R=301,L]",
-              "RewriteRule ^atelier-(site|logo)(/|$) - [G,L]"]
+              "RewriteRule ^atelier-(site|logo)(/|$) - [G,L]", "",
+              "# QR code imprimé sur le packaging (décision d'Olivier du 07/11/2026) : adresse fixe madamecho.com/qr,",
+              "# redirection temporaire (302) pour pouvoir changer la destination sans réimprimer ; la campagne compte les scans dans Matomo",
+              "RewriteRule ^qr/?$ /carte/?mtm_campaign=packaging&mtm_source=qr [R=302,L,NE]"]
     if ESSAI:
         l += ["", "# Version d'essai : le dossier atelier-site/ refuse les .js (scripts de feuille) ; ici, les scripts du site",
               "# (panier et formulaire) doivent être servis. Le reste des règles d'atelier-site/ s'applique.",
