@@ -318,7 +318,7 @@ function fil_historique(array $evs, bool $avecReference = false): string {
         if ($type === 'email_recu') {
             $txt = (isset($e['lu']) && !(int)$e['lu'] ? '<span class="chip chip-nouveau">Nouvelle réponse</span> ' : '') . $txt
                  . ($e['nouveau'] !== '' ? '<pre class="corps corps-recu" translate="no" lang="fr">' . h($e['nouveau']) . '</pre>' : '')
-                 . (!$avecReference && !empty($e['commande_id']) ? '<div class="actions"><a class="btn discret" href="#ecrire" data-ouvrir="ecrire">' . icone('email') . 'Répondre</a></div>' : '');
+                 . (!$avecReference && !empty($e['commande_id']) ? '<div class="actions"><a class="btn secondaire petit-btn" href="#ecrire" data-ouvrir="ecrire">' . icone('email') . 'Préparer une réponse</a> <span class="petit">Rien ne part avant « Envoyer ».</span></div>' : '');
         }
         $s .= '<li class="' . $cl . '"><div class="ev-texte"' . ($type === 'commentaire' ? ' translate="no" lang="fr"' : '') . '>' . $par . $txt . '</div><div class="ev-meta">' . h($e['auteur']) . ' · ' . h(date_fr($e['le'], 'heure')) . $ref . '</div></li>';
     }

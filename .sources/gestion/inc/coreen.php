@@ -261,6 +261,8 @@ De vive voix | 직접 대화
 Elle a appelé : retrait à 16 h plutôt qu'à 15 h… | 예: 전화 옴, 15시 말고 16시에 픽업…
 Échange noté. | 연락 내용을 적었어요.
 Répondre | 답장하기
+Préparer une réponse | 답장 준비하기
+Rien ne part avant « Envoyer ». | ‘보내기’를 누르기 전에는 아무것도 보내지 않아요.
 Nouvelle réponse | 새 답장
 Nouvelles réponses des clients | 고객의 새 답장
 Proposition envoyée au client. Une copie arrive dans contact@madamecho.com ; sa réponse arrivera dans les Échanges. | 고객에게 견적을 보냈어요. 사본이 contact@madamecho.com으로 오고, 고객 답장은 ‘고객과의 연락’에 들어와요.
