@@ -370,6 +370,10 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .rapport>*+*{margin-top:10px}
 .rapport pre{white-space:pre-wrap;font:400 14px/1.5 var(--police);margin:6px 0 0}
 .rapport details.mini[open]{background:#fff}
+.rapport .pour-vous{font-weight:500;color:var(--chocolat)}
+.rapport .case{margin-bottom:8px}
+details.mini.notice{margin-bottom:8px}
+details.mini.notice p{margin:0;font-size:14px;color:var(--doux)}
 .s-rapport-probleme{background:var(--rouge-f);color:var(--erreur)}
 .s-rapport-amelioration{background:var(--vert-f);color:var(--vert)}
 .s-rapport-question{background:var(--bleu-f);color:var(--bleu)}

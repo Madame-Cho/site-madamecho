@@ -245,8 +245,9 @@ function page_produit(): void {
         if ($v['lignes'] && $v['prix']) {
             $coef = $v['cout'] ? $v['ht'] / $v['cout'] : 0;
             $marge = '<div class="tuiles petites">' . tuile('Prix TTC', euros($v['prix'])) . tuile('Prix HT', euros($v['ht']), 'TVA ' . nombre_fr((int)$p['tva'] / 10, 1) . ' %')
-                   . tuile('Marge brute', euros((int)$v['marge']), pourcent((int)$v['marge'], $v['ht']) . ' du prix HT') . tuile('Coefficient', $coef ? '× ' . nombre_fr($coef, 1) : '—', 'prix HT ÷ coût') . '</div>'
-                   . ($sansPrix ? '<p class="aide">' . $sansPrix . ' ingrédient(s) sans prix : le coût est sous-estimé.</p>' : '');
+                   . tuile('Marge sur matières', euros((int)$v['marge']), pourcent((int)$v['marge'], $v['ht']) . ' du prix HT') . tuile('Coefficient', $coef ? '× ' . nombre_fr($coef, 1) : '—', 'prix HT ÷ coût') . '</div>'
+                   . ($sansPrix ? '<p class="aide">' . $sansPrix . ' ingrédient(s) sans prix : le coût est sous-estimé.</p>' : '')
+                   . '<p class="aide">Marge sur les matières et l\'emballage seulement : le travail, l\'énergie, les pertes et les charges ne sont pas comptés.</p>';
         }
         $ajout = formulaire('ligne_ajouter', '<input type="hidden" name="variante" value="' . h($code) . '">'
             . '<div class="ligne-champs">' . liste_choix('ingredient', 'Ingrédient', $optIng, '', ['id' => 'i-' . $code, 'data-nouveau' => 'nv-' . $code])

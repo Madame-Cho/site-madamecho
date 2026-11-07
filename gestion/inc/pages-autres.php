@@ -1,7 +1,7 @@
 <?php
 /*
  * Madame Cho : espace de gestion. Statistiques, menu « Plus », réglages (compte, comptes, emails, conservation RGPD,
- * miroir pour le Drive, reprise des données, sauvegarde, contrôle technique), exports CSV et miroir.
+ * miroir pour le Drive, reprise des données, export complet, contrôle technique), exports CSV et miroir.
  */
 declare(strict_types=1);
 namespace MadameCho\Gestion;
@@ -230,9 +230,9 @@ function page_export(): void {
         $d = ['madamecho_gestion' => GESTION_VERSION, 'exportee_le' => maintenant()];
         foreach (['clients', 'commandes', 'evenements', 'produits', 'ingredients', 'recettes'] as $t) $d[$t] = q("SELECT * FROM $t")->fetchAll();
         $d['parametres'] = q("SELECT * FROM parametres WHERE cle IN ('signature', 'lien_avis', 'schema')")->fetchAll();
-        evenement('export', 'Sauvegarde complète téléchargée');
+        evenement('export', 'Export complet téléchargé');
         header('Content-Type: application/json; charset=utf-8');
-        header('Content-Disposition: attachment; filename="sauvegarde-gestion-madamecho-' . date('Y-m-d') . '.json"');
+        header('Content-Disposition: attachment; filename="export-gestion-madamecho-' . date('Y-m-d') . '.json"');
         header('Cache-Control: no-store, private');
         echo json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
@@ -377,6 +377,14 @@ function page_reglages(): void {
                 evenement('reglage', 'Assistant relié (clé Anthropic)');
                 flash('ok', 'L\'assistant est relié : il répond dans Plus › Assistant.');
                 break;
+            case 'assistant_plafond':
+                if (!$admin) break;
+                $ancre = 'assistant';
+                $p = max(0, min(500, (int)texte('assistant_plafond', 6)));
+                parametre_ecrire('assistant_plafond', (string)$p);
+                evenement('reglage', 'Plafond du mois de l\'assistant : ' . ($p ? $p . ' $' : 'aucun'));
+                flash('ok', $p ? 'Plafond enregistré : ' . $p . ' $ par mois.' : 'Plafond enregistré : aucun.');
+                break;
             case 'importer':
                 if (!$admin) break;
                 $ancre = 'reprise';
@@ -450,7 +458,7 @@ function page_reglages(): void {
             . '<li>En bas, « Jetons d\'authentification » : « Créer un nouveau jeton ». Matomo redemande le mot de passe.</li>'
             . '<li>Description : « Gestion Madame Cho ». Copiez le jeton affiché et collez-le ici.</li></ol>'
             . formulaire('matomo', champ('matomo_jeton', 'Clé d\'accès de Matomo', '', ['autocomplete' => 'off', 'spellcheck' => 'false', 'autocapitalize' => 'off', 'required' => true, 'maxlength' => '200'],
-                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans la sauvegarde.')
+                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans l\'export.')
                 . bouton('Vérifier et enregistrer', 'secondaire'))
             . '</details>';
         if ($relie) $t .= formulaire('matomo', '<input type="hidden" name="retirer" value="1">' . bouton('Retirer la clé', 'discret'), ['data-confirmer' => 'Retirer la clé de Matomo ? Les visites du site ne s\'afficheront plus dans la gestion.']);
@@ -470,10 +478,14 @@ function page_reglages(): void {
             . '<li>Nom : « Gestion Madame Cho ». Copiez la clé affichée (elle commence par sk-ant-) : Anthropic ne la montre qu\'une fois.</li>'
             . '<li>Collez-la ici. La gestion vérifie qu\'elle marche avant de l\'enregistrer.</li></ol>'
             . formulaire('assistant', champ('assistant_cle', 'Clé d\'accès Anthropic', '', ['autocomplete' => 'off', 'spellcheck' => 'false', 'autocapitalize' => 'off', 'required' => true, 'maxlength' => '300'],
-                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans la sauvegarde.')
+                   'Elle reste dans la base de la gestion, hors du site. Elle n\'est jamais réaffichée et ne part pas dans l\'export.')
                 . bouton('Vérifier et enregistrer', 'secondaire'))
             . '</details>';
         if ($relie) $t .= formulaire('assistant', '<input type="hidden" name="retirer" value="1">' . bouton('Retirer la clé', 'discret'), ['data-confirmer' => 'Retirer la clé de l\'assistant ? Il ne répondra plus.']);
+        // Plafond du mois (audit du 07/11, C9) : au-delà, l'assistant ne répond plus jusqu'au mois suivant
+        $t .= '<p class="aide"><span>' . h(assistant_mois_texte()) . '</span> <span>(prix publics d\'Anthropic ; une question ratée est comptée aussi)</span></p>'
+            . formulaire('assistant_plafond', '<div class="ligne-champs">' . champ('assistant_plafond', 'Plafond du mois, en dollars (0 = aucun)', (string)(int)parametre('assistant_plafond', (string)GESTION_ASSISTANT_PLAFOND), ['type' => 'number', 'min' => '0', 'max' => '500', 'step' => '1', 'inputmode' => 'numeric']) . '</div>'
+                . bouton('Enregistrer le plafond', 'secondaire'));
         $c .= bloc('Assistant', $t, '', 'assistant');
     }
     // Conservation et RGPD
@@ -499,11 +511,11 @@ function page_reglages(): void {
         if ($cle !== '') $m .= '<div class="cle-miroir"><p><b>Clé à coller dans le script Google</b> (elle ne sera plus jamais affichée) :</p><pre id="cle-miroir">' . h($cle) . '</pre><button type="button" class="btn" data-copier="cle-miroir">' . icone('copier') . 'Copier</button></div>';
         $m .= formulaire('miroir', bouton($actif ? 'Créer une nouvelle clé (l\'ancienne cesse de marcher)' : 'Créer la clé du miroir', 'discret')) . ($actif ? formulaire('miroir', '<input type="hidden" name="arreter" value="1">' . bouton('Arrêter le miroir', 'discret')) : '');
         $c .= bloc('Miroir pour le Drive', $m, '', 'miroir');
-        // Reprise et sauvegarde
-        $c .= bloc('Reprise des données et sauvegarde', '<p class="aide">Reprise : le fichier JSON préparé à partir de Qonto et des demandes déjà reçues (jamais dans le dépôt du site). Sans risque à relancer : ce qui est déjà là est sauté.</p>'
+        // Reprise et export complet
+        $c .= bloc('Reprise des données et export', '<p class="aide">Reprise : le fichier JSON préparé à partir de Qonto et des demandes déjà reçues (jamais dans le dépôt du site). Sans risque à relancer : ce qui est déjà là est sauté.</p>'
             . formulaire('importer', '<label class="champ"><span class="etiq">Fichier de reprise (.json)</span><input type="file" name="fichier" accept="application/json,.json" required></label>' . bouton('Importer', 'secondaire'), ['enctype' => 'multipart/form-data'])
-            . '<p class="aide">Sauvegarde : tout le contenu de la gestion dans un fichier, à ranger dans le Drive de Madame Cho chaque mois (P-24). Elle contient des données de clients.</p>'
-            . '<p>' . lien_bouton(u('export', ['jeu' => 'sauvegarde']), 'Télécharger une sauvegarde', 'discret') . '</p>', '', 'reprise');
+            . '<p class="aide">Export complet : clients, commandes, produits, ingrédients et recettes dans un fichier JSON (sans les comptes, la clé de l\'assistant ni les conversations), pour une analyse ou une reprise. Ce n\'est pas une restauration de l\'espace : la sauvegarde, c\'est celle de l\'hébergement OVH (fichier de la base), qu\'Olivier vérifie. Le fichier contient des données de clients : à ranger dans le Drive de Madame Cho (P-24), jamais ailleurs.</p>'
+            . '<p>' . lien_bouton(u('export', ['jeu' => 'sauvegarde']), 'Télécharger l\'export complet', 'discret') . '</p>', '', 'reprise');
     }
     // Contrôle technique
     $sqlite = (string)val('SELECT sqlite_version()');

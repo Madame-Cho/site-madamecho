@@ -3,7 +3,7 @@
  * Madame Cho : espace de gestion. Langue de l'écran : coréen ou français (demande d'Olivier, 06/11/2026).
  * Youngmi voit la gestion en coréen ; un bouton passe en français, et le choix est gardé sur l'appareil.
  * Ce qu'on écrit et ce qu'on envoie reste en français : noms, adresses, gâteaux, textes des clients, commentaires,
- * emails préparés, exports, miroir et sauvegarde. Les pages sont écrites en français puis traduites une fois finies
+ * emails préparés, exports, miroir et export complet. Les pages sont écrites en français puis traduites une fois finies
  * (dictionnaire dans coreen.php) ; ce qui porte translate="no" n'est jamais traduit.
  */
 declare(strict_types=1);
