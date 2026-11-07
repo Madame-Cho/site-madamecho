@@ -5,7 +5,7 @@
 **Created**: 2026-11-07
 
 **Status**: En ligne depuis le 2026-11-06 (dernière version publiée le 2026-11-07) ; spécification
-reprise au format Spec Kit
+reprise au format Spec Kit ; mise à jour le 2026-11-07 au soir après l'audit n° 2 (lot C1, C2, C3, C8)
 
 **Input**: « 2026-11-07 Claude Dossier de l'espace de gestion Madame Cho » (Drive, 91/03) : la
 proposition de fichier clients, la spécification v1, le compte rendu du prototype et celui du
@@ -27,6 +27,23 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
 - Q: Comment le consulter les mains prises ? → A : par un mode vocal ; Youngmi parle, il répond à
   voix haute, en français ou en coréen selon la langue choisie dans l'outil (demandes d'Olivier,
   2026-11-07, FR-028).
+
+### Session 2026-11-07 (soir, audit n° 2 du ChatGPT d'Olivier)
+
+- Q: Quand l'assistant prépare « commande remise » sans que Youngmi parle du paiement, que
+  devient le paiement ? → A : il reste celui de la fiche (« Pas encore payé » si rien n'est
+  noté), et la carte de confirmation montre toujours le paiement et le moyen qui seront écrits ;
+  jamais « payé par carte » en silence. L'assistant demande le paiement quand il ne le sait pas
+  (audit n° 2, C1 ; « Tout retenir, C1-C3 et C8 d'abord », Olivier, 2026-11-07, FR-027).
+- Q: Changer la date ou la quantité d'une commande change-t-il ses prix ? → A : non ; un gâteau
+  déjà dans la commande garde le prix et la TVA du jour où il a été commandé, à la main comme par
+  l'assistant ; seul un gâteau ajouté prend le prix de la carte (audit n° 2, C2, FR-029).
+- Q: Que se passe-t-il si la fiche change entre la préparation et le toucher sur « Confirmer » ?
+  → A : la modification est refusée, rien ne change, et elle se redemande ; un simple
+  commentaire ajouté entre-temps ne compte pas comme un changement (audit n° 2, C3, FR-027).
+- Q: Le plafond du mois est-il strict ? → A : oui ; avant chaque appel au modèle, la gestion
+  réserve son coût le plus haut possible et s'arrête si le plafond serait dépassé (audit n° 2,
+  C8, FR-019, SC-007).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -307,8 +324,13 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - Commentaire qui ressemble à une donnée de santé : l'écran rappelle de ne pas en écrire.
 - Clé de l'assistant refusée ou absente : l'assistant se dit « pas encore relié » ; rien d'autre
   ne change.
-- Fiche visée par une modification préparée qui a changé ou n'existe plus : « Impossible
-  maintenant », rien ne change, et l'assistant le sait à la question suivante.
+- Fiche visée par une modification préparée qui n'existe plus : « Impossible maintenant » ; fiche
+  qui a changé depuis la préparation (autre chose qu'un commentaire) : « La fiche a changé »,
+  rien ne change, la modification est écartée et l'assistant le sait à la question suivante.
+- Prix de la carte changé après une commande : la commande garde ses prix ; seul un gâteau
+  ajouté ensuite prend le nouveau prix.
+- Question qui ferait dépasser le plafond du mois : refusée avant l'appel, avec un message qui
+  dit de prévenir Olivier.
 - Navigateur sans reconnaissance vocale, ou micro refusé : pas de mode vocal, ou un message qui
   le dit ; l'écrit marche comme avant.
 - Écran au texte non traduit en coréen : il reste lisible en français plutôt que vide.
@@ -368,7 +390,8 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   boîte de Madame Cho, signé par le domaine ; « Écrire à Olivier » MUST marcher sans assistant.
 - **FR-019**: L'assistant MUST avoir un plafond de questions par jour (tous comptes) et un
   plafond de coût par mois réglable par une administratrice (0 = aucun), une question ratée
-  comptant aussi ; une
+  comptant aussi ; le plafond MUST être strict : avant chaque appel au modèle, son coût le plus
+  haut possible est réservé, et l'appel n'a pas lieu s'il ferait dépasser le plafond ; une
   notice MUST informer l'utilisatrice avant sa première conversation (destinataire, pays,
   données lues, voix, durées, pas de donnée de santé).
 - **FR-020**: Les comptes MUST être nominatifs, avec un mot de passe d'au moins 12 caractères ;
@@ -404,7 +427,11 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   export complet (clients, commandes, produits, ingrédients, recettes ; ni comptes, ni clés, ni
   conversations) pour une analyse ou une reprise ; ce n'est pas une sauvegarde.
 - **FR-027**: Une modification préparée par l'assistant MUST s'afficher sous sa réponse avec ce
-  qui va changer, « Confirmer » et « Ne pas faire » ; rien ne change sans le toucher de
+  qui va changer, y compris ce que le formulaire écrira sans que la proposition le dise (le
+  paiement et le moyen d'une remise, d'une commande créée remise), « Confirmer » et « Ne pas
+  faire » ; un paiement MUST NOT changer sans que l'utilisatrice l'ait dit ou vu ; la
+  modification MUST être refusée si la fiche a changé depuis sa préparation (hors commentaire) ;
+  rien ne change sans le toucher de
   l'utilisatrice ; elle MUST passer par les mêmes contrôles que l'écran, s'inscrire dans
   l'historique (« Préparée par l'assistant et confirmée »), ne se faire qu'une fois et expirer
   après 24 heures. Elle peut porter sur une commande (étape, paiement, fiche, problème, échange,
@@ -417,6 +444,9 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   navigateur ; « stop », « 그만 » ou le bouton Arrêter l'arrêtent ; le micro MUST être autorisé
   pour la gestion seulement ; une modification préparée MUST attendre le toucher de
   « Confirmer », même en mode vocal.
+- **FR-029**: Un gâteau déjà dans une commande MUST garder le prix et la TVA enregistrés à la
+  commande quand on change la date, l'heure, le mode ou la quantité, à la main comme par
+  l'assistant ; seul un gâteau ajouté prend le prix actuel de la carte.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -454,6 +484,9 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   l'utilisatrice.
 - **SC-007**: Le coût de l'assistant ne dépasse jamais le plafond du mois fixé dans Réglages.
 - **SC-008**: 0 donnée changée par l'assistant sans le toucher de « Confirmer » de l'utilisatrice.
+- **SC-009**: 0 paiement changé par une modification de l'assistant sans être affiché sur sa carte
+  avant « Confirmer ».
+- **SC-010**: 0 montant d'une commande existante changé par un simple changement de date.
 
 ## Assumptions
 

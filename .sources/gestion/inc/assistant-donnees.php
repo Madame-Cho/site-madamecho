@@ -479,7 +479,7 @@ function outil_proposer_modification(): array {
             . "Actions (cible entre parenthèses, puis champs) :\n"
             . "- commande_proposition (MC-…) : prix_final, acompte. La proposition a été envoyée au client : étape Proposition.\n"
             . "- commande_confirmer (MC-…) : retrait_date, retrait_heure, prix_final, acompte_recu (oui|non), moyen. Le client a accepté.\n"
-            . "- commande_remise (MC-…) : prix_final, paiement (paye|aucun), moyen, facture. Gâteau remis ou livré.\n"
+            . "- commande_remise (MC-…) : prix_final, paiement (paye|aucun), moyen, facture. Gâteau remis ou livré. Donne toujours paiement et moyen tels que la personne les a dits ; si elle n'a rien dit du paiement, demande-le-lui avant de préparer (sinon la fiche garde son paiement actuel).\n"
             . "- commande_annuler (MC-…) : qui (client|madamecho), motif, acompte_sort (acquis|rembourse, vide sinon).\n"
             . "- commande_etape (MC-…) : etape (demande|proposition|confirmee|remise|sans_suite|annulee), motif. Pour classer sans suite ou revenir en arrière.\n"
             . "- commande_paiement (MC-…) : paiement (aucun|acompte_demande|acompte_recu|paye|rembourse), moyen (carte|virement|especes|autre), acompte, facture, prix_final.\n"
@@ -750,6 +750,12 @@ function proposition_etat(array $a): string {
     return $e === 'propose' && strtotime((string)$a['le']) < time() - ASSISTANT_PROPOSITION_HEURES * 3600 ? 'expire' : $e;
 }
 
+/** Le paiement gardé quand une remise préparée par l'assistant ne le dit pas : celui de la fiche (« Pas encore payé » si rien n'est noté),
+ *  jamais « Payé » en silence (audit n° 2 du 07/11, C1). La carte de confirmation l'affiche toujours. */
+function remise_paiement_defaut(array $f): string {
+    return in_array((string)$f['paiement'], ['paye', 'acompte_recu', 'acompte_demande'], true) ? (string)$f['paiement'] : 'aucun';
+}
+
 /** Ce qui va changer, ligne par ligne : [libellé, morceaux], chaque morceau [texte, protégé]. Les valeurs de l'interface (étapes,
  *  paiements, dates…) se traduisent sur l'écran coréen ; les noms, les gâteaux et les textes restent tels qu'ils sont écrits (translate="no"). */
 function proposition_detail(array $a): array {
@@ -776,6 +782,12 @@ function proposition_detail(array $a): array {
         $lignes[] = [fr_ko('Fiche', '대상'), $l((string)$a['cible'])];   // une création faite : la fiche créée
     }
     if ($genre === 'recette_retirer' || $genre === 'indispo_supprimer') return $lignes;
+    // Ce que le formulaire écrira sans que la proposition le dise est montré aussi : le paiement d'une remise, d'une commande créée remise (audit n° 2, C1)
+    if ($genre === 'commande_remise' && $fiche) {
+        $c += ['paiement' => remise_paiement_defaut($fiche), 'moyen' => (string)$fiche['moyen']];
+    } elseif ($genre === 'commande_creer' && ($c['etape'] ?? '') === 'remise') {
+        $c += ['paiement' => 'aucun', 'moyen' => ''];
+    }
     $creation = $spec['cible'] === '' || $genre === 'recette_ajouter';   // une création : un champ vide ne change rien, on ne l'affiche pas
     foreach ($c as $k => $v) {
         $k = (string)$k;
@@ -820,9 +832,21 @@ function proposition_enregistrer(int $uid, int $fil, array $p): array {
                                                               [$uid, $fil, $p['genre'], $p['cible']]), 'id'));
         if ($remplaces) q("UPDATE assistant_actions SET etat = 'remplace' WHERE id IN (" . implode(',', $remplaces) . ")");
     }
-    q("INSERT INTO assistant_actions (utilisateur_id, fil, le, genre, cible, champs, resume, etat) VALUES (?, ?, ?, ?, ?, ?, ?, 'propose')",
-      [$uid, $fil, maintenant(), $p['genre'], $p['cible'], json_encode($p['champs'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $p['resume']]);
+    q("INSERT INTO assistant_actions (utilisateur_id, fil, le, genre, cible, champs, resume, etat, empreinte) VALUES (?, ?, ?, ?, ?, ?, ?, 'propose', ?)",
+      [$uid, $fil, maintenant(), $p['genre'], $p['cible'], json_encode($p['champs'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $p['resume'], proposition_empreinte($p['genre'], $p['cible'])]);
     return [(int)db()->lastInsertId(), $remplaces];
+}
+
+/** L'empreinte d'une fiche visée par une proposition : ce qu'elle contient, sans les dates de mise à jour ni du dernier échange
+ *  (un commentaire ajouté entre-temps ne gêne pas). Vide pour une création. Comparée au toucher sur « Confirmer » (audit n° 2, C3). */
+function proposition_empreinte(string $genre, string $cible): string {
+    $spec = PROPOSITIONS[$genre] ?? null;
+    if (!$spec || $spec['cible'] === '' || $cible === '') return '';
+    [, $f] = proposition_cible($spec['cible'], $cible);
+    if (!$f) return '';
+    $f = array_filter($f, fn($v, $k) => !in_array($k, ['maj_le', 'dernier_echange'], true) && (is_scalar($v) || $v === null), ARRAY_FILTER_USE_BOTH);
+    ksort($f);
+    return md5((string)json_encode($f, JSON_UNESCAPED_UNICODE));
 }
 
 /** Le formulaire de la gestion qui applique une proposition, rempli avec l'état actuel de la fiche et les champs proposés :
@@ -858,8 +882,9 @@ function proposition_formulaire(array $a): array {
             if ($v('acompte_recu', 'non') === 'oui') $p['acompte_recu'] = '1';
             return $commande($p);
         case 'commande_remise':
+            // Le paiement et le moyen : ceux que la proposition dit, sinon ceux de la fiche, jamais « payé par carte » sans le dire (audit n° 2 du 07/11, C1)
             return $commande(['_action' => 'remise', 'prix_final' => $v('prix_final', livraison_pro($f) ? '' : montant_champ(montant_commande($f))),
-                              'paiement' => $v('paiement', livraison_pro($f) ? 'aucun' : 'paye') ?: 'paye', 'moyen' => $v('moyen', $f['moyen'] !== '' || livraison_pro($f) ? $f['moyen'] : 'carte'),
+                              'paiement' => $v('paiement', remise_paiement_defaut($f)) ?: remise_paiement_defaut($f), 'moyen' => $v('moyen', $f['moyen']),
                               'facture' => $v('facture', $f['facture'])]);
         case 'commande_annuler':
             return $commande(['_action' => 'annuler', 'qui' => $v('qui', 'client') ?: 'client', 'motif' => $v('motif'), 'acompte_sort' => $v('acompte_sort')]);
@@ -885,7 +910,7 @@ function proposition_formulaire(array $a): array {
             $type = $v('type') ?: ($pro || $v('besoin') !== '' ? 'pro' : ($v('perso') !== '' ? 'perso' : 'carte'));
             $p = ['_action' => 'enregistrer', 'canal' => $v('canal') ?: 'autre', 'type' => $type, 'retrait_date' => $v('retrait_date'), 'retrait_moment' => $v('retrait_moment'),
                   'retrait_heure' => $v('retrait_heure'), 'mode' => $v('mode') ?: 'retrait', 'perso' => $v('perso'), 'besoin' => $v('besoin'), 'prix_final' => $v('prix_final'), 'acompte' => $v('acompte'),
-                  'lignes' => $lignesPost((array)$v('gateaux', []), []), 'statut' => $v('etape') ?: 'demande', 'paiement' => $v('paiement') ?: 'paye', 'moyen' => $v('moyen'), 'note' => $v('note')];
+                  'lignes' => $lignesPost((array)$v('gateaux', []), []), 'statut' => $v('etape') ?: 'demande', 'paiement' => $v('paiement') ?: 'aucun', 'moyen' => $v('moyen'), 'note' => $v('note')];
             if ($v('client') !== '') {
                 $cl = ligne("SELECT * FROM clients WHERE numero = ? AND statut <> 'efface'", [$v('client')]);
                 if (!$cl) return [null, [], 'le client n\'existe plus'];
@@ -1022,6 +1047,12 @@ function proposition_avant(string $page): void {
     if (proposition_etat($a) === 'expire') {
         q("UPDATE assistant_actions SET etat = 'expire' WHERE id = ?", [(int)$a['id']]);
         $refus('Cette modification a été préparée il y a plus de 24 heures : redemandez-la à l\'assistant.');
+        return;
+    }
+    if ((string)($a['empreinte'] ?? '') !== '' && proposition_empreinte((string)$a['genre'], (string)$a['cible']) !== (string)$a['empreinte']) {
+        q("UPDATE assistant_actions SET etat = 'annule', fait_le = ?, retour = ? WHERE id = ? AND etat = 'propose'",
+          [maintenant(), 'La fiche a changé depuis que la modification a été préparée : rien n\'a été fait.', (int)$a['id']]);
+        $refus('La fiche a changé depuis que l\'assistant a préparé cette modification : rien n\'a été fait. Redemandez-la à l\'assistant.');
         return;
     }
     [$url, $champs, $raison] = proposition_formulaire($a);

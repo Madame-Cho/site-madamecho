@@ -73,6 +73,15 @@ On modifie `.sources/`, jamais une page générée ; on régénère
 vert, on dit quels essais ont tourné et avec quel résultat : parcours en français et en coréen,
 téléphone et ordinateur, formulaire, tâche de nuit, sur des données fictives seulement.
 
+### VIII. Une IA qui prépare une écriture en montre tous les effets
+
+Quand l'assistant de la gestion prépare une modification, la carte de confirmation montre tout ce
+que le formulaire écrira, même ce que la proposition ne dit pas (un paiement, un moyen, un prix) ;
+un paiement ou un montant ne change jamais en silence ; une proposition dont la fiche a changé
+avant le toucher sur « Confirmer » est refusée ; changer une date ne recalcule jamais des prix
+déjà enregistrés ; un plafond de coût est réservé avant chaque appel au modèle (audit n° 2 du
+ChatGPT d'Olivier, 2026-11-07, décision « Tout retenir, C1-C3 et C8 d'abord »).
+
 ## Contraintes techniques
 
 - Hébergement OVH (Apache) ; la racine du dépôt est la racine du site. Les dossiers et fichiers
@@ -107,4 +116,4 @@ téléphone et ordinateur, formulaire, tâche de nuit, sur des données fictives
 - Version au format MAJEUR.MINEUR.CORRECTIF : MAJEUR quand un principe est retiré ou
   redéfini, MINEUR quand un principe ou une section est ajouté, CORRECTIF pour la forme.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE) : proposée le 2026-11-07 par Claude, IA maître d'Olivier Dion, à ratifier par Olivier | **Last Amended**: 2026-11-07
+**Version**: 1.1.0 (principe VIII ajouté le 2026-11-07 après l'audit n° 2) | **Ratified**: TODO(RATIFICATION_DATE) : proposée le 2026-11-07 par Claude, IA maître d'Olivier Dion, à ratifier par Olivier | **Last Amended**: 2026-11-07

@@ -1033,6 +1033,8 @@ Cette modification a déjà été faite ou écartée. | 이 수정은 이미 했
 Cette modification a été préparée il y a plus de 24 heures : redemandez-la à l'assistant. | 이 수정은 24시간도 더 전에 준비됐어요. 어시스턴트에게 다시 부탁하세요.
 Cette modification ne correspond pas à cette page. | 이 수정은 이 페이지와 맞지 않아요.
 La gestion a ouvert le formulaire avec un point à corriger : rien n'a été enregistré. | 고칠 점이 있어서 관리 화면이 양식을 열었어요. 아무것도 저장되지 않았어요.
+La fiche a changé depuis que l'assistant a préparé cette modification : rien n'a été fait. Redemandez-la à l'assistant. | 어시스턴트가 이 수정을 준비한 뒤에 내용이 바뀌었어요. 아무것도 하지 않았어요. 어시스턴트에게 다시 부탁하세요.
+La fiche a changé depuis que la modification a été préparée : rien n'a été fait. | 수정을 준비한 뒤에 내용이 바뀌었어요. 아무것도 하지 않았어요.
 TXT;
 }
 
@@ -1370,6 +1372,7 @@ function coreen_motifs(): array {
         ['/^Ce mois-ci : (\d+) question\(s\)$/u', fn($m) => '이번 달: 질문 ' . $m[1] . '건'],
         ['/^(\d+) question\(s\)$/u', fn($m) => '질문 ' . $m[1] . '건'],
         ['/^le plafond du mois est atteint \((\d+) \$\) : prévenez Olivier$/u', fn($m) => '이번 달 한도(' . $m[1] . ' $)에 도달했어요. Olivier에게 알려 주세요'],
+        ['/^le plafond du mois serait dépassé par cette question \((\d+) \$\) : prévenez Olivier$/u', fn($m) => '이 질문으로 이번 달 한도(' . $m[1] . ' $)를 넘게 돼요. Olivier에게 알려 주세요'],
         ['/^Plafond enregistré : (\d+) \$ par mois\.$/u', fn($m) => '한도를 저장했어요: 한 달 ' . $m[1] . ' $.'],
         ['/^(\d+) question\(s\) · ≈ (.+) \$$/u', fn($m) => '질문 ' . $m[1] . '건 · ≈ ' . $m[2] . ' $'],
         ['/^Rapport envoyé à Olivier : (.+)$/u', fn($m) => 'Olivier에게 보고서 보냄: ' . $m[1]],

@@ -184,7 +184,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 5) return;
+    if ($v >= 6) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -260,7 +260,14 @@ CREATE TABLE IF NOT EXISTS assistant_actions (id INTEGER PRIMARY KEY, utilisateu
   fait_le TEXT, retour TEXT NOT NULL DEFAULT '', lien TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS assistant_actions_fil ON assistant_actions(utilisateur_id, fil);
 ");
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '5')");
+    // Version 6 (07/11/2026, audit n° 2, C3) : l'empreinte de la fiche au moment où l'assistant prépare la modification ; si la fiche a
+    // changé avant « Confirmer », la modification est refusée et se redemande
+    $colonnes = array_column($pdo->query("PRAGMA table_info(assistant_actions)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+    if (!in_array('empreinte', $colonnes, true)) {
+        try { $pdo->exec("ALTER TABLE assistant_actions ADD COLUMN empreinte TEXT NOT NULL DEFAULT ''"); }
+        catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }
+    }
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '6')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.

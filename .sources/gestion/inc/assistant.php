@@ -239,6 +239,8 @@ function assistant_repondre(int $uid, int $fil, string $texte, array $u, bool $v
     try {
         for ($tour = 0; $tour < GESTION_ASSISTANT_TOURS; $tour++) {
             if ($tour === GESTION_ASSISTANT_TOURS - 1) $corps['tool_choice'] = ['type' => 'none'];   // dernier aller-retour : une réponse, sans nouvelle lecture
+            // Plafond strict (audit n° 2 du 07/11, C8) : avant chaque appel, on réserve son coût le plus haut possible ; s'il ferait dépasser le plafond, on s'arrête
+            if ($plafond > 0 && assistant_mois()['usd'] + assistant_cout_max($corps) > $plafond) throw new \RuntimeException('le plafond du mois serait dépassé par cette question (' . $plafond . ' $) : prévenez Olivier');
             $rep = assistant_appel($corps, $cle);
             $contenu = $rep['content'];
             $usage = array_intersect_key(is_array($rep['usage'] ?? null) ? $rep['usage'] : [], array_flip(['input_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens', 'output_tokens']));
@@ -391,6 +393,12 @@ function assistant_mois(): array {
                + (int)($u['cache_read_input_tokens'] ?? 0) * GESTION_ASSISTANT_PRIX['cache_lecture'] + (int)($u['output_tokens'] ?? 0) * GESTION_ASSISTANT_PRIX['sortie']) / 1e6;
     }
     return ['questions' => $n, 'usd' => $usd];
+}
+/** Le coût le plus haut d'un appel, en dollars : tout le texte envoyé compté au prix d'une entrée sans cache (environ 3 caractères
+ *  par jeton, c'est large) et la réponse la plus longue permise. Sert à réserver le coût avant l'appel (audit n° 2, C8). */
+function assistant_cout_max(array $corps): float {
+    $car = strlen((string)json_encode($corps, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    return ($car / 3 * GESTION_ASSISTANT_PRIX['entree'] + GESTION_ASSISTANT_MAX_TOKENS * GESTION_ASSISTANT_PRIX['sortie']) / 1e6;
 }
 function assistant_mois_texte(): string {
     $m = assistant_mois();

@@ -394,7 +394,13 @@ function page_commande_edition(): void {
                 if ($ancien) { $ancien['q'] = $q; $ancien['plaque'] = mb_substr(une_ligne((string)($l['plaque'] ?? '')), 0, 60); $lignes[] = $ancien; }
                 continue;
             }
-            $lignes[] = ['v' => $v, 'q' => $q, 'prix' => $V[$v]['prix'], 'plaque' => $V[$v]['plaque'] ? mb_substr(une_ligne(is_string($l['plaque'] ?? null) ? $l['plaque'] : ''), 0, 60) : '']
+            $plaque = $V[$v]['plaque'] ? mb_substr(une_ligne(is_string($l['plaque'] ?? null) ? $l['plaque'] : ''), 0, 60) : '';
+            // Un gâteau déjà dans la commande garde le prix et la TVA du jour où il a été commandé : changer la date ou la quantité ne
+            // reprend jamais le prix actuel de la carte (audit n° 2 du 07/11, C2). Seul un gâteau ajouté prend le prix de la carte.
+            $avant = null;
+            foreach ($k['lignes_tab'] ?? [] as $x) if (($x['v'] ?? '') === $v && isset($x['prix'])) { $avant = $x; break; }
+            if ($avant) { $lignes[] = ['q' => $q, 'plaque' => $plaque] + $avant; continue; }
+            $lignes[] = ['v' => $v, 'q' => $q, 'prix' => $V[$v]['prix'], 'plaque' => $plaque]
                       + (isset($V[$v]['ht']) ? ['ht' => $V[$v]['ht'], 'tva' => $V[$v]['tva']] : []);
         }
         $d = ['canal' => choix('canal', CANAUX, $k['canal'] ?? 'autre'), 'type' => choix('type', TYPES_COMMANDE, $k['type'] ?? 'carte'),
