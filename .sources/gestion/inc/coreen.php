@@ -371,6 +371,10 @@ Prénom | 이름
 Ville | 도시
 Historique | 기록
 Voir la fiche du client | 고객 정보 보기
+Corriger le nom ou les coordonnées | 이름이나 연락처 고치기
+Un nom mal écrit ? | 이름이 잘못 적혔나요?
+Avant d'émettre, | 발행하기 전에
+corrigez la fiche du client | 고객 정보를 고치세요
 Quand | 언제
 Moment demandé | 요청한 시간대
 Où | 장소
@@ -1799,6 +1803,7 @@ function coreen_motifs(): array {
         ['/^Rapprochée avec Qonto : (.+)$/u', fn($m) => 'Qonto와 대조 완료: ' . $m[1]],
         // Historique
         ['/^Fiche modifiée : (.+)$/u', fn($m) => '고객 정보 수정: ' . coreen_champs($m[1])],
+        ['/^Majuscules ajoutées au nom : (.+)$/u', fn($m) => '이름에 대문자 추가: ' . $m[1]],
         ['/^Commande modifiée : (.+)$/u', fn($m) => '주문 수정: ' . coreen_champs($m[1])],
         ['/^Fiche produit modifiée : (.+)$/u', fn($m) => '제품 시트 수정: ' . coreen_champs($m[1])],
         ['/^Doublon (.+) fusionné dans cette fiche$/u', fn($m) => '중복 고객 ' . $m[1] . ' 합침'],

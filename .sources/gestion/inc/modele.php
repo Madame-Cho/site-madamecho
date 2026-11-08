@@ -37,6 +37,47 @@ function telephone_cle(string $t): string {
     return strlen($c) >= 8 ? $c : '';
 }
 /** Prénom et nom sans accents ni majuscules, dans n'importe quel ordre (« Kim Hana » = « Hana KIM ») ; vide s'il manque l'un des deux. */
+/**
+ * Majuscules oubliées (demande d'Olivier du 08/11/2026) : « jean-pierre » → « Jean-Pierre », « élodie » → « Élodie »,
+ * « le gall » → « Le Gall », « de la fontaine » → « de La Fontaine », « d'artagnan » → « d'Artagnan », « o'brien » → « O'Brien ».
+ * Seulement quand il n'y a aucune majuscule : ce qui a été écrit exprès (« McDonald », « de Gaulle », « DUPONT ») reste tel quel ;
+ * une écriture sans majuscules (coréen…) ne change pas.
+ * Même règle que nomMajuscules() du formulaire du site (ma-demande/envoyer.php).
+ */
+function nom_majuscules(string $s): string {
+    $s = trim(preg_replace('/\s+/u', ' ', $s) ?? '');
+    if ($s === '' || mb_strtolower($s) !== $s) return $s;
+    $particules = ['de', 'du', 'des', 'van', 'von', 'der', 'den', 'di', 'da', 'del', 'della', 'dos', 'das', 'y'];
+    $mots = explode(' ', $s); $n = count($mots);
+    foreach ($mots as $i => $m) {
+        if ($i < $n - 1 && in_array($m, $particules, true)) continue;   // particule, sauf en dernier mot
+        $m = (string)preg_replace_callback("/(^|[-'’])(\p{Ll})/u", fn($x) => $x[1] . mb_strtoupper($x[2]), $m);
+        $mots[$i] = (string)preg_replace("/^D(['’])/u", 'd$1', $m);   // « d'Artagnan » : l'élision reste en minuscule
+    }
+    return implode(' ', $mots);
+}
+/** Les noms d'une fiche (création, modification) : majuscules oubliées ajoutées. */
+function client_noms_propres(array $d): array {
+    foreach (['prenom', 'nom'] as $k) if (isset($d[$k])) $d[$k] = nom_majuscules((string)$d[$k]);
+    return $d;
+}
+/**
+ * Une fois, la nuit qui suit la mise en ligne : les fiches déjà enregistrées sans majuscules les reçoivent (événement « système »,
+ * qui n'allume pas de pastille). Renvoie le nombre de fiches corrigées.
+ */
+function noms_majuscules_reprise(): int {
+    if (parametre('noms_majuscules') === '1') return 0;
+    $n = 0;
+    foreach (lignes("SELECT id, prenom, nom FROM clients WHERE statut <> 'efface'") as $c) {
+        $p = nom_majuscules((string)$c['prenom']); $o = nom_majuscules((string)$c['nom']);
+        if ($p === $c['prenom'] && $o === $c['nom']) continue;
+        q("UPDATE clients SET prenom = ?, nom = ? WHERE id = ?", [$p, $o, (int)$c['id']]);
+        evenement('modification', 'Majuscules ajoutées au nom : ' . trim($p . ' ' . $o), ['client' => (int)$c['id']], trim($c['prenom'] . ' ' . $c['nom']), trim($p . ' ' . $o), 'système');
+        $n++;
+    }
+    parametre_ecrire('noms_majuscules', '1');
+    return $n;
+}
 function nom_cle(string $prenom, string $nom): string {
     $mots = array_values(array_filter(explode('-', identifiant_texte($prenom . ' ' . $nom))));
     if (count($mots) < 2) return '';
@@ -114,6 +155,7 @@ function client_doublon_ecarter(int $a, int $b): void {
 }
 function client_creer(array $d): int {
     $now = maintenant();
+    $d = client_noms_propres($d);
     $d += ['type' => 'particulier', 'nom' => '', 'prenom' => '', 'societe' => '', 'contact' => '', 'email' => '', 'telephone' => '', 'ville' => '',
            'canal' => 'site', 'premier_contact' => $now, 'dernier_echange' => $now, 'qonto' => ''];
     q("INSERT INTO clients (numero, type, nom, prenom, societe, contact, email, telephone, ville, canal, premier_contact, dernier_echange, qonto, cree_le, maj_le)
@@ -127,6 +169,7 @@ function client_creer(array $d): int {
 function client_modifier(int $id, array $d): void {
     $c = client($id);
     if (!$c) return;
+    $d = client_noms_propres($d);
     $champs = ['type', 'nom', 'prenom', 'societe', 'contact', 'email', 'telephone', 'ville', 'canal', 'qonto', 'lettre_info'];
     $diff = [];
     foreach ($champs as $k) if (array_key_exists($k, $d) && (string)$d[$k] !== (string)$c[$k]) $diff[$k] = (string)$d[$k];

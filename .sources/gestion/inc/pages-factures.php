@@ -101,6 +101,7 @@ function bloc_facture(array $k): string {
                   . '<div class="actions">' . bouton(icone('valider') . 'Émettre la facture', 'principal', $e['manque'] ? ['disabled' => true] : []) . '</div>';
             return bloc('Facture' . ($e['avoir'] ? ' (nouvelle, après l\'avoir)' : ' à émettre'),
                 '<p class="aide">Relisez l\'aperçu. Une fois émise, la facture reçoit son numéro et ne se modifie plus : une erreur se corrige par un avoir.</p>'
+                . '<p class="aide"><span>Un nom mal écrit ?</span> <span>Avant d\'émettre,</span> <a href="' . h(u('client-edition', ['id' => (int)$k['client_id']])) . '">corrigez la fiche du client</a>.</p>'
                 . $manque . $qonto . facture_apercu_html($d)
                 . formulaire('facture_emettre', $form, ['class' => 'form-facture', 'data-confirmer' => 'Émettre la facture ? Elle recevra son numéro et ne pourra plus être modifiée.']), 'a-faire', 'facture');
     }
