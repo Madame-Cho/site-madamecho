@@ -554,6 +554,14 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   comme les autres mails (R-01) ; une version courte MUST être proposée à copier pour un SMS ou
   WhatsApp, et « J'ai envoyé le rappel » MUST le noter avec son canal. L'envoi automatique est
   hors périmètre tant qu'Olivier ne l'a pas décidé.
+  Audit n° 4 (2026-11-08) : un rappel ou une confirmation MUST valoir pour un rendez-vous précis
+  (jour, heure, moment) ; si le rendez-vous change, la commande MUST revenir dans la liste,
+  marquée « Retrait modifié » ; seule l'action « J'ai envoyé le rappel » (SMS, WhatsApp,
+  téléphone, Gmail) MUST compter comme rappel déclaré, jamais une note libre ; un rappel déjà
+  fait MUST NOT repartir sans « Renvoyer » ; un mail MUST NOT partir si la commande a changé
+  depuis l'aperçu relu ; une commande déjà payée MUST NOT recevoir « à régler au retrait » ; un
+  retrait du jour sans rappel MUST rester proposé ; pas de lien qui ouvre WhatsApp avec le texte
+  prérempli pendant le pilote.
 
 ### Key Entities *(include if feature involves data)*
 

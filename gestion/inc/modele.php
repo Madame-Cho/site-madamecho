@@ -588,30 +588,48 @@ function tableau_de_bord(): array {
 }
 
 /** Rappel de retrait (FR-040, demande d'Olivier du 08/11/2026, « au toucher d'abord, automatique ensuite ») : les commandes
- *  confirmées dont le retrait est demain, sauf les livraisons de restaurant, celles dont le rappel est déjà parti ou noté, et
- *  celles dont la confirmation est partie la veille du retrait ou après (elle sert déjà de rappel). Rien ne part tout seul (R-01). */
+ *  confirmées dont le retrait est aujourd'hui ou demain, sauf les livraisons de restaurant, celles dont le rappel est déjà parti ou
+ *  déclaré pour le même rendez-vous, et celles dont la confirmation, pour le même rendez-vous, est partie la veille du retrait ou après.
+ *  Un rendez-vous changé après un rappel la fait revenir, marquée « retrait modifié » (audit n° 4, A02). Rien ne part tout seul (R-01). */
 function rappels_a_envoyer(): array {
+    $auj = aujourdhui();
     $demain = date('Y-m-d', strtotime('+1 day'));
     $ks = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero,
                          c.email AS client_email
-                  FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'confirmee' AND k.retrait_date = ?
-                  ORDER BY k.retrait_heure, k.retrait_moment, k.id", [$demain]);
+                  FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'confirmee' AND k.retrait_date IN (?, ?)
+                  ORDER BY k.retrait_date, k.retrait_heure, k.retrait_moment, k.id", [$auj, $demain]);
     $out = [];
     foreach ($ks as $k) {
-        if (livraison_pro($k) || rappel_fait((int)$k['id'])) continue;
-        $conf = mail_deja((int)$k['id'], 'confirmation');
-        if ($conf && substr((string)$conf['le'], 0, 10) >= date('Y-m-d', strtotime($k['retrait_date'] . ' -1 day'))) continue;
+        if (livraison_pro($k)) continue;
+        $e = rappel_etat($k);
+        if ($e && $e['a_jour']) continue;
+        $conf = ligne("SELECT le, ancien FROM evenements WHERE commande_id = ? AND type = 'email_client' AND ancien LIKE 'type:confirmation %' ORDER BY id DESC LIMIT 1", [(int)$k['id']]);
+        if ($conf && substr((string)$conf['le'], 0, 10) >= date('Y-m-d', strtotime($k['retrait_date'] . ' -1 day')) && rdv_de((string)$conf['ancien'], $k)) continue;
+        $k['rappel_modifie'] = $e !== null;
         $k['lignes_tab'] = json_decode($k['lignes'], true) ?: [];
         $out[] = $k;
     }
     return $out;
 }
-/** Le rappel est-il déjà parti (mail) ou noté (SMS, WhatsApp, téléphone) ? Renvoie sa date, ou null. */
-function rappel_fait(int $commande): ?string {
-    $m = mail_deja($commande, 'rappel');
-    if ($m) return (string)$m['le'];
-    $n = val("SELECT le FROM evenements WHERE commande_id = ? AND type = 'commentaire' AND texte LIKE 'Rappel de retrait envoyé%' ORDER BY id DESC LIMIT 1", [$commande]);
-    return $n ? (string)$n : null;
+/** Vrai si l'événement (son « ancien ») annonçait le rendez-vous actuel de la commande ; un ancien envoi sans clé compte comme à jour. */
+function rdv_de(string $ancien, array $k): bool {
+    return !preg_match('/(?:^| )(?:rdv|rappel):([0-9a-f]{12})/', $ancien, $m) || $m[1] === rdv_cle($k);
+}
+/** Le dernier rappel de la commande, envoyé par la gestion (« type:rappel ») ou déclaré par Youngmi avec « J'ai envoyé le rappel »
+ *  (note marquée « rappel:… », jamais une note libre : audit n° 4, A03) : ['le', 'a_jour' (même rendez-vous qu'aujourd'hui)], ou null. */
+function rappel_etat(array $k): ?array {
+    $e = ligne("SELECT le, ancien FROM evenements WHERE commande_id = ? AND ((type = 'email_client' AND ancien LIKE 'type:rappel %') OR (type = 'commentaire' AND (ancien LIKE 'rappel:%' OR ancien LIKE '% rappel:%')))
+                ORDER BY id DESC LIMIT 1", [(int)$k['id']]);
+    return $e ? ['le' => (string)$e['le'], 'a_jour' => rdv_de((string)$e['ancien'], $k)] : null;
+}
+/** « J'ai envoyé le rappel » : le rappel envoyé hors de la gestion, déclaré par Youngmi, avec son canal et le rendez-vous annoncé (A07). */
+function rappel_noter(array $k, string $par, string $texte = ''): void {
+    $canaux = CANAUX_ECHANGE + ['email' => 'Email'];
+    $t = 'Rappel de retrait envoyé par ' . ($canaux[$par] ?? 'SMS') . ' (déclaré dans la gestion)' . (trim($texte) !== '' ? ' : « ' . trim($texte) . ' »' : '.');
+    evenement('commentaire', $t, ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']], trim((isset(CANAUX_ECHANGE[$par]) ? 'par:' . $par . ' ' : '') . 'rappel:' . rdv_cle($k)));
+    $now = maintenant();
+    q("UPDATE commandes SET dernier_echange = ?, maj_le = ? WHERE id = ?", [$now, $now, (int)$k['id']]);
+    client_echange((int)$k['client_id'], $now);
 }
 
 /** L'activité des commandes pour Aujourd'hui (demande d'Olivier, 07/11/2026) : sur les 7 derniers jours et aujourd'hui,

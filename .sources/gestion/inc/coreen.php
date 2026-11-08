@@ -292,15 +292,19 @@ Commande confirmée | 주문 확정
 Merci | 감사 인사
 Rappel | 픽업 알림
 Rappels à envoyer | 보낼 픽업 알림
-Retraits de demain : touchez une commande, vérifiez l'aperçu, puis « Envoyer ». Rien ne part tout seul. | 내일 픽업이에요. 주문을 누르고 미리보기를 확인한 뒤 ‘보내기’를 누르세요. 저절로 나가는 건 없어요.
+Retraits de demain (et ceux d'aujourd'hui sans rappel) : touchez une commande, vérifiez l'aperçu, puis « Envoyer ». Rien ne part tout seul. | 내일 픽업(그리고 알림을 못 보낸 오늘 픽업)이에요. 주문을 누르고 미리보기를 확인한 뒤 ‘보내기’를 누르세요. 저절로 나가는 건 없어요.
+Retrait modifié depuis le rappel | 알림 뒤에 픽업이 바뀌었어요
+Email (Gmail) | 이메일 (Gmail)
+Texte envoyé, si vous l'avez changé (facultatif) | 보낸 문구 (바꿨다면, 선택)
+Le jour ou l'heure du retrait a changé depuis le dernier rappel : prévenez le client. | 마지막 알림 뒤에 픽업 날짜나 시간이 바뀌었어요. 고객에게 알려 주세요.
+Envoyé autrement (SMS, WhatsApp, téléphone, Gmail) ? Notez-le : | 다른 방법(SMS, WhatsApp, 전화, Gmail)으로 보냈나요? 기록해 주세요:
+La commande a changé depuis l'aperçu (jour, heure, montant, paiement ou email) : rien n'est parti. Vérifiez le nouvel aperçu, puis envoyez. | 미리보기 뒤에 주문(날짜, 시간, 금액, 결제, 이메일)이 바뀌었어요. 아무것도 보내지 않았어요. 새 미리보기를 확인하고 보내세요.
 SMS ou WhatsApp | SMS 또는 WhatsApp
 Envoyer le rappel au client | 고객에게 픽업 알림 보내기
 Version courte, pour un SMS ou WhatsApp | SMS나 WhatsApp용 짧은 버전
-Ouvrir WhatsApp | WhatsApp 열기
 Envoyé par | 보낸 방법
 J'ai envoyé le rappel | 알림을 보냈어요
 Pas d'email pour ce client : envoyez la version courte par SMS ou WhatsApp, puis notez-le. | 이 고객은 이메일이 없어요. 짧은 버전을 SMS나 WhatsApp으로 보내고 기록해 주세요.
-Ou bien par SMS ou WhatsApp : | 또는 SMS나 WhatsApp으로:
 Rappel envoyé au client. Une copie arrive dans contact@madamecho.com. | 고객에게 픽업 알림을 보냈어요. 사본이 contact@madamecho.com으로 와요.
 L'email n'est pas parti. Regardez d'abord dans les Échanges ou dans Gmail (Envoyés) s'il est arrivé, puis réessayez, ou envoyez la version courte par SMS ou WhatsApp. | 이메일이 가지 않았어요. 먼저 연락 내용이나 Gmail(보낸편지함)에 도착했는지 확인한 뒤 다시 해 보거나, 짧은 버전을 SMS나 WhatsApp으로 보내세요.
 Rappel noté dans les Échanges. | 픽업 알림을 연락 내용에 기록했어요.
@@ -1347,6 +1351,8 @@ function coreen_motifs(): array {
         ['/^(\d{1,2}) h(?: (\d{2}))? – (\d{1,2}) h(?: (\d{2}))?$/u', fn($m) => $plage($m[0])],
         ['/^(\d+) commande\(s\) en cours$/', fn($m) => '진행 중인 주문 ' . $m[1] . '건'],
         ['/^(\d+) rappels? à envoyer$/u', fn($m) => '보낼 픽업 알림 ' . $m[1] . '건'],
+        ['/^Le rappel est déjà parti ou noté \((.+)\) : rien n\'a été renvoyé\. Pour le renvoyer exprès, rouvrez la commande et touchez « Renvoyer »\.$/u',
+            fn($m) => '픽업 알림을 이미 보냈거나 기록했어요 (' . $m[1] . '). 다시 보내지 않았어요. 일부러 다시 보내려면 주문을 다시 열고 ‘다시 보내기’를 누르세요.'],
         ['/^Indispo (ajoutée|modifiée)\. Attention : (\d+) commandes? en cours tombe(?:nt)? dessus, à voir avec le client\.$/u',
             fn($m) => '예약 불가를 ' . ($m[1] === 'ajoutée' ? '추가' : '수정') . '했어요. 주의: 진행 중인 주문 ' . $m[2] . '건이 겹쳐요. 고객과 상의하세요.'],
         ['/^Commande confirmée, mais le retrait tombe sur une indispo : (.+)\. Vérifiez avec le client, ou changez la date\.$/us',

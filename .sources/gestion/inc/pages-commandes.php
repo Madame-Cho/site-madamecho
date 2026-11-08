@@ -45,9 +45,10 @@ function page_accueil(): void {
     if ($t['rappels']) {
         $l = '';
         foreach ($t['rappels'] as $k) $l .= '<a class="carte-cmd" href="' . h(u('commande', ['id' => $k['id']])) . '#mail-rappel"><span class="l1"><b translate="no">' . h(commande_client_nom($k)) . '</b>'
+            . (!empty($k['rappel_modifie']) ? '<span class="chip chip-nouveau">Retrait modifié depuis le rappel</span>' : '')
             . '<span class="chip">' . h(email_valide((string)$k['client_email']) ? 'Mail' : 'SMS ou WhatsApp') . '</span></span>'
             . '<span class="l2">' . h($k['reference']) . ' · ' . h(retrait_texte($k, true)) . '</span></a>';
-        $c .= bloc(icone('email') . ' Rappels à envoyer', '<p class="aide">Retraits de demain : touchez une commande, vérifiez l\'aperçu, puis « Envoyer ». Rien ne part tout seul.</p><div class="liste">' . $l . '</div>', '', 'rappels');
+        $c .= bloc(icone('email') . ' Rappels à envoyer', '<p class="aide">Retraits de demain (et ceux d\'aujourd\'hui sans rappel) : touchez une commande, vérifiez l\'aperçu, puis « Envoyer ». Rien ne part tout seul.</p><div class="liste">' . $l . '</div>', '', 'rappels');
     }
     $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'), '', 'demandes');
     // Retraits groupés par jour
@@ -152,6 +153,7 @@ function page_commande(): void {
                 break;
             // Les mails au client partent de la gestion au toucher de Youngmi sur « Envoyer » (R-01) ; Gmail reste le secours
             case 'envoyer_proposition':
+                if (!apercu_a_jour($k, 'proposition')) break;
                 if (!in_array($k['statut'], ['demande', 'proposition'], true) || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la demande n\'en est plus là.'); break; }
                 $prix = centimes(texte('prix_final', 12));
                 $acompte = centimes(texte('acompte', 12));
@@ -162,6 +164,7 @@ function page_commande(): void {
                 flash_envoi('Proposition envoyée au client. Une copie arrive dans contact@madamecho.com ; sa réponse arrivera dans les Échanges.');
                 break;
             case 'envoyer_confirmation':
+                if (!apercu_a_jour($k, 'confirmation')) break;
                 if ($k['statut'] !== 'confirmee' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la commande n\'est pas confirmée.'); break; }
                 if (envoyer_mail_commande($k, 'confirmation', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) flash_envoi('Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com.');
                 else flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez, ou utilisez « Autre façon » plus bas.');
@@ -174,16 +177,19 @@ function page_commande(): void {
                 break;
             case 'envoyer_rappel':   // FR-040 : rappel de retrait, au toucher de Youngmi (R-01)
                 if ($k['statut'] !== 'confirmee' || livraison_pro($k) || !$k['retrait_date'] || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la commande n\'est pas confirmée avec un jour de retrait.'); break; }
+                if (!apercu_a_jour($k, 'rappel')) break;
+                // Audit n° 4, A04 : un rappel déjà parti ou déclaré pour ce rendez-vous ne repart que sur « Renvoyer », exprès
+                if (($e = rappel_etat($k)) && $e['a_jour'] && empty($_POST['renvoi'])) { flash('erreur', 'Le rappel est déjà parti ou noté (' . date_fr($e['le'], 'heure') . ') : rien n\'a été renvoyé. Pour le renvoyer exprès, rouvrez la commande et touchez « Renvoyer ».'); break; }
                 if (envoyer_mail_commande($k, 'rappel', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) flash_envoi('Rappel envoyé au client. Une copie arrive dans contact@madamecho.com.');
                 else flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez, ou envoyez la version courte par SMS ou WhatsApp.');
                 break;
-            case 'rappel_note':   // le rappel envoyé autrement (SMS, WhatsApp, téléphone), noté avec son canal
+            case 'rappel_note':   // le rappel envoyé hors de la gestion (SMS, WhatsApp, téléphone, Gmail), déclaré avec son canal (A03, A07)
                 if ($k['statut'] !== 'confirmee') { flash('erreur', 'La commande n\'est pas confirmée.'); break; }
-                $par = choix('par', ['sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'telephone' => 'Téléphone'], 'sms');
-                commentaire('Rappel de retrait envoyé par ' . CANAUX_ECHANGE[$par] . ' : « ' . rappel_sms($k) . ' »', $id, (int)$k['client_id'], $par);
+                rappel_noter($k, choix('par', RAPPEL_CANAUX, 'sms'), une_ligne(texte('texte_envoye', 600)));
                 flash('ok', 'Rappel noté dans les Échanges.');
                 break;
             case 'envoyer_avis':
+                if (!apercu_a_jour($k, 'avis')) break;
                 $lien = (string)parametre('lien_avis', '');
                 if ($k['statut'] !== 'remise' || $lien === '' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Il faut une commande remise, l\'email du client et le lien d\'avis (Paramètres).'); break; }
                 if (!envoyer_mail_commande($k, 'avis', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'lien' => $lien])) { flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez dans un moment.'); break; }
@@ -381,8 +387,10 @@ function bloc_mail_client(array $k, string $type, string $titre, string $avant =
     $boite = 'mail-' . $type;
     if (!email_valide($email)) return bloc_email($boite, $titre, $m, '') . $secours;
     $deja = mail_deja($id, $type);
+    if ($type === 'rappel') { $e = rappel_etat($k); $deja = $e && $e['a_jour'] ? ['le' => $e['le']] : null; }
     $ap = 'apercu-' . $type;
-    $form = ($deja ? '<p class="aide"><b>Déjà envoyé</b> · ' . h(date_fr($deja['le'], 'heure')) . '</p>' : '')
+    $form = '<input type="hidden" name="empreinte" value="' . h(empreinte_mail($k, $type)) . '">' . ($deja ? '<input type="hidden" name="renvoi" value="1">' : '')
+          . ($deja ? '<p class="aide"><b>Déjà envoyé</b> · ' . h(date_fr($deja['le'], 'heure')) . '</p>' : '')
           . '<p class="aide">Modifiez la phrase d\'accueil si vous voulez, ajoutez un petit mot, vérifiez l\'aperçu, puis envoyez. Le reste vient de la commande.</p>'
           . $avant
           . zone('accueil', 'Phrase d\'accueil', accueil_mail($k, $type), ['rows' => '4', 'maxlength' => '1500', 'data-apercu' => $ap, 'lang' => 'fr', 'data-aide-saisie' => '1', 'id' => 'f-accueil-' . $type])
@@ -399,26 +407,38 @@ function bloc_mail_client(array $k, string $type, string $titre, string $avant =
 function bloc_confirmation_client(array $k): string { return bloc_mail_client($k, 'confirmation', 'Envoyer la confirmation au client'); }
 
 /** Le rappel de retrait (FR-040) : sur une commande confirmée dont le retrait est aujourd'hui, demain ou après-demain. Mail au toucher
- *  de « Envoyer », ou version courte à copier pour un SMS ou WhatsApp, puis « J'ai envoyé le rappel » avec le canal. */
+ *  de « Envoyer », ou version courte à copier pour un SMS ou WhatsApp, puis « J'ai envoyé le rappel » avec le canal. Pas de bouton
+ *  qui ouvre WhatsApp avec le texte prérempli pendant le pilote (audit n° 4, A06 : ce serait un destinataire de plus pour les données). */
 function bloc_rappel_client(array $k): string {
     $d = (string)$k['retrait_date'];
     if ($k['statut'] !== 'confirmee' || livraison_pro($k) || $d === '' || $d < aujourdhui() || $d > date('Y-m-d', strtotime('+2 days'))) return '';
-    $fait = rappel_fait((int)$k['id']);
-    $sms = rappel_sms($k);
+    $e = rappel_etat($k);
+    $fait = $e && $e['a_jour'] ? $e['le'] : null;
+    $modifie = $e && !$e['a_jour'];
     $noter = '<div class="rappel-court"><p class="etiq-apercu">Version courte, pour un SMS ou WhatsApp</p>'
-           . '<pre class="corps" id="rappel-sms" translate="no" lang="fr">' . h($sms) . '</pre>'
-           . '<div class="actions"><button type="button" class="btn" data-copier="rappel-sms">' . icone('copier') . 'Copier le texte</button>'
-           . (($t = preg_replace('/\D/', '', (string)($k['client_tel'] ?? ''))) !== '' ? lien_bouton('https://wa.me/' . (str_starts_with($t, '0') ? '33' . substr($t, 1) : $t) . '?text=' . rawurlencode($sms), icone('email') . 'Ouvrir WhatsApp', 'discret', ['target' => '_blank', 'rel' => 'noopener']) : '')
-           . '</div>'
-           . formulaire('rappel_note', liste_choix('par', 'Envoyé par', ['sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'telephone' => 'Téléphone'], 'sms')
+           . '<pre class="corps" id="rappel-sms" translate="no" lang="fr">' . h(rappel_sms($k)) . '</pre>'
+           . '<div class="actions"><button type="button" class="btn" data-copier="rappel-sms">' . icone('copier') . 'Copier le texte</button></div>'
+           . formulaire('rappel_note', liste_choix('par', 'Envoyé par', RAPPEL_CANAUX, 'sms')
+                 . champ('texte_envoye', 'Texte envoyé, si vous l\'avez changé (facultatif)', '', ['maxlength' => '600', 'lang' => 'fr'])
                  . bouton('J\'ai envoyé le rappel', 'secondaire'), ['class' => 'form-etape']) . '</div>';
     $titre = 'Envoyer le rappel au client';
+    $alerte = $modifie ? '<p class="erreur">Le jour ou l\'heure du retrait a changé depuis le dernier rappel : prévenez le client.</p>' : '';
     if (!email_valide((string)$k['client_email'])) {
         return '<details class="email-pret" id="mail-rappel"' . ($fait ? '' : ' open') . '><summary>' . icone('email') . h($titre) . ($fait ? ' <span class="compte">envoyé</span>' : '') . '</summary>'
-             . ($fait ? '<p class="aide"><b>Déjà envoyé</b> · ' . h(date_fr($fait, 'heure')) . '</p>' : '')
+             . $alerte . ($fait ? '<p class="aide"><b>Déjà envoyé</b> · ' . h(date_fr($fait, 'heure')) . '</p>' : '')
              . '<p class="aide">Pas d\'email pour ce client : envoyez la version courte par SMS ou WhatsApp, puis notez-le.</p>' . $noter . '</details>';
     }
-    return bloc_mail_client($k, 'rappel', $titre, '', '<p class="aide">Ou bien par SMS ou WhatsApp :</p>' . $noter, !$fait && rappel_quand($k) !== 'le ' . date_fr($d, 'jour'));
+    return $alerte . bloc_mail_client($k, 'rappel', $titre, '', '<p class="aide">Envoyé autrement (SMS, WhatsApp, téléphone, Gmail) ? Notez-le :</p>' . $noter, !$fait && rappel_quand($k) !== 'le ' . date_fr($d, 'jour'));
+}
+/** Les façons de déclarer un rappel envoyé hors de la gestion (A07). */
+const RAPPEL_CANAUX = ['sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'telephone' => 'Téléphone', 'email' => 'Email (Gmail)'];
+/** Audit n° 4, A05 : le mail ne part que si la commande n'a pas changé depuis l'aperçu relu (empreinte du formulaire) ; sinon un bandeau
+ *  le dit et la page montre le nouvel aperçu. */
+function apercu_a_jour(array $k, string $type): bool {
+    $e = (string)($_POST['empreinte'] ?? '');
+    if ($e !== '' && hash_equals(empreinte_mail($k, $type), $e)) return true;
+    flash('erreur', 'La commande a changé depuis l\'aperçu (jour, heure, montant, paiement ou email) : rien n\'est parti. Vérifiez le nouvel aperçu, puis envoyez.');
+    return false;
 }
 
 /** « Écrire au client » : objet, message, aperçu exact, « Envoyer » ; rangé ensuite dans les Échanges. $reponse : l'objet de l'email auquel elle répond. */

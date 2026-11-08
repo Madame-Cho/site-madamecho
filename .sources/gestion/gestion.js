@@ -43,13 +43,18 @@
     if (!z) return;
     var cadre = d.getElementById(z.getAttribute("data-apercu"));
     if (!cadre || !z.form) return;
+    // Audit n° 4, A05 : « Envoyer » attend que l'aperçu soit à jour ; une réponse plus ancienne que la dernière saisie est ignorée
+    var envoi = z.form.querySelector("button[type=submit]");
+    if (envoi) envoi.disabled = true;
     clearTimeout(minuteur);
+    var numero = (cadre._numero || 0) + 1;
+    cadre._numero = numero;
     minuteur = setTimeout(function () {
       var donnees = new FormData(z.form);
       fetch(cadre.getAttribute("data-source"), { method: "POST", body: donnees, credentials: "same-origin" })
         .then(function (r) { return r.ok ? r.text() : null; })
-        .then(function (h) { if (h) cadre.innerHTML = h; })
-        .catch(function () {});
+        .then(function (h) { if (numero !== cadre._numero) return; if (h) cadre.innerHTML = h; if (envoi) envoi.disabled = false; })
+        .catch(function () { if (numero === cadre._numero && envoi) envoi.disabled = false; });
     }, 400);
   });
 

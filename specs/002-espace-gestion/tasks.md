@@ -85,6 +85,12 @@
 - [X] T047 [US2] FR-040 : cadre « Envoyer le rappel au client » sur la commande confirmée (retrait aujourd'hui, demain ou après-demain), actions `envoyer_rappel` et `rappel_note` (canal), « À faire maintenant » qui le dit
 - [X] T048 [P] [US8] Dictionnaire coréen, traduction de l'historique (rappel), manuel FR/KO, styles de l'aperçu (`apercu_mail_css`)
 - [X] T049 Essais sur base fictive (liste, envoi, double toucher, noté par SMS, client sans email, livraison de restaurant exclue, confirmation de la veille) et captures FR/KO
+- [X] T052 Audit n° 4, A01 : « déjà réglé » pour une commande payée (rappel et confirmation, encadré et texte), `reste_a_regler()` et `total_email()`
+- [X] T053 Audit n° 4, A02 et A03 : clé du rendez-vous (`rdv_cle()`) gardée avec la confirmation et le rappel ; `rappel_etat()` ; retour « Retrait modifié » ; note libre sans effet ; `rappel_noter()`
+- [X] T054 Audit n° 4, A04 et A05 : verrou de 2 minutes par commande et par type (deux onglets), « Renvoyer » exprès, empreinte de l'aperçu vérifiée au toucher (`empreinte_mail()`, `apercu_a_jour()`), « Envoyer » attend l'aperçu à jour (`gestion.js`)
+- [X] T055 Audit n° 4, A06, A07, A10, A11 : bouton WhatsApp retiré pour le pilote, rappel déclaré aussi par Gmail avec le texte envoyé facultatif, « heure à convenir » dans le SMS, retrait du jour sans rappel proposé
+- [X] T056 Audit n° 4, A09 : `envoyer_email_client()` rend '' (et non false) quand DKIM manque : message d'erreur au lieu d'un plantage
+- [ ] T057 Audit n° 4, A08 : « Tous les échanges » filtré avant la limite, puis pagination (lot suivant)
 - [ ] T050 Audit du ChatGPT d'Olivier sur la version (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
 - [ ] T051 Plus tard, sur décision d'Olivier (exception à R-01, R-16) : envoi automatique la veille à 10 h par une tâche planifiée OVH, « Ne pas envoyer » sur Aujourd'hui, case « Rappel automatique » sur la commande
 

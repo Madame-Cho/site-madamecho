@@ -490,6 +490,31 @@ function rappel_quand(array $k): string {
     if ($d === date('Y-m-d', strtotime('+1 day'))) return 'demain';
     return $d !== '' ? 'le ' . date_fr($d, 'jour') : 'bientôt';
 }
+/** La clé du rendez-vous annoncé (jour, heure, moment, retrait ou livraison) : un rappel ou une confirmation ne vaut que pour
+ *  ce rendez-vous ; s'il change, le rappel redevient à faire (audit n° 4, A02). */
+function rdv_cle(array $k): string {
+    return substr(hash('sha256', implode('|', [(string)($k['retrait_date'] ?? ''), (string)($k['retrait_heure'] ?? ''), (string)($k['retrait_moment'] ?? ''), (string)($k['mode'] ?? '')])), 0, 12);
+}
+/** Ce qu'il reste à régler au retrait (audit n° 4, A01) : rien si la commande est déjà payée, le total moins l'acompte reçu, sinon le total. */
+function reste_a_regler(array $k): int {
+    $total = montant_commande($k);
+    if (($k['paiement'] ?? '') === 'paye') return 0;
+    if (($k['paiement'] ?? '') === 'acompte_recu' && (int)$k['acompte'] > 0) return max(0, $total - (int)$k['acompte']);
+    return $total;
+}
+/** La ligne « Total » de la version texte (confirmation, rappel), calculée comme l'encadré. */
+function total_email(array $k): string {
+    $total = montant_commande($k); $acompte = (int)$k['acompte'];
+    if (($k['paiement'] ?? '') === 'paye') return 'Total : ' . euros($total) . ' TTC, déjà réglé. Merci !';
+    if (($k['paiement'] ?? '') === 'acompte_recu' && $acompte) return 'Total : ' . euros($total) . ' TTC (acompte de ' . euros($acompte) . ' reçu, reste ' . euros(reste_a_regler($k)) . ' à régler au retrait)';
+    return 'Total : ' . euros($total) . ' TTC, à régler au retrait';
+}
+/** L'empreinte de ce que montre l'aperçu (destinataire, rendez-vous, montants, contenu, « demain ») : vérifiée au toucher sur « Envoyer » ;
+ *  si la commande a changé entre-temps, rien ne part et Youngmi revoit l'aperçu (audit n° 4, A05). */
+function empreinte_mail(array $k, string $type): string {
+    return substr(hash('sha256', implode('|', [$type, (string)$k['client_email'], rdv_cle($k), montant_commande($k), (string)$k['paiement'], (int)$k['acompte'],
+        (string)$k['lignes'], (string)$k['perso'], $type === 'rappel' ? rappel_quand($k) : ''])), 0, 16);
+}
 /** La fin du rappel : « À demain, » ou « À tout à l'heure, ». */
 function rappel_fin(array $k): string {
     return match (rappel_quand($k)) { 'demain' => 'À demain,', 'aujourd\'hui' => 'À tout à l\'heure,', default => 'À bientôt,' };
@@ -500,7 +525,7 @@ function rappel_sms(array $k): string {
     $quand = rappel_quand($k);
     $jour = $d !== '' ? JOURS[(int)date('w', strtotime($d))] . ' ' . date('d/m', strtotime($d)) : '';
     $h = $k['retrait_heure'] !== '' ? ' à ' . (int)substr($k['retrait_heure'], 0, 2) . ' h' . (substr($k['retrait_heure'], 3, 2) !== '00' ? ' ' . substr($k['retrait_heure'], 3, 2) : '')
-       : (isset(MOMENTS[$k['retrait_moment']]) ? ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) : '');
+       : (isset(MOMENTS[$k['retrait_moment']]) ? ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)' : '');
     $prenom = explode("\n", trim(signature()))[0] ?? '';
     $prenom = trim(explode(' ', trim($prenom))[0] ?? '') ?: 'Youngmi';
     return salutation($k) . ' petit rappel de Madame Cho : votre commande ' . $k['reference'] . ' vous attend '
@@ -547,9 +572,11 @@ function mail_recap(array $k, string $type, \Closure $S): string {
         $l .= '<tr><td' . $bord . '><b>Total TTC</b></td><td align="right"' . $bord . '><b>' . h($total ? euros($total) : 'à préciser') . '</b></td></tr>';
         if ($acompte > 0) $l .= '<tr><td' . $td . '>Acompte pour réserver, déduit au retrait</td><td align="right"' . $td . '>' . h(euros($acompte)) . '</td></tr>';
     } else {
-        $avecAcompte = $k['paiement'] === 'acompte_recu' && $acompte;
-        $l .= '<tr><td' . $bord . '><b>Total TTC</b>, ' . ($avecAcompte ? 'acompte de ' . h(euros($acompte)) . ' reçu' : 'à régler au retrait') . '</td><td align="right"' . $bord . '><b>' . h(euros($total)) . '</b></td></tr>';
-        if ($avecAcompte) $l .= '<tr><td' . $td . '>Reste à régler au retrait</td><td align="right"' . $td . '>' . h(euros($total - $acompte)) . '</td></tr>';
+        // Audit n° 4, A01 : une commande déjà payée ne demande plus rien
+        $paye = $k['paiement'] === 'paye';
+        $avecAcompte = !$paye && $k['paiement'] === 'acompte_recu' && $acompte;
+        $l .= '<tr><td' . $bord . '><b>Total TTC</b>, ' . ($paye ? 'déjà réglé' : ($avecAcompte ? 'acompte de ' . h(euros($acompte)) . ' reçu' : 'à régler au retrait')) . '</td><td align="right"' . $bord . '><b>' . h(euros($total)) . '</b></td></tr>';
+        if ($avecAcompte) $l .= '<tr><td' . $td . '>Reste à régler au retrait</td><td align="right"' . $td . '>' . h(euros(reste_a_regler($k))) . '</td></tr>';
     }
     return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#F3EDE4;border-radius:6px;margin-top:6px') . '><tr><td' . $S('padding:18px 20px') . '>'
         . '<p' . $S($F . 'font-size:17px;line-height:24px;color:#3B1D0E;font-weight:bold;margin:0') . '>' . h(mail_quand($k)) . '</p>'
@@ -602,21 +629,19 @@ function mail_commande(array $k, string $type, array $o = []): array {
             break;
         case 'confirmation':
             $agenda = rdv_client_possible($k) ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:20px') : '';
+            $regle = ($k['paiement'] === 'paye' ? '' : 'Paiement par carte, virement ou espèces. ') . 'Annulation sans frais jusqu\'à 24 heures avant le retrait.';
             $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '') . $agenda
-                   . $p('Paiement par carte, virement ou espèces. Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:14px');
-            $total = montant_commande($k); $acompte = (int)$k['acompte'];
-            $texte .= lignes_email($k) . "\n\nTotal : " . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait') . "\n"
+                   . $p(h($regle), 'margin-top:14px');
+            $texte .= lignes_email($k) . "\n\n" . total_email($k) . "\n"
                     . retrait_email($k) . "\n" . ($mot !== '' ? "\n" . $mot . "\n" : '') . rdv_client_texte($k)
-                    . "\nPaiement par carte, virement ou espèces. Annulation sans frais jusqu'à 24 heures avant le retrait.\n\n";
+                    . "\n" . $regle . "\n\n";
             break;
         case 'rappel':
+            $empeche = ($k['paiement'] === 'paye' ? '' : 'Paiement par carte, virement ou espèces. ') . 'Un empêchement ? Répondez simplement à ce mail ou appelez le 06 61 31 17 79.';
             $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '')
-                   . $p('Paiement par carte, virement ou espèces. Un empêchement ? Répondez simplement à ce mail ou appelez le 06 61 31 17 79.', 'margin-top:20px');
-            $total = montant_commande($k); $acompte = (int)$k['acompte'];
-            $texte .= lignes_email($k) . "\n\n" . retrait_email($k) . "\n"
-                    . 'Total : ' . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait') . "\n"
-                    . ($mot !== '' ? "\n" . $mot . "\n" : '')
-                    . "\nPaiement par carte, virement ou espèces. Un empêchement ? Répondez simplement à ce mail ou appelez le 06 61 31 17 79.\n\n";
+                   . $p(h($empeche), 'margin-top:20px');
+            $texte .= lignes_email($k) . "\n\n" . retrait_email($k) . "\n" . total_email($k) . "\n"
+                    . ($mot !== '' ? "\n" . $mot . "\n" : '') . "\n" . $empeche . "\n\n";
             $fin = rappel_fin($k);
             break;
         case 'avis':
@@ -647,10 +672,20 @@ function envoyer_mail_commande(array $k, string $type, array $o = []): bool {
     // Audit n° 3, C04 : un double toucher ou un réseau qui hésite ne renvoie pas le même mail (même type, même texte, moins de 2 minutes)
     if (val("SELECT 1 FROM evenements WHERE commande_id = ? AND type = 'email_client' AND ancien LIKE ? AND nouveau = ? AND le > ?",
             [(int)$k['id'], 'type:' . $type . ' %', $m['corps'], date('Y-m-d H:i:s', time() - 120)])) { $GLOBALS['mc_doublon'] = true; return true; }
+    // Audit n° 4, A04 : un verrou de 2 minutes par commande et par type, pris avant l'envoi, pour deux onglets ou deux appareils à la fois
+    //  (pas pour « Écrire au client » : deux messages différents peuvent se suivre)
+    $verrou = $type === 'message' ? '' : 'envoi_' . (int)$k['id'] . '_' . $type;
+    if ($verrou !== '') {
+        q("DELETE FROM parametres WHERE cle LIKE 'envoi\\_%' ESCAPE '\\' AND CAST(valeur AS INTEGER) < ?", [time() - 120]);   // les verrous passés, tous
+        $st = db()->prepare("INSERT OR IGNORE INTO parametres (cle, valeur) VALUES (?, ?)");
+        $st->execute([$verrou, (string)time()]);
+        if ($st->rowCount() === 0) { $GLOBALS['mc_doublon'] = true; return true; }
+    }
     $mid = envoyer_email_client($a, $m['sujet'], $m['corps'], $m['html'], mail_refs((int)$k['id']));
-    if ($mid === '') return false;
+    if ($mid === '') { if ($verrou !== '') q("DELETE FROM parametres WHERE cle = ?", [$verrou]); return false; }
+    // Le rendez-vous annoncé est gardé avec la confirmation et le rappel : s'il change, le rappel redevient à faire (A02)
     evenement('email_client', 'Email envoyé à ' . $a . ' (' . mb_strtolower(MAIL_TYPES[$type]) . ') : « ' . $m['sujet'] . ' »', ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']],
-              'type:' . $type . ' mid:' . $mid, $m['corps']);
+              'type:' . $type . ' mid:' . $mid . (in_array($type, ['confirmation', 'rappel'], true) ? ' rdv:' . rdv_cle($k) : ''), $m['corps']);
     $now = maintenant();
     q("UPDATE commandes SET dernier_echange = ?, maj_le = ? WHERE id = ?", [$now, $now, (int)$k['id']]);
     client_echange((int)$k['client_id'], $now);

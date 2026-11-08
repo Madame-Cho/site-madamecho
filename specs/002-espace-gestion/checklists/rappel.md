@@ -19,5 +19,11 @@
 ## Cas limites
 
 - [x] CHK007 Livraison de restaurant exclue
-- [x] CHK008 Commande déplacée après un rappel : le rappel peut être renvoyé (« Renvoyer »)
+- [x] CHK008 Commande déplacée après un rappel : elle revient dans la liste, marquée « Retrait modifié » (audit n° 4, A02)
 - [ ] CHK009 Retrait un lundi et dimanche fermé : à revoir avec Youngmi pendant le pilote (rappel le samedi ?)
+
+## Audit n° 4 (2026-11-08)
+
+- [x] CHK010 A01 à A05, A07, A09 à A11 corrigés et essayés (30 + 14 vérifications sur base fictive)
+- [ ] CHK011 A06 : bouton WhatsApp retiré pour le pilote, à confirmer par Olivier
+- [ ] CHK012 A08 : « Tous les échanges » au-delà de 200 événements (T057)

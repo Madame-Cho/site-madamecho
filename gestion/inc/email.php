@@ -73,7 +73,7 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
         return $mid;
     }
     $dkim = gestion_site() . '/ma-demande/dkim.php';
-    if (!is_file($dkim)) { error_log('madamecho gestion : dkim.php absent, email client non envoyé'); return false; }
+    if (!is_file($dkim)) { error_log('madamecho gestion : dkim.php absent, email client non envoyé'); return ''; }
     require_once $dkim;
     $enc = fn(string $s) => rtrim(chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace(["\r\n", "\r"], "\n", $s))), 76, "\r\n"), "\r\n");
     $frontiere = 'mc-' . bin2hex(random_bytes(12));
@@ -93,7 +93,7 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
         'Content-Type' => 'multipart/alternative; boundary="' . $frontiere . '"',
     ];
     $signature = \dkim_signer($signes, $corps);
-    if (!$signature) { error_log('madamecho gestion : signature DKIM impossible, email client non envoyé'); return false; }
+    if (!$signature) { error_log('madamecho gestion : signature DKIM impossible, email client non envoyé'); return ''; }
     $l = [$signature];
     foreach ($signes as $n => $v) if ($n !== 'To' && $n !== 'Subject') $l[] = $n . ': ' . $v;
     $l[] = 'Bcc: ' . GESTION_COMPTE_INITIAL;
