@@ -98,9 +98,17 @@ function bloc_facture(array $k): string {
                   . champ('adresse', 'Adresse du client (facultatif)', '', ['maxlength' => '200', 'autocomplete' => 'off', 'lang' => 'fr'], 'Seulement si le client la demande. Elle ne sert qu\'à cette facture.')
                   . case_a_cocher('anonyme', 'Le client ne veut pas son nom sur la facture (« Client particulier »)')
                   . ($e['qonto'] !== '' ? case_a_cocher('doublon_ok', '<span>Je confirme : la facture Qonto notée est une autre facture, ce n\'est pas un doublon</span> (<b translate="no">' . h($e['qonto']) . '</b>)') : '')
+                  . '<input type="hidden" name="empreinte" value="' . h(facture_empreinte_apercu($d)) . '">'
                   . '<div class="actions">' . bouton(icone('valider') . 'Émettre la facture', 'principal', $e['manque'] ? ['disabled' => true] : []) . '</div>';
+            // Après un avoir total : la facture annulée et son avoir restent visibles ici (audit n° 6, constat 11)
+            $avant = '';
+            if ($e['avoir']) {
+                foreach (factures_de_commande($id) as $x) $avant .= '<li><span>' . ($x['genre'] === 'avoir' ? 'Avoir' : 'Facture') . '</span> <b translate="no">' . h($x['numero']) . '</b> · <span translate="no">'
+                    . h(montant_facture((int)$x['total_ttc'])) . '</span> · <span>' . h(date_fr($x['emise_le'], 'courte')) . '</span> · <a href="' . h(u('facture-pdf', ['id' => (int)$x['id']])) . '" target="_blank" rel="noopener">PDF</a></li>';
+                $avant = '<p class="aide">Déjà émis pour cette commande :</p><ul class="remises">' . $avant . '</ul>';
+            }
             return bloc('Facture' . ($e['avoir'] ? ' (nouvelle, après l\'avoir)' : ' à émettre'),
-                '<p class="aide">Relisez l\'aperçu. Une fois émise, la facture reçoit son numéro et ne se modifie plus : une erreur se corrige par un avoir.</p>'
+                $avant . '<p class="aide">Relisez l\'aperçu. Une fois émise, la facture reçoit son numéro et ne se modifie plus : une erreur se corrige par un avoir.</p>'
                 . '<p class="aide"><span>Un nom mal écrit ?</span> <span>Avant d\'émettre,</span> <a href="' . h(u('client-edition', ['id' => (int)$k['client_id']])) . '">corrigez la fiche du client</a>.</p>'
                 . $manque . $qonto . facture_apercu_html($d)
                 . formulaire('facture_emettre', $form, ['class' => 'form-facture', 'data-confirmer' => 'Émettre la facture ? Elle recevra son numéro et ne pourra plus être modifiée.']), 'a-faire', 'facture');
@@ -124,6 +132,9 @@ function bloc_facture(array $k): string {
         . formulaire('facture_avoir', '<input type="hidden" name="facture" value="' . (int)$f['id'] . '">'
             . liste_choix('mode', 'L\'avoir', ['total' => 'Annule toute la facture (' . montant_facture($e['reste']) . ')', 'partiel' => 'Corrige une partie (montant ci-dessous)'])
             . champ('montant', 'Montant de la correction, TTC (si partiel)', '', ['inputmode' => 'decimal', 'placeholder' => '5,00'])
+            . (count($rt = array_filter(facture_reste_par_taux($f), fn($v) => $v > 0)) > 1
+                ? liste_choix('taux', 'Taux de TVA de la correction (si partiel)', ['' => 'Choisir'] + array_combine(array_map('strval', array_keys($rt)), array_map(fn($t, $v) => taux_facture((int)$t) . ' · ' . montant_facture($v), array_keys($rt), $rt)), '')
+                : '')
             . champ('motif', 'Raison (écrite sur l\'avoir)', '', ['maxlength' => '200', 'required' => true, 'lang' => 'fr', 'placeholder' => 'Par exemple : erreur de quantité, geste commercial'])
             . bouton('Émettre l\'avoir', 'danger'), ['data-confirmer' => 'Émettre l\'avoir ? Il recevra son numéro et ne pourra plus être modifié.']) . '</details>';
     return bloc('Facture ' . '<span translate="no">' . h($f['numero']) . '</span>', $c, $e['a_corriger'] ? 'alerte' : '', 'facture');
@@ -134,7 +145,8 @@ function bloc_document(array $k, array $f): string {
     $remises = facture_remises($fid);
     $r = '';
     foreach ($remises as $x) $r .= '<li>' . ($x['ok'] ? '' : '<span class="retard">Échec</span> · ') . '<span>' . h(REMISE_CANAUX[$x['canal']]) . '</span>' . ($x['detail'] !== '' ? ' <span translate="no">(' . h($x['detail']) . ')</span>' : '')
-        . ' · <span>' . h(date_fr($x['le'], 'heure')) . '</span> · <span translate="no">' . h($x['par']) . '</span></li>';
+        . ' · <span>' . h(date_fr($x['le'], 'heure')) . '</span> · <span translate="no">' . h($x['par']) . '</span>'
+        . ($x['ok'] && $x['canal'] === 'email' ? ' · <span class="petit">envoi accepté par le serveur, sans preuve de lecture</span>' : '') . '</li>';
     $remis = (bool)facture_remise_derniere($fid);
     $pdf = u('facture-pdf', ['id' => $fid]);
     $c = definition([($avoir ? 'Avoir' : 'Facture') => '<b translate="no">' . h($f['numero']) . '</b>' . ($avoir ? ' · <span translate="no" lang="fr">' . h($f['motif']) . '</span>' : ''),
@@ -146,7 +158,9 @@ function bloc_document(array $k, array $f): string {
        . lien_bouton(u('facture-pdf', ['id' => $fid, 'telecharger' => 1]), icone('imprimer') . 'Télécharger pour imprimer', 'discret')
        . (!$f['verifiee_le'] ? formulaire('facture_verifiee', '<input type="hidden" name="facture" value="' . $fid . '">' . bouton(icone('valider') . 'J\'ai vérifié : ' . ($avoir ? 'l\'avoir est juste' : 'la facture est juste'), 'discret'), ['class' => 'form-ligne']) : '')
        . '</div>';
-    if (!$f['verifiee_le']) $c .= '<p class="aide">Phase de contrôle : ouvrez le PDF et vérifiez nom, gâteaux, prix, TVA et date avant de le remettre. Touchez « J\'ai vérifié » s\'il est juste ; sinon, faites un avoir.</p>';
+    if (facture_attend_verification($f))   // audit n° 6, constat 5 : pendant la phase de contrôle, rien ne se remet avant « J'ai vérifié »
+        return $c . '<p class="aide">Phase de contrôle : ouvrez le PDF et vérifiez nom, gâteaux, prix, TVA et date. Touchez « J\'ai vérifié » s\'il est juste ; sinon, faites un avoir. Les façons de le remettre au client apparaissent ensuite.</p>';
+    if (!$f['verifiee_le']) $c .= '<p class="aide">Ouvrez le PDF et vérifiez nom, gâteaux, prix, TVA et date avant de le remettre.</p>';
     // Remettre au client (FR-007 à FR-009)
     $email = (string)$k['client_email'];
     $s = '';
@@ -191,12 +205,14 @@ function facture_post(array $k, string $a): void {
     $id = (int)$k['id'];
     foreach (['adresse', 'motif', 'nom_facture'] as $champ) if (preg_match(CORE_HANGUL, (string)($_POST[$champ] ?? ''))) { flash('erreur', 'La facture est toujours en français : écrivez le nom, l\'adresse et la raison en lettres latines.'); return; }
     if ($a === 'facture_emettre') {
-        $r = facture_emettre($id, ['adresse' => une_ligne(texte('adresse', 200)), 'nom' => une_ligne(texte('nom_facture', 120)), 'anonyme' => !empty($_POST['anonyme']), 'doublon_ok' => !empty($_POST['doublon_ok'])]);
+        $r = facture_emettre($id, ['adresse' => une_ligne(texte('adresse', 200)), 'nom' => une_ligne(texte('nom_facture', 120)), 'anonyme' => !empty($_POST['anonyme']), 'doublon_ok' => !empty($_POST['doublon_ok']),
+                                   'empreinte' => (string)preg_replace('/[^0-9a-f]/', '', texte('empreinte', 64))]);
         flash(isset($r['erreur']) ? 'erreur' : 'ok', $r['erreur'] ?? ('Facture ' . $r['numero'] . ' émise. Vérifiez le PDF, puis remettez-la au client.'));
         return;
     }
     $f = facture(entier('facture', 1));
     if (!$f || (int)$f['commande_id'] !== $id) { flash('erreur', 'Facture introuvable.'); return; }
+    if (in_array($a, ['facture_envoyer', 'facture_remise'], true) && facture_attend_verification($f)) { flash('erreur', 'Phase de contrôle : vérifiez d\'abord le PDF et touchez « J\'ai vérifié », puis remettez-le au client.'); return; }
     switch ($a) {
         case 'facture_envoyer':
             $ok = envoyer_mail_facture($k, $f, ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)]);
@@ -210,6 +226,8 @@ function facture_post(array $k, string $a): void {
             flash('ok', 'C\'est noté : ' . REMISE_NOTEES[$canal]);
             break;
         case 'facture_verifiee':
+            // « J'ai vérifié » vaut après avoir ouvert le PDF, pas sur un simple toucher (audit n° 6, constat 5)
+            if (empty($_SESSION['pdf_vus'][(int)$f['id']])) { flash('erreur', 'Ouvrez d\'abord le PDF (« Voir le PDF ») et relisez-le, puis touchez « J\'ai vérifié ».'); break; }
             q("UPDATE factures SET verifiee_le = ?, verifiee_par = ? WHERE id = ? AND verifiee_le IS NULL", [maintenant(), auteur(), (int)$f['id']]);
             evenement('facture', ($f['genre'] === 'avoir' ? 'Avoir ' : 'Facture ') . $f['numero'] . ' vérifié' . ($f['genre'] === 'avoir' ? '' : 'e') . ' (phase de contrôle)', ['commande' => $id, 'client' => (int)$k['client_id']]);
             flash('ok', 'Merci : c\'est noté comme vérifié.');
@@ -235,7 +253,8 @@ function facture_post(array $k, string $a): void {
             $partiel = choix('mode', ['total' => 1, 'partiel' => 1], 'total') === 'partiel';
             $montant = $partiel ? centimes(texte('montant', 12)) : null;
             if ($partiel && ($montant === null || $montant <= 0)) { flash('erreur', 'Écrivez le montant de la correction (par exemple 5,00).'); break; }
-            $r = avoir_emettre((int)$f['id'], texte('motif', 200), $montant);
+            $taux = $partiel && ($t = texte('taux', 4)) !== '' && ctype_digit($t) ? (int)$t : null;
+            $r = avoir_emettre((int)$f['id'], texte('motif', 200), $montant, $taux);
             flash(isset($r['erreur']) ? 'erreur' : 'ok', $r['erreur'] ?? ('Avoir ' . $r['numero'] . ' émis. Remettez-le au client comme la facture.'));
             break;
     }
@@ -255,6 +274,7 @@ function envoyer_pdf(array $f, bool $telecharger): never {
 function page_facture_pdf(): void {
     $f = facture(entier('id', 1), true);
     if (!$f) { http_response_code(404); mise_en_page('Introuvable', titre_page('Facture introuvable', '', '', u('factures')), 'plus'); }
+    $_SESSION['pdf_vus'][(int)$f['id']] = 1;
     envoyer_pdf($f, !empty($_GET['telecharger']));
 }
 function page_facture_apercu(): void {
@@ -308,6 +328,9 @@ function page_factures(): void {
             $manque = array_filter(VENDEUR_OBLIGATOIRES, fn($c) => $v[$c] === '');
             if ($manque) flash('erreur', 'À remplir : ' . implode(', ', array_map(fn($c) => mb_strtolower(VENDEUR_CHAMPS[$c]), $manque)) . '.');
             elseif (preg_grep(CORE_HANGUL, $v)) flash('erreur', 'Les mentions de la facture sont en français.');
+            elseif (array_filter($v, fn($x) => !Pdf::ecrivable($x))) flash('erreur', 'Une mention contient des caractères que la facture ne sait pas écrire (émoji…).');
+            elseif (!siren_valide($v['siren'])) flash('erreur', 'Le SIREN doit avoir 9 chiffres et être valide : recopiez-le depuis le Kbis ou l\'avis de situation INSEE.');
+            elseif (!tva_fr_valide($v['tva'], $v['siren'])) flash('erreur', 'Le numéro de TVA ne correspond pas au SIREN : il s\'écrit FR, deux chiffres de clé, puis le SIREN.');
             else {
                 parametre_ecrire('vendeur', json_encode($v, JSON_UNESCAPED_UNICODE));
                 if (!facture_prefixes_figes()) {
@@ -328,12 +351,16 @@ function page_factures(): void {
     $verif = factures_verifier();
     $verifiees = (int)val("SELECT COUNT(*) FROM factures WHERE genre = 'facture' AND verifiee_le IS NOT NULL");
     $c = titre_page(icone('paiement') . 'Factures', 'Factures et avoirs des particuliers. Les restaurants restent facturés dans Qonto.', '', u('plus'));
+    // La date de bascule (audit n° 6, constat 13) : avant elle, les factures des particuliers sont dans Qonto
+    $depuis = (string)parametre('factures_depuis', '');
+    $bascule = $depuis !== '' ? '<p class="aide"><span>La gestion fait les factures des commandes remises depuis le</span> <span>' . h(date_fr(substr($depuis, 0, 10), 'longue')) . '</span>. <span>Celles d\'avant sont dans Qonto.</span></p>' : '';
     $c .= bloc('Phase de contrôle', '<p>' . h($verifiees . ' facture(s) vérifiée(s) sur ' . FACTURE_CONTROLE_MIN . ' prévues.') . '</p>'
         . '<div class="jauge-controle"><span style="width:' . min(100, intdiv(100 * $verifiees, FACTURE_CONTROLE_MIN)) . '%"></span></div>'
-        . '<p class="aide">Pendant cette phase, rien ne part sans votre toucher : vous ouvrez chaque PDF, vous vérifiez, puis vous l\'envoyez. Ensuite, avec Olivier, on décidera s\'il faut aller plus vite.</p>');
+        . '<p class="aide">Pendant cette phase, rien ne part sans votre toucher : vous ouvrez chaque PDF, vous vérifiez, puis vous l\'envoyez. Ensuite, avec Olivier, on décidera s\'il faut aller plus vite.</p>' . $bascule);
     $c .= bloc('Journal des factures', $verif['problemes']
         ? '<div class="erreur" role="alert"><b>Attention : le journal ne correspond plus.</b><br>' . implode('<br>', array_map('MadameCho\Gestion\h', $verif['problemes'])) . '<br>Prévenez Olivier, ne touchez à rien.</div>'
-        : '<p>' . icone('valider') . ' ' . '<span>' . h($verif['n'] ? 'Journal intact : ' . $verif['n'] . ' document(s) vérifié(s) (PDF, chaîne et numéros sans trou).' : 'Pas encore de facture.') . '</span>' . '</p>',
+        : '<p>' . icone('valider') . ' ' . '<span>' . h($verif['n'] ? 'Aucune modification détectée : ' . $verif['n'] . ' document(s) contrôlé(s) (PDF, données, chaîne et numéros sans trou).' : 'Pas encore de facture.') . '</span>' . '</p>'
+          . ($verif['n'] ? '<p class="aide">Ce contrôle repère une facture modifiée ou retirée dans la gestion. Ce n\'est pas une certification fiscale.</p>' : ''),
         $verif['problemes'] ? 'alerte' : '');
     $opts = ['' => 'Tous les mois'];
     foreach ($moisListe as $m) $opts[$m] = ucfirst(mois_texte($m));

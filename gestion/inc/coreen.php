@@ -1401,6 +1401,24 @@ Des factures de cette année portent déjà ce début : il ne change plus avant 
 À confirmer avec l'expert-comptable avant la première facture. | 첫 청구서 전에 회계사와 확인해요.
 Enregistré : les prochaines factures porteront ces mentions. | 저장했어요. 다음 청구서부터 이 정보가 들어가요.
 Les mentions de la facture sont en français. | 청구서 정보는 프랑스어로 적어요.
+Déjà émis pour cette commande : | 이 주문에 이미 발행된 문서:
+PDF | PDF
+Taux de TVA de la correction (si partiel) | 정정할 부가세율 (일부 정정일 때)
+Choisir | 선택
+envoi accepté par le serveur, sans preuve de lecture | 서버가 발송을 받았어요. 읽었는지는 알 수 없어요
+Phase de contrôle : ouvrez le PDF et vérifiez nom, gâteaux, prix, TVA et date. Touchez « J'ai vérifié » s'il est juste ; sinon, faites un avoir. Les façons de le remettre au client apparaissent ensuite. | 확인 단계: PDF를 열어 이름, 케이크, 가격, 부가세, 날짜를 확인하세요. 맞으면 ‘확인했어요’를 누르고, 틀리면 정정 청구서를 만드세요. 그다음에 고객에게 전달하는 방법이 나와요.
+Ouvrez le PDF et vérifiez nom, gâteaux, prix, TVA et date avant de le remettre. | 전달하기 전에 PDF를 열어 이름, 케이크, 가격, 부가세, 날짜를 확인하세요.
+Phase de contrôle : vérifiez d'abord le PDF et touchez « J'ai vérifié », puis remettez-le au client. | 확인 단계: 먼저 PDF를 확인하고 ‘확인했어요’를 누른 뒤 고객에게 전달하세요.
+Ouvrez d'abord le PDF (« Voir le PDF ») et relisez-le, puis touchez « J'ai vérifié ». | 먼저 PDF를 열어(‘PDF 보기’) 다시 읽은 뒤 ‘확인했어요’를 누르세요.
+La commande a changé depuis l'aperçu (produits, prix, paiement ou identité) : relisez la nouvelle version, puis émettez. | 미리보기 뒤에 주문이 바뀌었어요 (제품, 가격, 결제, 정보). 새 내용을 다시 확인한 뒤 발행하세요.
+Cette facture a plusieurs taux de TVA : choisissez celui de la correction. | 이 청구서에는 부가세율이 여러 개 있어요. 정정할 세율을 고르세요.
+La raison contient des caractères que l'avoir ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines. | 사유에 정정 청구서에 쓸 수 없는 글자(한글, 이모지…)가 있어요. 로마자로 적어 주세요.
+Une mention contient des caractères que la facture ne sait pas écrire (émoji…). | 청구서에 쓸 수 없는 글자(이모지…)가 들어간 정보가 있어요.
+Le SIREN doit avoir 9 chiffres et être valide : recopiez-le depuis le Kbis ou l'avis de situation INSEE. | SIREN은 올바른 9자리 숫자여야 해요. Kbis나 INSEE 등록 확인서에서 그대로 옮겨 적으세요.
+Le numéro de TVA ne correspond pas au SIREN : il s'écrit FR, deux chiffres de clé, puis le SIREN. | 부가세 번호가 SIREN과 맞지 않아요. FR, 확인 숫자 두 자리, SIREN 순서로 적어요.
+Ce contrôle repère une facture modifiée ou retirée dans la gestion. Ce n'est pas une certification fiscale. | 이 확인은 관리 시스템에서 바뀌거나 지워진 청구서를 찾아 줘요. 세무 인증은 아니에요.
+La gestion fait les factures des commandes remises depuis le | 관리 시스템이 청구서를 만들기 시작한 날:
+Celles d'avant sont dans Qonto. | 그 전 청구서는 Qonto에 있어요.
 Touchez une ligne : la facture est prête à relire, puis à remettre au client. Rien ne part tout seul. | 줄을 누르세요. 청구서를 확인한 뒤 고객에게 전달하면 돼요. 저절로 나가는 건 없어요.
 Remise le | 전달:
 Mail non parti : renvoyer ou remettre autrement | 이메일 안 감: 다시 보내거나 다른 방법으로 전달
@@ -1846,6 +1864,9 @@ function coreen_motifs(): array {
         ['/^Une facture Qonto \((.+)\) est déjà notée sur la commande : cochez la case pour confirmer que ce n\'est pas un doublon\.$/u', fn($m) => '이 주문에 Qonto 청구서(' . $m[1] . ')가 이미 적혀 있어요. 중복이 아니면 체크 표시를 하세요.'],
         ['/^(\d+) facture\(s\) vérifiée\(s\) sur (\d+) prévues\.$/u', fn($m) => '청구서 ' . $m[2] . '건 중 ' . $m[1] . '건 확인 완료.'],
         ['/^Journal intact : (\d+) document\(s\) vérifié\(s\) \(PDF, chaîne et numéros sans trou\)\.$/u', fn($m) => '기록 이상 없음: 문서 ' . $m[1] . '건 확인 (PDF, 연결, 빠진 번호 없음).'],
+        ['/^Aucune modification détectée : (\d+) document\(s\) contrôlé\(s\) \(PDF, données, chaîne et numéros sans trou\)\.$/u', fn($m) => '바뀐 것 없음: 문서 ' . $m[1] . '건 확인 (PDF, 데이터, 연결, 빠진 번호 없음).'],
+        ['/^La correction dépasse ce qui reste de la facture à ce taux de TVA \((' . $E . ')\)\.$/u', fn($m) => '정정 금액이 이 세율로 남은 청구서 금액(' . $m[1] . ')보다 커요.'],
+        ['/^(Facture|Avoir) ([A-Z]{1,6}-?\d{4}-\d{4}) envoyée? par mail : (.+?)(?: \((.+)\))?$/u', fn($m) => ($m[1] === 'Avoir' ? '정정 청구서 ' : '청구서 ') . $m[2] . ' 이메일로 보냄: ' . (coreen_texte($m[3]) ?? $m[3]) . (isset($m[4]) ? ' (' . $m[4] . ')' : '')],
         ['/^(\d+) document\(s\)$/u', fn($m) => '문서 ' . $m[1] . '건'],
         ['/^Annule toute la facture \((' . $E . ')\)$/u', fn($m) => '청구서 전체 취소 (' . $m[1] . ')'],
         ['/^Envoyer (la facture|l\'avoir) à (.+) maintenant \?$/u', fn($m) => ($m[1] === 'la facture' ? '청구서를 ' : '정정 청구서를 ') . $m[2] . '에게 지금 보낼까요?'],

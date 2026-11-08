@@ -35,6 +35,23 @@ function vendeur(): ?array {
     foreach (VENDEUR_OBLIGATOIRES as $c) if (trim((string)($v[$c] ?? '')) === '') return null;
     return array_map('strval', array_intersect_key($v + array_fill_keys(array_keys(VENDEUR_CHAMPS), ''), VENDEUR_CHAMPS));
 }
+/** La phase de contrôle dure tant que moins de 20 factures ont été vérifiées : pendant ce temps, rien ne se remet avant « J'ai vérifié » (constat 5). */
+function facture_controle_actif(): bool { return (int)val("SELECT COUNT(*) FROM factures WHERE genre = 'facture' AND verifiee_le IS NOT NULL") < FACTURE_CONTROLE_MIN; }
+/** À remettre seulement après vérification ? (phase de contrôle, document pas encore vérifié) */
+function facture_attend_verification(array $f): bool { return !$f['verifiee_le'] && facture_controle_actif(); }
+/** SIREN : neuf chiffres et la clé de Luhn (audit n° 6, constat 9). */
+function siren_valide(string $s): bool {
+    $s = (string)preg_replace('/\s+/u', '', $s);
+    if (!preg_match('/^\d{9}$/', $s)) return false;
+    $t = 0;
+    for ($i = 0; $i < 9; $i++) { $n = (int)$s[$i] * ($i % 2 ? 2 : 1); $t += $n > 9 ? $n - 9 : $n; }
+    return $t % 10 === 0;
+}
+/** Numéro de TVA français : FR, la clé calculée sur le SIREN, puis le SIREN lui-même. */
+function tva_fr_valide(string $tva, string $siren): bool {
+    $tva = strtoupper((string)preg_replace('/\s+/u', '', $tva)); $siren = (string)preg_replace('/\s+/u', '', $siren);
+    return (bool)preg_match('/^FR(\d{2})(\d{9})$/', $tva, $m) && $m[2] === $siren && (int)$m[1] === (12 + 3 * ((int)$siren % 97)) % 97;
+}
 function facture_prefixe(string $genre): string {
     $p = (string)parametre($genre === 'avoir' ? 'avoir_prefixe' : 'facture_prefixe', '');
     return $p !== '' ? $p : ($genre === 'avoir' ? 'AV-' : 'P-');
@@ -55,6 +72,14 @@ function factures_de_commande(int $commandeId): array {
 function facture_avoirs(int $factureId): array { return lignes("SELECT " . FACTURE_COLONNES . " FROM factures WHERE genre = 'avoir' AND facture_id = ? ORDER BY id", [$factureId]); }
 /** Ce qui reste de la facture après ses avoirs (en centimes TTC). */
 function facture_reste(array $f): int { return (int)$f['total_ttc'] + (int)val("SELECT COALESCE(SUM(total_ttc), 0) FROM factures WHERE genre = 'avoir' AND facture_id = ?", [(int)$f['id']]); }
+/** Ce qui reste d'une facture taux par taux (TTC en centimes, avoirs déduits) : un avoir partiel se fait à un taux de la facture. */
+function facture_reste_par_taux(array $f): array {
+    $r = [];
+    $d = $f['d'] ?? (json_decode((string)$f['donnees'], true) ?: []);
+    foreach (($d['par_taux'] ?? []) as $x) $r[(int)$x['taux']] = (int)$x['ttc'];
+    foreach (facture_avoirs((int)$f['id']) as $av) foreach ((json_decode((string)$av['donnees'], true) ?: [])['par_taux'] ?? [] as $x) $r[(int)$x['taux']] = ($r[(int)$x['taux']] ?? 0) + (int)$x['ttc'];
+    return $r;
+}
 /** La facture en vigueur d'une commande : la dernière qui n'est pas entièrement annulée par des avoirs. */
 function facture_en_vigueur(int $commandeId): ?array {
     foreach (array_reverse(factures_de_commande($commandeId)) as $f) if ($f['genre'] === 'facture' && facture_reste($f) > 0) return $f;
@@ -96,6 +121,18 @@ const FACTURE_MANQUES = ['identite' => 'L\'identité de Madame Cho n\'est pas en
 function date_facture(?string $d): string { return preg_replace('/^1 /', '1er ', date_fr($d, 'longue')) ?? ''; }
 function montant_facture(int $c): string {
     return ($c < 0 ? '-' : '') . number_format(abs($c) / 100, 2, ',', "\u{A0}") . "\u{A0}€";
+}
+/**
+ * Le prix unitaire HT écrit sur la facture : au centime si la ligne tombe juste, sinon avec les décimales utiles (quatre au plus), pour que
+ * quantité × prix unitaire HT redonne le total HT de la ligne (6 × 3,3175 € = 19,91 €, pas 6 × 3,32 € ; audit n° 6, constat 12).
+ */
+function pu_ht_facture(array $l): string {
+    // Au centime quand quantité × prix unitaire HT tombe déjà juste (une seule pièce, une remise, 10 × 2,37 €)
+    if (isset($l['q'], $l['pu_ht'], $l['total_ht']) && (int)$l['q'] * (int)$l['pu_ht'] === (int)$l['total_ht']) return montant_facture((int)$l['pu_ht']);
+    $ttc = (int)$l['pu_ttc']; $t = (int)$l['tva'];
+    $n = intdiv(abs($ttc) * 100000 * 2 + (1000 + $t), (1000 + $t) * 2);   // dix-millièmes d'euro, arrondis
+    $s = (string)preg_replace('/(,\d{2}\d*?)0+$/', '$1', number_format($n / 10000, 4, ',', "\u{A0}"));
+    return ($ttc < 0 ? '-' : '') . $s . "\u{A0}€";
 }
 function taux_facture(int $t): string { return str_replace('.', ',', rtrim(rtrim(number_format($t / 10, 1, '.', ''), '0'), '.')) . "\u{A0}%"; }
 /** Les lignes de la facture, depuis la commande telle qu'elle est enregistrée (prix gardés à la commande, jamais la carte du jour). */
@@ -156,29 +193,37 @@ function facture_donnees(array $k, array $o = []): array {
 }
 
 /* ---------- Émission ---------- */
-/** La chaîne : chaque document est lié au précédent ; changer, retirer ou intercaler une ligne se voit à la vérification (FR-015). */
+/**
+ * La chaîne : chaque document est lié au précédent ; changer, retirer ou intercaler une ligne se voit à la vérification (FR-015).
+ * Elle couvre le PDF (son empreinte) et les données figées à côté (client, lignes, vendeur : elles servent au mail ; audit n° 6, constat 6).
+ */
 function facture_chainer(string $precedente, array $f): string {
-    return hash('sha256', implode('|', [$precedente, $f['genre'], $f['numero'], $f['emise_le'], (string)(int)$f['total_ttc'], (string)(int)($f['commande_id'] ?? 0), (string)(int)($f['facture_id'] ?? 0), $f['empreinte']]));
+    return hash('sha256', implode('|', [$precedente, $f['genre'], $f['numero'], $f['emise_le'], (string)(int)$f['total_ttc'], (string)(int)($f['commande_id'] ?? 0), (string)(int)($f['facture_id'] ?? 0), $f['empreinte'],
+                                         hash('sha256', (string)($f['donnees'] ?? ''))]));
 }
+/** L'empreinte de ce que Youngmi a relu dans l'aperçu : la facture émise doit être celle-là (audit n° 6, constat 4). */
+function facture_empreinte_apercu(array $d): string { return hash('sha256', json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)); }
 /**
  * Émet un document (facture ou avoir) : numéro suivant de la série dans une transaction exclusive (deux touchers en même temps ne
  * donnent ni deux numéros pour une commande ni de trou), PDF figé, empreinte, chaîne, sceau. Renvoie la ligne, ou ['erreur' => …].
- * $avant : vérification refaite dans la transaction (renvoie '' si tout va bien, sinon le message).
+ * $preparer : relit tout DANS la transaction et renvoie les données du document, ou ['erreur' => message] (audit n° 6, constat 4 :
+ * rien de ce qui a pu changer entre l'aperçu et le toucher ne passe sans être revu).
  */
-function document_emettre(string $genre, array $d, array $liens, callable $avant, string $motif = ''): array {
+function document_emettre(string $genre, callable $preparer, array $liens, string $motif = ''): array {
     $pdo = db();
     $pdo->exec('BEGIN IMMEDIATE');
     try {
-        $e = $avant();
-        if ($e !== '') { $pdo->exec('ROLLBACK'); return ['erreur' => $e]; }
+        $d = $preparer();
+        if (isset($d['erreur'])) { $pdo->exec('ROLLBACK'); return ['erreur' => (string)$d['erreur']]; }
         $now = maintenant(); $annee = (int)substr($now, 0, 4);
         $prefixe = facture_prefixe($genre);
         $seq = 1 + (int)val("SELECT COALESCE(MAX(seq), 0) FROM factures WHERE prefixe = ? AND annee = ?", [$prefixe, $annee]);
         $numero = sprintf('%s%d-%04d', $prefixe, $annee, $seq);
         $d['numero'] = $numero; $d['emise_le'] = $now;
         $pdf = facture_pdf($d);
+        $json = (string)json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $f = ['genre' => $genre, 'numero' => $numero, 'emise_le' => $now, 'total_ttc' => $d['totaux']['ttc'], 'commande_id' => $liens['commande'] ?? null,
-              'facture_id' => $liens['facture'] ?? null, 'empreinte' => hash('sha256', $pdf)];
+              'facture_id' => $liens['facture'] ?? null, 'empreinte' => hash('sha256', $pdf), 'donnees' => $json];
         $prec = (string)(val("SELECT chaine FROM factures ORDER BY id DESC LIMIT 1") ?? '');
         $f['chaine'] = facture_chainer($prec !== '' ? $prec : str_repeat('0', 64), $f);
         $st = $pdo->prepare("INSERT INTO factures (genre, numero, prefixe, annee, seq, commande_id, client_id, facture_id, emise_le, emise_par, total_ttc, total_ht, total_tva,
@@ -186,7 +231,7 @@ function document_emettre(string $genre, array $d, array $liens, callable $avant
         $st->bindValue(1, $genre); $st->bindValue(2, $numero); $st->bindValue(3, $prefixe); $st->bindValue(4, $annee, \PDO::PARAM_INT); $st->bindValue(5, $seq, \PDO::PARAM_INT);
         $st->bindValue(6, $f['commande_id']); $st->bindValue(7, $liens['client'] ?? null); $st->bindValue(8, $f['facture_id']); $st->bindValue(9, $now); $st->bindValue(10, auteur());
         $st->bindValue(11, $d['totaux']['ttc'], \PDO::PARAM_INT); $st->bindValue(12, $d['totaux']['ht'], \PDO::PARAM_INT); $st->bindValue(13, $d['totaux']['tva'], \PDO::PARAM_INT);
-        $st->bindValue(14, json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)); $st->bindValue(15, $pdf, \PDO::PARAM_LOB); $st->bindValue(16, $f['empreinte']);
+        $st->bindValue(14, $json); $st->bindValue(15, $pdf, \PDO::PARAM_LOB); $st->bindValue(16, $f['empreinte']);
         $st->bindValue(17, $f['chaine']); $st->bindValue(18, bin2hex(random_bytes(12))); $st->bindValue(19, $motif);
         $st->execute();
         $id = (int)$pdo->lastInsertId();
@@ -202,10 +247,8 @@ function document_emettre(string $genre, array $d, array $liens, callable $avant
         throw $e;
     }
 }
-/** Émet la facture d'une commande de particulier, au toucher de Youngmi (FR-006). $o : adresse, anonyme, doublon_ok. */
-function facture_emettre(int $commandeId, array $o = []): array {
-    $k = commande($commandeId);
-    if (!$k) return ['erreur' => 'Commande introuvable.'];
+/** Les données de la facture d'une commande, ou ['erreur' => …] si elle ne peut pas encore s'émettre. $o : nom, adresse, anonyme, doublon_ok. */
+function facture_preparer(array $k, array $o = []): array {
     $e = facture_etat($k);
     if ($e['etat'] === 'emise') return ['erreur' => 'Cette commande a déjà sa facture (' . $e['facture']['numero'] . ').'];
     if ($e['etat'] !== 'a_emettre') return ['erreur' => 'La facture se fait quand la commande est payée et remise.'];
@@ -216,35 +259,63 @@ function facture_emettre(int $commandeId, array $o = []): array {
     if (!Pdf::ecrivable($d['client']['nom'])) return ['erreur' => 'Le nom du client est écrit avec des lettres que la facture ne sait pas écrire (coréen, émoji…) : écrivez-le en lettres latines dans « Nom sur la facture », ou cochez « Client particulier ».'];
     if (!Pdf::ecrivable($d['client']['adresse'])) return ['erreur' => 'L\'adresse contient des caractères que la facture ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines.'];
     foreach ($d['lignes'] as $l) if (!Pdf::ecrivable($l['designation'])) return ['erreur' => 'Un produit de la commande a un nom que la facture ne sait pas écrire (' . $l['designation'] . ') : corrigez-le dans la commande.'];
-    return document_emettre('facture', $d, ['commande' => $commandeId, 'client' => (int)$k['client_id']],
-        fn() => facture_en_vigueur($commandeId) ? 'Une facture vient d\'être émise pour cette commande (deux touchers en même temps ?) : rien n\'a été fait en double.' : '');
+    return $d;
+}
+/**
+ * Émet la facture d'une commande de particulier, au toucher de Youngmi (FR-006). $o : adresse, nom, anonyme, doublon_ok, et
+ * empreinte (celle de l'aperçu relu : si la commande a changé depuis, rien n'est émis et Youngmi relit la nouvelle version).
+ */
+function facture_emettre(int $commandeId, array $o = []): array {
+    $k = commande($commandeId);
+    if (!$k) return ['erreur' => 'Commande introuvable.'];
+    $d = facture_preparer($k, $o);
+    if (isset($d['erreur'])) return $d;
+    return document_emettre('facture', function () use ($commandeId, $o): array {
+        if (facture_en_vigueur($commandeId)) return ['erreur' => 'Une facture vient d\'être émise pour cette commande (deux touchers en même temps ?) : rien n\'a été fait en double.'];
+        $k = commande($commandeId);   // relue sous le verrou : prix, produits, paiement, remise
+        if (!$k) return ['erreur' => 'Commande introuvable.'];
+        if ((string)($o['empreinte'] ?? '') !== '' && !hash_equals(facture_empreinte_apercu(facture_donnees($k)), (string)$o['empreinte']))
+            return ['erreur' => 'La commande a changé depuis l\'aperçu (produits, prix, paiement ou identité) : relisez la nouvelle version, puis émettez.'];
+        return facture_preparer($k, $o);
+    }, ['commande' => $commandeId, 'client' => (int)$k['client_id']]);
 }
 /**
  * Un avoir sur une facture (FR-005) : total (tout le reste de la facture) ou partiel (un montant TTC), avec son motif. Les lignes
- * de l'avoir reprennent celles de la facture en négatif (total) ou une ligne « Correction » au taux de la facture (partiel).
+ * de l'avoir reprennent celles de la facture en négatif (total), ou une ligne « Correction » par taux de TVA : un avoir partiel se fait
+ * au taux choisi parmi ceux de la facture, jamais au premier venu (audit n° 6, constat 3).
  */
-function avoir_emettre(int $factureId, string $motif, ?int $montant = null): array {
+function avoir_emettre(int $factureId, string $motif, ?int $montant = null, ?int $taux = null): array {
     $f = facture($factureId);
     if (!$f || $f['genre'] !== 'facture') return ['erreur' => 'Facture introuvable.'];
     $motif = mb_substr(trim(une_ligne($motif)), 0, 200);
     if ($motif === '') return ['erreur' => 'Écrivez la raison de l\'avoir (elle figure sur le document).'];
+    if (!Pdf::ecrivable($motif)) return ['erreur' => 'La raison contient des caractères que l\'avoir ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines.'];
     $reste = facture_reste($f);
     if ($reste <= 0) return ['erreur' => 'Cette facture est déjà entièrement annulée par un avoir.'];
     $total = $montant === null || $montant >= $reste;
     if (!$total && $montant <= 0) return ['erreur' => 'Le montant de l\'avoir doit être positif.'];
-    $d0 = $f['d'];
-    if ($total && $reste === (int)$f['total_ttc']) $lignes = array_map(fn($l) => ['designation' => $l['designation'], 'q' => $l['q'], 'pu_ttc' => -$l['pu_ttc'], 'tva' => $l['tva'],
-        'total_ttc' => -$l['total_ttc'], 'pu_ht' => -$l['pu_ht'], 'total_ht' => -$l['total_ht']], $d0['lignes']);
-    else {
-        $m = $total ? $reste : $montant;
-        $taux = (int)($d0['par_taux'][0]['taux'] ?? FACTURE_TVA_DEFAUT);
-        $lignes = [['designation' => 'Correction de la facture ' . $f['numero'], 'q' => 1, 'pu_ttc' => -$m, 'tva' => $taux, 'total_ttc' => -$m, 'pu_ht' => -ht_de_ttc($m, $taux), 'total_ht' => -ht_de_ttc($m, $taux)]];
-    }
-    $d = ['v' => 1, 'genre' => 'avoir', 'vendeur' => vendeur() ?? $d0['vendeur'], 'client' => $d0['client'], 'commande' => $d0['commande'],
-          'date_vente' => $d0['date_vente'], 'lignes' => $lignes] + facture_totaux($lignes)
-       + ['origine' => ['numero' => $f['numero'], 'le' => substr($f['emise_le'], 0, 10)], 'motif' => $motif, 'total' => $total];
-    $r = document_emettre('avoir', $d, ['commande' => $f['commande_id'], 'client' => $f['client_id'], 'facture' => $factureId],
-        fn() => facture_reste($f) !== $reste ? 'Un avoir vient d\'être fait sur cette facture : rien n\'a été fait en double.' : '', $motif);
+    $preparer = function () use ($factureId, $motif, $montant, $taux, $reste, $total): array {
+        $f = facture($factureId);
+        if (!$f || facture_reste($f) !== $reste) return ['erreur' => 'Un avoir vient d\'être fait sur cette facture : rien n\'a été fait en double.'];
+        $d0 = $f['d'];
+        $correction = fn(int $m, int $t) => ['designation' => 'Correction de la facture ' . $f['numero'], 'q' => 1, 'pu_ttc' => -$m, 'tva' => $t, 'total_ttc' => -$m, 'pu_ht' => -ht_de_ttc($m, $t), 'total_ht' => -ht_de_ttc($m, $t)];
+        $restes = array_filter(facture_reste_par_taux($f), fn($v) => $v > 0);
+        if ($total && $reste === (int)$f['total_ttc']) $lignes = array_map(fn($l) => ['designation' => $l['designation'], 'q' => $l['q'], 'pu_ttc' => -$l['pu_ttc'], 'tva' => $l['tva'],
+            'total_ttc' => -$l['total_ttc'], 'pu_ht' => -$l['pu_ht'], 'total_ht' => -$l['total_ht']], $d0['lignes']);
+        elseif ($total) {   // tout le reste, taux par taux (après un premier avoir partiel)
+            $lignes = [];
+            foreach ($restes as $t => $v) $lignes[] = $correction($v, (int)$t);
+        } else {
+            if ($taux !== null && !isset($restes[$taux]) || $taux === null && count($restes) > 1) return ['erreur' => 'Cette facture a plusieurs taux de TVA : choisissez celui de la correction.'];
+            $t = $taux ?? (int)array_key_first($restes);
+            if ($montant > ($restes[$t] ?? 0)) return ['erreur' => 'La correction dépasse ce qui reste de la facture à ce taux de TVA (' . montant_facture((int)($restes[$t] ?? 0)) . ').'];
+            $lignes = [$correction((int)$montant, $t)];
+        }
+        return ['v' => 1, 'genre' => 'avoir', 'vendeur' => vendeur() ?? $d0['vendeur'], 'client' => $d0['client'], 'commande' => $d0['commande'],
+                'date_vente' => $d0['date_vente'], 'lignes' => $lignes] + facture_totaux($lignes)
+             + ['origine' => ['numero' => $f['numero'], 'le' => substr($f['emise_le'], 0, 10)], 'motif' => $motif, 'total' => $total];
+    };
+    $r = document_emettre('avoir', $preparer, ['commande' => $f['commande_id'], 'client' => $f['client_id'], 'facture' => $factureId], $motif);
     // Avoir total : la commande n'a plus de facture en vigueur, le numéro noté sur la commande s'efface (une nouvelle facture pourra se faire)
     if (!isset($r['erreur']) && $total && $f['commande_id']) q("UPDATE commandes SET facture = '' WHERE id = ? AND facture = ?", [(int)$f['commande_id'], $f['numero']]);
     return $r;
@@ -254,7 +325,7 @@ function avoir_emettre(int $factureId, string $motif, ?int $montant = null): arr
 /** Recalcule empreintes, chaîne, continuité des séries et sceau ; renvoie ['n' => nombre, 'problemes' => [texte…]]. */
 function factures_verifier(): array {
     $pb = []; $prec = str_repeat('0', 64); $n = 0; $series = [];
-    $st = q("SELECT id, genre, numero, prefixe, annee, seq, commande_id, facture_id, emise_le, total_ttc, pdf, empreinte, chaine FROM factures ORDER BY id");
+    $st = q("SELECT id, genre, numero, prefixe, annee, seq, commande_id, facture_id, emise_le, total_ttc, donnees, pdf, empreinte, chaine FROM factures ORDER BY id");
     while ($f = $st->fetch()) {
         $n++;
         if (hash('sha256', (string)$f['pdf']) !== $f['empreinte']) $pb[] = $f['numero'] . ' : le PDF a été modifié.';
@@ -278,7 +349,9 @@ function facture_remise_noter(int $factureId, string $canal, string $detail = ''
     $f = facture($factureId);
     if (!$f) return;
     q("INSERT INTO factures_remises (facture_id, le, par, canal, detail, mid, ok) VALUES (?, ?, ?, ?, ?, ?, ?)", [$factureId, maintenant(), auteur(), $canal, mb_substr($detail, 0, 200), $mid, $ok ? 1 : 0]);
-    evenement('facture', ($f['genre'] === 'avoir' ? 'Avoir ' : 'Facture ') . $f['numero'] . ($ok ? ' remise au client : ' : ' : échec de la remise, ') . REMISE_CANAUX[$canal] . ($detail !== '' ? ' (' . $detail . ')' : ''),
+    // Un mail accepté par le serveur est « envoyé » : la gestion ne sait pas s'il est arrivé ni s'il a été lu (audit n° 6, constat 8)
+    $e = $f['genre'] === 'avoir' ? '' : 'e';
+    evenement('facture', ($f['genre'] === 'avoir' ? 'Avoir ' : 'Facture ') . $f['numero'] . ($ok ? ($canal === 'email' ? ' envoyé' . $e . ' par mail : ' : ' remis' . $e . ' au client : ') : ' : échec de la remise, ') . REMISE_CANAUX[$canal] . ($detail !== '' ? ' (' . $detail . ')' : ''),
               ['commande' => $f['commande_id'], 'client' => $f['client_id']], 'remise:' . $canal . ($mid !== '' ? ' mid:' . $mid : ''), '');
 }
 /** Remise réussie ? La dernière remise réussie, ou null. */
@@ -332,7 +405,7 @@ function facture_pdf(array $d): string {
         if ($y + $h > 640) { $p->nouvelle_page(); $y = $entete(60); }
         foreach ($des as $i => $t) $p->texte($M + 6, $y + 13 + 11 * $i, $t, 9);
         $p->texte(300, $y + 13, (string)$l['q'], 9, false, 'd');
-        $p->texte(362, $y + 13, montant_facture($l['pu_ht']), 9, false, 'd');
+        $p->texte(362, $y + 13, pu_ht_facture($l), 9, false, 'd');
         $p->texte(405, $y + 13, taux_facture($l['tva']), 9, false, 'd');
         $p->texte(470, $y + 13, montant_facture($l['total_ht']), 9, false, 'd');
         $p->texte($D - 6, $y + 13, montant_facture($l['total_ttc']), 9, false, 'd');
@@ -374,7 +447,7 @@ function facture_apercu_html(array $d): string {
     $avoir = ($d['genre'] ?? 'facture') === 'avoir';
     $v = $d['vendeur'];
     $l = '';
-    foreach ($d['lignes'] as $x) $l .= '<tr><td>' . h($x['designation']) . '</td><td class="n">' . (int)$x['q'] . '</td><td class="n">' . h(montant_facture($x['pu_ht'])) . '</td><td class="n">'
+    foreach ($d['lignes'] as $x) $l .= '<tr><td>' . h($x['designation']) . '</td><td class="n">' . (int)$x['q'] . '</td><td class="n">' . h(pu_ht_facture($x)) . '</td><td class="n">'
         . h(taux_facture($x['tva'])) . '</td><td class="n">' . h(montant_facture($x['total_ht'])) . '</td><td class="n">' . h(montant_facture($x['total_ttc'])) . '</td></tr>';
     $t = '<tr><td colspan="5">Total HT</td><td class="n">' . h(montant_facture($d['totaux']['ht'])) . '</td></tr>';
     foreach ($d['par_taux'] as $x) $t .= '<tr><td colspan="5">TVA ' . h(taux_facture($x['taux'])) . '</td><td class="n">' . h(montant_facture($x['tva'])) . '</td></tr>';
