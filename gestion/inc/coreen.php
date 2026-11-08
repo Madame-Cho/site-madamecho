@@ -290,6 +290,23 @@ Voir tout le mail | 이메일 전체 보기
 changer le jour ou l'heure en haut | 위에서 날짜나 시간 바꾸기
 Commande confirmée | 주문 확정
 Merci | 감사 인사
+Rappel | 픽업 알림
+Rappels à envoyer | 보낼 픽업 알림
+Retraits de demain : touchez une commande, vérifiez l'aperçu, puis « Envoyer ». Rien ne part tout seul. | 내일 픽업이에요. 주문을 누르고 미리보기를 확인한 뒤 ‘보내기’를 누르세요. 저절로 나가는 건 없어요.
+SMS ou WhatsApp | SMS 또는 WhatsApp
+Envoyer le rappel au client | 고객에게 픽업 알림 보내기
+Version courte, pour un SMS ou WhatsApp | SMS나 WhatsApp용 짧은 버전
+Ouvrir WhatsApp | WhatsApp 열기
+Envoyé par | 보낸 방법
+J'ai envoyé le rappel | 알림을 보냈어요
+Pas d'email pour ce client : envoyez la version courte par SMS ou WhatsApp, puis notez-le. | 이 고객은 이메일이 없어요. 짧은 버전을 SMS나 WhatsApp으로 보내고 기록해 주세요.
+Ou bien par SMS ou WhatsApp : | 또는 SMS나 WhatsApp으로:
+Rappel envoyé au client. Une copie arrive dans contact@madamecho.com. | 고객에게 픽업 알림을 보냈어요. 사본이 contact@madamecho.com으로 와요.
+L'email n'est pas parti. Regardez d'abord dans les Échanges ou dans Gmail (Envoyés) s'il est arrivé, puis réessayez, ou envoyez la version courte par SMS ou WhatsApp. | 이메일이 가지 않았어요. 먼저 연락 내용이나 Gmail(보낸편지함)에 도착했는지 확인한 뒤 다시 해 보거나, 짧은 버전을 SMS나 WhatsApp으로 보내세요.
+Rappel noté dans les Échanges. | 픽업 알림을 연락 내용에 기록했어요.
+Pas d'email pour ce client, ou la commande n'est pas confirmée avec un jour de retrait. | 이 고객은 이메일이 없거나, 픽업 날짜가 정해진 확정 주문이 아니에요.
+La commande n'est pas confirmée. | 확정된 주문이 아니에요.
+À faire maintenant : envoyer le rappel au client (le retrait est demain). | 지금 할 일: 고객에게 픽업 알림 보내기 (픽업은 내일이에요).
 Objet | 제목
 Message | 메시지
 Le numéro de commande reste toujours dans l'objet. | 주문 번호는 항상 제목에 남아요.
@@ -1461,7 +1478,7 @@ function coreen_motifs(): array {
         ['/^Proposition envoyée (.+?)( :|\.)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 견적 발송' . ($m[2] === '.' ? '.' : ':') : null],
         ['/^sans nouvelles depuis (\d+) jours, une relance ou « sans suite » \?$/u', fn($m) => $m[1] . '일째 소식이 없어요. 다시 연락할까요, ‘진행 안 됨’으로 할까요?'],
         ['/^Avis Google reçu le (.+)\. Merci !$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 구글 리뷰 받음. 감사해요!' : null],
-        ['/^Email envoyé à (\\S+) \\((proposition|commande confirmée|message|merci)\\) : « (.*) »$/u', fn($m) => $m[1] . '에게 이메일 보냄 (' . ['proposition' => '견적', 'commande confirmée' => '주문 확정', 'message' => '메시지', 'merci' => '감사'][$m[2]] . '): « ' . $m[3] . ' »'],
+        ['/^Email envoyé à (\\S+) \\((proposition|commande confirmée|rappel|message|merci)\\) : « (.*) »$/u', fn($m) => $m[1] . '에게 이메일 보냄 (' . ['proposition' => '견적', 'commande confirmée' => '주문 확정', 'rappel' => '픽업 알림', 'message' => '메시지', 'merci' => '감사'][$m[2]] . '): « ' . $m[3] . ' »'],
         ['/^Email envoyé depuis Gmail : « (.*) »$/u', fn($m) => 'Gmail에서 보낸 이메일: « ' . $m[1] . ' »'],
         ['/^Réponse de (.+) : « (.*) »( \\(rattachée à la main, extrait\\))?$/u', fn($m) => $m[1] . '의 답장: « ' . $m[2] . ' »' . (!empty($m[3]) ? ' (직접 연결, 일부)' : '')],
         ['/^(\\d+) nouvelles réponses$/u', fn($m) => '새 답장 ' . $m[1] . '개'],

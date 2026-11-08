@@ -78,9 +78,20 @@
 - [ ] T036 Mail « Merci » et demande d'avis à essayer en réel quand la fiche Google existera (lien dans Paramètres)
 - [ ] T037 Changer la clé du script (montrée dans une capture le 2026-11-07) : nouvelle clé dans Paramètres, propriété CLE, puis « installer »
 
+## Phase 9 : Rappel de retrait (2026-11-08, demande d'Olivier, « au toucher d'abord, automatique ensuite »)
+
+- [X] T045 [US2] FR-040 : type de mail « Rappel » dans `inc/vues.php` (étiquette, phrase d'accueil selon le jour, encadré, empêchement, fin « À demain »), version courte SMS/WhatsApp
+- [X] T046 [US1] FR-040 : liste « Rappels à envoyer » dans `tableau_de_bord()` (`inc/modele.php`) et bloc sur Aujourd'hui (`inc/pages-commandes.php`), tuile cliquable
+- [X] T047 [US2] FR-040 : cadre « Envoyer le rappel au client » sur la commande confirmée (retrait aujourd'hui, demain ou après-demain), actions `envoyer_rappel` et `rappel_note` (canal), « À faire maintenant » qui le dit
+- [X] T048 [P] [US8] Dictionnaire coréen, traduction de l'historique (rappel), manuel FR/KO, styles de l'aperçu (`apercu_mail_css`)
+- [X] T049 Essais sur base fictive (liste, envoi, double toucher, noté par SMS, client sans email, livraison de restaurant exclue, confirmation de la veille) et captures FR/KO
+- [ ] T050 Audit du ChatGPT d'Olivier sur la version (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
+- [ ] T051 Plus tard, sur décision d'Olivier (exception à R-01, R-16) : envoi automatique la veille à 10 h par une tâche planifiée OVH, « Ne pas envoyer » sur Aujourd'hui, case « Rappel automatique » sur la commande
+
 ## Dependencies & Execution Order
 
 - Phase 2 dépend de la phase 1 ; T011 clôt le lot.
 - Les phases 3 à 6 sont indépendantes entre elles ; chacune se publie sur feu vert séparé.
 - Phase 7 : T021 de préférence avant le lot suivant ; T023 avant tout changement du paiement.
 - Phase 8 : T034 clôt le lot ; T035 avant d'annoncer les réponses des clients ; T037 dès que possible.
+- Phase 9 : T045 avant T046 et T047 ; T050 clôt le lot ; T051 seulement après la décision d'Olivier et la fin du pilote (T024).

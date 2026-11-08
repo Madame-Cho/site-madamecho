@@ -461,7 +461,7 @@ function retrait_email(array $k): string {
  * Un seul objet par commande (« Votre commande MC-… · Madame Cho ») et les en-têtes de réponse : chez le client, une seule conversation.
  * Aperçu dans la gestion ($apercu) : sa politique de sécurité refuse les styles en ligne, chaque style devient une classe « m-… »
  * dont les règles sont dans gestion.css (bloc « Aperçu du mail », généré par apercu_mail_css() : à refaire si un style change). */
-const MAIL_TYPES = ['proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'message' => 'Message', 'avis' => 'Merci'];
+const MAIL_TYPES = ['proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'rappel' => 'Rappel', 'message' => 'Message', 'avis' => 'Merci'];
 const MAIL_F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
 function sujet_commande(array $k): string { return 'Votre commande ' . $k['reference'] . ' · Madame Cho'; }
 /** L'objet d'un message libre : celui de la commande par défaut ; la référence MC-… y reste toujours (pour retrouver la conversation). */
@@ -477,11 +477,36 @@ function accueil_mail(array $k, string $type): string {
     return match ($type) {
         'proposition' => $b . 'Merci pour votre demande. Voici ma proposition :',
         'confirmation' => $b . 'Votre commande ' . $k['reference'] . ' est confirmée. Je vous attends :',
+        'rappel' => $b . 'Petit rappel : votre commande vous attend ' . rappel_quand($k) . '.',
         'avis' => $b . 'Merci encore pour votre commande. Si vous avez un moment, votre avis sur Google aiderait beaucoup Madame Cho à se faire connaître.',
         default => $b,
     };
 }
 function accueil_confirmation(array $k): string { return accueil_mail($k, 'confirmation'); }
+/** Rappel de retrait (demande d'Olivier, 08/11/2026) : « demain », « aujourd'hui » ou « samedi 14 novembre ». */
+function rappel_quand(array $k): string {
+    $d = (string)($k['retrait_date'] ?? '');
+    if ($d === aujourdhui()) return 'aujourd\'hui';
+    if ($d === date('Y-m-d', strtotime('+1 day'))) return 'demain';
+    return $d !== '' ? 'le ' . date_fr($d, 'jour') : 'bientôt';
+}
+/** La fin du rappel : « À demain, » ou « À tout à l'heure, ». */
+function rappel_fin(array $k): string {
+    return match (rappel_quand($k)) { 'demain' => 'À demain,', 'aujourd\'hui' => 'À tout à l\'heure,', default => 'À bientôt,' };
+}
+/** La version courte du rappel, à copier dans un SMS ou WhatsApp (client sans email, ou qui préfère). */
+function rappel_sms(array $k): string {
+    $d = (string)($k['retrait_date'] ?? '');
+    $quand = rappel_quand($k);
+    $jour = $d !== '' ? JOURS[(int)date('w', strtotime($d))] . ' ' . date('d/m', strtotime($d)) : '';
+    $h = $k['retrait_heure'] !== '' ? ' à ' . (int)substr($k['retrait_heure'], 0, 2) . ' h' . (substr($k['retrait_heure'], 3, 2) !== '00' ? ' ' . substr($k['retrait_heure'], 3, 2) : '')
+       : (isset(MOMENTS[$k['retrait_moment']]) ? ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) : '');
+    $prenom = explode("\n", trim(signature()))[0] ?? '';
+    $prenom = trim(explode(' ', trim($prenom))[0] ?? '') ?: 'Youngmi';
+    return salutation($k) . ' petit rappel de Madame Cho : votre commande ' . $k['reference'] . ' vous attend '
+         . ($quand === 'demain' || $quand === 'aujourd\'hui' ? $quand . ' ' . $jour : $quand) . $h . ', 4 avenue du Château à Meudon. '
+         . ($quand === 'demain' ? 'À demain !' : ($quand === 'aujourd\'hui' ? 'À tout à l\'heure !' : 'À bientôt !')) . ' ' . $prenom;
+}
 function mail_style(bool $apercu): \Closure {
     return function (string $css) use ($apercu): string {
         if (!$apercu) return ' style="' . $css . '"';
@@ -583,6 +608,16 @@ function mail_commande(array $k, string $type, array $o = []): array {
             $texte .= lignes_email($k) . "\n\nTotal : " . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait') . "\n"
                     . retrait_email($k) . "\n" . ($mot !== '' ? "\n" . $mot . "\n" : '') . rdv_client_texte($k)
                     . "\nPaiement par carte, virement ou espèces. Annulation sans frais jusqu'à 24 heures avant le retrait.\n\n";
+            break;
+        case 'rappel':
+            $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '')
+                   . $p('Paiement par carte, virement ou espèces. Un empêchement ? Répondez simplement à ce mail ou appelez le 06 61 31 17 79.', 'margin-top:20px');
+            $total = montant_commande($k); $acompte = (int)$k['acompte'];
+            $texte .= lignes_email($k) . "\n\n" . retrait_email($k) . "\n"
+                    . 'Total : ' . euros($total) . ' TTC' . ($k['paiement'] === 'acompte_recu' && $acompte ? ' (acompte de ' . euros($acompte) . ' reçu, reste ' . euros($total - $acompte) . ' à régler au retrait)' : ', à régler au retrait') . "\n"
+                    . ($mot !== '' ? "\n" . $mot . "\n" : '')
+                    . "\nPaiement par carte, virement ou espèces. Un empêchement ? Répondez simplement à ce mail ou appelez le 06 61 31 17 79.\n\n";
+            $fin = rappel_fin($k);
             break;
         case 'avis':
             $l = (string)($o['lien'] ?? parametre('lien_avis', ''));

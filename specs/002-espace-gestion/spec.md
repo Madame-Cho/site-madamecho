@@ -73,6 +73,18 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
   seulement sans facture, sans rapprochement Qonto et sans paiement noté reçu ; une fiche client
   sans commande se supprime de la même façon ; une trace reste (FR-002, à confirmer par Olivier).
 
+### Session 2026-11-08 (rappel de retrait, demande d'Olivier)
+
+- Q: Le client reçoit-il un rappel avant le retrait ? → A : oui, un 5e mail « Rappel » au même
+  design, dans la même conversation que la commande, la veille du retrait (FR-040).
+- Q: Part-il tout seul ? → A : pas pour l'instant. Choix d'Olivier du 2026-11-08 : « au toucher
+  d'abord, automatique ensuite » ; pendant le pilote, Youngmi le voit sur Aujourd'hui et touche
+  « Envoyer » ; l'envoi automatique demandera une exception à R-01 décidée par Olivier (R-16).
+- Q: Et un client sans email, ou qui préfère le SMS ? → A : une version courte à copier pour un
+  SMS ou WhatsApp, puis « J'ai envoyé le rappel » note l'échange avec son canal (FR-040).
+- Q: Et les livraisons aux restaurants ? → A : pas de rappel : elles sont régulières et convenues
+  avec le restaurant.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Savoir ce qu'il y a à faire aujourd'hui (Priority: P1)
@@ -124,6 +136,9 @@ les étapes ; l'historique montre chaque changement, daté et signé.
    marquée « Nouvelle réponse » aussi dans la liste des commandes et sur Aujourd'hui.
 6. **Given** une commande ouverte, **When** Youngmi fait défiler l'écran, **Then** la frise des
    étapes reste en haut et dit l'étape à faire maintenant.
+7. **Given** une commande confirmée dont le retrait est demain et dont la confirmation n'est pas
+   partie la veille ou le jour même, **When** Youngmi ouvre Aujourd'hui, **Then** la commande est
+   dans « Rappels à envoyer » ; elle en sort dès que le rappel est envoyé ou noté.
 
 ---
 
@@ -530,6 +545,15 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - **FR-039**: Les groupes MUST avoir chacun sa couleur, différente du marron des boutons et des
   filtres et des couleurs d'étape : professionnels (B2B) en violet, particuliers (B2C) en bleu-vert,
   les mêmes dans les étiquettes, la gamme pro et les statistiques (demande d'Olivier, 2026-11-07).
+- **FR-040**: (demande d'Olivier, 2026-11-08) Une commande de particulier confirmée MUST pouvoir
+  recevoir un mail « Rappel » (étiquette RAPPEL · MC-…, même objet que la commande) qui redit le
+  jour, l'heure, l'adresse, les gâteaux et le reste à régler, et invite à répondre en cas
+  d'empêchement. Aujourd'hui MUST lister les rappels à envoyer : commandes confirmées, retrait
+  demain, pas de livraison de restaurant, ni rappel déjà envoyé ou noté, ni confirmation partie la
+  veille du retrait ou après. Le rappel MUST partir au toucher de « Envoyer » après l'aperçu,
+  comme les autres mails (R-01) ; une version courte MUST être proposée à copier pour un SMS ou
+  WhatsApp, et « J'ai envoyé le rappel » MUST le noter avec son canal. L'envoi automatique est
+  hors périmètre tant qu'Olivier ne l'a pas décidé.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -570,6 +594,8 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - **SC-011**: La réponse d'un client apparaît dans sa commande en moins de 2 minutes (mesuré le
   2026-11-07 sur un vrai mail).
 - **SC-012**: 0 vente payée, facturée ou rapprochée supprimable.
+- **SC-013**: 0 rappel envoyé deux fois pour la même commande sans le toucher « Renvoyer », et 0
+  rappel proposé pour une commande annulée, remise ou sans jour fixé.
 - **SC-007**: Le coût de l'assistant ne dépasse jamais le plafond du mois fixé dans Paramètres.
 - **SC-008**: 0 donnée changée par l'assistant sans le toucher de « Confirmer » de l'utilisatrice.
 - **SC-009**: 0 paiement changé par une modification de l'assistant sans être affiché sur sa carte

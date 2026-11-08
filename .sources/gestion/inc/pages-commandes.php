@@ -41,6 +41,14 @@ function page_accueil(): void {
         $c .= bloc(icone('email') . ' Nouvelles réponses des clients', '<div class="liste">' . $l . '</div>', '', 'reponses');
     }
     if (est_admin() && reponses_silence()) $c .= bloc(icone('alerte') . ' Réponses des clients', '<p class="erreur">Le script de contact@ n\'a rien transmis depuis plus de 24 h : les réponses des clients restent dans Gmail. Voir <a href="' . h(u('reglages')) . '#reponses">Paramètres</a>.</p>', 'alerte');
+    // Rappels de retrait (FR-040, demande d'Olivier du 08/11/2026) : au toucher de Youngmi d'abord, automatique plus tard sur décision d'Olivier
+    if ($t['rappels']) {
+        $l = '';
+        foreach ($t['rappels'] as $k) $l .= '<a class="carte-cmd" href="' . h(u('commande', ['id' => $k['id']])) . '#mail-rappel"><span class="l1"><b translate="no">' . h(commande_client_nom($k)) . '</b>'
+            . '<span class="chip">' . h(email_valide((string)$k['client_email']) ? 'Mail' : 'SMS ou WhatsApp') . '</span></span>'
+            . '<span class="l2">' . h($k['reference']) . ' · ' . h(retrait_texte($k, true)) . '</span></a>';
+        $c .= bloc(icone('email') . ' Rappels à envoyer', '<p class="aide">Retraits de demain : touchez une commande, vérifiez l\'aperçu, puis « Envoyer ». Rien ne part tout seul.</p><div class="liste">' . $l . '</div>', '', 'rappels');
+    }
     $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'), '', 'demandes');
     // Retraits groupés par jour
     $jours = [];
@@ -163,6 +171,17 @@ function page_commande(): void {
                 if (!email_valide((string)$k['client_email']) || trim($texteLibre) === '' || trim($texteLibre) === trim(salutation($k))) { flash('erreur', 'Écrivez le message (et vérifiez l\'email du client).'); break; }
                 if (envoyer_mail_commande($k, 'message', ['accueil' => $texteLibre, 'sujet' => texte('sujet', 200)])) flash_envoi('Email envoyé au client. Une copie arrive dans contact@madamecho.com.');
                 else flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez dans un moment.');
+                break;
+            case 'envoyer_rappel':   // FR-040 : rappel de retrait, au toucher de Youngmi (R-01)
+                if ($k['statut'] !== 'confirmee' || livraison_pro($k) || !$k['retrait_date'] || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la commande n\'est pas confirmée avec un jour de retrait.'); break; }
+                if (envoyer_mail_commande($k, 'rappel', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) flash_envoi('Rappel envoyé au client. Une copie arrive dans contact@madamecho.com.');
+                else flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez, ou envoyez la version courte par SMS ou WhatsApp.');
+                break;
+            case 'rappel_note':   // le rappel envoyé autrement (SMS, WhatsApp, téléphone), noté avec son canal
+                if ($k['statut'] !== 'confirmee') { flash('erreur', 'La commande n\'est pas confirmée.'); break; }
+                $par = choix('par', ['sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'telephone' => 'Téléphone'], 'sms');
+                commentaire('Rappel de retrait envoyé par ' . CANAUX_ECHANGE[$par] . ' : « ' . rappel_sms($k) . ' »', $id, (int)$k['client_id'], $par);
+                flash('ok', 'Rappel noté dans les Échanges.');
                 break;
             case 'envoyer_avis':
                 $lien = (string)parametre('lien_avis', '');
@@ -379,6 +398,29 @@ function bloc_mail_client(array $k, string $type, string $titre, string $avant =
 }
 function bloc_confirmation_client(array $k): string { return bloc_mail_client($k, 'confirmation', 'Envoyer la confirmation au client'); }
 
+/** Le rappel de retrait (FR-040) : sur une commande confirmée dont le retrait est aujourd'hui, demain ou après-demain. Mail au toucher
+ *  de « Envoyer », ou version courte à copier pour un SMS ou WhatsApp, puis « J'ai envoyé le rappel » avec le canal. */
+function bloc_rappel_client(array $k): string {
+    $d = (string)$k['retrait_date'];
+    if ($k['statut'] !== 'confirmee' || livraison_pro($k) || $d === '' || $d < aujourdhui() || $d > date('Y-m-d', strtotime('+2 days'))) return '';
+    $fait = rappel_fait((int)$k['id']);
+    $sms = rappel_sms($k);
+    $noter = '<div class="rappel-court"><p class="etiq-apercu">Version courte, pour un SMS ou WhatsApp</p>'
+           . '<pre class="corps" id="rappel-sms" translate="no" lang="fr">' . h($sms) . '</pre>'
+           . '<div class="actions"><button type="button" class="btn" data-copier="rappel-sms">' . icone('copier') . 'Copier le texte</button>'
+           . (($t = preg_replace('/\D/', '', (string)($k['client_tel'] ?? ''))) !== '' ? lien_bouton('https://wa.me/' . (str_starts_with($t, '0') ? '33' . substr($t, 1) : $t) . '?text=' . rawurlencode($sms), icone('email') . 'Ouvrir WhatsApp', 'discret', ['target' => '_blank', 'rel' => 'noopener']) : '')
+           . '</div>'
+           . formulaire('rappel_note', liste_choix('par', 'Envoyé par', ['sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'telephone' => 'Téléphone'], 'sms')
+                 . bouton('J\'ai envoyé le rappel', 'secondaire'), ['class' => 'form-etape']) . '</div>';
+    $titre = 'Envoyer le rappel au client';
+    if (!email_valide((string)$k['client_email'])) {
+        return '<details class="email-pret" id="mail-rappel"' . ($fait ? '' : ' open') . '><summary>' . icone('email') . h($titre) . ($fait ? ' <span class="compte">envoyé</span>' : '') . '</summary>'
+             . ($fait ? '<p class="aide"><b>Déjà envoyé</b> · ' . h(date_fr($fait, 'heure')) . '</p>' : '')
+             . '<p class="aide">Pas d\'email pour ce client : envoyez la version courte par SMS ou WhatsApp, puis notez-le.</p>' . $noter . '</details>';
+    }
+    return bloc_mail_client($k, 'rappel', $titre, '', '<p class="aide">Ou bien par SMS ou WhatsApp :</p>' . $noter, !$fait && rappel_quand($k) !== 'le ' . date_fr($d, 'jour'));
+}
+
 /** « Écrire au client » : objet, message, aperçu exact, « Envoyer » ; rangé ensuite dans les Échanges. $reponse : l'objet de l'email auquel elle répond. */
 function bloc_ecrire_client(array $k): string {
     $email = (string)$k['client_email'];
@@ -499,9 +541,11 @@ function etape_suivante(array $k): string {
             $passe = $k['retrait_date'] && $k['retrait_date'] < aujourdhui();
             $envoyee = mail_deja((int)$k['id'], 'confirmation') !== null;
             return '<section class="etape' . ($passe ? ' etape-alerte' : '') . '"><h2>' . ($passe ? 'Retrait passé : la commande a été remise ?' : 'Retrait programmé : ' . h(retrait_texte($k))) . '</h2>'
-                 . (!$passe ? '<p class="etape-afaire">' . ($envoyee ? 'Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre.'
-                                                                  : 'À faire maintenant : envoyer la confirmation au client (ci-dessous).') . '</p>' : '')
+                 . (!$passe ? '<p class="etape-afaire">' . ($envoyee && in_array((int)$k['id'], array_map(fn($x) => (int)$x['id'], rappels_a_envoyer()), true) ? 'À faire maintenant : envoyer le rappel au client (le retrait est demain).'
+                                                                  : ($envoyee ? 'Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre.'
+                                                                  : 'À faire maintenant : envoyer la confirmation au client (ci-dessous).')) . '</p>' : '')
                  . bloc_confirmation_client($k)
+                 . bloc_rappel_client($k)
                  . agenda_boutons($k)
                  . formulaire('remise', '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])
                       . liste_choix('moyen', 'Payé par', MOYENS, $k['moyen'] !== '' ? $k['moyen'] : 'carte') . '</div>'

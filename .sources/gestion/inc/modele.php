@@ -564,6 +564,7 @@ function tableau_de_bord(): array {
     unset($k);
     $r['depasses'] = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero
                              FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'confirmee' AND k.retrait_date < ? ORDER BY k.retrait_date", [$auj]);
+    $r['rappels'] = rappels_a_envoyer();
     $r['problemes'] = commandes_lister('problemes');
     $r['acomptes'] = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero
                              FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.paiement = 'acompte_demande' AND k.statut IN ('proposition', 'confirmee') ORDER BY k.retrait_date");
@@ -584,6 +585,33 @@ function tableau_de_bord(): array {
     if ($r['mois']['n_part']) foreach (['ht', 'ttc'] as $b) $r['mois']['panier'][$b] = intdiv($part[$b], $r['mois']['n_part']);
     $r['demandes_mois'] = (int)val("SELECT COUNT(*) FROM commandes WHERE substr(recue_le, 1, 7) = ?", [$mois]);
     return $r;
+}
+
+/** Rappel de retrait (FR-040, demande d'Olivier du 08/11/2026, « au toucher d'abord, automatique ensuite ») : les commandes
+ *  confirmées dont le retrait est demain, sauf les livraisons de restaurant, celles dont le rappel est déjà parti ou noté, et
+ *  celles dont la confirmation est partie la veille du retrait ou après (elle sert déjà de rappel). Rien ne part tout seul (R-01). */
+function rappels_a_envoyer(): array {
+    $demain = date('Y-m-d', strtotime('+1 day'));
+    $ks = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero,
+                         c.email AS client_email
+                  FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'confirmee' AND k.retrait_date = ?
+                  ORDER BY k.retrait_heure, k.retrait_moment, k.id", [$demain]);
+    $out = [];
+    foreach ($ks as $k) {
+        if (livraison_pro($k) || rappel_fait((int)$k['id'])) continue;
+        $conf = mail_deja((int)$k['id'], 'confirmation');
+        if ($conf && substr((string)$conf['le'], 0, 10) >= date('Y-m-d', strtotime($k['retrait_date'] . ' -1 day'))) continue;
+        $k['lignes_tab'] = json_decode($k['lignes'], true) ?: [];
+        $out[] = $k;
+    }
+    return $out;
+}
+/** Le rappel est-il déjà parti (mail) ou noté (SMS, WhatsApp, téléphone) ? Renvoie sa date, ou null. */
+function rappel_fait(int $commande): ?string {
+    $m = mail_deja($commande, 'rappel');
+    if ($m) return (string)$m['le'];
+    $n = val("SELECT le FROM evenements WHERE commande_id = ? AND type = 'commentaire' AND texte LIKE 'Rappel de retrait envoyé%' ORDER BY id DESC LIMIT 1", [$commande]);
+    return $n ? (string)$n : null;
 }
 
 /** L'activité des commandes pour Aujourd'hui (demande d'Olivier, 07/11/2026) : sur les 7 derniers jours et aujourd'hui,
