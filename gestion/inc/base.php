@@ -18,7 +18,7 @@ if (!defined('GESTION')) define('GESTION', '1');
 mb_internal_encoding('UTF-8');
 date_default_timezone_set('Europe/Paris');
 
-const GESTION_VERSION = '2026-11-07';
+const GESTION_VERSION = '2026-11-08';
 const GESTION_NOM = 'Gestion';
 const GESTION_EXPEDITEUR = 'site@madamecho.com';
 const GESTION_DOMAINE = 'madamecho.com';
@@ -186,7 +186,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
-    if ($v >= 9) return;
+    if ($v >= 10) return;
     if ($v < 1) $pdo->exec("
 CREATE TABLE IF NOT EXISTS utilisateurs (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL, mdp TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'membre', actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, derniere_connexion TEXT, mdp_change_le TEXT);
@@ -297,7 +297,18 @@ CREATE TABLE IF NOT EXISTS corbeille (id INTEGER PRIMARY KEY, le TEXT NOT NULL, 
   libelle TEXT NOT NULL DEFAULT '', motif TEXT NOT NULL DEFAULT '', client_id INTEGER, donnees TEXT NOT NULL DEFAULT '{}');
 CREATE INDEX IF NOT EXISTS corbeille_le ON corbeille(le);
 ");
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '9')");
+    // Version 10 (08/11/2026, demande d'Olivier : des pastilles sur ce qui est nouveau ou a changé, FR-041) : ce que chaque personne
+    // a vu (commande, fiche, nouveauté de l'outil) et son point de départ ; posé maintenant pour que rien d'ancien ne s'allume d'un coup
+    $pdo->exec("CREATE TABLE IF NOT EXISTS vus (utilisateur_id INTEGER NOT NULL, genre TEXT NOT NULL, objet TEXT NOT NULL, le TEXT NOT NULL,
+  PRIMARY KEY (utilisateur_id, genre, objet))");
+    $colU = array_column($pdo->query("PRAGMA table_info(utilisateurs)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+    if (!in_array('pastilles_depuis', $colU, true)) {
+        try { $pdo->exec("ALTER TABLE utilisateurs ADD COLUMN pastilles_depuis TEXT"); }
+        catch (\PDOException $e) { if (stripos($e->getMessage(), 'duplicate column') === false) throw $e; }
+    }
+    $pdo->prepare("UPDATE utilisateurs SET pastilles_depuis = ? WHERE pastilles_depuis IS NULL")->execute([date('Y-m-d H:i:s')]);
+    $pdo->exec("CREATE INDEX IF NOT EXISTS evenements_le ON evenements(le)");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '10')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.

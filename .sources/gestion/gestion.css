@@ -748,3 +748,56 @@ details.geste>form{padding:0 2px 6px}
 .chip-doute{display:inline-flex;align-items:center;gap:4px;min-height:22px;padding:1px 9px;border-radius:11px;font-size:12px;font-weight:500;background:#FCEBD5;color:#7A3E00;border:1px solid #E9B77A}
 .chip-doute .ic{width:14px;height:14px}
 .msg-autre{border-color:#E9B77A}
+
+/* Pastilles « nouveau » et « a changé » (demande d'Olivier, 08/11/2026, FR-041) : rouge = à vous d'agir (un chiffre),
+   ambre = a changé (un point), chocolat ✦ = nouveauté de l'outil ; toujours un mot à côté, rien ne clignote */
+:root{--p-action:#C8361E;--p-action-f:#FBE4DF;--p-action-t:#9C2410;--p-change:#D98E04;--p-change-f:#FBEFD6;--p-change-t:#7A4A00;--p-outil:var(--chocolat)}
+.onglets a,.nav-haut a{position:relative}
+.pastille{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--p-action);color:#fff;font-size:11px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.point{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
+.point-change{background:var(--p-change)}
+.point-outil{background:var(--p-outil)}
+.onglets .pastille{position:absolute;top:6px;left:calc(50% + 4px);box-shadow:0 0 0 2px var(--carte)}
+.onglets .point{position:absolute;top:9px;left:calc(50% + 8px);box-shadow:0 0 0 2px var(--carte)}
+.nav-haut .pastille,.nav-haut .point{margin-left:6px}
+.ligne-menu .point{margin-left:8px;vertical-align:middle}
+.etiq{display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:1px 9px;border-radius:11px;font-size:12px;font-weight:500;white-space:nowrap}
+.etiq::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.etiq-action{background:var(--p-action-f);color:var(--p-action-t)}
+.etiq-change{background:var(--p-change-f);color:var(--p-change-t)}
+.etiq-outil{background:var(--ivoire);color:var(--chocolat)}
+.etiq-outil::before{display:none}
+.etiq-plus{font-size:12px;color:var(--doux)}
+.carte-cmd.est-action{box-shadow:inset 4px 0 0 var(--p-action)}
+.carte-cmd.est-change{box-shadow:inset 4px 0 0 var(--p-change)}
+.d{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
+.d-action{background:var(--p-action)}
+.d-change{background:var(--p-change)}
+.d-outil{width:auto;height:auto;border-radius:0;color:var(--p-outil);font-size:13px;line-height:1}
+.depuis-visite h2{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-size:18px;font-weight:500}
+.legende-pastilles{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0 0 6px;font-size:13px;color:var(--doux)}
+.legende-pastilles>span{display:inline-flex;align-items:center;gap:6px}
+.legende-pastilles .d{width:8px;height:8px}
+.liste-pastilles{list-style:none;margin:0;padding:0}
+.liste-pastilles>li+li{border-top:1px solid var(--ligne)}
+.ligne-pastille{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:4px 10px;align-items:start;padding:10px 2px;min-height:44px;text-decoration:none;color:var(--texte)}
+.ligne-pastille .d{margin-top:6px}
+.ligne-pastille .d-outil{margin-top:3px}
+.ligne-pastille b{font-weight:500}
+.ligne-pastille .par{color:var(--doux)}
+.ligne-pastille .q{display:block;color:var(--doux);font-size:14px;overflow-wrap:anywhere}
+.ligne-pastille time{color:var(--doux);font-size:13px;white-space:nowrap}
+.ligne-pastille:hover b{text-decoration:underline}
+.depuis-bas{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;font-size:14px}
+.depuis-bas a{color:var(--chocolat)}
+.depuis-bas form{margin:0}
+.encadre-changements{border-radius:var(--r);padding:12px 16px;margin:0 0 16px;font-size:15px;border:1px solid #F0D9A8;background:#FFF8EA}
+.encadre-changements.encadre-action{border-color:#EFC3B8;background:#FFF5F2}
+.titre-changements{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-weight:500}
+.encadre-changements ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.encadre-changements li{display:grid;grid-template-columns:12px minmax(0,1fr);gap:8px;align-items:start}
+.encadre-changements li .d{margin-top:6px}
+.encadre-changements .q{display:block;color:var(--doux);font-size:13px}
+.par{color:var(--doux)}
+html:lang(fr) .par::before{content:"par "}
+html:lang(ko) .par::after{content:" 님"}

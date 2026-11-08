@@ -32,6 +32,7 @@ function icone(string $n): string {
         'tel' => '<path d="M6.5 3.5l3 3-2 2.5c1.3 2.6 3.4 4.7 6 6l2.5-2 3 3-2 2.5C10.6 18.4 5.6 13.4 4 6.5z"/>',
         'agenda' => '<path d="M4 5h16v15H4z"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M12 13v4M10 15h4"/>',
         'avis' => '<path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8z"/>',
+        'cloche' => '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
         'imprimer' => '<path d="M7 9V3h10v6"/><path d="M5 9h14v8h-3v4H8v-4H5z"/>',
         'chercher' => '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/>',
         'alerte' => '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
@@ -90,19 +91,24 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
     if ($u) {
         // L'agenda, à côté d'Aujourd'hui (demande d'Olivier, 07/11/2026)
         $items = [['accueil', 'Aujourd\'hui', 'jour'], ['agenda', 'Agenda', 'mois'], ['commandes', 'Commandes', 'commandes'], ['clients', 'Clients', 'clients'], ['produits', 'Produits', 'produits']];
+        // Les pastilles (FR-041) : un chiffre rouge pour ce qui demande d'agir, un point ambre pour ce qui a changé, chocolat pour l'outil
+        $pa = pastilles();
+        $marques = ['commandes' => pastille_menu($pa['action'], $pa['change_commandes'] ? 'change' : ''), 'clients' => pastille_menu(0, $pa['change_clients'] ? 'change' : '')];
+        $outil = pastille_menu(0, $pa['outil'] ? 'outil' : '');
         foreach ($items as [$p, $l, $i]) {
             $a = $actif === $p ? ' aria-current="page"' : '';
-            $nav .= '<a href="' . h(u($p)) . '"' . $a . '>' . icone($i) . h($l) . '</a>';   // une icône par page, aussi sur ordinateur (demande d'Olivier, 07/11/2026)
-            $onglets .= '<a href="' . h(u($p)) . '"' . $a . '>' . icone($i) . '<span>' . h($l) . '</span></a>';
+            $m = $marques[$p] ?? '';
+            $nav .= '<a href="' . h(u($p)) . '"' . $a . '>' . icone($i) . h($l) . $m . '</a>';   // une icône par page, aussi sur ordinateur (demande d'Olivier, 07/11/2026)
+            $onglets .= '<a href="' . h(u($p)) . '"' . $a . '>' . icone($i) . '<span>' . h($l) . '</span>' . $m . '</a>';
         }
         // Sur ordinateur : les cinq pages du menu Plus en liens directs quand l'écran est large (≥ 1200 px),
         // un seul lien « Plus » sinon, pour que la barre reste sur une ligne
-        $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant'], true);
+        $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant', 'nouveautes'], true);
         foreach ([['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Paramètres', 'reglages']] as [$p, $l, $i]) {
-            $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . icone($i) . h($l) . '</a>';
+            $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . icone($i) . h($l) . ($p === 'manuel' ? $outil : '') . '</a>';
         }
-        $nav .= '<a class="plus" href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . 'Plus</a>';
-        $onglets .= '<a href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . '<span>Plus</span></a>';
+        $nav .= '<a class="plus" href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . 'Plus' . $outil . '</a>';
+        $onglets .= '<a href="' . h(u('plus')) . '"' . ($dansPlus ? ' aria-current="page"' : '') . '>' . icone('plus') . '<span>Plus</span>' . $outil . '</a>';
     }
     $f = '';
     if ($flash) $f = '<div class="flash flash-' . h($flash[0]) . '" role="status">' . nl2br(h($flash[1])) . '</div>';
@@ -111,7 +117,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '<meta name="google" content="notranslate">'
        . '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
        . '<meta name="robots" content="noindex, nofollow, noarchive">'
-       . '<title>' . h($titre) . ' · Gestion Madame Cho</title>'
+       . '<title>' . h($titre) . ' · Gestion Madame Cho</title>'   // le nombre rouge est ajouté devant après la traduction (fin de mise_en_page)
        // Icônes de la gestion : le 조 du site aux couleurs inversées, chocolat sur ivoire, pour la distinguer du site (demande d'Olivier, 07/11/2026)
        . '<link rel="icon" href="' . h(fichier_versionne('icones/favicon.ico')) . '" sizes="48x48">'
        . '<link rel="icon" href="' . h(fichier_versionne('icones/favicon.svg')) . '" type="image/svg+xml">'
@@ -121,6 +127,7 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '<link rel="preload" href="../assets/polices/jost-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>'
        . '<link rel="stylesheet" href="' . h(fichier_versionne('gestion.css')) . '">'
        . '</head><body class="' . h(trim(($u ? 'connecte ' : 'deconnecte ') . $classe)) . '"'
+       . ($u ? ' data-pastilles="' . (int)pastilles()['action'] . '"' : '')   // l'icône de l'application sur le téléphone (gestion.js)
        // « Corriger mon français » sous les zones de saisie (gestion.js) : seulement si l'assistant est relié
        . ($u && assistant_relie() ? ' data-corriger="' . h(u('corriger')) . '" data-jeton="' . h(csrf()) . '"' : '') . '>' . $essai
        // Les drapeaux des boutons de dictée (gestion.js les recopie)
@@ -138,7 +145,10 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
     // Ni Chrome ni Edge ne doivent retraduire l'écran : l'outil a son propre choix FR/KO, et la traduction automatique
     // remettait le coréen en français. translate="no" n'est posé sur <html> qu'après la traduction coréenne, qui laisse
     // de côté tout ce qui porte cet attribut.
-    echo preg_replace('/<html lang="(fr|ko)">/', '<html lang="$1" translate="no">', traduire_page($page), 1);
+    $page = preg_replace('/<html lang="(fr|ko)">/', '<html lang="$1" translate="no">', traduire_page($page), 1);
+    // « (3) Aujourd'hui » dans l'onglet du navigateur : le nombre de commandes où il faut agir (FR-041)
+    $n = $u ? (int)pastilles()['action'] : 0;
+    echo $n > 0 ? preg_replace('/<title>/', '<title>(' . $n . ') ', $page, 1) : $page;
     exit;
 }
 
@@ -157,7 +167,7 @@ function page_indisponible(): void {
 const ICONES_PAGES = ['accueil' => 'jour', 'agenda' => 'mois', 'commandes' => 'commandes', 'commande' => 'commandes', 'commande-edition' => 'commandes',
     'clients' => 'clients', 'client' => 'clients', 'client-edition' => 'clients', 'releve' => 'imprimer', 'produits' => 'produits', 'produit' => 'produits',
     'ingredients' => 'produits', 'ingredient' => 'produits', 'statistiques' => 'stats', 'taxe' => 'stats', 'production' => 'imprimer', 'plus' => 'plus',
-    'rapprochement' => 'paiement', 'corbeille' => 'supprimer', 'manuel' => 'livre', 'aide' => 'livre', 'assistant' => 'ia', 'olivier' => 'ia', 'reglages' => 'reglages'];
+    'rapprochement' => 'paiement', 'corbeille' => 'supprimer', 'manuel' => 'livre', 'aide' => 'livre', 'assistant' => 'ia', 'olivier' => 'ia', 'reglages' => 'reglages', 'nouveautes' => 'cloche'];
 function titre_page(string $titre, string $sous = '', string $actions = '', string $retour = ''): string {
     $r = $retour !== '' ? '<a class="retour" href="' . h($retour) . '">' . icone('retour') . '<span>Retour</span></a>' : '';
     // Chaque titre de page porte l'icône de sa rubrique, la même que dans le menu (retour d'Olivier, 07/11/2026)
@@ -224,22 +234,18 @@ function retrait_texte(array $k, bool $court = false): string {
     $m = $k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : (MOMENTS_COURTS[$k['retrait_moment']] ?? '');
     return $d . ($m !== '' ? ', ' . $m : '') . (($k['mode'] ?? 'retrait') === 'livraison' ? ' (livraison)' : '');
 }
-/** Les commandes qui ont une réponse de client pas encore lue (une seule requête par page). */
-function commandes_non_lues(): array {
-    static $n = null;
-    if ($n === null) { $n = []; foreach (lignes("SELECT DISTINCT commande_id FROM evenements WHERE type = 'email_recu' AND lu = 0 AND commande_id IS NOT NULL") as $r) $n[(int)$r['commande_id']] = true; }
-    return $n;
-}
 function montant_commande(array $k): int { return $k['prix_final'] !== null ? (int)$k['prix_final'] : (int)$k['total_indicatif']; }
 function carte_commande(array $k, bool $avecClient = true): string {
     $alertes = '';
     if (!empty($k['probleme'])) $alertes .= drapeau((string)$k['probleme_note']);
-    if (isset(commandes_non_lues()[(int)$k['id']])) $alertes .= '<span class="chip chip-nouveau">Nouvelle réponse</span>';
+    // La pastille de la personne (FR-041) : « Nouvelle demande », « Le client a répondu », « Commande modifiée »… avec un liseré de couleur
+    $pa = pastilles()['commandes'][(int)$k['id']] ?? null;
+    if ($pa) $alertes = etiquette_pastille($pa) . $alertes;
     if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . heures_depuis($k['recue_le']) . ' h</span>';
     elseif (commande_dormante($k)) $alertes .= '<span class="dormant">Rien depuis ' . jours_depuis($k['dernier_echange']) . ' j</span>';
     $nom = $avecClient ? '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(livraison_pro($k) ? 'Livraison' : (TYPES_COMMANDE[$k['type']] ?? 'Commande')) . '</b>';
     $montant = montant_lu($k);
-    return '<a class="carte-cmd" href="' . h(u('commande', ['id' => $k['id']])) . '">'
+    return '<a class="carte-cmd' . ($pa ? ' est-' . $pa['niveau'] : '') . '" href="' . h(u('commande', ['id' => $k['id']])) . '">'
          . '<span class="l1">' . ($avecClient ? chip_type(commande_est_pro($k)) : '') . $nom . chip_statut($k['statut'], true, livraison_pro($k)) . '</span>'
          . '<span class="l2">' . h(retrait_texte($k, true)) . ($montant !== '' ? ' · ' . h($montant) : '') . chip_paiement($k['paiement'], (int)$k['acompte']) . '</span>'
          . '<span class="l3">' . h(commande_contenu_texte($k, true)) . '</span>'
@@ -315,7 +321,7 @@ const ICONES_TITRES = [
     'Commandes' => 'commandes', 'Demandes' => 'commandes', 'Propositions sans réponse' => 'commandes', 'Les livraisons' => 'commandes', 'Où en sont les demandes' => 'commandes',
     'Retraits' => 'jour', 'Les 7 derniers jours' => 'jour',
     'Avis Google' => 'avis', 'Emails préparés et avis Google' => 'avis', 'Réponses des clients' => 'email',
-    'Assistant' => 'ia',
+    'Assistant' => 'ia', 'Commandes et clients' => 'cloche', 'Dans l\'outil' => 'cloche',
     'Statistiques' => 'stats', 'Les visites du site' => 'stats', 'Visites par jour' => 'stats', 'Pages les plus vues' => 'stats', 'Téléphone ou ordinateur' => 'stats',
     'Doublon possible' => 'alerte',
     'Mon mot de passe' => 'reglages', 'Dernières connexions' => 'reglages', 'Langue de l' => 'reglages', 'Exporter' => 'reglages', 'Reprise des données' => 'reglages',

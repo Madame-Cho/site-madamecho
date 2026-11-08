@@ -94,10 +94,21 @@
 - [ ] T050 Audit du ChatGPT d'Olivier sur la version (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
 - [ ] T051 Plus tard, sur décision d'Olivier (exception à R-01, R-16) : envoi automatique la veille à 10 h par une tâche planifiée OVH, « Ne pas envoyer » sur Aujourd'hui, case « Rappel automatique » sur la commande
 
+## Phase 10 : Pastilles « nouveau » et « a changé » (2026-11-08, demande d'Olivier, FR-041)
+
+- [ ] T058 [US1] Schéma 10 : table `vus`, colonne `utilisateurs.pastilles_depuis` (`inc/base.php`) ; texte en clair des modifications de commande (`inc/modele.php`)
+- [ ] T059 [US1] `inc/pastilles.php` : signaux par personne, « vu », « Tout marquer comme vu », nouveautés de l'outil, page « Quoi de neuf »
+- [ ] T060 [US1] Menu (haut et bas), titre « (n) », icône de l'application (`gestion.js`), bloc « Depuis votre dernière visite » sur Aujourd'hui
+- [ ] T061 [US2] Étiquette et liseré des cartes de commande et de client ; encadré « Changé depuis votre dernière visite » sur la commande ; « Nouvelle réponse » propre à la personne
+- [ ] T062 [P] [US8] Coréen (textes et motifs), manuel FR/KO (section « Les pastilles »), styles
+- [ ] T063 Essais sur base fictive à deux comptes (Youngmi, Olivier) et captures FR/KO
+- [ ] T064 Audit du ChatGPT d'Olivier (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
+
 ## Dependencies & Execution Order
 
 - Phase 2 dépend de la phase 1 ; T011 clôt le lot.
 - Les phases 3 à 6 sont indépendantes entre elles ; chacune se publie sur feu vert séparé.
 - Phase 7 : T021 de préférence avant le lot suivant ; T023 avant tout changement du paiement.
 - Phase 8 : T034 clôt le lot ; T035 avant d'annoncer les réponses des clients ; T037 dès que possible.
+- Phase 10 : T058 avant T059 à T062 ; T064 clôt le lot.
 - Phase 9 : T045 avant T046 et T047 ; T050 clôt le lot ; T051 seulement après la décision d'Olivier et la fin du pilote (T024).

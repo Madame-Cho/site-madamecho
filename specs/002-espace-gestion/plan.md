@@ -120,3 +120,19 @@ fiche vide (FR-002). Le correctif du script Google (corps des mails en octets) e
 
 **Complexity Tracking** : la règle « aucune commande n'est supprimée » (FR-002) reçoit une exception
 bornée pour les essais ; à confirmer par Olivier avant publication.
+
+## Lot « pastilles » (2026-11-08, FR-041)
+
+- `inc/pastilles.php` (nouveau) : calcul des signaux par personne (une requête par page, mise en cache), « vu », « Tout
+  marquer comme vu », nouveautés de l'outil, bloc d'Aujourd'hui, étiquettes, encadré de la commande, page « Quoi de
+  neuf » (`?p=nouveautes`) et action `?p=pastilles` (POST, jeton CSRF).
+- `inc/base.php` : schéma 10 (table `vus`, colonne `pastilles_depuis`). `inc/modele.php` : texte en clair des
+  modifications de commande dans l'événement.
+- `inc/vues.php` : pastilles du menu (haut et bas), « (n) » dans le titre, `data-pastilles` pour l'icône de
+  l'application (`navigator.setAppBadge`, dans `gestion.js`), étiquette et liseré des cartes de commande ; l'ancienne
+  « Nouvelle réponse » partagée devient celle de la personne.
+- `inc/pages-commandes.php`, `inc/pages-clients.php`, `inc/pages-autres.php` : bloc sur Aujourd'hui, encadré et « vu »
+  sur la commande et la fiche, cartes clients, « Quoi de neuf » dans Plus.
+- `inc/coreen.php` : textes et motifs coréens ; `inc/manuel.php` : section « Les pastilles » FR/KO.
+- Constitution : rien n'est envoyé ni publié ; aucune donnée nouvelle sur les clients ; le « vu » est une donnée de
+  l'utilisatrice, limitée à des identifiants et des dates.

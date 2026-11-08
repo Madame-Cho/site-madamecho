@@ -56,3 +56,22 @@
   `donnees` (les lignes d'origine en JSON : commande, événements, mails reçus ; ou fiche et événements). « Restaurer » les
   remet telles quelles (identifiant gardé s'il est libre) ; une commande ne se restaure qu'après sa fiche client. La tâche
   de nuit efface ce qui a plus de 30 jours ; l'effacement RGPD d'un client efface aussi ses lignes de corbeille.
+
+## Pastilles « nouveau » et « a changé » (FR-041, schéma 10)
+
+- **vus** (nouvelle table) : `utilisateur_id`, `genre` (`commande`, `client` ou `outil`), `objet` (identifiant, en texte),
+  `le` ; clé (utilisateur, genre, objet). Une ligne est écrite quand la personne ouvre la commande, la fiche client
+  ou « Quoi de neuf ». Aucune donnée de client : rien à purger au-delà de la suppression du compte.
+- **utilisateurs.pastilles_depuis** (nouvelle colonne) : le point de départ des pastilles de la personne ; posé à la
+  migration (rien d'ancien ne s'allume d'un coup) et remis à maintenant par « Tout marquer comme vu ».
+- Les pastilles se calculent à partir des **événements** : un événement d'une commande ou d'une fiche est signalé à la
+  personne s'il est plus récent que `pastilles_depuis`, que sa dernière ouverture de l'objet et que 30 jours, et
+  s'il n'est pas d'elle (auteur différent de son nom, ni « système », ni « Gmail »).
+- Rouge (à agir) : `creation` par le site (nouvelle demande), `email_recu`, `probleme` signalé. Ambre (a changé) :
+  `statut`, `paiement`, `rapprochement`, `modification`, `assistant`, `commentaire`, `email_client`, `avis`,
+  `restauration`, `creation` à la main ; pour une fiche sans commande : `creation`, `modification`, `commentaire`,
+  `fusion`, `avis`, `restauration`.
+- **evenements.nouveau** d'une modification de commande garde désormais le texte en clair (« jour du retrait : … → … »),
+  pour l'encadré « Changé depuis votre dernière visite ». Les anciennes modifications n'ont que les noms des champs.
+- Nouveautés de l'outil : une liste dans le code (`inc/pastilles.php`, `NOUVEAUTES`), identifiant, date, titre, texte,
+  lien ; signalée 21 jours au plus, et seulement si elle est postérieure à la création du compte.

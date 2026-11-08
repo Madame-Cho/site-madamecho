@@ -369,7 +369,8 @@ function commande_modifier(int $id, array $d): string {
     $set = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($diff)));
     q("UPDATE commandes SET $set WHERE id = :id", $diff + ['id' => $id]);
     unset($diff['maj_le'], $diff['total_indicatif']);
-    evenement('modification', 'Commande modifiée : ' . implode(', ', array_keys($diff)), ['commande' => $id, 'client' => (int)$k['client_id']]);
+    // le texte en clair (« jour du retrait : … → … ») reste dans l'événement, pour l'encadré « Changé depuis votre dernière visite » (FR-041)
+    evenement('modification', 'Commande modifiée : ' . implode(', ', array_keys($diff)), ['commande' => $id, 'client' => (int)$k['client_id']], '', $clair);
     return $clair;
 }
 /** Changement d'étape, avec ce qui va avec (date de remise, motif, retrait). */

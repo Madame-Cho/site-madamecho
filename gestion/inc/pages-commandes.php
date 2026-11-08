@@ -19,6 +19,7 @@ function page_accueil(): void {
          . tuile('Panier moyen, particuliers', $t['mois']['n_part'] ? euros($t['mois']['panier'][$tx]) : '—', $moisNom . ' · ' . TAXES[$tx], u('statistiques'))
          . '</div>';
     $c = titre_page('Aujourd\'hui', h(ucfirst(date_fr($auj, 'jour'))), lien_bouton(u('production'), icone('imprimer') . 'Fiche de production', 'discret'));
+    $c .= bloc_depuis_visite();   // « Depuis votre dernière visite » (FR-041)
     $c .= $kpi;
     // L'activité des 7 derniers jours : visites du site (Matomo) et commandes, chaque chiffre mène au détail (demande d'Olivier, 07/11/2026)
     $act = activite_commandes();
@@ -274,11 +275,16 @@ function page_commande(): void {
     $nom = commande_client_nom($k);
     $chips = chip_type(commande_est_pro($k)) . chip_statut($k['statut'], false, livraison_pro($k)) . chip_paiement($k['paiement'], (int)$k['acompte']) . ($k['probleme'] ? drapeau() : '');
     $notes = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type IN ('commentaire', 'email_client', 'email_recu')", [$id]);
-    $nonLues = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);
+    // « Nouvelle réponse » : pour la personne qui regarde, depuis sa dernière visite (FR-041, chacun ses pastilles) ;
+    // le repère partagé « lu » reste pour l'assistant
+    $seuil = pastilles_seuil('commande', $id);
+    $nonLues = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND (le > ? OR lu = 0)", [$id, $seuil]);
+    $nonLuesTous = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);
     $versEchanges = lien_bouton('#echanges', icone('assistant') . 'Échanges' . ($notes ? ' <span class="compte">' . $notes . '</span>' : '') . ($nonLues ? ' <span class="chip chip-nouveau">' . ($nonLues > 1 ? $nonLues . ' nouvelles réponses' : 'Nouvelle réponse') . '</span>' : ''), $nonLues ? 'secondaire' : 'discret');
     $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>',
         // « Modifier la commande » en haut, bien visible (retour d'Olivier en test, 07/11/2026 : il ne le trouvait pas)
         lien_bouton(u('commande-edition', ['id' => $id]), icone('crayon') . 'Modifier la commande', 'secondaire') . $versEchanges, u('commandes'));
+    $c .= encadre_changements('commande', $id);   // ce qui a changé depuis la dernière visite de la personne (FR-041)
     $c .= parcours_commande($k) . etape_suivante($k);
     // Client
     $tel = $k['client_tel'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $k['client_tel'])) . '">' . h($k['client_tel']) . '</a>' : '';
@@ -326,8 +332,12 @@ function page_commande(): void {
     $evs = historique($id, null);
     $types = ['commentaire', 'probleme', 'email_client', 'email_recu'];
     $echanges = array_values(array_filter($evs, fn($e) => in_array($e['type'], $types, true)));
+    // « Nouveaux messages » : ce que la personne n'a pas encore vu (FR-041)
+    foreach ($echanges as &$e) if ($e['type'] === 'email_recu') $e['lu'] = (string)$e['le'] > $seuil || !(int)($e['lu'] ?? 1) ? 0 : 1;
+    unset($e);
     $suivi = array_values(array_filter($evs, fn($e) => !in_array($e['type'], $types, true)));
-    if ($nonLues) q("UPDATE evenements SET lu = 1 WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);   // vues : la pastille s'en va à la prochaine visite
+    if ($nonLuesTous) q("UPDATE evenements SET lu = 1 WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);   // repère partagé, pour l'assistant
+    pastilles_vu('commande', (string)$id);   // vue pour la personne : ses pastilles s'éteignent (FR-041)
     // La conversation d'abord (façon messagerie), puis les deux gestes (retour d'Olivier en test, 07/11/2026), puis Gmail et l'appel en secours
     $c .= bloc('Échanges avec le client', fil_conversation($echanges)
         . '<div class="gestes-echange">' . bloc_ecrire_client($k)

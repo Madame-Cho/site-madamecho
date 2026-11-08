@@ -1168,6 +1168,56 @@ Cette modification ne correspond pas à cette page. | 이 수정은 이 페이�
 La gestion a ouvert le formulaire avec un point à corriger : rien n'a été enregistré. | 고칠 점이 있어서 관리 화면이 양식을 열었어요. 아무것도 저장되지 않았어요.
 La fiche a changé depuis que l'assistant a préparé cette modification : rien n'a été fait. Redemandez-la à l'assistant. | 어시스턴트가 이 수정을 준비한 뒤에 내용이 바뀌었어요. 아무것도 하지 않았어요. 어시스턴트에게 다시 부탁하세요.
 La fiche a changé depuis que la modification a été préparée : rien n'a été fait. | 수정을 준비한 뒤에 내용이 바뀌었어요. 아무것도 하지 않았어요.
+# Pastilles « nouveau » et « a changé » (08/11/2026, FR-041)
+Depuis votre dernière visite | 마지막 방문 이후
+À vous d'agir | 직접 할 일
+A changé | 바뀜
+Nouveau dans l'outil | 새 기능
+Tout marquer comme vu | 모두 확인함으로 표시
+Tout est marqué comme vu. | 모두 확인함으로 표시했어요.
+Nouvelle demande | 새 문의
+Commande créée | 주문 생성
+Le client a répondu | 고객이 답장했어요
+Problème signalé | 문제 신고됨
+Problème résolu | 문제 해결됨
+Étape changée | 단계 변경
+Paiement noté | 결제 기록
+Commande modifiée | 주문 수정
+Échange noté | 연락 기록
+Mail envoyé au client | 고객에게 메일 보냄
+Restaurée | 복원됨
+Nouvelle fiche (site) | 새 고객 (사이트)
+Nouvelle fiche | 새 고객
+Fiche modifiée | 고객 정보 수정
+Note ajoutée | 메모 추가
+Doublon fusionné | 중복 고객 합침
+1 autre changement | 다른 변경 1건
+Changé depuis votre dernière visite | 마지막 방문 이후 바뀐 내용
+voir la réponse | 답장 보기
+Quoi de neuf | 새 소식
+Ce qui est nouveau ou a changé depuis votre dernière visite | 마지막 방문 이후 새로 생기거나 바뀐 것
+Ce qui est nouveau ou a changé, et les nouveautés de l'outil | 새로 생기거나 바뀐 것, 관리 도구의 새 기능
+Commandes et clients | 주문과 고객
+Dans l'outil | 관리 도구의 새 기능
+Rien de nouveau : vous avez tout vu. | 새로운 것이 없어요. 모두 확인했어요.
+Nouveauté | 새 기능
+(nouveauté) | (새 기능)
+(a changé) | (바뀜)
+Les pastilles de couleur | 색깔 표시
+Rouge : à vous d'agir. Ambre : quelque chose a changé. Elles s'éteignent quand vous ouvrez la commande ou la fiche. | 빨간색은 직접 할 일, 주황색은 바뀐 것이에요. 주문이나 고객 정보를 열면 사라져요.
+Le rappel de retrait | 픽업 알림
+La veille du retrait, Aujourd'hui liste les rappels à envoyer au client, par mail ou par SMS. | 픽업 전날, 오늘 화면에 고객에게 보낼 픽업 알림이 나와요. 메일이나 문자로 보내요.
+téléphone | 전화번호
+prénom | 이름
+nom | 성
+société | 회사
+contact | 담당자
+email | 이메일
+ville | 도시
+canal | 경로
+particulier ou professionnel | 고객 종류
+nom dans Qonto | Qonto 이름
+lettre d'information | 뉴스레터
 # Rapprochement avec Qonto (audit n° 2, C14, 07/11/2026)
 Rapprochement Qonto | Qonto 대조
 Paiements à retrouver dans Qonto | Qonto에서 찾을 결제
@@ -1489,6 +1539,11 @@ function coreen_motifs(): array {
         ['/^Email envoyé depuis Gmail : « (.*) »$/u', fn($m) => 'Gmail에서 보낸 이메일: « ' . $m[1] . ' »'],
         ['/^Réponse de (.+) : « (.*) »( \\(rattachée à la main, extrait\\))?$/u', fn($m) => $m[1] . '의 답장: « ' . $m[2] . ' »' . (!empty($m[3]) ? ' (직접 연결, 일부)' : '')],
         ['/^(\\d+) nouvelles réponses$/u', fn($m) => '새 답장 ' . $m[1] . '개'],
+        // Pastilles (08/11/2026, FR-041)
+        ['/^Tout voir \\((\\d+)\\)$/u', fn($m) => '모두 보기 (' . $m[1] . ')'],
+        ['/^(\\d+) autres changements$/u', fn($m) => '다른 변경 ' . $m[1] . '건'],
+        ['/^\\((\\d+) à regarder\\)$/u', fn($m) => '(확인할 것 ' . $m[1] . '건)'],
+        ['/^((?:jour du retrait|heure du retrait|moment|mode|prix final|acompte|gâteaux|gâteau personnalisé|demande du professionnel|canal|type|facture|moyen de paiement)(?: : .+)?(?: ; .+)*)$/u', fn($m) => coreen_modifs($m[1])],
         ['/^Préparer le mail \\(commande (MC-[0-9A-F-]+)\\)$/u', fn($m) => '이메일 준비하기 (주문 ' . $m[1] . ')'],
         ['/^Avis Google demandé le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 구글 리뷰 요청함.' : null],
         ['/^Avis reçu le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 리뷰 받음.' : null],

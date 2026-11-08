@@ -349,6 +349,8 @@ function page_plus(): void {
           [u('assistant'), 'ia', 'Assistant', 'Une IA : questions, problèmes, idées'],
           [u('reglages'), 'reglages', 'Paramètres', 'Langue, mot de passe, emails, données']];
     $s = '';
+    // « Quoi de neuf » en tête, avec le point chocolat d'une nouveauté de l'outil (FR-041)
+    $s = '<a class="ligne-menu" href="' . h(u('nouveautes')) . '">' . icone('cloche') . '<span><b>Quoi de neuf' . pastille_menu(0, pastilles()['outil'] ? 'outil' : '') . '</b><span class="petit">Ce qui est nouveau ou a changé, et les nouveautés de l\'outil</span></span></a>';
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';
     $c = titre_page('Plus', '') . '<nav class="menu" aria-label="Plus">' . $s . '</nav><p class="aide centre">Gestion Madame Cho · version du ' . h(date_fr(GESTION_VERSION, 'longue')) . '</p>';

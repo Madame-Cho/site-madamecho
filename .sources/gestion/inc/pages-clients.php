@@ -11,7 +11,9 @@ function carte_client(array $c): string {
     $avis = $c['avis_recu_le'] ? '<span class="avis-ok">' . icone('avis') . 'Avis reçu</span>' : ($c['avis_demande_le'] ? '<span class="avis-attente">' . icone('avis') . 'Avis demandé</span>' : '');
     $chiffres = (int)$c['remises'] ? (int)$c['remises'] . ' commande' . ((int)$c['remises'] > 1 ? 's' : '') . ' · ' . ($estPro ? euros((int)$c['total_ht']) . ' HT' : euros((int)$c['total']) . ' TTC') . ($c['derniere'] ? ' · dernière le ' . date_fr($c['derniere']) : '') : 'Pas encore de commande remise';
     $enCours = (int)$c['en_cours'] ? '<span class="compte">' . (int)$c['en_cours'] . ' en cours</span>' : '';
-    return '<a class="carte-cmd carte-client" href="' . h(u('client', ['id' => $c['id']])) . '">'
+    $pa = pastilles()['clients'][(int)$c['id']] ?? null;   // la pastille de la personne (FR-041)
+    if ($pa) $avis = etiquette_pastille($pa) . $avis;
+    return '<a class="carte-cmd carte-client' . ($pa ? ' est-' . $pa['niveau'] : '') . '" href="' . h(u('client', ['id' => $c['id']])) . '">'
          . '<span class="l1">' . chip_type($estPro) . '<b translate="no">' . h(client_nom($c)) . '</b>' . $etat . $enCours . '</span>'
          . '<span class="l2">' . h($chiffres) . '</span>'
          . '<span class="l4">' . h($c['numero']) . ($c['ville'] !== '' ? ' · <span translate="no">' . h($c['ville']) . '</span>' : '') . ' · ' . h(CANAUX[$c['canal']] ?? $c['canal']) . ' · dernier échange ' . h(date_fr($c['dernier_echange'], 'relative')) . '</span>'
@@ -126,6 +128,9 @@ function page_client(): void {
         $efface ? '' : ($cl['type'] === 'professionnel'
             ? lien_bouton(u('commande-edition', ['client' => $id, 'livraison' => 1]), icone('ajouter') . 'Nouvelle livraison', 'principal') . lien_bouton(u('commande-edition', ['client' => $id]), 'Autre commande', 'discret')
             : lien_bouton(u('commande-edition', ['client' => $id]), icone('ajouter') . 'Nouvelle commande', 'principal')), u('clients'));
+    // Ce qui a changé sur la fiche depuis la dernière visite de la personne (FR-041), puis la fiche est vue pour elle
+    $c .= encadre_changements('client', $id);
+    pastilles_vu('client', (string)$id);
     $c .= '<div class="tuiles">' . tuile('Commandes remises', (string)$ch['remises'], $ch['commandes'] > $ch['remises'] ? ($ch['commandes'] - $ch['remises']) . ' autre(s) demande(s)' : '')
         . ($cl['type'] === 'professionnel'   // un professionnel en HT, comme ses factures ; un particulier en TTC (demande d'Olivier, 07/11/2026)
             ? tuile('Total', $ch['total_ht'] ? euros($ch['total_ht']) : '—', 'HT') . tuile('Livraison moyenne', $ch['panier_ht'] ? euros($ch['panier_ht']) : '—', 'HT')

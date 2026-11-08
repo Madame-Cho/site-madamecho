@@ -543,3 +543,10 @@
   });
   if (location.hash.length > 1 && /^#mail-|^#ecrire$/.test(location.hash)) ouvrir(location.hash.slice(1));
 })();
+
+/* Pastilles (FR-041) : le nombre rouge sur l'icône de l'application, quand le téléphone ou l'ordinateur le permet */
+(function () {
+  var n = parseInt(document.body.getAttribute("data-pastilles") || "", 10);
+  if (isNaN(n) || !("setAppBadge" in navigator)) return;
+  try { (n > 0 ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(function () {}); } catch (e) {}
+})();

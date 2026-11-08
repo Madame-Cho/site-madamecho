@@ -7,7 +7,8 @@
 **Status**: En ligne depuis le 2026-11-06 (dernière version publiée le 2026-11-07) ; spécification
 reprise au format Spec Kit ; mise à jour le 2026-11-07 au soir après l'audit n° 2 (lot C1, C2, C3, C8),
 puis après les échanges avec les clients (mails envoyés depuis la gestion, réponses des clients) et
-le parcours de test d'Olivier du 2026-11-07
+le parcours de test d'Olivier du 2026-11-07, puis le 2026-11-08 avec le rappel de retrait (FR-040) et
+les pastilles « nouveau » et « a changé » (FR-041)
 
 **Input**: « 2026-11-07 Claude Dossier de l'espace de gestion Madame Cho » (Drive, 91/03) : la
 proposition de fichier clients, la spécification v1, le compte rendu du prototype et celui du
@@ -84,6 +85,18 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
   SMS ou WhatsApp, puis « J'ai envoyé le rappel » note l'échange avec son canal (FR-040).
 - Q: Et les livraisons aux restaurants ? → A : pas de rappel : elles sont régulières et convenues
   avec le restaurant.
+
+### Session 2026-11-08 (pastilles « nouveau » et « a changé », demande d'Olivier)
+
+- Q: Que signalent les pastilles ? → A : dans la gestion seulement (pas le site public), tout ce
+  que Youngmi doit aller regarder : ce qui est nouveau et ce qui a changé de statut depuis sa
+  dernière visite (demande d'Olivier du 2026-11-08, « système à l'état de l'art », FR-041).
+- Q: Quand Olivier ouvre une nouveauté, disparaît-elle aussi pour Youngmi ? → A : non, chacun ses
+  pastilles : le « vu » est propre à chaque personne (choix d'Olivier du 2026-11-08, carte).
+- Q: Combien de couleurs ? → A : trois : rouge avec un chiffre pour ce qui demande d'agir
+  (nouvelle demande, réponse d'un client, problème signalé), ambre en simple point pour ce qui a
+  changé (étape, paiement, modification, note, mail envoyé par l'autre personne, fiche client),
+  chocolat ✦ pour une nouveauté de l'outil ; toujours un mot à côté de la couleur.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -563,6 +576,22 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   retrait du jour sans rappel MUST rester proposé ; pas de lien qui ouvre WhatsApp avec le texte
   prérempli pendant le pilote.
 
+- **FR-041**: (demande d'Olivier, 2026-11-08) La gestion MUST signaler à chaque personne connectée
+  ce qui est nouveau ou a changé depuis sa dernière visite, par des pastilles : un chiffre rouge sur
+  l'onglet Commandes (commandes avec une nouvelle demande du site ou du QR code, une réponse de
+  client ou un problème signalé), un point ambre sur Commandes et Clients pour un changement fait
+  par quelqu'un d'autre (étape, paiement, Qonto, modification, note, mail envoyé, fiche créée ou
+  modifiée), un point chocolat sur Plus et Manuel pour une nouveauté de l'outil. Le « vu » MUST
+  être propre à chaque personne et MUST se faire en ouvrant la commande ou la fiche ; ce qu'une
+  personne fait elle-même MUST NOT lui être signalé ; « Tout marquer comme vu » MUST tout éteindre
+  pour elle seule. Aujourd'hui MUST montrer un bloc « Depuis votre dernière visite » ; les cartes
+  MUST porter une étiquette et un liseré de couleur ; une commande ouverte MUST montrer ce qui a
+  changé (avant → après, qui, quand). Le titre de l'onglet du navigateur et, si le téléphone le
+  permet, l'icône de l'application MUST porter le nombre rouge. Une pastille MUST s'éteindre seule
+  au bout de 30 jours. La couleur MUST NOT être le seul signe (un mot l'accompagne), rien ne
+  clignote, tout existe en coréen. Les mails reçus gardent aussi leur repère partagé « lu » pour
+  l'assistant.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Client** : numéro CL-…, particulier ou professionnel, prénom et nom ou société et contact,
@@ -604,6 +633,9 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
 - **SC-012**: 0 vente payée, facturée ou rapprochée supprimable.
 - **SC-013**: 0 rappel envoyé deux fois pour la même commande sans le toucher « Renvoyer », et 0
   rappel proposé pour une commande annulée, remise ou sans jour fixé.
+- **SC-014**: 0 pastille montrée à une personne pour ce qu'elle a fait elle-même ; une
+  commande ouverte par Olivier reste signalée à Youngmi ; une pastille s'éteint pour la personne
+  qui ouvre l'élément, dès la page suivante.
 - **SC-007**: Le coût de l'assistant ne dépasse jamais le plafond du mois fixé dans Paramètres.
 - **SC-008**: 0 donnée changée par l'assistant sans le toucher de « Confirmer » de l'utilisatrice.
 - **SC-009**: 0 paiement changé par une modification de l'assistant sans être affiché sur sa carte
