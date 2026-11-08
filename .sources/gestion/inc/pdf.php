@@ -25,6 +25,12 @@ final class Pdf {
         $r = @mb_convert_encoding($s, 'Windows-1252', 'UTF-8');
         return is_string($r) ? $r : preg_replace('/[^\x20-\x7E]/', '?', $s);
     }
+    /** Le texte s'écrit-il tel quel dans le PDF ? (polices standard : pas de lettres coréennes, d'émoji…, qui sortiraient en « ? ») */
+    public static function ecrivable(string $s): bool {
+        $n = strtr($s, ["\u{202F}" => "\u{A0}", "\u{2212}" => '-', "\u{2009}" => ' ', "\u{2011}" => '-', "\t" => ' ', "\r" => '', "\n" => ' ']);
+        $r = @mb_convert_encoding($n, 'Windows-1252', 'UTF-8');
+        return is_string($r) && mb_convert_encoding($r, 'UTF-8', 'Windows-1252') === $n;
+    }
     public static function largeur(string $s, float $taille, bool $gras = false): float {
         $w = 0; $t = $gras ? PDF_LARGEURS_GRAS : PDF_LARGEURS;
         foreach (str_split(self::winansi($s)) as $ch) { $o = ord($ch); $w += $o >= 32 ? $t[$o - 32] : 0; }

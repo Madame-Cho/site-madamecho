@@ -91,7 +91,11 @@ function bloc_facture(array $k): string {
             $d = facture_donnees($k);
             $manque = $e['manque'] ? '<div class="erreur" role="alert"><b>Avant d\'émettre :</b><br>' . implode('<br>', array_map(fn($m) => h(FACTURE_MANQUES[$m]), $e['manque'])) . '</div>' : '';
             $qonto = $e['qonto'] !== '' ? '<p class="erreur"><span>Une facture Qonto est déjà notée sur cette commande :</span> <b translate="no">' . h($e['qonto']) . '</b>. <span>Si elle concerne cette vente, n\'émettez pas une deuxième facture.</span></p>' : '';
-            $form = champ('adresse', 'Adresse du client (facultatif)', '', ['maxlength' => '200', 'autocomplete' => 'off', 'lang' => 'fr'], 'Seulement si le client la demande. Elle ne sert qu\'à cette facture.')
+            // Un nom écrit en coréen : la facture (en français, PDF aux polices standard) le demande en lettres latines
+            $nomLatin = Pdf::ecrivable(facture_nom_client($k, false));
+            $form = ($nomLatin ? '' : '<p class="erreur"><span>Le nom de ce client est écrit en coréen. La facture est en français : écrivez-le en lettres latines (par exemple « Kim Minji »), ou cochez « Client particulier ».</span></p>'
+                    . champ('nom_facture', 'Nom sur la facture, en lettres latines', '', ['maxlength' => '120', 'autocomplete' => 'off', 'lang' => 'fr']))
+                  . champ('adresse', 'Adresse du client (facultatif)', '', ['maxlength' => '200', 'autocomplete' => 'off', 'lang' => 'fr'], 'Seulement si le client la demande. Elle ne sert qu\'à cette facture.')
                   . case_a_cocher('anonyme', 'Le client ne veut pas son nom sur la facture (« Client particulier »)')
                   . ($e['qonto'] !== '' ? case_a_cocher('doublon_ok', '<span>Je confirme : la facture Qonto notée est une autre facture, ce n\'est pas un doublon</span> (<b translate="no">' . h($e['qonto']) . '</b>)') : '')
                   . '<div class="actions">' . bouton(icone('valider') . 'Émettre la facture', 'principal', $e['manque'] ? ['disabled' => true] : []) . '</div>';
@@ -184,9 +188,9 @@ function bloc_document(array $k, array $f): string {
 /** Les actions du cadre « Facture », appelées depuis la page de la commande. */
 function facture_post(array $k, string $a): void {
     $id = (int)$k['id'];
-    foreach (['adresse', 'motif'] as $champ) if (preg_match(CORE_HANGUL, (string)($_POST[$champ] ?? ''))) { flash('erreur', 'La facture est toujours en français : écrivez l\'adresse et la raison en français.'); return; }
+    foreach (['adresse', 'motif', 'nom_facture'] as $champ) if (preg_match(CORE_HANGUL, (string)($_POST[$champ] ?? ''))) { flash('erreur', 'La facture est toujours en français : écrivez le nom, l\'adresse et la raison en lettres latines.'); return; }
     if ($a === 'facture_emettre') {
-        $r = facture_emettre($id, ['adresse' => une_ligne(texte('adresse', 200)), 'anonyme' => !empty($_POST['anonyme']), 'doublon_ok' => !empty($_POST['doublon_ok'])]);
+        $r = facture_emettre($id, ['adresse' => une_ligne(texte('adresse', 200)), 'nom' => une_ligne(texte('nom_facture', 120)), 'anonyme' => !empty($_POST['anonyme']), 'doublon_ok' => !empty($_POST['doublon_ok'])]);
         flash(isset($r['erreur']) ? 'erreur' : 'ok', $r['erreur'] ?? ('Facture ' . $r['numero'] . ' émise. Vérifiez le PDF, puis remettez-la au client.'));
         return;
     }
@@ -299,6 +303,7 @@ function page_factures(): void {
         if (texte('_action', 40) === 'vendeur' && est_admin()) {
             $v = [];
             foreach (VENDEUR_CHAMPS as $c => $l) $v[$c] = une_ligne(texte('v_' . $c, 200));
+            $v['rcs'] = (string)preg_replace('/^R\.?\s?C\.?\s?S\.?\s+/iu', '', $v['rcs']);   // « RCS Nanterre » tapé en entier : la facture écrit déjà « RCS »
             $manque = array_filter(VENDEUR_OBLIGATOIRES, fn($c) => $v[$c] === '');
             if ($manque) flash('erreur', 'À remplir : ' . implode(', ', array_map(fn($c) => mb_strtolower(VENDEUR_CHAMPS[$c]), $manque)) . '.');
             elseif (preg_grep(CORE_HANGUL, $v)) flash('erreur', 'Les mentions de la facture sont en français.');

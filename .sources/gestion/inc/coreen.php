@@ -1358,7 +1358,11 @@ Prix de la commande mis au montant de la facture. | 주문 가격을 청구서 �
 Écrivez le montant de la correction (par exemple 5,00). | 정정 금액을 적으세요 (예: 5,00).
 Facture introuvable. | 청구서를 찾을 수 없어요.
 Facture introuvable | 청구서를 찾을 수 없어요
-La facture est toujours en français : écrivez l'adresse et la raison en français. | 청구서는 항상 프랑스어예요. 주소와 이유를 프랑스어로 적으세요.
+La facture est toujours en français : écrivez le nom, l'adresse et la raison en lettres latines. | 청구서는 항상 프랑스어예요. 이름, 주소, 이유를 로마자로 적으세요.
+Le nom de ce client est écrit en coréen. La facture est en français : écrivez-le en lettres latines (par exemple « Kim Minji »), ou cochez « Client particulier ». | 이 고객의 이름이 한글로 적혀 있어요. 청구서는 프랑스어라서 이름을 로마자로 적어야 해요 (예: « Kim Minji »). 아니면 « Client particulier »에 체크하세요.
+Nom sur la facture, en lettres latines | 청구서에 들어갈 이름 (로마자)
+Le nom du client est écrit avec des lettres que la facture ne sait pas écrire (coréen, émoji…) : écrivez-le en lettres latines dans « Nom sur la facture », ou cochez « Client particulier ». | 고객 이름에 청구서에 쓸 수 없는 글자(한글, 이모지 등)가 있어요. « 청구서에 들어갈 이름 »에 로마자로 적거나 « Client particulier »에 체크하세요.
+L'adresse contient des caractères que la facture ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines. | 주소에 청구서에 쓸 수 없는 글자(한글, 이모지 등)가 있어요. 로마자로 적으세요.
 La facture se fait quand la commande est payée et remise. | 청구서는 주문이 결제되고 전달된 뒤에 만들어요.
 Une facture vient d'être émise pour cette commande (deux touchers en même temps ?) : rien n'a été fait en double. | 이 주문의 청구서가 방금 발행됐어요 (두 번 눌렀나요?). 중복으로 만들어진 건 없어요.
 Écrivez la raison de l'avoir (elle figure sur le document). | 정정 청구서의 이유를 적으세요 (문서에 적혀요).
@@ -1832,6 +1836,7 @@ function coreen_motifs(): array {
         ['/^Nouveau lien privé pour ([A-Z]{1,6}-?\d{4}-\d{4}) \(l\'ancien ne s\'ouvre plus\)$/u', fn($m) => $m[1] . ' 새 개인 링크 (예전 링크는 열리지 않아요)'],
         ['/^Facture ([A-Z]{1,6}-?\d{4}-\d{4}) émise\. Vérifiez le PDF, puis remettez-la au client\.$/u', fn($m) => '청구서 ' . $m[1] . ' 발행했어요. PDF를 확인한 뒤 고객에게 전달하세요.'],
         ['/^Avoir ([A-Z]{1,6}-?\d{4}-\d{4}) émis\. Remettez-le au client comme la facture\.$/u', fn($m) => '정정 청구서 ' . $m[1] . ' 발행했어요. 청구서처럼 고객에게 전달하세요.'],
+        ['/^Un produit de la commande a un nom que la facture ne sait pas écrire \((.+)\) : corrigez-le dans la commande\.$/u', fn($m) => '주문에 청구서에 쓸 수 없는 이름의 제품이 있어요 (' . $m[1] . '). 주문에서 고치세요.'],
         ['/^Cette commande a déjà sa facture \((.+)\)\.$/u', fn($m) => '이 주문에는 이미 청구서가 있어요 (' . $m[1] . ').'],
         ['/^Une facture Qonto \((.+)\) est déjà notée sur la commande : cochez la case pour confirmer que ce n\'est pas un doublon\.$/u', fn($m) => '이 주문에 Qonto 청구서(' . $m[1] . ')가 이미 적혀 있어요. 중복이 아니면 체크 표시를 하세요.'],
         ['/^(\d+) facture\(s\) vérifiée\(s\) sur (\d+) prévues\.$/u', fn($m) => '청구서 ' . $m[2] . '건 중 ' . $m[1] . '건 확인 완료.'],

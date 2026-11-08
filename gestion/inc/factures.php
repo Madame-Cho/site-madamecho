@@ -104,12 +104,15 @@ function facture_lignes(array $k): array {
     foreach ($k['lignes_tab'] as $x) {
         $tva = isset($x['tva']) ? (int)$x['tva'] : FACTURE_TVA_DEFAUT;
         $q = max(1, (int)$x['q']); $pu = (int)$x['prix'];
-        $des = $x['nom'] . (($x['libelle'] ?? '') !== '' ? ', ' . $x['libelle'] : '') . (($x['plaque'] ?? '') !== '' ? ' (plaque « ' . $x['plaque'] . ' »)' : '');
+        // Une plaque écrite en coréen (ou avec un émoji) ne s'écrit pas dans le PDF : « plaque personnalisée » à la place
+        $plaque = trim((string)($x['plaque'] ?? ''));
+        $des = $x['nom'] . (($x['libelle'] ?? '') !== '' ? ', ' . $x['libelle'] : '') . ($plaque !== '' ? (Pdf::ecrivable($plaque) ? ' (plaque « ' . $plaque . ' »)' : ' (plaque personnalisée)') : '');
         $out[] = ['designation' => une_ligne($des), 'q' => $q, 'pu_ttc' => $pu, 'tva' => $tva, 'total_ttc' => $pu * $q];
         $somme += $pu * $q;
     }
     $montant = montant_commande($k);
     $perso = trim(une_ligne((string)$k['perso']));
+    if (!Pdf::ecrivable($perso)) $perso = '';   // texte libre en coréen : la ligne garde son libellé, sans le texte
     if (!$out) $out[] = ['designation' => 'Création personnalisée' . ($perso !== '' ? ' : ' . mb_substr($perso, 0, 160) : ''), 'q' => 1, 'pu_ttc' => $montant, 'tva' => FACTURE_TVA_DEFAUT, 'total_ttc' => $montant];
     elseif ($montant !== $somme) {
         $diff = $montant - $somme;
@@ -131,10 +134,13 @@ function facture_totaux(array $lignes): array {
     }
     return ['par_taux' => $tva, 'totaux' => $t];
 }
-/** Le nom du client sur la facture : prénom et nom, ou « Client particulier » s'il ne veut pas y figurer. */
-function facture_nom_client(array $k, bool $anonyme): string {
+/**
+ * Le nom du client sur la facture : prénom et nom, ou « Client particulier » s'il ne veut pas y figurer, ou le nom écrit à
+ * l'émission (un nom en coréen s'écrit en lettres latines : la facture est en français et le PDF ne sait pas écrire le hangeul).
+ */
+function facture_nom_client(array $k, bool $anonyme, string $ecrit = ''): string {
     if ($anonyme) return 'Client particulier';
-    $n = trim(trim((string)$k['client_prenom']) . ' ' . trim((string)$k['client_nom']));
+    $n = trim($ecrit) !== '' ? trim($ecrit) : trim(trim((string)$k['client_prenom']) . ' ' . trim((string)$k['client_nom']));
     return $n !== '' ? $n : 'Client particulier';
 }
 /** Tout ce que la facture dira, figé au moment de l'émission (le JSON est gardé avec le PDF). $o : adresse, anonyme. */
@@ -143,7 +149,7 @@ function facture_donnees(array $k, array $o = []): array {
     $vente = $k['remise_le'] ? substr((string)$k['remise_le'], 0, 10) : ((string)$k['retrait_date'] !== '' ? (string)$k['retrait_date'] : aujourdhui());
     $paye = $k['paiement_le'] ? substr((string)$k['paiement_le'], 0, 10) : $vente;
     return ['v' => 1, 'genre' => 'facture', 'vendeur' => vendeur() ?? VENDEUR_SUGGESTION,
-            'client' => ['nom' => facture_nom_client($k, !empty($o['anonyme'])), 'adresse' => !empty($o['anonyme']) ? '' : mb_substr(trim((string)($o['adresse'] ?? '')), 0, 200)],
+            'client' => ['nom' => facture_nom_client($k, !empty($o['anonyme']), mb_substr((string)($o['nom'] ?? ''), 0, 120)), 'adresse' => !empty($o['anonyme']) ? '' : mb_substr(trim((string)($o['adresse'] ?? '')), 0, 200)],
             'commande' => ['id' => (int)$k['id'], 'reference' => (string)$k['reference']],
             'date_vente' => $vente, 'lignes' => $lignes] + facture_totaux($lignes)
          + ['paiement' => ['le' => $paye, 'moyen' => MOYENS_FACTURE[$k['moyen']] ?? '', 'acompte' => (int)$k['acompte']]];
@@ -206,6 +212,10 @@ function facture_emettre(int $commandeId, array $o = []): array {
     if ($e['manque']) return ['erreur' => implode(' ', array_map(fn($m) => FACTURE_MANQUES[$m], $e['manque']))];
     if ($e['qonto'] !== '' && empty($o['doublon_ok'])) return ['erreur' => 'Une facture Qonto (' . $e['qonto'] . ') est déjà notée sur la commande : cochez la case pour confirmer que ce n\'est pas un doublon.'];
     $d = facture_donnees($k, $o);
+    // Ce que le PDF ne saurait pas écrire (hangeul, émoji) sortirait en « ? » : on le dit avant de donner un numéro
+    if (!Pdf::ecrivable($d['client']['nom'])) return ['erreur' => 'Le nom du client est écrit avec des lettres que la facture ne sait pas écrire (coréen, émoji…) : écrivez-le en lettres latines dans « Nom sur la facture », ou cochez « Client particulier ».'];
+    if (!Pdf::ecrivable($d['client']['adresse'])) return ['erreur' => 'L\'adresse contient des caractères que la facture ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines.'];
+    foreach ($d['lignes'] as $l) if (!Pdf::ecrivable($l['designation'])) return ['erreur' => 'Un produit de la commande a un nom que la facture ne sait pas écrire (' . $l['designation'] . ') : corrigez-le dans la commande.'];
     return document_emettre('facture', $d, ['commande' => $commandeId, 'client' => (int)$k['client_id']],
         fn() => facture_en_vigueur($commandeId) ? 'Une facture vient d\'être émise pour cette commande (deux touchers en même temps ?) : rien n\'a été fait en double.' : '');
 }
