@@ -131,6 +131,9 @@ TEL = "06 61 31 17 79"
 TEL_LIEN = "+33661311779"
 EMAIL = "contact@madamecho.com"
 INSTAGRAM = "https://www.instagram.com/madamecho.fr/"
+# Fiche Google de Madame Cho (Google Business Profile, gérée avec contact@) : relie le site et la fiche dans les données structurées
+# (plan « Madame Cho recommandée par les IA », 08/11/2026). Adresse par l'identifiant de la fiche ; à vérifier par Olivier avant publication.
+FICHE_GOOGLE = "https://maps.google.com/?cid=15029990752430360950"
 
 # ---------- Référencement (passe SEO du 03/11/2026) ----------
 # Titres et descriptions pour les moteurs de recherche et le partage : tirés des textes validés, sans nouvelle promesse.

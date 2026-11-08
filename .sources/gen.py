@@ -498,7 +498,7 @@ MAISON_LD = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho", "
              "founder": {"@type": "Person", "name": "Youngmi Cho", "jobTitle": "Pâtissière",
                          "alumniOf": [{"@type": "CollegeOrUniversity", "name": "Université nationale de Séoul"},
                                       {"@type": "EducationalOrganization", "name": "École Ducasse"}]},
-             "sameAs": [INSTAGRAM]}
+             "sameAs": [INSTAGRAM, FICHE_GOOGLE]}
 
 # Réglages du serveur (Apache chez OVH) : page 404, compression, cache, en-têtes de sécurité.
 # Chaque bloc est protégé par IfModule : un module absent ne casse pas le site.
@@ -695,5 +695,31 @@ if EN_LIGNE:
     ecrire("madame-cho.vcf", "\r\n".join(["BEGIN:VCARD", "VERSION:3.0", "FN:Madame Cho", "N:;Madame Cho;;;", "ORG:Madame Cho",
         "TITLE:Pâtisserie sur commande", f"EMAIL;TYPE=INTERNET,WORK:{EMAIL}", f"TEL;TYPE=WORK,VOICE:{TEL_LIEN}",
         "ADR;TYPE=WORK:;;4 avenue du Château;Meudon;;92190;France", f"URL:{SITE}", "END:VCARD", ""]))
-    ecrire("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n")
+    # Robots des moteurs et des IA (plan « Madame Cho recommandée par les IA », 08/11/2026) : tous déjà permis par « * » ;
+    # les nommer évite qu'un futur réglage les bloque par erreur. Recherche : OAI-SearchBot (ChatGPT), PerplexityBot, Claude-SearchBot,
+    # Bingbot (Copilot, et ChatGPT par Bing), Googlebot (aperçus IA) ; demandes d'un utilisateur : ChatGPT-User, Claude-User, Perplexity-User ;
+    # entraînement : GPTBot, ClaudeBot, Google-Extended, Applebot-Extended (laissés ouverts, choix proposé à Olivier le 08/11/2026).
+    ROBOTS_IA = ["OAI-SearchBot", "ChatGPT-User", "GPTBot", "PerplexityBot", "Perplexity-User", "Claude-SearchBot", "Claude-User",
+                 "ClaudeBot", "Google-Extended", "Applebot", "Applebot-Extended", "Bingbot", "Googlebot"]
+    ecrire("robots.txt", "# Madame Cho, pâtisserie sur commande à Meudon : le site est ouvert aux moteurs de recherche et aux assistants IA.\n"
+           "# Résumé pour les IA : " + SITE + "llms.txt\n\n"
+           + "".join(f"User-agent: {r}\n" for r in ROBOTS_IA) + "Allow: /\n\nUser-agent: *\nAllow: /\n\nSitemap: " + SITE + "sitemap.xml\n")
+    # llms.txt (proposition llmstxt.org) : la maison en quelques lignes et les pages à lire, pour les assistants IA.
+    # Aucun grand assistant n'a confirmé le lire ; coût nul. Tout vient des textes déjà validés du site (donnees.py), rien de nouveau.
+    def euros(c):
+        return (f"{c/100:.2f}".replace(".", ",").replace(",00", "")) + " €"
+    lignes = [f"# Madame Cho", "", f"> {INTRO} {ACTIVITE} Pas de livraison : retrait sur rendez-vous à Meudon.", "",
+              f"Madame Cho est la pâtisserie de Youngmi Cho. {PARCOURS}", "",
+              "## Infos pratiques", "",
+              f"- Clients de : {', '.join(VILLES)}.",
+              f"- Téléphone : {TEL} ; e-mail : {EMAIL} ; Instagram : {INSTAGRAM}",
+              f"- Comment commander : demande en ligne sur {SITE}ma-demande/ (réponse sous 24 heures avec une proposition écrite), ou par téléphone."]
+    lignes += [f"- {t} : {x}" for t, x in PRATIQUE if t != "Conservation"]
+    lignes += ["", "## La carte", ""]
+    for p in PRODUITS:
+        lignes.append(f"- [{p['nom']}]({SITE}carte/{p['id']}/) : {p['court']} {p.get('carte_pour', '')}, {p.get('carte_prix', '')}. Allergènes : {p['allergenes']}".replace(" , ", " ").replace(", .", "."))
+    lignes += ["", f"## Professionnels", "", PROS, "", "## Pages", "",
+               f"- [Accueil]({SITE})", f"- [La carte et les prix]({SITE}carte/)", f"- [Retrait à Meudon]({SITE}retrait/)",
+               f"- [Conditions de commande]({SITE}conditions-de-commande/)", f"- [Mentions légales]({SITE}mentions-legales/)", ""]
+    ecrire("llms.txt", "\n".join(lignes))
 print("ok", OUT, "aperçu" if APERCU else "production")
