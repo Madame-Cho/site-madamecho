@@ -467,7 +467,7 @@ function retrait_email(array $k): string {
  * Un seul objet par commande (« Votre commande MC-… · Madame Cho ») et les en-têtes de réponse : chez le client, une seule conversation.
  * Aperçu dans la gestion ($apercu) : sa politique de sécurité refuse les styles en ligne, chaque style devient une classe « m-… »
  * dont les règles sont dans gestion.css (bloc « Aperçu du mail », généré par apercu_mail_css() : à refaire si un style change). */
-const MAIL_TYPES = ['proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'rappel' => 'Rappel', 'message' => 'Message', 'avis' => 'Merci'];
+const MAIL_TYPES = ['proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'rappel' => 'Rappel', 'message' => 'Message', 'avis' => 'Merci', 'facture' => 'Facture'];
 const MAIL_F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
 function sujet_commande(array $k): string { return 'Votre commande ' . $k['reference'] . ' · Madame Cho'; }
 /** L'objet d'un message libre : celui de la commande par défaut ; la référence MC-… y reste toujours (pour retrouver la conversation). */

@@ -1286,7 +1286,8 @@ const CORBEILLE_JOURS = 30;
 function commande_supprimable(array $k): bool {
     // Ni facture, ni rapprochement Qonto, ni argent noté reçu : une vraie vente payée (même en espèces) ne disparaît jamais (FR-002)
     return trim((string)($k['facture'] ?? '')) === '' && trim((string)($k['qonto_ref'] ?? '')) === ''
-        && !in_array((string)($k['paiement'] ?? ''), ['paye', 'acompte_recu'], true);
+        && !in_array((string)($k['paiement'] ?? ''), ['paye', 'acompte_recu'], true)
+        && !val("SELECT 1 FROM factures WHERE commande_id = ? LIMIT 1", [(int)($k['id'] ?? 0)]);   // même annulée par un avoir, une facture reste 10 ans
 }
 function commande_supprimer(int $id, string $motif): void {
     $k = commande($id);

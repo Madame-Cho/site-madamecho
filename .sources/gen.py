@@ -547,7 +547,10 @@ def htaccess():
               "# Retrait dans l'agenda du client (email de confirmation, demande d'Olivier du 07/11/2026) : adresses courtes madamecho.com/rdv/…,",
               "# servies par la gestion (?p=rdv, jeton secret) sans changer l'adresse affichée",
               "RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/google/?$ /gestion/index.php?p=rdv&c=$1&vers=google [L]",
-              "RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/?$ /gestion/index.php?p=rdv&c=$1 [L]"]
+              "RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/?$ /gestion/index.php?p=rdv&c=$1 [L]", "",
+              "# Facture d'un particulier (spécification 003) : lien privé madamecho.com/facture/…, jeton aléatoire gardé par la gestion, jamais indexé",
+              "RewriteRule ^facture/([0-9]+-[0-9a-f]{24})/pdf/?$ /gestion/index.php?p=facture-client&c=$1&pdf=1 [L]",
+              "RewriteRule ^facture/([0-9]+-[0-9a-f]{24})/?$ /gestion/index.php?p=facture-client&c=$1 [L]"]
     if ESSAI:
         l += ["", "# Version d'essai : le dossier atelier-site/ refuse les .js (scripts de feuille) ; ici, les scripts du site",
               "# (panier et formulaire) doivent être servis. Le reste des règles d'atelier-site/ s'applique.",

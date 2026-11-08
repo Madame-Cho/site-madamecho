@@ -9,10 +9,12 @@ namespace MadameCho\Gestion;
 require_once __DIR__ . '/base.php';
 require_once __DIR__ . '/modele.php';
 require_once __DIR__ . '/reponses.php';   // reponses_purger() : sans lui, la tâche de nuit s'arrêtait en chemin (trouvé le 08/11/2026)
+require_once __DIR__ . '/factures.php';
 
 function tache_de_nuit(): array {
     if (!gestion_base_existante()) return [];
     $cr = conservation_executer('tâche de nuit');
+    factures_conservation();   // liens privés des factures éteints après 12 mois (spécification 003)
     parametre_ecrire('derniere_nuit', maintenant());
     return $cr;
 }

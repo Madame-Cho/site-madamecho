@@ -801,3 +801,37 @@ details.geste>form{padding:0 2px 6px}
 .par{color:var(--doux)}
 html:lang(fr) .par::before{content:"par "}
 html:lang(ko) .par::after{content:" 님"}
+
+/* Factures des particuliers (spécification 003) : aperçu avant l'émission, documents émis, QR code, page du lien privé */
+.apercu-facture{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:16px;font-size:14px;color:#2B2623}
+.af-tete{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.af-tete b{font-size:16px;color:var(--chocolat)}
+.af-tete span{color:var(--doux);font-size:13px}
+.af-doc{text-align:right}
+.af-client{background:var(--ivoire);border-radius:6px;padding:10px 12px;margin:12px 0}
+.af-client span{display:block;color:var(--doux);font-size:12px}
+.table-defile{overflow-x:auto}
+.af-lignes{width:100%;border-collapse:collapse;font-size:13px;min-width:460px}
+.af-lignes th{background:var(--chocolat);color:#fff;font-weight:500;text-align:right;padding:6px}
+.af-lignes th:first-child,.af-lignes td:first-child{text-align:left}
+.af-lignes td{border-bottom:1px solid var(--ligne);padding:6px;vertical-align:top}
+.af-lignes .n{text-align:right;white-space:nowrap}
+.af-lignes tfoot td{border-bottom:0;text-align:right}
+.af-lignes tfoot .total td{font-weight:600;color:var(--chocolat);font-size:14px}
+.af-regle{font-weight:500;margin-top:10px}
+.af-pied{color:var(--doux);font-size:12px;margin-top:10px}
+.form-facture{margin-top:12px}
+.bloc.a-faire{border-color:var(--chocolat)}
+.doc-avoir{border-top:1px solid var(--ligne);padding-top:12px;margin-top:12px}
+.remises{margin:0;padding-left:18px}
+.sous-titre{font:500 15px/1.3 var(--police);margin-top:16px}
+.form-ligne{display:inline}
+.qr-cadre{display:flex;justify-content:center;padding:12px;background:#fff}
+.qr-cadre .qr{width:min(260px,70vw);height:auto}
+.jauge-controle{height:8px;border-radius:4px;background:var(--ivoire);overflow:hidden}
+.jauge-controle span{display:block;height:100%;background:var(--chocolat)}
+.facture-publique .marque{font-weight:600;letter-spacing:2px;color:var(--chocolat);text-transform:uppercase}
+.facture-publique .total-public{font-size:24px;font-weight:600;color:var(--chocolat)}
+.defs .remises{list-style:none;padding:0}
+.defs .remises li+li{margin-top:4px}
+.erreur p+p,.erreur p+form{margin-top:8px}

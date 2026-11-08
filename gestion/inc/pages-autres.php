@@ -343,6 +343,7 @@ function page_plus(): void {
     $l = [[u('statistiques'), 'stats', 'Statistiques', 'Ventes et visites du site'],
           [u('production'), 'imprimer', 'Fiche de production', 'À préparer, jour par jour'],
           [u('ingredients'), 'produits', 'Ingrédients', 'Prix et allergènes'],
+          [u('factures'), 'paiement', 'Factures', 'Factures et avoirs des particuliers'],
           [u('rapprochement'), 'paiement', 'Rapprochement Qonto', 'Paiements à retrouver dans Qonto'],
           [u('corbeille'), 'supprimer', 'Corbeille', 'Commandes et fiches supprimées, 30 jours pour les restaurer'],
           [u('manuel'), 'livre', 'Manuel', 'Mode d\'emploi, écran par écran'],

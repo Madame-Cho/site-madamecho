@@ -1253,6 +1253,153 @@ Les espèces n'ont pas de rapprochement Qonto. | 현금은 Qonto 대조가 없�
 Cette commande n'a pas de paiement à retrouver dans Qonto. | 이 주문에는 Qonto에서 찾을 결제가 없어요.
 Rapprochement Qonto retiré | Qonto 대조 취소
 Rapprochement Qonto à refaire : le paiement a changé | Qonto 대조 다시 필요: 결제 내용이 바뀌었어요
+# Factures des particuliers (spécification 003, 08/11/2026) : facture = 청구서, avoir = 정정 청구서
+Facture | 청구서
+Factures | 청구서
+Avoir | 정정 청구서
+L'avoir | 정정 청구서
+Facture à émettre | 발행할 청구서
+Facture (nouvelle, après l'avoir) | 새 청구서 (정정 청구서 다음)
+Factures à faire | 할 일: 청구서
+Factures et avoirs | 청구서와 정정 청구서
+Factures et avoirs des particuliers | 개인 고객 청구서와 정정 청구서
+Factures et avoirs des particuliers. Les restaurants restent facturés dans Qonto. | 개인 고객의 청구서와 정정 청구서예요. 레스토랑은 계속 Qonto에서 청구해요.
+Phase de contrôle | 확인 단계
+Journal des factures | 청구서 기록
+Identité de Madame Cho sur les factures | 청구서에 들어가는 Madame Cho 정보
+à enregistrer | 저장 필요
+voir | 보기
+La facture se prépare toute seule quand la commande est notée « Payé » et remise au client. Vous la relirez avant de l'émettre. | 주문이 ‘결제 완료’이고 고객에게 전달되면 청구서가 자동으로 준비돼요. 발행하기 전에 다시 확인해요.
+Payée : la facture sera prête dès que la commande sera notée « Remise » (elle porte la date de la vente). | 결제 완료: 주문이 ‘전달 완료’가 되면 바로 청구서가 준비돼요 (판매 날짜가 들어가요).
+Relisez l'aperçu. Une fois émise, la facture reçoit son numéro et ne se modifie plus : une erreur se corrige par un avoir. | 미리보기를 확인하세요. 발행하면 번호가 붙고 더 이상 고칠 수 없어요. 잘못된 부분은 정정 청구서로 바로잡아요.
+Avant d'émettre : | 발행하기 전에:
+L'identité de Madame Cho n'est pas encore enregistrée (Plus › Factures, en bas). | Madame Cho 정보가 아직 저장되지 않았어요 (더보기 › 청구서, 맨 아래).
+Le prix final n'est pas fixé (Montant et paiement). | 최종 가격이 정해지지 않았어요 (금액과 결제).
+Le moyen de paiement n'est pas noté (Montant et paiement › Modifier le paiement). | 결제 수단이 적혀 있지 않아요 (금액과 결제 › 결제 수정).
+Une facture Qonto est déjà notée sur cette commande : | 이 주문에는 이미 Qonto 청구서 번호가 적혀 있어요:
+Si elle concerne cette vente, n'émettez pas une deuxième facture. | 이 판매에 대한 청구서라면 두 번째 청구서를 발행하지 마세요.
+Adresse du client (facultatif) | 고객 주소 (선택)
+Seulement si le client la demande. Elle ne sert qu'à cette facture. | 고객이 원할 때만 적어요. 이 청구서에만 쓰여요.
+Le client ne veut pas son nom sur la facture (« Client particulier ») | 고객이 청구서에 이름을 넣고 싶지 않아요 (« Client particulier »로 표시)
+Je confirme : la facture Qonto notée est une autre facture, ce n'est pas un doublon | 확인했어요: 적혀 있는 Qonto 청구서는 다른 청구서예요. 중복이 아니에요
+Émettre la facture | 청구서 발행
+Émettre la facture ? Elle recevra son numéro et ne pourra plus être modifiée. | 청구서를 발행할까요? 번호가 붙고 더 이상 고칠 수 없어요.
+La commande est annulée ou remboursée : faites un avoir qui annule toute la facture (ci-dessous). | 주문이 취소되었거나 환불되었어요. 아래에서 청구서 전체를 취소하는 정정 청구서를 만드세요.
+La facture et la commande n'ont plus le même montant. | 청구서와 주문 금액이 서로 달라요.
+Facture, avoirs déduits | 청구서 (정정 금액을 뺀 금액)
+Si la commande est juste, faites un avoir puis une nouvelle facture. Si c'est la facture qui est juste (geste commercial, avoir déjà fait), alignez la commande : | 주문이 맞으면 정정 청구서를 만든 뒤 새 청구서를 발행하세요. 청구서가 맞으면 (할인해 드렸거나 정정 청구서를 이미 만들었으면) 주문 금액을 맞추세요:
+Mettre le prix de la commande à | 주문 가격을 이 금액으로:
+Changer le prix final de la commande ? | 주문의 최종 가격을 바꿀까요?
+Corriger : faire un avoir | 바로잡기: 정정 청구서 만들기
+L'avoir annule tout ou partie de la facture, avec sa raison. Il a son propre numéro et se remet au client comme la facture. Après un avoir total, une nouvelle facture peut se faire. | 정정 청구서는 청구서의 전부 또는 일부를 취소하고, 이유가 적혀요. 자기 번호가 있고 청구서처럼 고객에게 전달해요. 전체를 취소한 뒤에는 새 청구서를 만들 수 있어요.
+Corrige une partie (montant ci-dessous) | 일부만 정정 (아래 금액)
+Montant de la correction, TTC (si partiel) | 정정 금액, 부가세 포함 (일부일 때)
+Raison (écrite sur l'avoir) | 이유 (정정 청구서에 적혀요, 프랑스어로)
+Par exemple : erreur de quantité, geste commercial | 프랑스어로 적어요. 예: erreur de quantité, geste commercial
+Émettre l'avoir | 정정 청구서 발행
+Émettre l'avoir ? Il recevra son numéro et ne pourra plus être modifié. | 정정 청구서를 발행할까요? 번호가 붙고 더 이상 고칠 수 없어요.
+Émise le | 발행
+Émis le | 발행
+Vérification | 확인
+Vérifiée | 확인함
+Vérifié | 확인함
+Pas encore remise | 아직 전달 안 함
+Pas encore remis | 아직 전달 안 함
+Échec | 실패
+Mail avec le PDF | PDF 첨부 이메일
+Lien par SMS | SMS 링크
+Lien par WhatsApp | WhatsApp 링크
+QR code montré | QR 코드 보여 줌
+Sur papier | 종이로
+Autrement | 다른 방법
+Voir le PDF | PDF 보기
+Télécharger pour imprimer | 인쇄용으로 내려받기
+J'ai vérifié : la facture est juste | 확인했어요: 청구서가 맞아요
+J'ai vérifié : l'avoir est juste | 확인했어요: 정정 청구서가 맞아요
+Phase de contrôle : ouvrez le PDF et vérifiez nom, gâteaux, prix, TVA et date avant de le remettre. Touchez « J'ai vérifié » s'il est juste ; sinon, faites un avoir. | 확인 단계: 전달하기 전에 PDF를 열어 이름, 케이크, 가격, 부가세, 날짜를 확인하세요. 맞으면 ‘확인했어요’를 누르고, 틀리면 정정 청구서를 만드세요.
+Remettre au client | 고객에게 전달하기
+Remettre à nouveau | 다시 전달하기
+Par mail, PDF joint | 이메일로 (PDF 첨부)
+Par exemple : merci encore pour votre commande ! | 예: 주문해 주셔서 다시 한번 감사해요!
+Aperçu du mail (le PDF est joint) | 이메일 미리보기 (PDF 첨부)
+Par SMS ou WhatsApp (lien privé) | SMS나 WhatsApp으로 (개인 링크)
+Copiez le texte, collez-le dans un SMS ou WhatsApp au client, puis notez-le. Le lien ne montre que cette facture, pendant un an. | 문구를 복사해서 고객에게 SMS나 WhatsApp으로 보낸 뒤 기록하세요. 링크는 이 청구서만 보여 주고, 1년 동안 열려요.
+Copiez le texte, collez-le dans un SMS ou WhatsApp au client, puis notez-le. Le lien ne montre que cet avoir, pendant un an. | 문구를 복사해서 고객에게 SMS나 WhatsApp으로 보낸 뒤 기록하세요. 링크는 이 정정 청구서만 보여 주고, 1년 동안 열려요.
+J'ai envoyé le lien | 링크를 보냈어요
+QR code à montrer au client | 고객에게 보여 줄 QR 코드
+Le client scanne l'écran avec son téléphone et ouvre la facture. | 고객이 휴대폰으로 화면을 스캔하면 청구서가 열려요.
+Le client scanne l'écran avec son téléphone et ouvre l'avoir. | 고객이 휴대폰으로 화면을 스캔하면 정정 청구서가 열려요.
+Le client a scanné le QR code | 고객이 QR 코드를 스캔했어요
+Téléchargez le PDF, imprimez-le et donnez-le au client, puis notez-le. | PDF를 내려받아 인쇄해서 고객에게 드린 뒤 기록하세요.
+Télécharger le PDF | PDF 내려받기
+Remise sur papier | 종이로 전달했어요
+Remis sur papier | 종이로 전달했어요
+Lien privé actif jusqu'au | 개인 링크 사용 기한:
+Désactiver le lien | 링크 끄기
+Désactiver ce lien ? Le client ne pourra plus l'ouvrir. | 이 링크를 끌까요? 고객이 더 이상 열 수 없어요.
+Lien privé désactivé. | 개인 링크가 꺼져 있어요.
+Faire un nouveau lien | 새 링크 만들기
+Facture envoyée au client, avec le PDF. | 청구서를 PDF와 함께 고객에게 보냈어요.
+Avoir envoyé au client, avec le PDF. | 정정 청구서를 PDF와 함께 고객에게 보냈어요.
+Le mail n'est pas parti. Réessayez, ou remettez la facture par le lien ou sur papier. | 이메일이 가지 않았어요. 다시 해 보거나 링크나 종이로 청구서를 전달하세요.
+Le mail n'est pas parti. Réessayez, ou remettez l'avoir par le lien ou sur papier. | 이메일이 가지 않았어요. 다시 해 보거나 링크나 종이로 정정 청구서를 전달하세요.
+Choisissez comment vous l'avez remise. | 어떻게 전달했는지 고르세요.
+C'est noté : lien envoyé par SMS. | 기록했어요: SMS로 링크를 보냈어요.
+C'est noté : lien envoyé par WhatsApp. | 기록했어요: WhatsApp으로 링크를 보냈어요.
+C'est noté : QR code scanné par le client. | 기록했어요: 고객이 QR 코드를 스캔했어요.
+C'est noté : remise sur papier. | 기록했어요: 종이로 전달했어요.
+C'est noté : remise autrement. | 기록했어요: 다른 방법으로 전달했어요.
+Merci : c'est noté comme vérifié. | 고마워요. 확인함으로 기록했어요.
+Lien désactivé : il ne s'ouvre plus. | 링크를 껐어요. 더 이상 열리지 않아요.
+Plus d'un an : donnez plutôt le PDF au client. | 1년이 지났어요. 고객에게 PDF를 드리세요.
+Nouveau lien prêt. L'ancien ne s'ouvre plus. | 새 링크가 준비됐어요. 예전 링크는 더 이상 열리지 않아요.
+Rien à aligner. | 맞출 것이 없어요.
+Prix de la commande mis au montant de la facture. | 주문 가격을 청구서 금액으로 맞췄어요.
+Écrivez le montant de la correction (par exemple 5,00). | 정정 금액을 적으세요 (예: 5,00).
+Facture introuvable. | 청구서를 찾을 수 없어요.
+Facture introuvable | 청구서를 찾을 수 없어요
+La facture est toujours en français : écrivez l'adresse et la raison en français. | 청구서는 항상 프랑스어예요. 주소와 이유를 프랑스어로 적으세요.
+La facture se fait quand la commande est payée et remise. | 청구서는 주문이 결제되고 전달된 뒤에 만들어요.
+Une facture vient d'être émise pour cette commande (deux touchers en même temps ?) : rien n'a été fait en double. | 이 주문의 청구서가 방금 발행됐어요 (두 번 눌렀나요?). 중복으로 만들어진 건 없어요.
+Écrivez la raison de l'avoir (elle figure sur le document). | 정정 청구서의 이유를 적으세요 (문서에 적혀요).
+Cette facture est déjà entièrement annulée par un avoir. | 이 청구서는 이미 정정 청구서로 전부 취소됐어요.
+Le montant de l'avoir doit être positif. | 정정 금액은 0보다 커야 해요.
+Un avoir vient d'être fait sur cette facture : rien n'a été fait en double. | 이 청구서에 정정 청구서가 방금 만들어졌어요. 중복으로 만들어진 건 없어요.
+Pendant cette phase, rien ne part sans votre toucher : vous ouvrez chaque PDF, vous vérifiez, puis vous l'envoyez. Ensuite, avec Olivier, on décidera s'il faut aller plus vite. | 이 단계에서는 직접 누르지 않으면 아무것도 나가지 않아요. PDF를 하나씩 열어 확인하고 보내요. 그다음에 Olivier와 함께 더 빠르게 할지 정해요.
+Attention : le journal ne correspond plus. | 주의: 기록이 맞지 않아요.
+Prévenez Olivier, ne touchez à rien. | 아무것도 건드리지 말고 Olivier에게 알려 주세요.
+Le dernier document ne correspond plus au sceau : une facture ou un avoir a pu être retiré. | 마지막 문서가 봉인과 맞지 않아요. 청구서나 정정 청구서가 지워졌을 수 있어요.
+Des factures ont été retirées de la gestion. | 관리 시스템에서 청구서가 지워졌어요.
+Pas encore de facture. | 아직 청구서가 없어요.
+Tous les mois | 모든 달
+Annulée par avoir | 정정 청구서로 취소됨
+TTC, avoirs déduits | 부가세 포함, 정정 금액 뺀 합계
+Aucune facture pour l'instant. | 아직 청구서가 없어요.
+Aucune facture ce mois-ci. | 이번 달 청구서가 없어요.
+Ces mentions figurent sur chaque facture. | 이 정보가 모든 청구서에 들어가요.
+Repris des mentions légales du site : vérifiez, puis enregistrez. Aucune facture ne peut s'émettre avant. | 사이트의 법적 고지에서 가져왔어요. 확인한 뒤 저장하세요. 저장하기 전에는 청구서를 발행할 수 없어요.
+Raison sociale | 회사명
+Forme et capital | 회사 형태와 자본금
+Adresse du siège | 본사 주소
+Ville du RCS | RCS 등록 도시
+N° de TVA intracommunautaire | EU 부가세 번호
+Téléphone (facultatif) | 전화 (선택)
+Email (facultatif) | 이메일 (선택)
+Site (facultatif) | 사이트 (선택)
+Début des numéros de facture | 청구서 번호 앞부분
+Début des numéros d'avoir | 정정 청구서 번호 앞부분
+Exemple | 예
+Des factures de cette année portent déjà ce début : il ne change plus avant le 1er janvier. | 올해 청구서에 이미 이 앞부분이 쓰였어요. 1월 1일 전에는 바꿀 수 없어요.
+À confirmer avec l'expert-comptable avant la première facture. | 첫 청구서 전에 회계사와 확인해요.
+Enregistré : les prochaines factures porteront ces mentions. | 저장했어요. 다음 청구서부터 이 정보가 들어가요.
+Les mentions de la facture sont en français. | 청구서 정보는 프랑스어로 적어요.
+Touchez une ligne : la facture est prête à relire, puis à remettre au client. Rien ne part tout seul. | 줄을 누르세요. 청구서를 확인한 뒤 고객에게 전달하면 돼요. 저절로 나가는 건 없어요.
+Remise le | 전달:
+Mail non parti : renvoyer ou remettre autrement | 이메일 안 감: 다시 보내거나 다른 방법으로 전달
+Facture émise, pas encore remise au client | 청구서 발행됨, 아직 고객에게 전달 안 함
+Facture à corriger (avoir) | 고칠 청구서 (정정 청구서)
+Les factures des particuliers | 개인 고객 청구서
+La gestion fait la facture d'une commande payée et remise : vous la relisez, l'émettez, puis la remettez par mail, SMS, QR code ou papier. | 결제되고 전달된 주문의 청구서를 관리 시스템이 만들어요. 확인하고 발행한 뒤 이메일, SMS, QR 코드나 종이로 전달해요.
 TXT;
 }
 
@@ -1535,7 +1682,7 @@ function coreen_motifs(): array {
         ['/^Proposition envoyée (.+?)( :|\.)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 견적 발송' . ($m[2] === '.' ? '.' : ':') : null],
         ['/^sans nouvelles depuis (\d+) jours, une relance ou « sans suite » \?$/u', fn($m) => $m[1] . '일째 소식이 없어요. 다시 연락할까요, ‘진행 안 됨’으로 할까요?'],
         ['/^Avis Google reçu le (.+)\. Merci !$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 구글 리뷰 받음. 감사해요!' : null],
-        ['/^Email envoyé à (\\S+) \\((proposition|commande confirmée|rappel|message|merci)\\) : « (.*) »$/u', fn($m) => $m[1] . '에게 이메일 보냄 (' . ['proposition' => '견적', 'commande confirmée' => '주문 확정', 'rappel' => '픽업 알림', 'message' => '메시지', 'merci' => '감사'][$m[2]] . '): « ' . $m[3] . ' »'],
+        ['/^Email envoyé à (\\S+) \\((proposition|commande confirmée|rappel|message|merci|facture|avoir)\\) : « (.*) »$/u', fn($m) => $m[1] . '에게 이메일 보냄 (' . ['proposition' => '견적', 'commande confirmée' => '주문 확정', 'rappel' => '픽업 알림', 'message' => '메시지', 'merci' => '감사', 'facture' => '청구서', 'avoir' => '정정 청구서'][$m[2]] . '): « ' . $m[3] . ' »'],
         ['/^Email envoyé depuis Gmail : « (.*) »$/u', fn($m) => 'Gmail에서 보낸 이메일: « ' . $m[1] . ' »'],
         ['/^Réponse de (.+) : « (.*) »( \\(rattachée à la main, extrait\\))?$/u', fn($m) => $m[1] . '의 답장: « ' . $m[2] . ' »' . (!empty($m[3]) ? ' (직접 연결, 일부)' : '')],
         ['/^(\\d+) nouvelles réponses$/u', fn($m) => '새 답장 ' . $m[1] . '개'],
@@ -1676,6 +1823,25 @@ function coreen_motifs(): array {
         }],
         // Une liste d'allergènes seule, « Gluten, Lait » (carte de l'assistant)
         ['/^\p{Lu}[^,]*(?:, \p{Lu}[^,]*)*$/u', fn($m) => coreen_allergenes($m[0])],
+        // Factures des particuliers (spécification 003)
+        ['/^(Facture|Avoir) ([A-Z]{1,6}-?\d{4}-\d{4}) émise? \((' . $E . ')\)(?: : (.+))?$/u', fn($m) => ($m[1] === 'Avoir' ? '정정 청구서 ' : '청구서 ') . $m[2] . ' 발행 (' . $m[3] . ')' . (isset($m[4]) ? ': ' . $m[4] : '')],
+        ['/^(Facture|Avoir) ([A-Z]{1,6}-?\d{4}-\d{4}) remise? au client : (.+?)(?: \((.+)\))?$/u', fn($m) => ($m[1] === 'Avoir' ? '정정 청구서 ' : '청구서 ') . $m[2] . ' 고객에게 전달: ' . (coreen_texte($m[3]) ?? $m[3]) . (isset($m[4]) ? ' (' . $m[4] . ')' : '')],
+        ['/^(Facture|Avoir) ([A-Z]{1,6}-?\d{4}-\d{4}) : échec de la remise, (.+?)(?: \((.+)\))?$/u', fn($m) => ($m[1] === 'Avoir' ? '정정 청구서 ' : '청구서 ') . $m[2] . ' 전달 실패: ' . (coreen_texte($m[3]) ?? $m[3]) . (isset($m[4]) ? ' (' . $m[4] . ')' : '')],
+        ['/^(Facture|Avoir) ([A-Z]{1,6}-?\d{4}-\d{4}) vérifiée? \(phase de contrôle\)$/u', fn($m) => ($m[1] === 'Avoir' ? '정정 청구서 ' : '청구서 ') . $m[2] . ' 확인함 (확인 단계)'],
+        ['/^Lien privé de ([A-Z]{1,6}-?\d{4}-\d{4}) désactivé$/u', fn($m) => $m[1] . ' 개인 링크 꺼짐'],
+        ['/^Nouveau lien privé pour ([A-Z]{1,6}-?\d{4}-\d{4}) \(l\'ancien ne s\'ouvre plus\)$/u', fn($m) => $m[1] . ' 새 개인 링크 (예전 링크는 열리지 않아요)'],
+        ['/^Facture ([A-Z]{1,6}-?\d{4}-\d{4}) émise\. Vérifiez le PDF, puis remettez-la au client\.$/u', fn($m) => '청구서 ' . $m[1] . ' 발행했어요. PDF를 확인한 뒤 고객에게 전달하세요.'],
+        ['/^Avoir ([A-Z]{1,6}-?\d{4}-\d{4}) émis\. Remettez-le au client comme la facture\.$/u', fn($m) => '정정 청구서 ' . $m[1] . ' 발행했어요. 청구서처럼 고객에게 전달하세요.'],
+        ['/^Cette commande a déjà sa facture \((.+)\)\.$/u', fn($m) => '이 주문에는 이미 청구서가 있어요 (' . $m[1] . ').'],
+        ['/^Une facture Qonto \((.+)\) est déjà notée sur la commande : cochez la case pour confirmer que ce n\'est pas un doublon\.$/u', fn($m) => '이 주문에 Qonto 청구서(' . $m[1] . ')가 이미 적혀 있어요. 중복이 아니면 체크 표시를 하세요.'],
+        ['/^(\d+) facture\(s\) vérifiée\(s\) sur (\d+) prévues\.$/u', fn($m) => '청구서 ' . $m[2] . '건 중 ' . $m[1] . '건 확인 완료.'],
+        ['/^Journal intact : (\d+) document\(s\) vérifié\(s\) \(PDF, chaîne et numéros sans trou\)\.$/u', fn($m) => '기록 이상 없음: 문서 ' . $m[1] . '건 확인 (PDF, 연결, 빠진 번호 없음).'],
+        ['/^(\d+) document\(s\)$/u', fn($m) => '문서 ' . $m[1] . '건'],
+        ['/^Annule toute la facture \((' . $E . ')\)$/u', fn($m) => '청구서 전체 취소 (' . $m[1] . ')'],
+        ['/^Envoyer (la facture|l\'avoir) à (.+) maintenant \?$/u', fn($m) => ($m[1] === 'la facture' ? '청구서를 ' : '정정 청구서를 ') . $m[2] . '에게 지금 보낼까요?'],
+        ['/^([A-Z]{1,6}-?\d{4}-\d{4}) : le PDF a été modifié\.$/u', fn($m) => $m[1] . ': PDF가 바뀌었어요.'],
+        ['/^([A-Z]{1,6}-?\d{4}-\d{4}) : la ligne a été modifiée, ou une ligne avant elle a été retirée\.$/u', fn($m) => $m[1] . ': 이 줄이 바뀌었거나 앞의 줄이 지워졌어요.'],
+        ['/^([A-Z]{1,6}-?\d{4}-\d{4}) : la série saute \(numéro (\d+) attendu\)\.$/u', fn($m) => $m[1] . ': 번호가 건너뛰었어요 (' . $m[2] . '번이어야 해요).'],
     ];
     return $p;
 }

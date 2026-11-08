@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-factures', 'le' => '2026-11-08', 'titre' => 'Les factures des particuliers',
+     'texte' => 'La gestion fait la facture d\'une commande payée et remise : vous la relisez, l\'émettez, puis la remettez par mail, SMS, QR code ou papier.',
+     'lien' => ['manuel', 'factures']],
     ['id' => '2026-11-08-pastilles', 'le' => '2026-11-08', 'titre' => 'Les pastilles de couleur',
      'texte' => 'Rouge : à regarder en premier. Ambre : quelque chose a changé. Elles s\'éteignent quand vous ouvrez la commande ou la fiche.',
      'lien' => ['manuel', 'pastilles']],

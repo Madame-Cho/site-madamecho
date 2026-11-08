@@ -317,13 +317,30 @@ CREATE INDEX IF NOT EXISTS corbeille_le ON corbeille(le);
     $pdo->prepare("UPDATE utilisateurs SET pastilles_id = ? WHERE pastilles_id IS NULL")->execute([$nonLu ? min($max, $nonLu - 1) : $max]);
     $pdo->prepare("UPDATE utilisateurs SET pastilles_depuis = ? WHERE pastilles_depuis IS NULL")->execute([date('Y-m-d H:i:s')]);
     $pdo->exec("CREATE INDEX IF NOT EXISTS evenements_le ON evenements(le)");
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '10')");
+    // Version 11 (08/11/2026, demande d'Olivier : la gestion fait les factures des particuliers, spécification 003) : factures et avoirs
+    // figés (PDF en base, empreinte, chaîne qui lie chaque document au précédent), sans clé vers la fiche client : ils restent 10 ans,
+    // même quand la fiche est effacée (FR-014) ; et comment chacun a été remis au client (FR-009)
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS factures (id INTEGER PRIMARY KEY, genre TEXT NOT NULL DEFAULT 'facture', numero TEXT NOT NULL UNIQUE,
+  prefixe TEXT NOT NULL, annee INTEGER NOT NULL, seq INTEGER NOT NULL, commande_id INTEGER, client_id INTEGER, facture_id INTEGER,
+  emise_le TEXT NOT NULL, emise_par TEXT NOT NULL DEFAULT '', total_ttc INTEGER NOT NULL, total_ht INTEGER NOT NULL, total_tva INTEGER NOT NULL,
+  donnees TEXT NOT NULL DEFAULT '{}', pdf BLOB NOT NULL, empreinte TEXT NOT NULL, chaine TEXT NOT NULL, jeton TEXT NOT NULL DEFAULT '',
+  motif TEXT NOT NULL DEFAULT '', verifiee_le TEXT, verifiee_par TEXT NOT NULL DEFAULT '', UNIQUE (prefixe, annee, seq));
+CREATE INDEX IF NOT EXISTS factures_commande ON factures(commande_id);
+CREATE TABLE IF NOT EXISTS factures_remises (id INTEGER PRIMARY KEY, facture_id INTEGER NOT NULL, le TEXT NOT NULL, par TEXT NOT NULL DEFAULT '',
+  canal TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '', mid TEXT NOT NULL DEFAULT '', ok INTEGER NOT NULL DEFAULT 1);
+CREATE INDEX IF NOT EXISTS factures_remises_facture ON factures_remises(facture_id);
+");
+    // Les alertes « facture à faire » ne regardent que les commandes remises après l'arrivée des factures dans la gestion
+    $pdo->exec("INSERT OR IGNORE INTO parametres (cle, valeur) VALUES ('factures_depuis', '" . date('Y-m-d H:i:s') . "')");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '11')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
 const COLONNES_ENTIERES = ['id' => 1, 'client_id' => 1, 'commande_id' => 1, 'utilisateur_id' => 1, 'ingredient_id' => 1, 'probleme' => 1, 'total_indicatif' => 1,
     'prix_final' => 1, 'acompte' => 1, 'prix' => 1, 'prix_unite' => 1, 'actif' => 1, 'emballage' => 1, 'tva' => 1, 'ok' => 1, 'n' => 1, 'remises' => 1,
-    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1, 'fil' => 1, 'question' => 1, 'rapport_id' => 1, 'message_id' => 1, 'lu' => 1, 'evenement_id' => 1];
+    'en_cours' => 1, 'total' => 1, 'ca' => 1, 'lignes_recette' => 1, 'perdues' => 1, 'pros' => 1, 'fil' => 1, 'question' => 1, 'rapport_id' => 1, 'message_id' => 1, 'lu' => 1, 'evenement_id' => 1,
+    'facture_id' => 1, 'annee' => 1, 'seq' => 1, 'total_ttc' => 1, 'total_ht' => 1, 'total_tva' => 1];
 function entiers(array $r): array {
     foreach ($r as $k => $v) if (is_string($v) && isset(COLONNES_ENTIERES[$k]) && preg_match('/^-?\d+$/', $v)) $r[$k] = (int)$v;
     return $r;

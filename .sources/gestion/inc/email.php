@@ -63,13 +63,15 @@ function email_lien_mot_de_passe(array $u, string $jeton, bool $invitation): boo
  * Les réponses vont à contact@ ; une copie cachée arrive dans contact@ (le mail n'est pas dans « Envoyés » de Gmail). */
 /** Un mail au client (R-01 : au toucher de Youngmi). $refs : les Message-ID déjà échangés sur la commande, pour que le client voie une seule
  *  conversation (In-Reply-To, References). Renvoie le Message-ID du mail, ou '' s'il n'est pas parti. */
-function envoyer_email_client(string $a, string $sujet, string $texte, string $html, array $refs = []): string {
+/** $pj : pièces jointes [['nom' => 'P-2026-0001.pdf', 'type' => 'application/pdf', 'contenu' => octets]] (factures, spécification 003). */
+function envoyer_email_client(string $a, string $sujet, string $texte, string $html, array $refs = [], array $pj = []): string {
     if (!email_valide($a)) return '';
     $mid = '<commande.' . bin2hex(random_bytes(8)) . '@' . GESTION_DOMAINE . '>';
     $refs = array_slice(array_values(array_unique(array_filter($refs, fn($r) => preg_match('/^<[^<>\s]{3,200}>$/', $r)))), -10);
     if (GESTION_ESSAI) {
         session_ouvrir();
-        $_SESSION['essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid, 'refs' => $refs];
+        $_SESSION['essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid, 'refs' => $refs,
+                                    'pj' => array_map(fn($f) => ['nom' => $f['nom'], 'type' => $f['type'], 'octets' => strlen($f['contenu']), 'debut' => substr($f['contenu'], 0, 8)], $pj)];
         return $mid;
     }
     $dkim = gestion_site() . '/ma-demande/dkim.php';
@@ -80,6 +82,18 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
     $corps = "--$frontiere\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . $enc($texte) . "\r\n"
            . "--$frontiere\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . $enc($html) . "\r\n"
            . "--$frontiere--\r\n";
+    $type = 'multipart/alternative; boundary="' . $frontiere . '"';
+    if ($pj) {   // le mail mis en forme, puis chaque pièce jointe (multipart/mixed)
+        $mixte = 'mc-' . bin2hex(random_bytes(12));
+        $m = "--$mixte\r\nContent-Type: $type\r\n\r\n" . $corps;
+        foreach ($pj as $f) {
+            $nom = preg_replace('/[^A-Za-z0-9._-]/', '_', (string)$f['nom']);
+            $m .= "--$mixte\r\nContent-Type: " . $f['type'] . '; name="' . $nom . "\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"" . $nom . "\"\r\n\r\n"
+                . rtrim(chunk_split(base64_encode((string)$f['contenu']), 76, "\r\n"), "\r\n") . "\r\n";
+        }
+        $corps = $m . "--$mixte--\r\n";
+        $type = 'multipart/mixed; boundary="' . $mixte . '"';
+    }
     $sujetEnc = mb_encode_mimeheader($sujet, 'UTF-8', 'B');
     $signes = [
         'From' => 'Madame Cho <' . GESTION_COMPTE_INITIAL . '>',
@@ -90,7 +104,7 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
         'Message-ID' => $mid,
     ] + ($refs ? ['In-Reply-To' => end($refs), 'References' => implode(' ', $refs)] : []) + [
         'MIME-Version' => '1.0',
-        'Content-Type' => 'multipart/alternative; boundary="' . $frontiere . '"',
+        'Content-Type' => $type,
     ];
     $signature = \dkim_signer($signes, $corps);
     if (!$signature) { error_log('madamecho gestion : signature DKIM impossible, email client non envoyé'); return ''; }

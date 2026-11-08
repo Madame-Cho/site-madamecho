@@ -71,6 +71,7 @@ function page_accueil(): void {
             . '<span class="statut s-demande">À facturer</span></span><span class="l2">' . h(ucfirst(mois_texte($r['mois']))) . ' · ' . h($r['n'] . ' livraison(s)') . '</span></a>';
         $c .= bloc('Relevés à facturer', '<p class="aide">Faites la facture dans Qonto à partir du relevé, puis notez son numéro.</p><div class="liste">' . $l . '</div>');
     }
+    $c .= bloc_factures_accueil();   // factures des particuliers à émettre, à remettre ou à corriger (FR-010)
     mise_en_page('Aujourd\'hui', $c, 'accueil');
 }
 
@@ -134,6 +135,8 @@ function page_commande(): void {
                 rediriger('commande', ['id' => $id]);
             }
         }
+        // Le cadre « Facture » (spécification 003) : émettre, remettre au client, avoir
+        if (str_starts_with($a, 'facture_')) { facture_post($k, $a); rediriger('commande', ['id' => $id], 'facture'); }
         switch ($a) {
             case 'proposition':
                 $prix = centimes(texte('prix_final', 12));
@@ -346,21 +349,24 @@ function page_commande(): void {
         . '<p class="secours-echange">' . lien_bouton($gmail, icone('email') . 'Ses emails dans Gmail', 'discret', ['target' => '_blank', 'rel' => 'noopener'])
             . ($k['client_tel'] !== '' ? lien_bouton('tel:' . preg_replace('/[^0-9+]/', '', $k['client_tel']), icone('tel') . 'Appeler', 'discret') : '') . '</p>'
         . ($suivi ? '<details class="replie suivi"><summary>Suivi de la commande <span class="compte">' . count($suivi) . '</span></summary>' . fil_historique($suivi) . '</details>' : ''), 'echanges', 'echanges');
-    // Montants et paiement
+    // Montants et paiement ; le numéro de facture est celui de la gestion pour un particulier (il ne se modifie pas à la main)
+    $factureGestion = facture_en_vigueur($id) !== null;
     $reste = montant_commande($k) - ($k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : 0);
     $c .= bloc('Montant et paiement', definition(['Prix final' => h($k['prix_final'] !== null ? euros((int)$k['prix_final']) . ' TTC' : 'pas encore fixé (indicatif : ' . euros((int)$k['total_indicatif']) . ')'),
                                      'Acompte' => h((int)$k['acompte'] ? euros((int)$k['acompte']) : ''), 'Paiement' => h(PAIEMENTS[$k['paiement']] ?? '') . ($k['moyen'] !== '' ? ' · ' . h(MOYENS[$k['moyen']] ?? '') : ''),
                                      'Reste à payer' => in_array($k['paiement'], ['paye', 'rembourse'], true) ? '' : h(euros($reste)),
                                      'Constaté par' => $k['paiement'] === 'aucun' ? '' : ((string)$k['paiement_par'] !== '' ? '<span translate="no">' . h($k['paiement_par']) . '</span> · ' . h(date_fr($k['paiement_le'], 'heure')) : 'Pas noté (avant le 7 novembre 2026)'),
                                      'Qonto' => rapprochement_texte($k),
-                                     'Facture Qonto' => h($k['facture'])])
+                                     ($factureGestion ? 'Facture' : 'Facture Qonto') => $k['facture'] !== '' ? '<span translate="no">' . h($k['facture']) . '</span>' . ($factureGestion ? ' · <a href="#facture">voir</a>' : '') : ''])
         . rapprochement_formulaire($k)
         . '<details class="replie"><summary>Modifier le paiement</summary>'
         . formulaire('paiement', '<div class="ligne-champs">' . liste_choix('paiement', 'Paiement', PAIEMENTS, $k['paiement']) . liste_choix('moyen', 'Moyen', MOYENS, $k['moyen']) . '</div>'
             . '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $k['prix_final'] !== null ? number_format((int)$k['prix_final'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal'])
             . champ('acompte', 'Acompte (€)', (int)$k['acompte'] ? number_format((int)$k['acompte'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal']) . '</div>'
-            . champ('facture', 'N° de facture Qonto', $k['facture'], ['placeholder' => 'F-2026-013']) . bouton('Enregistrer', 'secondaire'))
+            . ($factureGestion ? '<input type="hidden" name="facture" value="' . h($k['facture']) . '">' : champ('facture', 'N° de facture Qonto', $k['facture'], ['placeholder' => 'F-2026-013']))
+            . bouton('Enregistrer', 'secondaire'))
         . '</details>');
+    $c .= bloc_facture($k);   // la facture du particulier, faite par la gestion (spécification 003)
     // Problème
     if ($k['probleme']) {
         $c .= bloc(icone('alerte') . ' Problème', '<p class="probleme-note"' . ($k['probleme_note'] !== '' ? ' translate="no" lang="fr"' : '') . '>' . nl2br(h($k['probleme_note'] !== '' ? $k['probleme_note'] : 'Problème signalé.')) . '</p>'
