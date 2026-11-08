@@ -96,13 +96,13 @@
 
 ## Phase 10 : Pastilles « nouveau » et « a changé » (2026-11-08, demande d'Olivier, FR-041)
 
-- [ ] T058 [US1] Schéma 10 : table `vus`, colonne `utilisateurs.pastilles_depuis` (`inc/base.php`) ; texte en clair des modifications de commande (`inc/modele.php`)
-- [ ] T059 [US1] `inc/pastilles.php` : signaux par personne, « vu », « Tout marquer comme vu », nouveautés de l'outil, page « Quoi de neuf »
-- [ ] T060 [US1] Menu (haut et bas), titre « (n) », icône de l'application (`gestion.js`), bloc « Depuis votre dernière visite » sur Aujourd'hui
-- [ ] T061 [US2] Étiquette et liseré des cartes de commande et de client ; encadré « Changé depuis votre dernière visite » sur la commande ; « Nouvelle réponse » propre à la personne
-- [ ] T062 [P] [US8] Coréen (textes et motifs), manuel FR/KO (section « Les pastilles »), styles
-- [ ] T063 Essais sur base fictive à deux comptes (Youngmi, Olivier) et captures FR/KO
-- [ ] T064 Audit du ChatGPT d'Olivier (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
+- [X] T058 [US1] Schéma 10 : table `vus`, colonne `utilisateurs.pastilles_depuis` (`inc/base.php`) ; texte en clair des modifications de commande (`inc/modele.php`)
+- [X] T059 [US1] `inc/pastilles.php` : signaux par personne, « vu », « Tout marquer comme vu », nouveautés de l'outil, page « Quoi de neuf »
+- [X] T060 [US1] Menu (haut et bas), titre « (n) », icône de l'application (`gestion.js`), bloc « Depuis votre dernière visite » sur Aujourd'hui
+- [X] T061 [US2] Étiquette et liseré des cartes de commande et de client ; encadré « Changé depuis votre dernière visite » sur la commande ; « Nouvelle réponse » propre à la personne
+- [X] T062 [P] [US8] Coréen (textes et motifs), manuel FR/KO (section « Les pastilles »), styles
+- [X] T063 Essais sur base fictive à deux comptes (Youngmi, Olivier) et captures FR/KO
+- [ ] T064 Audit n° 5 du ChatGPT d'Olivier (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
 
 ## Dependencies & Execution Order
 
