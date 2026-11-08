@@ -3,7 +3,7 @@
 **Branch** : `004-obligations` (branche de travail `claude/project-thread-q75hfy`) | **Date** : 2026-11-08 | **Spec** : [spec.md](./spec.md)
 
 **Input** : spécification `specs/004-obligations/spec.md` ; « Go lot 1 » d'Olivier (2026-11-08) ; ses cinq
-réponses du 2026-11-08 (18:01-18:17) : Youngmi et Olivier ajoutent, démarches d'Olivier aussi avec un
+réponses du 2026-11-08 (19:01-19:17, heure de Paris) : Youngmi et Olivier ajoutent, démarches d'Olivier aussi avec un
 filtre, preuve = lien Drive et note, rappels dans la gestion et le récap du lundi, alerte 30 jours avant.
 
 ## Summary

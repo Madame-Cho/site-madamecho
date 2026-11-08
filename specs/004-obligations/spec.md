@@ -29,7 +29,7 @@ les adresses des restaurants et les relevés vivent dans la base de la gestion s
 - Q: Restaurants ? → A : 5 aujourd'hui, d'autres viendront ; Youngmi livre elle-même avec des caisses
   prévues pour ça.
 
-### Session 2026-11-08, lot 1 (Olivier, cartes de décision, 18:01-18:17)
+### Session 2026-11-08, lot 1 (Olivier, cartes de décision, 19:01-19:17 heure de Paris)
 
 - Q: Qui ajoute ou modifie une démarche ? → A : Youngmi et Olivier ; l'autre voit la pastille ambre
   « nouveau » ou « a changé ».
