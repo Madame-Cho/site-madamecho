@@ -58,6 +58,14 @@ branche, pas publié. Rien n'est publié sans l'audit n° 7 et le feu vert d'Oli
 - [X] T038 [US4] Brouillon DDPP copiable, sans nom de particulier (R-01 : Youngmi l'envoie) ; lot marqué « Problème » ; coréen, manuel
 - [X] T039 Essais `tests-gestion/hygiene/lot3.js` (26/26) et non-régression
 
+## Lot 4 : Volumes et Documents (US5 scénario 3, US6), « Lot 4 » d'Olivier du 2026-11-08
+
+- [X] T040 [US5] Tables `volumes_poids`, `volumes_restaurants`, `documents` (repère `schema_hygiene` = 2) ; plafonds préremplis « à confirmer »
+- [X] T041 [US5] Volumes par semaine (kilos B2B et total, part, plafond plein ou réduit), poids d'une pièce proposé depuis la recette, distances des restaurants actifs
+- [X] T042 [US5] Alerte de plafond (proche / dépassé) par la tâche de nuit, textes figés traduits
+- [X] T043 [US6] Documents : 9 pièces attendues (carte d'Olivier), lien Drive seulement, validité et alerte 30 jours avant, retirer sans effacer ; liens proposés par Olivier (collés une fois), vérifiés par Youngmi
+- [X] T044 Coréen, manuel, essais `hygiene/lot4.js` (21/21) et `lot4-unitaires.php` (30/30), non-régression
+
 - [ ] T032 Saisie hors ligne (cas limite), l'assistant lit les relevés : plus tard
 - [ ] T033 Audit unique des lots 1 à 4 (P-26) après le lot 4 (choix d'Olivier) ; registre des traitements (T8) ; pilote avec Youngmi
 - [ ] T034 Feu vert d'Olivier sur la version exacte ; fetch et rebase ; publication ; Journal des publications, Registre

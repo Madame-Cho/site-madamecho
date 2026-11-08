@@ -1631,6 +1631,96 @@ Par exemple : au réfrigérateur, entre 0 et 4 °C. | 예: 냉장고에서 0~4 �
 Ingrédients, du plus lourd au plus léger | 재료 (무거운 것부터)
 Proposés depuis la recette : vérifiez les noms et l'ordre (les ingrédients comptés à la pièce, comme les œufs, sont à la fin : placez-les selon leur poids). Les allergènes s'impriment en gras. | 레시피에서 가져왔어요. 이름과 순서를 확인하세요 (달걀처럼 개수로 센 재료는 맨 뒤에 있으니 무게에 맞게 옮기세요). 알레르기 성분은 굵게 인쇄돼요.
 J'ai relu ce texte | 이 글을 확인했어요
+Lien proposé, à vérifier | 제안된 링크, 확인 필요
+C'est le bon document | 맞는 서류예요
+Ouvrez-le pour vérifier ; si ce n'est pas le bon, touchez « Modifier » et collez le bon lien. | 열어서 확인하세요. 맞지 않으면 ‘수정’을 눌러 맞는 링크를 붙여 넣으세요.
+Merci : le document est vérifié. | 고마워요. 서류를 확인했어요.
+Proposer des liens (Olivier) | 링크 제안 (올리비에)
+Une ligne par pièce : le code, le lien du Drive, une note facultative, séparés par une barre verticale. Un lien vérifié par Youngmi n'est jamais remplacé. | 서류마다 한 줄: 코드, Drive 링크, 선택 메모를 세로 막대(|)로 나눠요. 영미가 확인한 링크는 절대 바뀌지 않아요.
+Liens | 링크
+Proposer | 제안
+Réservé à Olivier. | 올리비에만 할 수 있어요.
+Volumes | 물량
+Documents | 서류
+Plafonds à confirmer par la DDPP. | DDPP 확인이 필요한 한도예요.
+Les chiffres préremplis sont ceux de la réglementation, à vérifier : changez-les ou confirmez-les dans « Plafonds de la dérogation ». | 미리 넣은 숫자는 규정 기준이라 확인이 필요해요. ‘면제 한도’에서 바꾸거나 확인하세요.
+Plafonds pas encore saisis. | 한도를 아직 입력하지 않았어요.
+Tapez ceux que la DDPP a confirmés dans « Plafonds de la dérogation », plus bas. D'ici là, aucune alerte. | 아래 ‘면제 한도’에 DDPP가 확인한 숫자를 적으세요. 그때까지는 알림이 없어요.
+Ventes par semaine | 주별 판매
+Les kilos vendus aux restaurants (B2B) et à tous, chaque semaine, d'après le poids d'une pièce de chaque gâteau. La semaine en cours et la suivante comptent aussi les commandes confirmées. Une alerte apparaît dans « À faire » quand les restaurants approchent le plafond. | 케이크 한 개의 무게로 계산한, 주마다 레스토랑(B2B)과 전체에 판 킬로그램이에요. 이번 주와 다음 주는 확정된 주문도 포함해요. 레스토랑 물량이 한도에 가까워지면 ‘할 일’에 알림이 생겨요.
+Prévu | 예정
+À compléter | 채워야 해요
+Sous le plafond | 한도 이하
+Plafond proche | 한도에 가까움
+Plafond dépassé | 한도 초과
+Aucune vente | 판매 없음
+Restaurants | 레스토랑
+En tout | 전체
+Part des restaurants | 레스토랑 비율
+en montant | 금액 기준
+Plafond | 한도
+Les clients professionnels actifs. La dérogation limite la distance de livraison ; tapez la distance depuis la cuisine (un itinéraire Google Maps suffit). Un restaurant qui arrête passe « inactif » dans sa fiche et sort de cette liste. | 활동 중인 사업자 고객이에요. 면제에는 배달 거리 제한이 있어요. 주방에서의 거리를 적으세요 (구글 지도 경로면 충분해요). 거래를 멈춘 레스토랑은 고객 정보에서 ‘비활동’으로 바꾸면 이 목록에서 빠져요.
+Aucun client professionnel actif. | 활동 중인 사업자 고객이 없어요.
+Distance (km) | 거리 (km)
+Distance à saisir | 거리 입력 필요
+Poids d'une pièce | 한 개의 무게
+Poids d'une pièce (g) | 한 개의 무게 (g)
+Les kilos se calculent avec ce poids, jamais avec un poids deviné. La recette propose un poids (la somme de ses ingrédients en grammes) : pesez de préférence une pièce finie, puis touchez « Confirmer ». | 킬로그램은 이 무게로만 계산하고, 절대 짐작하지 않아요. 레시피가 무게(재료 그램의 합)를 제안해요. 가능하면 완성된 케이크 한 개를 재고 ‘확인’을 누르세요.
+Pas de recette pesée : pesez une pièce finie. | 무게가 있는 레시피가 없어요. 완성된 케이크 한 개를 재 주세요.
+Plafonds de la dérogation | 면제 한도
+Préremplis avec les chiffres de la réglementation (arrêté du 8 juin 2006), à faire confirmer par la DDPP des Hauts-de-Seine : la gestion ne les tient jamais pour sûrs. | 규정(2006년 6월 8일 고시)의 숫자로 미리 넣었어요. 오드센 DDPP의 확인이 필요해요. 관리 화면은 이 숫자를 절대 확실하다고 보지 않아요.
+Plafond par semaine (kg) | 주별 한도 (kg)
+Plafond si la part des restaurants dépasse la limite (kg) | 레스토랑 비율이 기준을 넘을 때의 한도 (kg)
+Limite de la part des restaurants (%) | 레스토랑 비율 기준 (%)
+Distance maximale (km) | 최대 거리 (km)
+Alerte à partir de (% du plafond) | 알림 시작 (한도의 %)
+Ces chiffres sont confirmés par la DDPP | DDPP가 확인한 숫자예요
+Documents de preuve | 증빙 서류
+Les pièces à montrer lors d'un contrôle, rangées dans le Drive ; la gestion garde seulement le lien, jamais de copie. Une pièce sans lien est « à ajouter ». Avec une date de validité, la gestion prévient 30 jours avant dans « À faire ». | 점검 때 보여 줄 서류로, Drive에 보관해요. 관리 화면에는 링크만 있고 사본은 절대 없어요. 링크가 없는 서류는 ‘추가 필요’예요. 유효 기간이 있으면 30일 전에 ‘할 일’에서 알려 줘요.
+Lien à ajouter | 링크 추가 필요
+Expiré | 기간 만료
+À renouveler bientôt | 곧 갱신 필요
+Prêt | 준비됨
+Retirés | 뺀 서류
+Lien dans le Drive | Drive 링크
+Valable jusqu'au (facultatif) | 유효 기간 (선택)
+Retirer de la liste | 목록에서 빼기
+Remettre dans la liste | 목록에 다시 넣기
+Retirer ce document de la liste ? Il restera dans « Retirés ». | 이 서류를 목록에서 뺄까요? ‘뺀 서류’에 남아요.
+Ajouter un document | 서류 추가
+Aucun document. | 서류가 없어요.
+Récépissé de la déclaration d'activité (Cerfa 13984) | 영업 신고 접수증 (Cerfa 13984)
+Récépissé de la dérogation à l'agrément (Cerfa 13982) | 위생 승인 면제 접수증 (Cerfa 13982)
+CAP Pâtisserie de Youngmi | 영미의 제과 CAP
+CAP Boulangerie de Youngmi | 영미의 제빵 CAP
+Attestation d'assurance responsabilité civile | 배상 책임 보험 증명서
+Rapport de vérification de l'extincteur | 소화기 점검 보고서
+Rapport de vérification de l'installation électrique | 전기 설비 점검 보고서
+Plan de maîtrise sanitaire | 위생 관리 계획
+Registre des traitements (RGPD) | 개인정보 처리 대장 (RGPD)
+Un document de preuve arrive à échéance | 증빙 서류의 기한이 다가와요
+Gestion : Plus › Obligations › Documents. Rangez le nouveau document dans le Drive, puis collez son lien et sa date de validité. | 관리 화면: 더보기 › 의무 › 서류. 새 서류를 Drive에 넣고 링크와 유효 기간을 붙여 넣으세요.
+Volumes de la dérogation : plafond proche ou dépassé | 면제 물량: 한도에 가깝거나 초과
+Gestion : Plus › Obligations › Volumes. En cas de dépassement : la DDPP des Hauts-de-Seine (mise à jour de la dérogation, Cerfa 13982, ou demande d'agrément), avant la livraison suivante. | 관리 화면: 더보기 › 의무 › 물량. 초과했다면 다음 배달 전에 오드센 DDPP에 연락해요 (면제 갱신 Cerfa 13982, 또는 위생 승인 신청).
+Semaine | 주
+Document | 서류
+Poids retiré. | 무게를 지웠어요.
+Poids enregistré. | 무게를 저장했어요.
+Distance enregistrée. | 거리를 저장했어요.
+Plafonds enregistrés. | 한도를 저장했어요.
+Document enregistré. | 서류를 저장했어요.
+Document retiré de la liste : il reste dans « Retirés ». | 서류를 목록에서 뺐어요. ‘뺀 서류’에 남아 있어요.
+Document remis dans la liste. | 서류를 목록에 다시 넣었어요.
+Un poids en grammes, entre 1 et 20 000. | 1에서 20,000 사이의 그램으로 적어 주세요.
+Restaurant introuvable. | 레스토랑을 찾을 수 없어요.
+Une distance en kilomètres, entre 0 et 2 000. | 0에서 2,000 사이의 킬로미터로 적어 주세요.
+Un nombre positif, s'il vous plaît (par exemple 250). | 양수를 적어 주세요 (예: 250).
+Document introuvable. | 서류를 찾을 수 없어요.
+Donnez un titre au document. | 서류 제목을 적어 주세요.
+La date de validité n'est pas une date. | 유효 기간이 날짜가 아니에요.
+Titre | 제목
+Confirmer | 확인
+Ouvrir | 열기
 Texte de l'étiquette relu et enregistré. | 라벨 글을 확인하고 저장했어요.
 Écrivez les conditions de conservation (par exemple : au réfrigérateur, entre 0 et 4 °C). | 보관 방법을 적어 주세요 (예: 냉장고에서 0~4 °C).
 Exploitant sur les étiquettes | 라벨의 사업자
@@ -2101,6 +2191,15 @@ function coreen_motifs(): array {
         ['/^Problème clos le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 문제 끝남' : null],
         ['/^Lot (\d{6}-[A-Z0-9]+-\d+)\.$/u', fn($m) => '로트 ' . $m[1] . '.'],
         ['/^Fait le (.+) à (\d{2}:\d{2})$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' ' . $m[2] . ' 완료' : null],
+        ['/^Semaine du (.+)$/u', fn($m) => ($d = coreen_date(rtrim($m[1], '.'))) ? $d . ' 주' . (str_ends_with($m[1], '.') ? '.' : '') : null],
+        ['/^Document n° (\d+)\.$/u', fn($m) => '서류 ' . $m[1] . '번.'],
+        ['/^(\d+) gâteau\(x\) sans poids : kilos incomplets$/u', fn($m) => '무게 없는 케이크 ' . $m[1] . '개: 킬로그램이 불완전해요'],
+        ['/^(\d+) à saisir$/u', fn($m) => $m[1] . '개 입력 필요'],
+        ['/^Proposé d\'après la recette : (\d+) g\. Pesez une pièce finie si possible\.$/u', fn($m) => '레시피 기준 제안: ' . $m[1] . ' g. 가능하면 완성된 케이크를 재 주세요.'],
+        ['/^Plus loin que ([\d,]+) km$/u', fn($m) => $m[1] . ' km보다 멀어요'],
+        ['/^Valable jusqu\'au (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '까지 유효' : null],
+        ['/^Confirmés le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 확인됨' : null],
+        ['/^Liens proposés : (\d+)(?: ; lignes refusées : ([\d, ]+))?\.$/u', fn($m) => '제안한 링크: ' . $m[1] . '개' . (!empty($m[2]) ? ', 거부된 줄: ' . $m[2] : '') . '.'],
         ['/^Modifiée : (.+)$/u', fn($m) => '수정됨: ' . (['quoi' => '할 일', 'où' => '어디서', 'pourquoi' => '왜', 'pour qui' => '누구의 일', 'échéance' => '기한', 'date à confirmer' => '날짜 확인 필요', 'rappel' => '알림', 'priorité' => '우선순위', 'importante' => '중요', 'origine' => '어디서 온 일', 'état' => '상태'][$m[1]] ?? $m[1])],
     ];
     return $p;

@@ -31,18 +31,50 @@ function page_obligations(): void {
                     . ($cr['refusees'] ? ', lignes refusées : ' . implode(', ', $cr['refusees']) : '') . '.');
             }
         }
-        rediriger('obligations', ['vue' => texte('vue', 12) ?: 'a_faire']);
+        $ancre = '';
+        if (in_array($a, ['poids', 'km', 'plafonds', 'document', 'document_retirer', 'document_confirmer', 'documents_proposer'], true)) {
+            $err = '';
+            if ($a === 'poids') {
+                $g = trim(texte('grammes', 8));
+                $err = volumes_poids_fixer(texte('produit', 80), texte('variante', 40), $g === '' ? null : (preg_match('/^\d{1,5}$/', $g) ? (int)$g : -1));
+                if (!$err) flash('ok', $g === '' ? 'Poids retiré.' : 'Poids enregistré.');
+                $ancre = 'poids';
+            } elseif ($a === 'km') {
+                $k = str_replace(',', '.', trim(texte('km', 8)));
+                $err = volumes_km_fixer(entier('client', 1), $k === '' ? null : (is_numeric($k) ? (float)$k : -1.0));
+                if (!$err) flash('ok', 'Distance enregistrée.');
+                $ancre = 'restaurants';
+            } elseif ($a === 'plafonds') {
+                $err = volumes_reglages_enregistrer($_POST);
+                if (!$err) flash('ok', 'Plafonds enregistrés.');
+            } elseif ($a === 'document') {
+                [, $err] = document_enregistrer(entier('id', 1) ?: null, $_POST);
+                if (!$err) flash('ok', 'Document enregistré.');
+            } elseif ($a === 'document_confirmer') {
+                document_confirmer(entier('id', 1)); flash('ok', 'Merci : le document est vérifié.');
+            } elseif ($a === 'documents_proposer') {
+                if (!est_admin()) $err = 'Réservé à Olivier.';
+                else { $cr = documents_proposer(texte('liens', 20000)); flash($cr['proposes'] ? 'ok' : 'erreur', 'Liens proposés : ' . $cr['proposes'] . ($cr['refusees'] ? ' ; lignes refusées : ' . implode(', ', $cr['refusees']) : '') . '.'); }
+            } else {
+                $d = document(entier('id', 1));
+                if ($d) { document_retirer((int)$d['id'], $d['retire_le'] === ''); flash('ok', $d['retire_le'] === '' ? 'Document retiré de la liste : il reste dans « Retirés ».' : 'Document remis dans la liste.'); }
+            }
+            if ($err) flash('erreur', $err);
+        }
+        rediriger('obligations', ['vue' => texte('vue', 12) ?: 'a_faire'], $ancre);
     }
+    volumes_preparer();
     obligations_generer();   // rattrape une nuit manquée : une démarche par période, jamais deux
-    $vue = choix('vue', array_flip(['a_faire', 'echeances', 'fait']), 'a_faire');
+    $vue = choix('vue', array_flip(['a_faire', 'echeances', 'volumes', 'documents', 'fait']), 'a_faire');
     $qui = choix('qui', array_flip(['miennes', 'toutes']), 'miennes');
     $changees = obligations_changees();
     $nAFaire = count(demarches_lister('a_faire', $qui, $moi));
     $onglets = '<nav class="sous-onglets" aria-label="Rubriques">';
-    foreach (['a_faire' => ['À faire', $nAFaire], 'echeances' => ['Échéances', (int)val("SELECT COUNT(*) FROM echeances WHERE active = 1")], 'fait' => ['Fait', 0]] as $v => [$l, $n])
+    foreach (['a_faire' => ['À faire', $nAFaire], 'echeances' => ['Échéances', (int)val("SELECT COUNT(*) FROM echeances WHERE active = 1")], 'volumes' => ['Volumes', 0],
+              'documents' => ['Documents', count(array_filter(documents(), fn($d) => document_etat($d) !== 'ok'))], 'fait' => ['Fait', 0]] as $v => [$l, $n])
         $onglets .= '<a href="' . h(u('obligations', ['vue' => $v, 'qui' => $qui])) . '"' . ($vue === $v ? ' aria-current="page"' : '') . '>' . h($l) . ($n ? ' <span class="compte">' . $n . '</span>' : '') . '</a>';
     $onglets .= '</nav>';
-    $filtre = $vue === 'echeances' ? '' : '<p class="filtre-qui">'
+    $filtre = in_array($vue, ['echeances', 'volumes', 'documents'], true) ? '' : '<p class="filtre-qui">'
         . '<a class="btn ' . ($qui === 'miennes' ? 'principal' : 'discret') . '" href="' . h(u('obligations', ['vue' => $vue, 'qui' => 'miennes'])) . '"' . ($qui === 'miennes' ? ' aria-current="true"' : '') . '>Les miennes</a>'
         . '<a class="btn ' . ($qui === 'toutes' ? 'principal' : 'discret') . '" href="' . h(u('obligations', ['vue' => $vue, 'qui' => 'toutes'])) . '"' . ($qui === 'toutes' ? ' aria-current="true"' : '') . '>Toutes</a></p>';
     $c = titre_page('Obligations', 'Tout ce qu\'il faut faire ou prouver pour être en règle, le plus urgent d\'abord.', lien_bouton(u('demarche', ['nouvelle' => '1']), icone('ajouter') . 'Ajouter', 'principal'), u('plus'));
@@ -54,6 +86,8 @@ function page_obligations(): void {
     $c .= $onglets . $filtre;
     $l = [];
     if ($vue === 'echeances') $c .= vue_echeances();
+    elseif ($vue === 'volumes') $c .= vue_volumes();
+    elseif ($vue === 'documents') $c .= vue_documents();
     elseif ($vue === 'fait') {
         $l = demarches_lister('fait', $qui, $moi);
         $c .= bloc('Faites et sans objet', $l ? '<ul class="liste-demarches">' . implode('', array_map(fn($d) => carte_demarche($d, $changees), $l)) . '</ul>' : '<p class="vide">Rien pour l\'instant.</p>');
@@ -70,6 +104,7 @@ function page_obligations(): void {
     if (est_admin() && $vue === 'echeances') $c .= bloc_reprise_obligations();
     // Seul ce qui vient d'être affiché devient « vu » (audit n° 7, passe 2, P2-09)
     if ($vue === 'echeances') obligations_marquer_vu('echeance', array_keys(obligations_changees('echeance')));
+    elseif (in_array($vue, ['volumes', 'documents'], true)) {}
     else obligations_marquer_vu('demarche', array_intersect(array_keys($changees), array_map(fn($d) => (int)$d['id'], $l)));
     mise_en_page('Obligations', $c, 'obligations', 'page-obligations');
 }
@@ -166,6 +201,8 @@ function page_demarche(): void {
                'Client' => $d['ref_genre'] === 'client' && ($cl = client((int)$d['ref_id'])) ? '<a href="' . h(u('client', ['id' => (int)$cl['id']])) . '" translate="no">' . h(client_nom($cl)) . '</a>' : '',
                'Jour concerné' => $d['ref_genre'] === 'hygiene' && date_valide((string)$d['ref_id']) ? '<a href="' . h(u('hygiene', ['vue' => 'jour', 'jour' => (string)$d['ref_id']])) . '">' . h(ucfirst(date_fr((string)$d['ref_id'], 'jour'))) . '</a>' : '',
                'Lot' => $d['ref_genre'] === 'probleme' && ($pbm = probleme((int)$d['ref_id'])) ? '<a href="' . h(u('hygiene-probleme', ['id' => (int)$pbm['id']])) . '" translate="no">' . h($pbm['numero_lot']) . '</a>' : '',
+               'Semaine' => $d['ref_genre'] === 'volumes' && date_valide((string)$d['ref_id']) ? '<a href="' . h(u('obligations', ['vue' => 'volumes'])) . '">' . h(date_fr((string)$d['ref_id'], 'longue')) . '</a>' : '',
+               'Document' => $d['ref_genre'] === 'document' && ($doc = document((int)$d['ref_id'])) ? '<a href="' . h(u('obligations', ['vue' => 'documents'])) . '#doc-' . (int)$doc['id'] . '"' . ($doc['attendu'] !== '' ? '' : ' translate="no"') . '>' . h(document_titre($doc)) . '</a>' : '',
                'Où le faire ?' => '<span' . demarche_tn((string)$d['ou']) . '>' . nl2br(h($d['ou'])) . '</span>',
                'Pourquoi' => $d['explication'] !== '' ? '<span' . demarche_tn((string)$d['explication']) . '>' . nl2br(h($d['explication'])) . '</span>' : '',
                'Pour qui' => h(DEMARCHE_POUR[$d['pour_qui']] ?? ''),
@@ -263,4 +300,111 @@ function page_echeance(): void {
                   (int)$e['active'] ? ['data-confirmer' => 'Arrêter cette échéance ? Les démarches déjà créées restent.'] : [], u('echeance', ['id' => $id])));
     if ($e) obligations_marquer_vu('echeance', [$id]);
     mise_en_page($e ? 'Modifier l\'échéance' : 'Nouvelle échéance', $c, 'obligations', 'page-obligations');
+}
+
+/* ---------- Lot 4 : Volumes de la dérogation (US5) ---------- */
+const VOLUMES_NIVEAUX = ['depasse' => ['Plafond dépassé', 'retard'], 'proche' => ['Plafond proche', 'bientot'], 'ok' => ['Sous le plafond', 'fait'], 'inconnu' => ['À compléter', 'confirmer']];
+function vue_volumes(): string {
+    $S = array_reverse(volumes_semaines(), true);
+    $kgS = volumes_reglage('volumes_kg'); $conf = volumes_confirme();
+    $c = '';
+    if ($kgS === null) $c .= '<div class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Plafonds pas encore saisis.</b> Tapez ceux que la DDPP a confirmés dans « Plafonds de la dérogation », plus bas. D\'ici là, aucune alerte.</span></div>';
+    elseif ($conf === '') $c .= '<div class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Plafonds à confirmer par la DDPP.</b> Les chiffres préremplis sont ceux de la réglementation, à vérifier : changez-les ou confirmez-les dans « Plafonds de la dérogation ».</span></div>';
+    $sans = [];
+    $li = '';
+    foreach ($S as $s => $w) {
+        [$etat, $n] = VOLUMES_NIVEAUX[$w['niveau']];
+        $kgT = fn(float $kg, bool $vide): string => $vide ? '—' : kilos($kg);
+        $incomplet = (bool)$w['sans_poids'];
+        if ($w['pieces'] === 0 && $w['niveau'] !== 'depasse') { $etat = 'Aucune vente'; $n = 'sans_date'; }
+        foreach ($w['sans_poids'] as $v => $nom) $sans[$v] = $nom;
+        $li .= '<li class="semaine-volumes n-' . h($n) . '"><span class="sv-tete"><b>' . h('Semaine du ' . date_fr($s, 'longue')) . '</b>' . ($w['prevu'] ? '<span class="chip-par">Prévu</span>' : '')
+            . '<span class="etiq ' . ($w['niveau'] === 'depasse' ? 'etiq-alerte' : ($w['niveau'] === 'proche' || $w['niveau'] === 'inconnu' ? 'etiq-change' : 'etiq-outil')) . '">' . h($etat) . '</span></span>'
+            . '<span class="sv-chiffres"><span><span class="petit">Restaurants</span> <b>' . h($kgT($w['kg_pro'], $incomplet && $w['kg_pro'] == 0 && $w['pieces_pro'] > 0)) . '</b></span><span><span class="petit">En tout</span> <b>' . h($kgT($w['kg'], $incomplet && $w['kg'] == 0)) . '</b></span>'
+            . '<span><span class="petit">Part des restaurants</span> <b>' . ($w['part'] !== null ? h(str_replace('.', ',', (string)$w['part']) . ' %') : '—') . '</b>' . ($w['part'] !== null && $w['part_sur'] === 'ttc' ? ' <span class="petit">en montant</span>' : '') . '</span>'
+            . '<span><span class="petit">Plafond</span> <b>' . ($w['plafond'] !== null ? h(kilos($w['plafond'])) : '—') . '</b></span></span>'
+            . ($w['sans_poids'] && $w['pieces'] ? '<span class="petit">' . h(count($w['sans_poids']) . ' gâteau(x) sans poids : kilos incomplets') . '</span>' : '')
+            . '</li>';
+    }
+    $c .= bloc('Ventes par semaine', '<p class="aide">Les kilos vendus aux restaurants (B2B) et à tous, chaque semaine, d\'après le poids d\'une pièce de chaque gâteau. La semaine en cours et la suivante comptent aussi les commandes confirmées. Une alerte apparaît dans « À faire » quand les restaurants approchent le plafond.</p><ul class="liste-semaines">' . $li . '</ul>');
+    // Restaurants et distance
+    $km = volumes_reglage('volumes_km');
+    $r = '';
+    foreach (volumes_restaurants() as $cl) {
+        $loin = $km !== null && $cl['km'] !== null && $cl['km'] > $km;
+        $r .= '<li class="ligne-restaurant' . ($loin ? ' loin' : '') . '"><a href="' . h(u('client', ['id' => (int)$cl['id']])) . '" translate="no">' . h(hygiene_restaurant($cl)) . '</a>'
+            . ($cl['ville'] !== '' ? ' <span class="petit" translate="no">' . h($cl['ville']) . '</span>' : '')
+            . formulaire('km', '<input type="hidden" name="vue" value="volumes"><input type="hidden" name="client" value="' . (int)$cl['id'] . '">'
+                . champ('km', 'Distance (km)', $cl['km'] !== null ? str_replace('.', ',', rtrim(rtrim(number_format((float)$cl['km'], 1, '.', ''), '0'), '.')) : '', ['inputmode' => 'decimal', 'id' => 'f-km-' . (int)$cl['id'], 'size' => '5'])
+                . bouton('Enregistrer', 'secondaire'), ['class' => 'form-km'], u('obligations'))
+            . ($loin ? '<span class="etiq etiq-alerte">Plus loin que ' . h(str_replace('.', ',', (string)$km)) . ' km</span>' : ($cl['km'] === null ? '<span class="etiq etiq-change">Distance à saisir</span>' : '')) . '</li>';
+    }
+    $c .= bloc('Restaurants livrés', '<p class="aide">Les clients professionnels actifs. La dérogation limite la distance de livraison ; tapez la distance depuis la cuisine (un itinéraire Google Maps suffit). Un restaurant qui arrête passe « inactif » dans sa fiche et sort de cette liste.</p>'
+        . ($r !== '' ? '<ul class="liste-restaurants">' . $r . '</ul>' : '<p class="vide">Aucun client professionnel actif.</p>'), '', 'restaurants');
+    // Poids d'une pièce
+    $P = volumes_poids_tous(); $p = ''; $n = 0;
+    foreach (variantes_toutes() as $v => $d) {
+        [$pid, $code] = array_pad(explode('|', $v, 2), 2, '');
+        $g = $P[$v] ?? null; $prop = $g === null ? volumes_poids_recette($pid, $code) : null;
+        if ($g === null) $n++;
+        $p .= '<li class="ligne-poids' . ($g === null ? ' a-faire' : '') . (isset($sans[$v]) ? ' vendu' : '') . '"><span><b translate="no">' . h($d['nom']) . '</b>' . (($d['libelle'] ?? '') !== '' ? ' <span class="petit" translate="no">' . h($d['libelle']) . '</span>' : '') . '</span>'
+            . formulaire('poids', '<input type="hidden" name="vue" value="volumes"><input type="hidden" name="produit" value="' . h($pid) . '"><input type="hidden" name="variante" value="' . h($code) . '">'
+                . champ('grammes', 'Poids d\'une pièce (g)', $g !== null ? (string)$g : '', ['inputmode' => 'numeric', 'id' => 'f-g-' . preg_replace('/[^a-z0-9]+/i', '-', $v), 'size' => '6'] + ($prop !== null ? ['placeholder' => (string)$prop] : []),
+                    $g === null ? ($prop !== null ? h('Proposé d\'après la recette : ' . $prop . ' g. Pesez une pièce finie si possible.') : 'Pas de recette pesée : pesez une pièce finie.') : '')
+                . bouton($g === null ? 'Confirmer' : 'Enregistrer', $g === null ? 'principal' : 'secondaire'), ['class' => 'form-poids'], u('obligations')) . '</li>';
+    }
+    $c .= '<details class="replie bloc" id="poids"><summary><b>Poids d\'une pièce</b>' . ($n ? ' <span class="etiq etiq-change">' . h($n . ' à saisir') . '</span>' : '') . '</summary>'
+        . '<p class="aide">Les kilos se calculent avec ce poids, jamais avec un poids deviné. La recette propose un poids (la somme de ses ingrédients en grammes) : pesez de préférence une pièce finie, puis touchez « Confirmer ».</p>'
+        . '<ul class="liste-poids">' . $p . '</ul></details>';
+    // Plafonds
+    $f = '<input type="hidden" name="vue" value="volumes">';
+    foreach (['volumes_kg' => 'Plafond par semaine (kg)', 'volumes_kg_reduit' => 'Plafond si la part des restaurants dépasse la limite (kg)', 'volumes_part' => 'Limite de la part des restaurants (%)', 'volumes_km' => 'Distance maximale (km)', 'volumes_alerte' => 'Alerte à partir de (% du plafond)'] as $k => $l) {
+        $x = parametre($k, '');
+        $f .= champ($k, h($l), str_replace('.', ',', (string)$x), ['inputmode' => 'decimal', 'id' => 'f-' . $k]);
+    }
+    $f .= case_a_cocher('confirme', 'Ces chiffres sont confirmés par la DDPP', $conf !== '') . bouton(icone('valider') . 'Enregistrer', 'principal');
+    $c .= '<details class="replie bloc" id="plafonds"><summary><b>Plafonds de la dérogation</b>' . ($conf === '' ? ' <span class="etiq etiq-change">À confirmer</span>' : '') . '</summary>'
+        . '<p class="aide">Préremplis avec les chiffres de la réglementation (arrêté du 8 juin 2006), à faire confirmer par la DDPP des Hauts-de-Seine : la gestion ne les tient jamais pour sûrs.</p>'
+        . ($conf !== '' ? '<p class="petit">' . h('Confirmés le ' . date_fr(substr($conf, 0, 10), 'longue')) . '</p>' : '')
+        . formulaire('plafonds', $f, ['class' => 'form-releve'], u('obligations')) . '</details>';
+    return $c;
+}
+
+/* ---------- Lot 4 : Documents de preuve (US6) ---------- */
+const DOCUMENTS_ETATS = ['manquant' => ['Lien à ajouter', 'etiq-change'], 'propose' => ['Lien proposé, à vérifier', 'etiq-change'], 'expire' => ['Expiré', 'etiq-alerte'], 'bientot' => ['À renouveler bientôt', 'etiq-change'], 'ok' => ['Prêt', 'etiq-outil']];
+function vue_documents(): string {
+    $li = ''; $ret = '';
+    foreach (documents(true) as $d) {
+        $retire = $d['retire_le'] !== '';
+        [$etat, $cl] = DOCUMENTS_ETATS[document_etat($d)];
+        $tn = $d['attendu'] !== '' ? '' : ' translate="no"';
+        $form = '<input type="hidden" name="vue" value="documents"><input type="hidden" name="id" value="' . (int)$d['id'] . '">'
+            . ($d['attendu'] === '' ? champ('titre', 'Titre', $d['titre'], ['required' => true, 'maxlength' => '150', 'id' => 'f-titre-' . (int)$d['id'], 'translate' => 'no']) : '')
+            . champ('lien', 'Lien dans le Drive', $d['lien'], ['type' => 'url', 'inputmode' => 'url', 'placeholder' => 'https://drive.google.com/…', 'id' => 'f-lien-' . (int)$d['id']])
+            . champ('valide_jusqua', 'Valable jusqu\'au (facultatif)', $d['valide_jusqua'], ['type' => 'date', 'id' => 'f-val-' . (int)$d['id']])
+            . zone('note', 'Note (facultatif)', $d['note'], ['rows' => '2', 'maxlength' => '500', 'id' => 'f-note-' . (int)$d['id'], 'translate' => 'no'])
+            . bouton(icone('valider') . 'Enregistrer', 'principal');
+        $item = '<li class="carte-document" id="doc-' . (int)$d['id'] . '"><span class="doc-tete"><b' . $tn . '>' . h(document_titre($d)) . '</b>' . ($retire ? '<span class="chip-par">Retiré</span>' : '<span class="etiq ' . $cl . '">' . h($etat) . '</span>') . '</span>'
+            . ($d['valide_jusqua'] !== '' ? '<span class="petit">' . h('Valable jusqu\'au ' . date_fr($d['valide_jusqua'], 'longue')) . '</span>' : '')
+            . ($d['note'] !== '' ? '<span class="petit" translate="no">' . h($d['note']) . '</span>' : '')
+            . ($d['lien'] !== '' ? '<span class="doc-actions">' . lien_bouton($d['lien'], icone('suivant') . 'Ouvrir', 'secondaire', ['target' => '_blank', 'rel' => 'noopener noreferrer'])
+                . (!$retire && $d['propose_par'] !== '' ? formulaire('document_confirmer', '<input type="hidden" name="vue" value="documents"><input type="hidden" name="id" value="' . (int)$d['id'] . '">' . bouton(icone('valider') . 'C\'est le bon document', 'principal'), [], u('obligations')) : '') . '</span>' : '')
+            . (!$retire && $d['propose_par'] !== '' ? '<span class="petit">Ouvrez-le pour vérifier ; si ce n\'est pas le bon, touchez « Modifier » et collez le bon lien.</span>' : '')
+            . '<details class="replie"><summary>Modifier</summary>' . formulaire('document', $form, ['class' => 'form-releve'], u('obligations'))
+            . formulaire('document_retirer', '<input type="hidden" name="vue" value="documents"><input type="hidden" name="id" value="' . (int)$d['id'] . '">' . bouton($retire ? 'Remettre dans la liste' : 'Retirer de la liste', 'discret'), $retire ? [] : ['data-confirmer' => 'Retirer ce document de la liste ? Il restera dans « Retirés ».'], u('obligations'))
+            . '</details></li>';
+        if ($retire) $ret .= $item; else $li .= $item;
+    }
+    $c = bloc('Documents de preuve', '<p class="aide">Les pièces à montrer lors d\'un contrôle, rangées dans le Drive ; la gestion garde seulement le lien, jamais de copie. Une pièce sans lien est « à ajouter ». Avec une date de validité, la gestion prévient 30 jours avant dans « À faire ».</p>'
+        . ($li !== '' ? '<ul class="liste-documents">' . $li . '</ul>' : '<p class="vide">Aucun document.</p>'));
+    $c .= '<details class="replie bloc"><summary><b>' . icone('ajouter') . 'Ajouter un document</b></summary>' . formulaire('document', '<input type="hidden" name="vue" value="documents">'
+        . champ('titre', 'Titre', '', ['required' => true, 'maxlength' => '150', 'id' => 'f-titre-nouveau'])
+        . champ('lien', 'Lien dans le Drive', '', ['type' => 'url', 'inputmode' => 'url', 'placeholder' => 'https://drive.google.com/…', 'id' => 'f-lien-nouveau'])
+        . champ('valide_jusqua', 'Valable jusqu\'au (facultatif)', '', ['type' => 'date', 'id' => 'f-val-nouveau'])
+        . zone('note', 'Note (facultatif)', '', ['rows' => '2', 'maxlength' => '500', 'id' => 'f-note-nouveau'])
+        . bouton(icone('ajouter') . 'Ajouter', 'principal'), ['class' => 'form-releve'], u('obligations')) . '</details>';
+    if (est_admin()) $c .= '<details class="replie bloc"><summary><b>Proposer des liens (Olivier)</b></summary><p class="aide">Une ligne par pièce : le code, le lien du Drive, une note facultative, séparés par une barre verticale. Un lien vérifié par Youngmi n\'est jamais remplacé.</p>'
+        . formulaire('documents_proposer', '<input type="hidden" name="vue" value="documents">' . zone('liens', 'Liens', '', ['rows' => '6', 'id' => 'f-liens-proposes', 'translate' => 'no']) . '<p class="petit" translate="no">' . h(implode(' · ', array_keys(DOCUMENTS_ATTENDUS))) . '</p>' . bouton('Proposer', 'secondaire'), ['class' => 'form-releve'], u('obligations')) . '</details>';
+    if ($ret !== '') $c .= '<details class="replie bloc"><summary><b>Retirés</b></summary><ul class="liste-documents">' . $ret . '</ul></details>';
+    return $c;
 }

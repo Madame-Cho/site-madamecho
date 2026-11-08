@@ -606,3 +606,11 @@
   if (isNaN(n) || !("setAppBadge" in navigator)) return;
   try { (n > 0 ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(function () {}); } catch (e) {}
 })();
+
+// Sous-onglets plus larges que l'écran : l'onglet ouvert reste visible (Obligations, lot 4)
+(function () {
+  document.querySelectorAll(".sous-onglets").forEach(function (n) {
+    var a = n.querySelector("a[aria-current]");
+    if (a && n.scrollWidth > n.clientWidth) n.scrollLeft += a.getBoundingClientRect().left - n.getBoundingClientRect().left - (n.clientWidth - a.offsetWidth) / 2;
+  });
+})();

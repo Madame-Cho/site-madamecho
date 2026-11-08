@@ -91,3 +91,11 @@ produit_id, jours (durée de conservation fixée par Youngmi), maj_le, maj_par.
 ## Table `hygiene_problemes`
 
 `id`, `fournee_id`, `numero_lot`, `ouvert_le`, `ouvert_par`, `description`, `etapes` (JSON : retirer, clients, ddpp, rappelconso, chacune le / par / note), `demarche_id`, `clos_le`, `clos_par`, `bilan`. Jamais supprimée ; pas de purge automatique pour l'instant (durée à trancher à l'audit unique).
+
+## Lot 4
+
+- `volumes_poids` (produit_id, variante, grammes, maj_le, maj_par) : poids d'une pièce confirmé.
+- `volumes_restaurants` (client_id, km, maj_le, maj_par) : distance depuis la cuisine.
+- `documents` (id, attendu, titre, lien, valide_jusqua, note, cree_le/par, maj_le/par, retire_le/par, propose_par) : jamais supprimé, « retiré » ; propose_par non vide = lien proposé par Olivier, à vérifier par Youngmi.
+- Paramètres : volumes_kg, volumes_kg_reduit, volumes_part, volumes_km, volumes_alerte, volumes_confirme, volumes_prepare.
+- Démarches : déclencheurs `volumes:<lundi>` (ref_genre volumes) et `document:<id>:<date>` (ref_genre document).

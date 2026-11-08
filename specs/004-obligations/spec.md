@@ -70,6 +70,12 @@ les adresses des restaurants et les relevés vivent dans la base de la gestion s
 - Q : La liste des ingrédients sur l'étiquette ? → R : Oui, proposée depuis la recette (par poids décroissant), allergènes en gras ; Youngmi la relit et la valide avant la première étiquette (« J'ai relu ce texte ») ; sans fiche validée, allergènes connus, texte relu, conservation et adresse de l'exploitant, aucune étiquette (la gestion dit ce qui manque, n'invente rien).
 - « Problème sur ce lot » : périmètre (restaurants, commandes de particuliers du gâteau entre la fournée et la date limite, réceptions utilisées), 4 étapes cochées avec note, brouillon DDPP sans nom de particulier, copié et envoyé par Youngmi (R-01) ; démarche importante dans Obligations jusqu'à la clôture, bilan exigé s'il reste des étapes. Rien ne s'efface.
 
+### Session 2026-11-08, lot 4 (Olivier : « Lot 4 », 21:36 ; cartes, heure de Paris)
+
+- Q : Documents : la liste des pièces attendues ? → R : Oui : 9 pièces préremplies (récépissés 13984 et 13982, 2 CAP, assurance, extincteur, électricité, PMS, registre RGPD), « Lien à ajouter » tant que le lien Drive manque ; titres figés traduits ; ajout libre ; « retirer » sans jamais effacer. Olivier (21:50) : proposer les liens retrouvés dans le Drive, que Youngmi vérifie (« C'est le bon document ») ou change ; collés une fois par Olivier (Documents › Proposer des liens), jamais dans le dépôt public ; rangement vérifié (01/09, 08-Assurances, 20/01 : rien à déplacer).
+- Q : Plafonds de la dérogation en attendant la DDPP ? → R : (carte d'Olivier 21:50) préremplis 250 kg/semaine, 100 kg si la part des restaurants dépasse 30 %, 80 km, marqués « à confirmer » jusqu'à la case « confirmés par la DDPP ».
+- Kilos = poids d'une pièce confirmé par Youngmi (proposé depuis la recette), jamais deviné ; sans poids, « kilos incomplets » et part calculée en montant. Semaine en cours et suivante : commandes confirmées comptées (« Prévu »). Alerte « Volumes de la dérogation : plafond proche (80 %) ou dépassé » dans À faire (importante si dépassé), une par semaine ; document à renouveler 30 jours avant sa date de validité.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Voir d'un coup d'œil ce qui reste à faire (Priority: P1)
