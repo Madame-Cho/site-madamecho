@@ -94,6 +94,7 @@ def pied(prof):
  </address>
  {bouton_insta("insta-pied")}
  <nav class="liens-pied" aria-label="Informations légales">
+  <a href="{lien('questions/', prof)}">Questions fréquentes</a>
   <a href="{lien('mentions-legales/', prof)}">Mentions légales</a>
   <a href="{lien('conditions-de-commande/', prof)}">Conditions de commande</a>
   <a href="{lien('confidentialite/', prof)}">Confidentialité</a>
@@ -398,6 +399,18 @@ def legale(slug, titre, desc, sections, maj="3 novembre 2026"):
  <p class="petit">Mise à jour : {maj}.</p></div></section>'''
     return page(f"{slug}/index.html", f"{titre} · Madame Cho", desc, corps, prof)
 
+# ---------- Questions fréquentes (08/11/2026) : réponses courtes que les moteurs et les assistants IA peuvent citer ----------
+def questions():
+    prof = 1
+    items = "".join(f'<h2 class="sous-titre">{E(q)}</h2><p>{E(r)}</p>' for q, r in FAQ)
+    corps = f'''<section class="bloc premier" aria-labelledby="t-faq"><div class="etroit texte-long">
+ <h1 class="titre" id="t-faq">Questions fréquentes</h1>{items}
+ <p>Une autre question ? <a href="tel:{TEL_LIEN}">{TEL}</a> · <a href="mailto:{EMAIL}">{EMAIL}</a>, ou <a href="{lien('ma-demande/', prof)}">votre demande en ligne</a>.</p></div></section>'''
+    ld = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": r}} for q, r in FAQ]}
+    return page("questions/index.html", "Questions fréquentes · Madame Cho, pâtisserie à Meudon",
+                "Commander, délais, retrait à Meudon, tailles, plaque en chocolat, paiement : les réponses de Madame Cho.", corps, prof, jsonld=ld)
+
 # ---------- Retrait à Meudon (référencement local, 07/11/2026) ----------
 # Une seule page pour les villes voisines, jamais une page par ville au texte recopié (Google y voit du spam)
 def retrait():
@@ -639,6 +652,7 @@ for p in PRODUITS:
     ecrire(f"carte/{p['id']}/index.html", fiche(p))
 ecrire("ma-demande/index.html", demande())
 ecrire("retrait/index.html", retrait())
+ecrire("questions/index.html", questions())
 if not APERCU:
     ecrire("404.html", introuvable())
     ecrire(".htaccess", htaccess())
@@ -687,7 +701,7 @@ for f in ("favicon.ico", "favicon.svg", "apple-touch-icon.png", "icone-192.png",
 shutil.copy(os.path.join(ICI, "favicon", "favicon.ico"), os.path.join(OUT, "favicon.ico"))
 if EN_LIGNE:
     # Plan du site : les pages à trouver dans les résultats (Ma demande et la 404 n'y sont pas)
-    urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in PRODUITS] + ["retrait/", "conditions-de-commande/", "mentions-legales/", "confidentialite/"]
+    urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in PRODUITS] + ["retrait/", "questions/", "conditions-de-commande/", "mentions-legales/", "confidentialite/"]
     ecrire("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
            "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{MAJ}</lastmod></url>\n" for u in urls) + "</urlset>\n")
     # Tout est permis aux robots : les pages à ne pas indexer (Ma demande, 404) portent leur « noindex » (il faut pouvoir le lire)
@@ -719,7 +733,7 @@ if EN_LIGNE:
     for p in PRODUITS:
         lignes.append(f"- [{p['nom']}]({SITE}carte/{p['id']}/) : {p['court']} {p.get('carte_pour', '')}, {p.get('carte_prix', '')}. Allergènes : {p['allergenes']}".replace(" , ", " ").replace(", .", "."))
     lignes += ["", f"## Professionnels", "", PROS, "", "## Pages", "",
-               f"- [Accueil]({SITE})", f"- [La carte et les prix]({SITE}carte/)", f"- [Retrait à Meudon]({SITE}retrait/)",
+               f"- [Accueil]({SITE})", f"- [La carte et les prix]({SITE}carte/)", f"- [Retrait à Meudon]({SITE}retrait/)", f"- [Questions fréquentes]({SITE}questions/)",
                f"- [Conditions de commande]({SITE}conditions-de-commande/)", f"- [Mentions légales]({SITE}mentions-legales/)", ""]
     ecrire("llms.txt", "\n".join(lignes))
 print("ok", OUT, "aperçu" if APERCU else "production")

@@ -31,5 +31,6 @@ Madame Cho prépare chaque semaine les desserts de restaurants et de cafés pari
 - [Accueil](https://madamecho.com/)
 - [La carte et les prix](https://madamecho.com/carte/)
 - [Retrait à Meudon](https://madamecho.com/retrait/)
+- [Questions fréquentes](https://madamecho.com/questions/)
 - [Conditions de commande](https://madamecho.com/conditions-de-commande/)
 - [Mentions légales](https://madamecho.com/mentions-legales/)

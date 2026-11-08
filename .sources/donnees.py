@@ -135,6 +135,28 @@ INSTAGRAM = "https://www.instagram.com/madamecho.fr/"
 # (plan « Madame Cho recommandée par les IA », 08/11/2026). Adresse par l'identifiant de la fiche ; à vérifier par Olivier avant publication.
 FICHE_GOOGLE = "https://maps.google.com/?cid=15029990752430360950"
 
+# ---------- Questions fréquentes (plan « Madame Cho recommandée par les IA », 08/11/2026) ----------
+# Réponses reprises des textes déjà validés du site, sans nouvelle promesse. Les questions envoyées à Youngmi le 08/11
+# (sans gluten, Noël, dernière minute, plus de 12 personnes, mariages, touche coréenne) s'ajoutent ici quand elle a répondu.
+FAQ = [
+ ("Comment commander un gâteau chez Madame Cho ?",
+  "Choisissez vos gâteaux sur la carte et envoyez votre demande en ligne, sans engagement, ou appelez le 06 61 31 17 79. Madame Cho répond sous 24 heures avec une proposition écrite : le prix, le jour et l'heure du retrait. La commande est confirmée quand vous acceptez la proposition."),
+ ("Combien de temps à l'avance faut-il commander ?",
+  "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Le délai de chaque gâteau est indiqué sur sa page."),
+ ("Madame Cho livre-t-elle ?",
+  "Non. Chaque commande se retire sur rendez-vous au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h, à quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart. Pas de retrait le 24 décembre."),
+ ("Pour combien de personnes sont les gâteaux ?",
+  "Les entremets, la charlotte et la tarte se font de 4 à 10 personnes, à partir de 28 €. Les choux se commandent à partir de 10 pièces, les cookies et les petits gâteaux du goûter à partir de 6."),
+ ("Peut-on écrire un prénom ou un message sur le gâteau ?",
+  "Oui : prénom et message sur une plaque en chocolat, compris dans le prix des gâteaux à partager. Pour une personnalisation au-delà de la plaque, un acompte de 30 % est demandé."),
+ ("Y a-t-il un gâteau vegan ?",
+  "Oui, le petit cake vegan au praliné cacahuète, parmi les petits gâteaux du goûter. Les allergènes de chaque gâteau sont indiqués sur sa page."),
+ ("Comment payer ?",
+  "Au retrait, par carte bancaire, virement ou espèces. L'annulation est sans frais jusqu'à 24 heures avant le retrait."),
+ ("Madame Cho travaille-t-elle pour les entreprises et les restaurants ?",
+  "Oui. Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés. Pour une réunion, un séminaire ou une fête d'entreprise, elle compose une sélection sucrée, sur devis."),
+]
+
 # ---------- Référencement (passe SEO du 03/11/2026) ----------
 # Titres et descriptions pour les moteurs de recherche et le partage : tirés des textes validés, sans nouvelle promesse.
 # Une description reste sous 160 signes, pour ne pas être coupée dans les résultats.
