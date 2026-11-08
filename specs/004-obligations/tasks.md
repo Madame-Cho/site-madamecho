@@ -27,7 +27,7 @@ branche, pas publié. Rien n'est publié sans l'audit n° 7 et le feu vert d'Oli
 
 - [ ] T011 Paramètres › Reprise des démarches (CSV : démarches et règles), sans doublon, compte rendu
 - [ ] T012 [P] L'assistant lit les démarches ouvertes (lecture seule)
-- [ ] T013 Récap du lundi selon le choix d'Olivier (R4) ; si A : mail interne à contact@ seulement, signé DKIM, exception R-01 notée
+- [ ] T013 Récap du lundi (R4, choix A d'Olivier) : la tâche de nuit du lundi envoie un mail interne de site@ à contact@ seulement (titres et dates, aucune donnée de client), signé DKIM « site », une fois par semaine au plus ; exception R-01 à inscrire au rulebook
 - [ ] T014 [P] Coréen (`coreen.php`), manuel FR/KO (`manuel.php`), Quoi de neuf
 - [ ] T015 Régénérer ; essais unitaires et parcours ; captures FR/KO et téléphone
 - [ ] T016 Commande d'audit n° 7 pour le ChatGPT d'Olivier (P-26), passe 1 sur spec, plan et tâches ; passe 2 sur la version construite

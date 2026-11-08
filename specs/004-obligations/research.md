@@ -31,8 +31,9 @@ Ferdinand travaille dans la boîte d'Olivier et ne voit pas la base. Trois faço
 | B | Le miroir existant (`page_miroir`, POST avec clé) gagne un jeu « obligations » ; un script Google dans contact@ le copie dans une feuille du Drive que Ferdinand lit. | Aucun mail | Script et clé à installer par Olivier ; le miroir n'est pas encore branché |
 | C | Pas de lien : Ferdinand rappelle seulement « ouvrir Obligations ». | Rien à faire | Ne dit pas ce qui est en retard |
 
-Recommandation : A, mail interne vers contact@ seulement, jamais à un client, exception R-01 limitée à
-ce mail. Sans réponse, le lot 1 se construit sans le mail (tâche T013 en attente).
+Décision d'Olivier (carte du 2026-11-08, 19:25 heure de Paris) : A, mail interne de site@ vers contact@
+seulement, jamais à un client, signé DKIM « site », exception R-01 limitée à ce mail (à inscrire au
+rulebook à la publication, avec son accord).
 
 ## R5. Liste initiale (FR-003)
 
