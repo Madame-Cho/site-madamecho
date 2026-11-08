@@ -40,7 +40,8 @@ publication) ; tâche de nuit : `conservation.php` charge `reponses.php` (sans l
 - [X] T015 [P] Conservation : purge à 10 ans, jetons vidés à 12 mois, `factures` hors de l'effacement des clients
 - [X] T016 [P] Coréen (`coreen.php`) et manuel FR/KO (`manuel.php`), Quoi de neuf
 - [X] T017 Régénérer ; essais unitaires (50/50) et parcours (44/44) ; captures FR/KO et téléphone ; non-régression : rappel 30/30, pastilles 60/60 (« Tout voir (10) » : une nouveauté de plus), relevé 16/16, audit n° 2 15/15, C14
-- [ ] T018 Consigne d'audit pour le ChatGPT d'Olivier (P-26)
+- [X] T017a Relecture avant l'audit : nom de client ou plaque en coréen (le PDF aux polices standard les écrirait « ? ») : « Nom sur la facture » en lettres latines ou « Client particulier », adresse et produits contrôlés avant le numéro, « plaque personnalisée » ; « RCS » plus doublé. Essais 57/57, parcours 44/44, nom coréen 6/6
+- [X] T018 Audit n° 6 préparé pour le ChatGPT d'Olivier (P-26) : commande et rapport vide en 92/02/02, consigne en 92/04/03 (08/11)
 - [ ] T019 Réponses de Florent : `/speckit-clarify` (FR-003, FR-012, FR-013), ajustements
 - [ ] T020 Registre des traitements T2 et Confidentialité (si Olivier le valide), mail d'information FR/KO à Youngmi (brouillon)
 - [ ] T021 Feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
