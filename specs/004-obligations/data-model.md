@@ -62,3 +62,24 @@ commence, que la précédente soit close ou non.
   en retard ou dans leur préavis. Les « en attente d'une réponse » ne comptent pas : elles restent
   visibles dans leur rubrique, sans faire monter le chiffre.
 - Ambre : historique postérieur au « vu » de la personne (`vus`, genre `demarche`), fait par l'autre.
+
+
+# Lot 2 : relevés d'hygiène (repère `schema_hygiene` = 1)
+
+## Table `hygiene_appareils`
+id, nom, genre (`frigo`, `congelateur`, `vitrine`, `caisson`), tmin et tmax (REAL, NULL = sans borne), a_confirmer
+(1 tant que Youngmi n'a pas validé la plage préremplie), actif, cree_le/par, modifie_le/par. Un caisson n'attend pas de relevé du matin.
+
+## Table `hygiene_releves`
+Un relevé par ligne, genre `froid`, `reception`, `fournee`, `livraison` ou `sans_production` ; jour (AAAA-MM-JJ), le (heure
+réelle), par et par_id. Froid : appareil_id, temperature, tmin/tmax recopiés, hors_plage, action (obligatoire hors plage).
+Réception : fournisseur, produit, lot, dlc, photo, temperature facultative. Fournée : produit_id, produit, quantite,
+numero_lot (AAMMJJ-GATEAU-n), dlc. Livraison : client_id, commande_id, depart_le, arrivee_le (une seule fois), temp_depart.
+Corrections : la nouvelle ligne porte `remplace_id` et `motif` ; l'ancienne `remplace_par` (0 : « pas de production » annulé).
+Jamais supprimée par une personne ; effacée par la tâche de nuit après la durée choisie (5 ans), avec sa photo.
+
+## Table `hygiene_liens`
+(de, vers) : une fournée vers les réceptions utilisées, une livraison vers les fournées livrées. Une correction reprend les liens.
+
+## Table `hygiene_durees`
+produit_id, jours (durée de conservation fixée par Youngmi), maj_le, maj_par.

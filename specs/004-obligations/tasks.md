@@ -37,3 +37,19 @@ branche, pas publié. Rien n'est publié sans l'audit n° 7 et le feu vert d'Oli
 - [x] T022 ~~Passe 4 de l'audit n° 7 sur la version corrigée~~ : annulée, Olivier a arrêté les audits le 08/11 à 20:43
 - [ ] T017 Liste initiale vérifiée dans le Drive et la Mémoire (CM2C, AXA T-01, impots.gouv T-02, Workspace, DDPP, extincteur, électricité, calendrier 20/02, registre RGPD, factures dues…), CSV dans les fichiers du projet, jamais dans le dépôt
 - [ ] T018 Feu vert d'Olivier sur la version exacte ; fetch et rebase sur main ; publication ; Journal des publications, Registre (FAIT : 24bda5e publiée le 08/11 à 20:44) ; reste : reprise par Olivier, fichier supprimé
+
+
+## Lot 2 : Hygiène au quotidien (US2), « Go lot 2 » d'Olivier du 2026-11-08
+
+- [X] T023 [US2] Tables et repère `schema_hygiene` ; appareils préremplis aux seuils réglementaires, « à confirmer » (carte d'Olivier)
+- [X] T024 [US2] Froid : relevé par appareil, hors plage → action obligatoire (page et serveur) ; 1 relevé par jour (carte d'Olivier)
+- [X] T025 [US2] Réceptions : produit, lot, date limite ou photo d'étiquette (réduite, gardée hors du site, servie après contrôle)
+- [X] T026 [US2] Fournées : numéro de lot, date limite reprise de la durée fixée par Youngmi, réceptions utilisées
+- [X] T027 [US2] Livraisons : commande ou restaurant, lots livrés, départ et température, arrivée une seule fois
+- [X] T028 [US2] Corrections avec motif, versions visibles ; « pas de production » et son annulation
+- [X] T029 [US2] Relevé de froid manquant (démarche figée, une par jour), tâche de nuit ; conservation 5 ans avec les photos (carte d'Olivier)
+- [X] T030 [US2] Historique 30 jours, export CSV ; rappel sur Aujourd'hui ; Plus › Hygiène ; coréen, manuel, Quoi de neuf
+- [X] T031 Essais hors dépôt `tests-gestion/hygiene/` (parcours téléphone FR/KO, unitaires) et non-régression (Obligations, pastilles, rappel)
+- [ ] T032 Saisie hors ligne (cas limite), l'assistant lit les relevés : plus tard
+- [ ] T033 Audit unique des lots 1 à 4 (P-26) après le lot 4 (choix d'Olivier) ; registre des traitements (T8) ; pilote avec Youngmi
+- [ ] T034 Feu vert d'Olivier sur la version exacte ; fetch et rebase ; publication ; Journal des publications, Registre

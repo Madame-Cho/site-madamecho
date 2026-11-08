@@ -57,6 +57,13 @@ les adresses des restaurants et les relevés vivent dans la base de la gestion s
 - Référence facultative (genre + identifiant) pour relier plus tard une démarche à un relevé, un lot
   ou un document (lots 2 à 4).
 
+### Session 2026-11-08, lot 2 (Olivier : « Go lot 2 et on fera un seul audit à la fin de tous les lots », 20:51 ; cartes 21:00, heure de Paris)
+
+- Q : Préremplir les plages des frigos ? → R : Oui, avec les seuils de l'arrêté du 21/12/2009 (frigo 0 à 3 °C, congélateur -18 °C ou moins), marqués « à confirmer par Youngmi » jusqu'à ce qu'elle les valide ou les change (FR-005 respecté : rien n'est tenu pour confirmé).
+- Q : Combien de temps garder les relevés et les photos ? → R : 5 ans (FR-012), modifiable dans Hygiène › Appareils › Réglages.
+- Q : Fréquence des relevés de froid ? → R : Une fois par appareil et par jour de production ; « deux » reste possible dans les réglages.
+- Audit : un seul audit (P-26) après le lot 4, pas d'audit par lot.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Voir d'un coup d'œil ce qui reste à faire (Priority: P1)

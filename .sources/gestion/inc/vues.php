@@ -61,6 +61,7 @@ function icone(string $n): string {
         'stop' => '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
         'valider' => '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
         // L'écran Obligations : une liste cochée sur un porte-documents (spécification 004)
+        'hygiene' => '<path d="M10 4a2 2 0 0 1 4 0v10.3a4 4 0 1 1-4 0z"/><path d="M12 10v7"/><path d="M16.5 6h2M16.5 9h2M16.5 12h2"/>',
         'obligations' => '<path d="M6 4h12v17H6z"/><path d="M9 4V2.5h6V4"/><path d="M8.5 10l1.5 1.5 3-3M8.5 16l1.5 1.5 3-3M15 10.5h1M15 16.5h1"/>',
         'supprimer' => '<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/>',
         default => '',
@@ -105,12 +106,12 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
         }
         // Sur ordinateur : les cinq pages du menu Plus en liens directs quand l'écran est large (≥ 1200 px),
         // un seul lien « Plus » sinon, pour que la barre reste sur une ligne
-        $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant', 'nouveautes', 'obligations'], true);
+        $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant', 'nouveautes', 'obligations', 'hygiene'], true);
         // Obligations (spécification 004) : un chiffre rouge pour ce qui est en retard ou dans son rappel, un point ambre si l'autre y a touché
         $nOb = function_exists(__NAMESPACE__ . '\\obligations_urgentes') ? obligations_urgentes() : 0;
         $ob = pastille_menu($nOb, $nOb === 0 && function_exists(__NAMESPACE__ . '\\obligations_changees') && (obligations_changees() || obligations_changees('echeance')) ? 'change' : '');
         $acces = function_exists(__NAMESPACE__ . '\\obligations_acces') && obligations_acces();
-        foreach (array_merge($acces ? [['obligations', 'Obligations', 'obligations']] : [], [['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Paramètres', 'reglages']]) as [$p, $l, $i]) {
+        foreach (array_merge($acces ? [['obligations', 'Obligations', 'obligations'], ['hygiene', 'Hygiène', 'hygiene']] : [], [['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Paramètres', 'reglages']]) as [$p, $l, $i]) {
             $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . icone($i) . h($l) . ($p === 'manuel' ? $outil : ($p === 'obligations' ? $ob : '')) . '</a>';
         }
         $plusMarque = $nOb > 0 ? pastille_menu($nOb) : ($outil !== '' ? $outil : $ob);
@@ -175,7 +176,8 @@ const ICONES_PAGES = ['accueil' => 'jour', 'agenda' => 'mois', 'commandes' => 'c
     'clients' => 'clients', 'client' => 'clients', 'client-edition' => 'clients', 'releve' => 'imprimer', 'produits' => 'produits', 'produit' => 'produits',
     'ingredients' => 'produits', 'ingredient' => 'produits', 'statistiques' => 'stats', 'taxe' => 'stats', 'production' => 'imprimer', 'plus' => 'plus',
     'rapprochement' => 'paiement', 'corbeille' => 'supprimer', 'manuel' => 'livre', 'aide' => 'livre', 'assistant' => 'ia', 'olivier' => 'ia', 'reglages' => 'reglages', 'nouveautes' => 'cloche',
-    'obligations' => 'obligations', 'demarche' => 'obligations', 'echeance' => 'obligations'];
+    'obligations' => 'obligations', 'demarche' => 'obligations', 'echeance' => 'obligations',
+    'hygiene' => 'hygiene', 'hygiene-fiche' => 'hygiene', 'hygiene-appareil' => 'hygiene'];
 function titre_page(string $titre, string $sous = '', string $actions = '', string $retour = ''): string {
     $r = $retour !== '' ? '<a class="retour" href="' . h($retour) . '">' . icone('retour') . '<span>Retour</span></a>' : '';
     // Chaque titre de page porte l'icône de sa rubrique, la même que dans le menu (retour d'Olivier, 07/11/2026)

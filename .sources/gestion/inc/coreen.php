@@ -1389,6 +1389,169 @@ Gestion : la fiche du client (lien ci-dessus). mesdemarches.agriculture.gouv.fr 
 Vendre à un professionnel peut créer de nouvelles obligations ; ce n'est pas toujours le cas. Avant de confirmer ou de livrer, vérifiez : 1) ce qu'il fait des gâteaux : un restaurant ou un commerce qui les sert ou les revend (la dérogation à l'agrément, Cerfa 13982, doit peut-être le compter parmi les destinataires), ou une entreprise qui les offre ou les sert à ses équipes (à vérifier aussi) ; 2) les produits, les quantités par semaine et la distance de livraison ; 3) la déclaration d'activité et la dérogation déjà faites auprès de la DDPP ; 4) la facture professionnelle (mentions obligatoires). Si une démarche a été faite, collez le lien du récépissé et touchez « C'est fait ». S'il n'y a rien à faire, touchez « Sans objet » et écrivez la raison et sa source (DDPP, Ithea, page officielle). | 사업자에게 팔면 새 의무가 생길 수 있어요. 항상 그런 것은 아니에요. 확정하거나 배달하기 전에 확인하세요: 1) 케이크를 어떻게 쓰는지: 케이크를 내놓거나 다시 파는 레스토랑이나 가게(위생 승인 면제 Cerfa 13982에 받는 곳으로 넣어야 할 수 있어요), 또는 직원에게 주거나 내놓는 회사(이것도 확인); 2) 제품, 주당 수량, 배달 거리; 3) DDPP에 이미 한 활동 신고와 면제 신청; 4) 사업자 청구서(필수 기재 사항). 신청을 했으면 접수증 링크를 붙여 넣고 ‘완료’를 누르세요. 할 일이 없으면 ‘해당 없음’을 누르고 이유와 출처(DDPP, Ithea, 공식 페이지)를 적으세요.
 L'écran Obligations | 의무 화면
 Plus › Obligations : tout ce qu'il faut faire ou prouver pour être en règle, le plus urgent en haut, avec les échéances qui reviennent. | 더보기 › 의무: 규정을 지키기 위해 해야 하거나 증명할 모든 일, 가장 급한 일이 맨 위에, 되풀이되는 정기 일정과 함께 있어요.
+# Écran Hygiène (spécification 004, lot 2, 08/11/2026)
+Hygiène | 위생
+Froid, réceptions, fournées et livraisons du jour | 오늘의 냉장·입고·생산·배달
+Les relevés du jour : froid, réceptions, fournées et livraisons. Rien ne s'efface : une erreur se corrige. | 오늘의 기록: 냉장 온도, 입고, 생산, 배달. 아무것도 지워지지 않아요. 잘못 쓴 것은 고칠 수 있어요.
+L'écran Hygiène est réservé à Youngmi et à Olivier. | 위생 화면은 Youngmi와 Olivier만 볼 수 있어요.
+Plages à confirmer par Youngmi. | Youngmi가 확인할 온도 범위가 있어요.
+Les plages préremplies sont les seuils de la réglementation (pâtisserie à la crème : 3 °C au plus ; congelé : -18 °C ou moins). | 미리 넣어 둔 범위는 규정의 기준이에요 (크림 디저트: 최대 3 °C, 냉동: -18 °C 이하).
+Vérifier les appareils | 기기 확인하기
+Appareils | 기기
+Froid | 냉장·냉동
+Réceptions | 입고
+Fournées | 생산
+Fournée | 생산
+Réception | 입고
+Livraisons aux restaurants | 레스토랑 배달
+Réfrigérateur | 냉장고
+Congélateur | 냉동고
+Vitrine réfrigérée | 냉장 진열장
+Caisson isotherme | 보냉 상자
+Fait | 완료
+Au départ des livraisons | 배달 출발할 때
+Plage à saisir | 범위를 입력하세요
+Température lue (°C) | 읽은 온도 (°C)
+Noter | 기록
+Hors plage : qu'avez-vous fait ? | 범위 밖: 어떻게 했나요?
+Porte fermée, produits déplacés ou jetés, réglage du thermostat, réparateur appelé… | 문을 닫음, 제품을 옮기거나 버림, 온도 조절, 수리 기사 부름…
+Hors plage | 범위 밖
+Corrigé | 고침
+Aucun appareil : ajoutez vos frigos dans « Appareils ». | 기기가 없어요. ‘기기’에서 냉장고를 추가하세요.
+Un relevé par appareil et par jour de production, de préférence le matin. | 생산하는 날마다 기기당 한 번, 되도록 아침에 기록해요.
+Deux relevés par appareil et par jour de production : le matin et le soir. | 생산하는 날마다 기기당 두 번: 아침과 저녁.
+Aucune réception notée. | 기록된 입고가 없어요.
+Noter une réception | 입고 기록하기
+Pour les matières premières fragiles (crème, œufs, beurre, fruits) : le produit, le lot et la date limite, ou une photo de l'étiquette. | 상하기 쉬운 재료(크림, 달걀, 버터, 과일): 제품, 로트, 유통기한을 적거나 라벨 사진을 찍어요.
+Aucune fournée notée. | 기록된 생산이 없어요.
+Noter une fournée | 생산 기록하기
+Chaque fournée reçoit son numéro de lot (date et gâteau) et sa date limite, reprise de la durée de conservation que vous avez fixée. | 생산할 때마다 로트 번호(날짜와 케이크)와, 정해 둔 보관 기간으로 계산한 유통기한이 붙어요.
+Aucune livraison notée. | 기록된 배달이 없어요.
+Départ d'une livraison | 배달 출발
+Pas de production aujourd'hui | 오늘은 생산 없음
+Noter « pas de production aujourd'hui » ? Aucun relevé ne sera attendu. | ‘오늘은 생산 없음’으로 기록할까요? 오늘은 기록이 필요 없어요.
+Pas de production ce jour-là. | 이날은 생산이 없었어요.
+Aucun relevé n'est attendu. | 기록할 것이 없어요.
+Finalement, je produis | 생산하기로 했어요
+un jour passé ne se complète pas après coup ; un relevé faux se corrige depuis sa fiche. | 지난 날은 나중에 채우지 않아요. 잘못된 기록은 그 기록 화면에서 고쳐요.
+Étiquette en photo | 라벨 사진
+Photo de l'étiquette (facultatif) | 라벨 사진 (선택)
+Elle remplace le produit, le lot et la date si vous êtes pressée. | 바쁠 때는 제품, 로트, 날짜 대신 사진만 찍어도 돼요.
+Fournisseur (facultatif) | 공급업체 (선택)
+Lot | 로트
+Date limite | 유통기한
+Température à la réception (facultatif, °C) | 받을 때 온도 (선택, °C)
+Noter la réception | 입고 기록
+Choisir le gâteau | 케이크 선택
+Autre gâteau (sur mesure) | 다른 케이크 (주문 제작)
+Nom du gâteau (si « Autre ») | 케이크 이름 (‘다른 케이크’일 때)
+Quantité (facultatif) | 수량 (선택)
+ou durée (jours) | 또는 기간 (일)
+Retenir cette durée pour ce gâteau (la date limite se calculera seule) | 이 케이크의 기간으로 저장 (유통기한이 자동으로 계산돼요)
+Réceptions utilisées (facultatif) | 사용한 입고 (선택)
+Réceptions utilisées | 사용한 입고
+Noter la fournée | 생산 기록
+Sans commande | 주문 없음
+Commande (facultatif) | 주문 (선택)
+Une commande d'hier, d'aujourd'hui ou de demain ; elle choisit le restaurant. | 어제, 오늘, 내일의 주문이에요. 주문을 고르면 레스토랑이 정해져요.
+Choisir le restaurant | 레스토랑 선택
+ou le restaurant | 또는 레스토랑
+Lots livrés | 배달한 로트
+Notez d'abord la fournée pour relier ses lots à la livraison. | 로트를 배달과 연결하려면 먼저 생산을 기록하세요.
+Température au départ (facultatif, °C) | 출발 온도 (선택, °C)
+Celle du caisson isotherme ou de la boîte, au moment de partir. | 출발할 때 보냉 상자나 상자의 온도.
+Noter le départ | 출발 기록
+Arrivée | 도착
+Départ | 출발
+Les 30 derniers jours | 최근 30일
+Pas de production | 생산 없음
+Exporter pour un contrôle | 점검용 내보내기
+Au | 까지
+Télécharger (CSV) | 내려받기 (CSV)
+Rien n'est effacé pour l'instant : la durée de conservation n'est pas encore fixée. | 보관 기간이 아직 정해지지 않아서 지금은 아무것도 지우지 않아요.
+Appareils de froid | 냉장·냉동 기기
+Arrêté | 사용 중지
+Confirmer cette plage | 이 범위 확인
+Ajouter un appareil | 기기 추가
+En service | 사용 중
+La plage vient de vous : la gestion ne la devine pas. Un caisson isotherme sert aux livraisons ; il n'a pas de relevé du matin. | 온도 범위는 직접 정해요. 관리 화면은 짐작하지 않아요. 보냉 상자는 배달용이라 아침 기록이 없어요.
+Durées de conservation des gâteaux | 케이크 보관 기간
+En jours après la fournée. Vide : la date limite se tape à chaque fournée. 0 : à consommer le jour même. | 생산한 날부터 며칠인지 적어요. 비워 두면 생산할 때마다 유통기한을 입력해요. 0: 당일 소비.
+Jours | 일
+Réglages | 설정
+Relevés de froid par jour de production | 생산하는 날의 온도 기록 횟수
+Un (le matin) | 한 번 (아침)
+Deux (le matin et le soir) | 두 번 (아침과 저녁)
+Garder les relevés et les photos | 기록과 사진 보관 기간
+1 an | 1년
+2 ans | 2년
+3 ans | 3년
+5 ans | 5년
+10 ans | 10년
+Ne rien effacer | 지우지 않기
+Frigo de la cuisine | 주방 냉장고
+Minimum (°C, facultatif) | 최저 (°C, 선택)
+Maximum (°C) | 최고 (°C)
+Relevé | 기록
+Noté | 기록한 때
+Température | 온도
+Ce qui a été fait | 한 조치
+Numéro de lot | 로트 번호
+Livré à | 배달한 곳
+Utilisée dans | 사용한 곳
+Photo de l'étiquette | 라벨 사진
+Version corrigée. | 고친 기록이에요.
+Voir la dernière version | 마지막 기록 보기
+Annulé | 취소됨
+Corriger ce relevé | 이 기록 고치기
+Pourquoi cette correction ? | 왜 고치나요?
+Erreur de frappe, mauvais appareil… | 오타, 다른 기기…
+L'original reste visible avec l'heure et la personne ; rien n'est effacé. | 원래 기록은 시간과 사람과 함께 그대로 보여요. 아무것도 지워지지 않아요.
+Enregistrer la correction | 수정 저장
+Versions | 기록 변경
+Original | 원래 기록
+Correction | 수정
+Pas encore notée | 아직 기록 안 함
+Relevé introuvable. | 기록을 찾을 수 없어요.
+Relevé noté. | 기록했어요.
+Relevé noté, hors plage, avec ce que vous avez fait. | 범위 밖 온도와 조치를 기록했어요.
+Réception notée. | 입고를 기록했어요.
+Départ noté. Touchez « Arrivée » une fois sur place. | 출발을 기록했어요. 도착하면 ‘도착’을 누르세요.
+Arrivée notée. | 도착을 기록했어요.
+L'arrivée est déjà notée. | 도착은 이미 기록했어요.
+Livraison introuvable. | 배달을 찾을 수 없어요.
+C'est noté : pas de production aujourd'hui. | 기록했어요: 오늘은 생산 없음.
+C'est noté : il y a une production aujourd'hui. | 기록했어요: 오늘은 생산이 있어요.
+Une fournée ou une livraison est déjà notée aujourd'hui. | 오늘 생산이나 배달이 이미 기록되어 있어요.
+Correction notée : l'original reste visible. | 수정을 기록했어요. 원래 기록도 그대로 보여요.
+Appareil enregistré. | 기기를 저장했어요.
+Durée enregistrée. | 기간을 저장했어요.
+Durée retirée : la date limite se tapera à chaque fournée. | 기간을 지웠어요. 생산할 때마다 유통기한을 입력해요.
+Réglages enregistrés. | 설정을 저장했어요.
+Gâteau introuvable. | 케이크를 찾을 수 없어요.
+Une durée s'écrit en jours, de 0 à 365. | 기간은 0일에서 365일 사이로 적어요.
+Choisissez un appareil. | 기기를 고르세요.
+Tapez la température lue, en chiffres (par exemple 3 ou -18). | 읽은 온도를 숫자로 적어 주세요 (예: 3 또는 -18).
+Une température s'écrit en chiffres, par exemple 3 ou -18. | 온도는 숫자로 적어요 (예: 3 또는 -18).
+Saisissez au moins la température maximale. | 최고 온도는 꼭 적어 주세요.
+La température minimale doit être plus basse que la maximale. | 최저 온도는 최고 온도보다 낮아야 해요.
+Donnez un nom à l'appareil (par exemple : frigo de la cuisine). | 기기 이름을 적어 주세요 (예: 주방 냉장고).
+Notez le produit avec son lot ou sa date limite, ou prenez l'étiquette en photo. | 제품과 로트 또는 유통기한을 적거나, 라벨을 사진으로 찍어 주세요.
+Choisissez le gâteau. | 케이크를 고르세요.
+Indiquez la date limite de ce gâteau (ou sa durée de conservation en jours) : la gestion ne la devine jamais. | 이 케이크의 유통기한(또는 보관 일수)을 적어 주세요. 관리 화면은 절대 짐작하지 않아요.
+La date limite ne peut pas être avant le jour de la fournée. | 유통기한은 생산한 날보다 빠를 수 없어요.
+Choisissez le restaurant (ou la commande). | 레스토랑(또는 주문)을 고르세요.
+Dites pourquoi vous corrigez ce relevé. | 왜 고치는지 적어 주세요.
+Ce relevé a déjà été corrigé : ouvrez sa dernière version. | 이미 고친 기록이에요. 마지막 기록을 여세요.
+La photo n'a pas pu être envoyée (8 Mo au plus) : réessayez. | 사진을 보내지 못했어요 (최대 8 MB). 다시 해 보세요.
+Ce fichier n'est pas une photo (JPEG, PNG ou WebP). | 이 파일은 사진이 아니에요 (JPEG, PNG, WebP).
+La photo n'a pas pu être gardée : réessayez. | 사진을 저장하지 못했어요. 다시 해 보세요.
+Relevé de froid manquant | 빠진 온도 기록
+Jour concerné | 해당 날짜
+Gestion, Plus › Hygiène, au jour indiqué ci-dessous : touchez « C'est fait » en écrivant dans la note ce qui s'est passé (oubli, frigo vide, pas de production…). Un relevé ne se note jamais après coup. | 관리 화면, 더보기 › 위생, 아래 날짜: 무슨 일이 있었는지(잊음, 냉장고 비어 있음, 생산 없음…) 메모에 적고 ‘완료’를 누르세요. 온도 기록은 절대 나중에 적지 않아요.
+Relevés de froid du jour : faits | 오늘 온도 기록: 완료
+L'écran Hygiène | 위생 화면
+Plus › Hygiène : la température des frigos, les réceptions, les fournées avec leur numéro de lot et les livraisons aux restaurants, notées en quelques touches sur le téléphone. | 더보기 › 위생: 냉장고 온도, 입고, 로트 번호가 붙는 생산, 레스토랑 배달을 휴대폰에서 몇 번만 눌러 기록해요.
 TXT;
 }
 
@@ -1832,6 +1995,22 @@ function coreen_motifs(): array {
         ['/^Dernière reprise : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '최근 넣은 날: ' . $d : null],
         ['/^Reprise : (\d+) démarche\(s\) et (\d+) échéance\(s\) ajoutée\(s\), (\d+) doublon\(s\) écarté\(s\)(?:, lignes refusées : ([\d, ]+))?\.$/u',
          fn($m) => '넣기: 할 일 ' . $m[1] . '개, 정기 일정 ' . $m[2] . '개 추가, 중복 ' . $m[3] . '개 제외' . (isset($m[4]) ? ', 거절된 줄: ' . $m[4] : '') . '.'],
+        ['/^(\d+) sur (\d+)$/u', fn($m) => $m[2] . '번 중 ' . $m[1] . '번'],
+        ['/^Relevés de froid du jour : (\d+) sur (\d+)$/u', fn($m) => '오늘 온도 기록: ' . $m[2] . '번 중 ' . $m[1] . '번'],
+        ['/^(\d+) hors plage$/u', fn($m) => '범위 밖 ' . $m[1] . '번'],
+        ['/^(\d+) corrigé\(s\)$/u', fn($m) => '수정 ' . $m[1] . '개'],
+        ['/^(\d+) froid$/u', fn($m) => '온도 ' . $m[1] . '번'],
+        ['/^(\d+) réception\(s\)$/u', fn($m) => '입고 ' . $m[1] . '개'],
+        ['/^(\d+) fournée\(s\)$/u', fn($m) => '생산 ' . $m[1] . '개'],
+        ['/^(\d+) livraison\(s\)$/u', fn($m) => '배달 ' . $m[1] . '개'],
+        ['/^Date limite : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '유통기한: ' . $d : null],
+        ['/^(Départ|Arrivée) (\d{2}:\d{2})$/u', fn($m) => ($m[1] === 'Départ' ? '출발 ' : '도착 ') . $m[2]],
+        ['/^(-?[\d,]+ °C) à (-?[\d,]+ °C)$/u', fn($m) => $m[1] . ' ~ ' . $m[2]],
+        ['/^(-?[\d,]+ °C) ou (moins|plus)$/u', fn($m) => $m[1] . ($m[2] === 'moins' ? ' 이하' : ' 이상')],
+        ['/^Fournée notée : lot (.+)\.$/u', fn($m) => '생산을 기록했어요: 로트 ' . $m[1] . '.'],
+        ['/^Jour concerné : (.+)\.$/u', fn($m) => ($d = coreen_date($m[1])) ? '해당 날짜: ' . $d . '.' : null],
+        ['/^Les relevés et les photos sont gardés (\d+) ans, puis effacés par la tâche de nuit\.$/u', fn($m) => '기록과 사진은 ' . $m[1] . '년 동안 보관한 뒤 밤 작업이 지워요.'],
+        ['/^Température hors plage \((.+)\) : écrivez ce que vous avez fait \(porte fermée, produits déplacés ou jetés, réglage…\)\.$/u', fn($m) => '범위 밖 온도예요 (' . (coreen_motif($m[1]) ?? $m[1]) . '). 어떻게 했는지 적어 주세요 (문 닫음, 제품을 옮기거나 버림, 온도 조절…).'],
         ['/^Modifiée : (.+)$/u', fn($m) => '수정됨: ' . (['quoi' => '할 일', 'où' => '어디서', 'pourquoi' => '왜', 'pour qui' => '누구의 일', 'échéance' => '기한', 'date à confirmer' => '날짜 확인 필요', 'rappel' => '알림', 'priorité' => '우선순위', 'importante' => '중요', 'origine' => '어디서 온 일', 'état' => '상태'][$m[1]] ?? $m[1])],
     ];
     return $p;

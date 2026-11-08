@@ -84,3 +84,29 @@ index.php                  # routes obligations, demarche, demarche-edition
 - **Phase 2** : [tasks.md](./tasks.md).
 - **Audit** : commande d'audit n° 7 pour le ChatGPT d'Olivier (P-26) sur la spec, le plan et les tâches
   avant le code, puis une seconde passe sur la version construite avant la publication.
+
+
+---
+
+# Lot 2 : Hygiène au quotidien (US2), 2026-11-08
+
+**Input** : « Go lot 2 » d'Olivier (2026-11-08, 20:51) ; ses trois cartes de 21:00 (voir spec, Clarifications, lot 2).
+
+**Summary** : un écran Plus › Hygiène (위생), réservé comme Obligations à Youngmi et à Olivier, en trois rubriques :
+Aujourd'hui (froid, réceptions, fournées, livraisons, « pas de production »), Historique (30 jours, export CSV) et
+Appareils (frigos et plages, durées de conservation des gâteaux, réglages). Un rappel sur Aujourd'hui (accueil) dit où en
+sont les relevés de froid du jour. Un jour de production sans relevé complet crée le lendemain la démarche figée
+« Relevé de froid manquant » dans Obligations (tâche de nuit et ouverture). Corrections : nouvelle version, l'original reste.
+
+**Storage** : tables à part `hygiene_appareils`, `hygiene_releves`, `hygiene_liens`, `hygiene_durees`, repère
+`schema_hygiene` = 1 (même principe que R1 : le numéro de schéma ne bouge pas). Photos d'étiquettes dans le dossier des
+données (`hygiene-photos/`, hors du site), servies seulement par la gestion après contrôle d'accès ; type vérifié sur le contenu.
+
+**Hors lot 2** : saisie hors ligne (cas limite de la spec), reporté ; l'assistant ne lit pas encore les relevés ;
+étiquettes et « Problème sur ce lot » (lot 3) ; volumes et documents (lot 4).
+
+**Constitution Check (lot 2)** : I dépôt public (aucun relevé, nom ou photo dans le dépôt) OK ; II feu vert d'Olivier avant
+publication, audit unique après le lot 4 (choix d'Olivier) OK ; III les durées de conservation viennent de Youngmi OK ;
+IV données personnelles : le nom du restaurant (client professionnel) est relié par son identifiant, export réservé, registre
+des traitements à compléter (T8) ; V sobre, sans bibliothèque OK ; VI FR/KO, textes tapés jamais traduits OK ; VII essais
+hors dépôt `tests-gestion/hygiene/` OK ; VIII l'IA ne touche pas aux relevés OK.

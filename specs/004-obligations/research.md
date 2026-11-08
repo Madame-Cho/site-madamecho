@@ -124,3 +124,15 @@ pastilles, genre `demarche`).
   possible ») et ne dit jamais « rien à faire » sans réserve.
 - P3-09 : les gâteaux des commandes déjà reçues quand la première vérification est close ne redemandent rien.
 - P3-10 : « premier lundi » ne tombe jamais avant la date donnée (sinon le mois suivant).
+
+
+## R12. Lot 2 : choix de construction (2026-11-08)
+
+- Jour de production : une fournée ou une livraison notée, ou une commande confirmée ou remise dont le retrait ou la livraison
+  tombe ce jour-là ; « Pas de production aujourd'hui » l'écarte. Hypothèse simple, à revoir au pilote avec Youngmi : la démarche
+  « Relevé de froid manquant » se clôt avec une note, ou « Sans objet ».
+- Pas de rattrapage avant le premier usage (`hygiene_debut`) ; les 7 derniers jours au plus, une démarche par jour (déclencheur
+  `hygiene:froid:<jour>`). Titre, « où » et « Jour concerné : … » sont des textes figés : traduits et visibles dans le mail du lundi.
+- Photos : réduites à environ 1600 px par la page avant l'envoi (8 Mo au plus côté serveur), type lu dans le contenu, nom
+  aléatoire, dossier des données hors du site.
+- Un jour passé ne se complète pas après coup (traçabilité) ; il se corrige relevé par relevé.

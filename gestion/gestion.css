@@ -827,3 +827,30 @@ html:lang(ko) .par::after{content:" 님"}
 .historique-demarche{list-style:none;margin:0;padding:0}
 .historique-demarche li{padding:6px 0;border-bottom:1px solid var(--ligne)}
 .form-demarche .case{margin:6px 0}
+
+/* Hygiène (spécification 004, lot 2) */
+.bandeau-obligations.calme{background:var(--ivoire);color:inherit}
+.carte-appareil{border:1px solid var(--ligne);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:var(--carte)}
+.carte-appareil.fait{opacity:.85}
+.carte-appareil .l1{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px}
+.carte-appareil .l1 .petit{margin-left:auto}
+.form-froid .ligne-champs{align-items:flex-end}
+.form-froid .ligne-champs .btn{margin-bottom:2px}
+.liste-releves{list-style:none;margin:0 0 10px;padding:0}
+.liste-releves li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--ligne)}
+.liste-releves li:last-child{border-bottom:0}
+.liste-releves li>a{flex:1 1 200px;color:inherit;text-decoration:none}
+.liste-releves li.hors>a b{color:var(--p-action-t,#b3261e)}
+.liste-releves .form-arrivee{margin:0}
+.etiq-alerte{background:var(--p-action-f,#fde7e4);color:var(--p-action-t,#b3261e)}
+.form-releve fieldset.champ{border:0;padding:0;margin:0 0 12px}
+.form-releve fieldset .case{display:flex;margin:6px 0}
+.photo-releve{max-width:100%;max-height:420px;border-radius:10px;display:block}
+.ligne-duree{align-items:flex-end}
+.ligne-duree .nom-duree{flex:1 1 160px;padding-bottom:12px}
+.form-duree{margin:0}
+.pied-hygiene{margin:8px 0 24px}
+.rappel-hygiene{margin:0 0 14px}
+.rappel-hygiene a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--p-change-f);color:var(--p-change-t);text-decoration:none;font-weight:600}
+.rappel-hygiene.fait a{background:var(--ivoire);color:inherit;font-weight:400}
+.rappel-hygiene.hors a{background:var(--p-action-f,#fde7e4);color:var(--p-action-t,#b3261e)}

@@ -20,6 +20,12 @@ function page_accueil(): void {
          . '</div>';
     $c = titre_page('Aujourd\'hui', h(ucfirst(date_fr($auj, 'jour'))), lien_bouton(u('production'), icone('imprimer') . 'Fiche de production', 'discret'));
     $c .= bloc_depuis_visite();   // « Depuis votre dernière visite » (FR-041)
+    // Hygiène (spécification 004, lot 2) : les relevés de froid du jour, en un toucher
+    if (function_exists(__NAMESPACE__ . '\\hygiene_resume_jour') && obligations_acces() && ($hy = hygiene_resume_jour()) && ($hy['sans_production'] || $hy['attendus'] > 0)) {
+        $txt = $hy['sans_production'] ? 'Pas de production aujourd\'hui' : ($hy['notes'] >= $hy['attendus'] ? 'Relevés de froid du jour : faits' : 'Relevés de froid du jour : ' . $hy['notes'] . ' sur ' . $hy['attendus']);
+        $c .= '<p class="rappel-hygiene' . ($hy['hors'] ? ' hors' : ($hy['notes'] >= $hy['attendus'] || $hy['sans_production'] ? ' fait' : '')) . '"><a href="' . h(u('hygiene')) . '">' . icone('hygiene') . '<span>' . h($txt) . '</span>'
+            . ($hy['hors'] ? '<span class="etiq etiq-alerte">' . h($hy['hors'] . ' hors plage') . '</span>' : '') . '</a></p>';
+    }
     $c .= $kpi;
     // L'activité des 7 derniers jours : visites du site (Matomo) et commandes, chaque chiffre mène au détail (demande d'Olivier, 07/11/2026)
     $act = activite_commandes();

@@ -76,7 +76,7 @@ function page_obligations(): void {
 
 /** Un libellé figé de la gestion (vérification d'un client pro) se traduit ; un texte tapé par Youngmi ou Olivier jamais (P3-05). */
 function demarche_tn(string $texte): string {
-    return in_array($texte, obligations_textes_figes(), true) ? '' : ' translate="no"';
+    return obligations_texte_fige($texte) ? '' : ' translate="no"';
 }
 
 /** Une démarche dans une liste : l'état en toutes lettres et en couleur, le titre, pour qui, et « nouveau » ou « a changé » si l'autre y a touché. */
@@ -164,6 +164,7 @@ function page_demarche(): void {
            . definition([
                'Quoi' => '<span' . demarche_tn((string)$d['titre']) . '>' . nl2br(h($d['titre'])) . '</span>',
                'Client' => $d['ref_genre'] === 'client' && ($cl = client((int)$d['ref_id'])) ? '<a href="' . h(u('client', ['id' => (int)$cl['id']])) . '" translate="no">' . h(client_nom($cl)) . '</a>' : '',
+               'Jour concerné' => $d['ref_genre'] === 'hygiene' && date_valide((string)$d['ref_id']) ? '<a href="' . h(u('hygiene', ['vue' => 'jour', 'jour' => (string)$d['ref_id']])) . '">' . h(ucfirst(date_fr((string)$d['ref_id'], 'jour'))) . '</a>' : '',
                'Où le faire ?' => '<span' . demarche_tn((string)$d['ou']) . '>' . nl2br(h($d['ou'])) . '</span>',
                'Pourquoi' => $d['explication'] !== '' ? '<span' . demarche_tn((string)$d['explication']) . '>' . nl2br(h($d['explication'])) . '</span>' : '',
                'Pour qui' => h(DEMARCHE_POUR[$d['pour_qui']] ?? ''),

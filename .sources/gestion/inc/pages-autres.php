@@ -355,6 +355,7 @@ function page_plus(): void {
     if (function_exists(__NAMESPACE__ . '\\obligations_acces') && obligations_acces()) {
         $nOb = obligations_urgentes();
         $s .= '<a class="ligne-menu" href="' . h(u('obligations')) . '">' . icone('obligations') . '<span><b>Obligations' . pastille_menu($nOb, $nOb === 0 && (obligations_changees() || obligations_changees('echeance')) ? 'change' : '') . '</b><span class="petit">Démarches et échéances pour être en règle</span></span></a>';
+        if (function_exists(__NAMESPACE__ . '\\hygiene_pret') && hygiene_pret()) $s .= '<a class="ligne-menu" href="' . h(u('hygiene')) . '">' . icone('hygiene') . '<span><b>Hygiène</b><span class="petit">Froid, réceptions, fournées et livraisons du jour</span></span></a>';
     }
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';

@@ -10,6 +10,8 @@
 declare(strict_types=1);
 namespace MadameCho\Gestion;
 
+require_once __DIR__ . '/hygiene.php';   // lot 2 : relevés d'hygiène (relevé manquant = démarche)
+
 const OBLIGATIONS_JOURS = 30;              // préavis par défaut (choix d'Olivier ; chaque échéance a le sien, audit n° 7, constat 2)
 const OBLIGATIONS_CONSERVATION_ANS = 10;   // démarches closes effacées 10 ans après leur clôture (audit n° 7, constat 8)
 const OBLIGATIONS_RATTRAPAGE = 12;         // au plus 12 périodes rattrapées d'un coup pour une échéance
@@ -422,7 +424,12 @@ const OBLIGATIONS_PRO_POURQUOI = 'Vendre à un professionnel peut créer de nouv
 /** Les libellés écrits par la gestion elle-même, jamais modifiables : eux seuls vont dans le mail et se traduisent (P3-01, P3-05). */
 function obligations_textes_figes(): array {
     return [OBLIGATIONS_PRO_TITRE, OBLIGATIONS_PRO_TITRE_GATEAU, OBLIGATIONS_PRO_TITRE_MESURE, OBLIGATIONS_PRO_TITRE_LIVRAISON, OBLIGATIONS_PRO_OU, OBLIGATIONS_PRO_POURQUOI,
-            'Nouveau client professionnel', 'Nouveau gâteau pour un client professionnel', 'Gâteau sur mesure pour un client professionnel', 'Première livraison pour un client professionnel'];
+            'Nouveau client professionnel', 'Nouveau gâteau pour un client professionnel', 'Gâteau sur mesure pour un client professionnel', 'Première livraison pour un client professionnel',
+            HYGIENE_MANQUANT_TITRE, HYGIENE_MANQUANT_OU];
+}
+/** Un texte écrit par la gestion (traduit en coréen), jamais un texte tapé : les libellés figés et le jour d'un relevé manquant. */
+function obligations_texte_fige(string $t): bool {
+    return in_array($t, obligations_textes_figes(), true) || (bool)preg_match('/^Jour concerné : \d{1,2} \p{L}+ \d{4}\.$/u', $t);
 }
 
 /** La date pour vérifier : la veille du prochain retrait ou de la prochaine livraison de ce client, sinon dans 7 jours ; jamais avant aujourd'hui. */
@@ -500,6 +507,8 @@ function obligations_clients_pro(): int {
 function obligations_nuit(): array {
     if (!obligations_pret()) return [];
     $cr = ['crees' => obligations_generer()];
+    try { $cr['hygiene'] = hygiene_nuit(); }   // relevés manquants et conservation des relevés (lot 2)
+    catch (\Throwable $e) { error_log('madamecho gestion : hygiène : ' . $e->getMessage()); $cr['hygiene'] = ['erreur' => $e->getMessage()]; }
     // Conservation : les démarches closes depuis plus de 10 ans, et leur historique (FR-017)
     $limite = date('Y-m-d H:i:s', (int)strtotime('-' . OBLIGATIONS_CONSERVATION_ANS . ' years'));
     $vieilles = array_column(lignes("SELECT id FROM demarches WHERE etat IN ('fait', 'sans_objet') AND fait_le <> '' AND fait_le < ?", [$limite]), 'id');

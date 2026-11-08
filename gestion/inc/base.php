@@ -186,6 +186,7 @@ function db(): PDO {
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     obligations_schema($pdo);   // écran Obligations (spécification 004) : hors de la numérotation, pour ne pas gêner l'étape 11 des factures
+    hygiene_schema($pdo);       // relevés d'hygiène (spécification 004, lot 2), même principe : marqueur à part
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
     if ($v >= 10) return;
     if ($v < 1) $pdo->exec("
@@ -356,6 +357,26 @@ CREATE INDEX IF NOT EXISTS demarches_historique_d ON demarches_historique(demarc
 ");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '2')");
 }
+/** Les relevés d'hygiène (spécification 004, lot 2) : tables à part, marqueur schema_hygiene. */
+function hygiene_schema(PDO $pdo): void {
+    if ($pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_hygiene'")->fetchColumn() === '1') return;
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS hygiene_appareils (id INTEGER PRIMARY KEY, nom TEXT NOT NULL, genre TEXT NOT NULL DEFAULT 'frigo', tmin REAL, tmax REAL,
+  a_confirmer INTEGER NOT NULL DEFAULT 0, actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '',
+  modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS hygiene_releves (id INTEGER PRIMARY KEY, genre TEXT NOT NULL, jour TEXT NOT NULL, le TEXT NOT NULL, par TEXT NOT NULL DEFAULT '', par_id INTEGER,
+  appareil_id INTEGER, temperature REAL, tmin REAL, tmax REAL, hors_plage INTEGER NOT NULL DEFAULT 0, action TEXT NOT NULL DEFAULT '',
+  fournisseur TEXT NOT NULL DEFAULT '', produit TEXT NOT NULL DEFAULT '', lot TEXT NOT NULL DEFAULT '', dlc TEXT NOT NULL DEFAULT '', photo TEXT NOT NULL DEFAULT '',
+  produit_id TEXT NOT NULL DEFAULT '', quantite TEXT NOT NULL DEFAULT '', numero_lot TEXT NOT NULL DEFAULT '',
+  commande_id INTEGER, client_id INTEGER, depart_le TEXT NOT NULL DEFAULT '', arrivee_le TEXT NOT NULL DEFAULT '', temp_depart REAL,
+  note TEXT NOT NULL DEFAULT '', remplace_id INTEGER, remplace_par INTEGER, motif TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS hygiene_releves_jour ON hygiene_releves(jour, genre);
+CREATE TABLE IF NOT EXISTS hygiene_liens (de INTEGER NOT NULL, vers INTEGER NOT NULL, PRIMARY KEY (de, vers));
+CREATE TABLE IF NOT EXISTS hygiene_durees (produit_id TEXT PRIMARY KEY, jours INTEGER NOT NULL, maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '');
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_hygiene', '1')");
+}
+
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
 const COLONNES_ENTIERES = ['id' => 1, 'client_id' => 1, 'commande_id' => 1, 'utilisateur_id' => 1, 'ingredient_id' => 1, 'probleme' => 1, 'total_indicatif' => 1,

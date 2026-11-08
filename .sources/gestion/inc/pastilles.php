@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-hygiene', 'le' => '2026-11-08', 'titre' => 'L\'écran Hygiène',
+     'texte' => 'Plus › Hygiène : la température des frigos, les réceptions, les fournées avec leur numéro de lot et les livraisons aux restaurants, notées en quelques touches sur le téléphone.',
+     'lien' => ['manuel', 'hygiene']],
     ['id' => '2026-11-obligations', 'le' => '2026-11-08', 'titre' => 'L\'écran Obligations',
      'texte' => 'Plus › Obligations : tout ce qu\'il faut faire ou prouver pour être en règle, le plus urgent en haut, avec les échéances qui reviennent.',
      'lien' => ['manuel', 'obligations']],
