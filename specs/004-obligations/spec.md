@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-08
 
-**Status**: Brouillon, à valider par Olivier ; aucun code écrit
+**Status**: Lot 1 cadré (2026-11-08) ; plan et tâches écrits ; aucun code écrit
 
 **Input**: Fil « Maîtriser les risques sanitaires de la pâtisserie » du 2026-11-08. Après l'état des
 lieux sanitaire, Olivier : « De manière générale on pourrait mettre tout le nécessaire dans un écran
@@ -29,26 +29,39 @@ les adresses des restaurants et les relevés vivent dans la base de la gestion s
 - Q: Restaurants ? → A : 5 aujourd'hui, d'autres viendront ; Youngmi livre elle-même avec des caisses
   prévues pour ça.
 
+### Session 2026-11-08, lot 1 (Olivier, cartes de décision, 18:01-18:17)
+
+- Q: Qui ajoute ou modifie une démarche ? → A : Youngmi et Olivier ; l'autre voit la pastille ambre
+  « nouveau » ou « a changé ».
+- Q: Les démarches d'Olivier aussi ? → A : oui, chacune porte « pour qui » (Youngmi, Olivier, les deux),
+  avec un filtre « les miennes » / « toutes ».
+- Q: Preuve d'une démarche faite ? → A : un lien vers le Drive et une note ; aucune photo ni pièce
+  gardée dans la gestion.
+- Q: Où apparaissent les rappels ? → A : pastilles dans la gestion ET une ligne dans le récap du lundi
+  de Ferdinand (boîte d'Olivier) ; rien n'est envoyé à Youngmi.
+- Q: Quand une échéance devient-elle « à faire » ? → A : 30 jours avant (orange), rouge une fois en
+  retard, pour toutes les échéances.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Voir d'un coup d'œil ce qui reste à faire (Priority: P1)
 
 Youngmi ouvre « Obligations ». En haut, la liste « À faire » montre chaque démarche en attente, la
 plus urgente d'abord : ce qu'il faut faire, où (site, Drive, mail, appel), pour quand, et pourquoi.
-Elle touche « C'est fait » quand c'est réglé, et peut joindre la preuve (photo ou lien Drive).
+Elle touche « C'est fait » quand c'est réglé, et peut noter la preuve (lien Drive et note).
 
 **Why this priority**: c'est la demande d'Olivier, « elle y retrouve tout ».
 
 **Independent Test**: sur une base d'essai, créer trois démarches (une en retard, une à 15 jours,
-une sans date), vérifier l'ordre, marquer l'une faite avec une photo, la retrouver dans « Fait ».
+une sans date), vérifier l'ordre, marquer l'une faite avec un lien Drive, la retrouver dans « Fait ».
 
 **Acceptance Scenarios**:
 
 1. **Given** des démarches en attente, **When** Youngmi ouvre l'écran, **Then** elles sont triées :
    en retard (rouge), à moins de 30 jours (orange), puis les autres ; chacune dit l'outil et
    l'endroit exacts (consigne d'Olivier du 07/11 : « quel outil, quelle page »).
-2. **Given** une démarche, **When** Youngmi touche « C'est fait », **Then** elle peut ajouter une
-   photo ou un lien de preuve, la date est notée, et la démarche passe dans « Fait », avec qui l'a
+2. **Given** une démarche, **When** Youngmi touche « C'est fait », **Then** elle peut ajouter un
+   lien Drive et une note de preuve, la date est notée, et la démarche passe dans « Fait », avec qui l'a
    faite.
 3. **Given** une démarche en retard, **When** Youngmi ouvre « Aujourd'hui », **Then** une pastille
    sur « Obligations » le signale (même système de pastilles que le reste de la gestion).
@@ -200,6 +213,11 @@ la DDPP, diplômes, attestation d'assurance, rapports de vérification, registre
 - **FR-010**: Tous les textes en français et en coréen (dictionnaire de `inc/coreen.php`) ; les
   textes saisis ne sont jamais traduits.
 - **FR-011**: Export des relevés d'une période en PDF ou CSV, pour un contrôle ou l'expert-comptable.
+- **FR-013**: Une démarche porte « pour qui » (Youngmi, Olivier, les deux) ; l'écran ouvre sur « les
+  miennes » (y compris « les deux ») avec un filtre « toutes ». Youngmi et Olivier peuvent ajouter,
+  modifier, marquer faite ou sans objet ; une démarche n'est jamais effacée.
+- **FR-014**: Chaque lundi, les démarches en retard ou à moins de 30 jours rejoignent le récap
+  hebdomadaire de Ferdinand dans la boîte d'Olivier ; rien n'est envoyé à Youngmi (R-01).
 - **FR-012**: Durées de conservation des relevés fixées avant la mise en ligne, avec la tâche de
   nuit existante ; rien n'est purgé avant d'avoir une durée confirmée.
 
