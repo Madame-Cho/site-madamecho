@@ -8,6 +8,7 @@ namespace MadameCho\Gestion;
 
 require_once __DIR__ . '/base.php';
 require_once __DIR__ . '/modele.php';
+require_once __DIR__ . '/reponses.php';   // reponses_purger() : sans lui, la tâche de nuit s'arrêtait en chemin (trouvé le 08/11/2026)
 
 function tache_de_nuit(): array {
     if (!gestion_base_existante()) return [];
