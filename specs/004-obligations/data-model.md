@@ -1,4 +1,4 @@
-# Data Model : écran « Obligations », lot 1 (schéma 12)
+# Data Model : écran « Obligations », lot 1 (tables à part, marqueur `schema_obligations`, voir research R1)
 
 ## Table `demarches`
 
@@ -58,5 +58,6 @@ commence, que la précédente soit close ou non.
 ## Pastilles
 
 - Rouge (chiffre) sur Obligations : démarches `a_faire` de la personne (`pour_qui` = elle ou `deux`)
-  en retard ou dans leur préavis (les « en attente » comptent aussi).
+  en retard ou dans leur préavis. Les « en attente d'une réponse » ne comptent pas : elles restent
+  visibles dans leur rubrique, sans faire monter le chiffre.
 - Ambre : historique postérieur au « vu » de la personne (`vus`, genre `demarche`), fait par l'autre.

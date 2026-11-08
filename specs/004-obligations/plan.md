@@ -28,7 +28,7 @@ Hors lot 1 : relevés d'hygiène (lot 2), étiquettes et lots (lot 3), volumes e
 **Primary Dependencies** : aucune nouvelle.
 
 **Storage** : SQLite ; trois tables neuves `demarches`, `echeances`, `demarches_historique`
-([data-model.md](./data-model.md)). Numéro de schéma : voir research R1 (la branche des factures prend 11).
+([data-model.md](./data-model.md)). Pas de numéro de schéma : marqueur à part `schema_obligations`, voir research R1 (la branche des factures prend 11).
 
 **Testing** : essais PHP en ligne de commande et Playwright sur base fictive, hors du dépôt (AM-42) :
 `tests-gestion/obligations/` (prep.php, unitaires.php, test.js), captures FR/KO, téléphone 390 px.
@@ -68,7 +68,7 @@ specs/004-obligations/
 ├── pages-obligations.php  # nouveau : écran Obligations (À faire, Fait, Échéances), fiche d'une démarche, formulaires
 ├── base.php               # schéma : trois tables
 ├── pastilles.php          # pastille rouge (retard ou < 30 j, pour la personne) et ambre (ajout ou changement par l'autre)
-├── pages-autres.php       # Plus › Obligations ; Paramètres › Reprise des démarches
+├── pages-autres.php       # Plus › Obligations (la reprise d'une liste est dans Obligations › Échéances)
 ├── vues.php               # icône, lien direct sur grand écran
 ├── conservation.php       # tâche de nuit : créer les démarches des échéances à 30 jours ; le lundi, le résumé (R4)
 ├── modele.php             # déclencheur « 2e commande d'un nouveau restaurant » → démarche 13982

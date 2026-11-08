@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-obligations', 'le' => '2026-11-08', 'titre' => 'L\'écran Obligations',
+     'texte' => 'Plus › Obligations : tout ce qu\'il faut faire ou prouver pour être en règle, le plus urgent en haut, avec les échéances qui reviennent.',
+     'lien' => ['manuel', 'obligations']],
     ['id' => '2026-11-noms', 'le' => '2026-11-08', 'titre' => 'Les majuscules des noms',
      'texte' => 'Les majuscules oubliées dans les noms et prénoms sont ajoutées toutes seules. Pour corriger un nom : « Corriger le nom ou les coordonnées », sur la fiche ou dans la commande.',
      'lien' => ['manuel', 'clients']],

@@ -2,11 +2,13 @@
 
 ## R1. Numéro de schéma (essais dans les deux ordres, audit n° 7, constat 11)
 
-La branche des factures (spec 003, non publiée) prend le schéma 11. Décision : les tables du lot 1 se
-créent dans une étape propre, « schéma 12 », écrite avec `CREATE TABLE IF NOT EXISTS` et indépendante
-de l'étape 11 ; `gestion_schema` ne s'arrête plus à 10. Si le lot 1 est publié avant les factures,
-l'étape 11 s'appliquera quand même ensuite (les étapes testent chacune leur propre présence). Celui des
-deux qui arrive second sur main rebase et refait les essais de migration.
+La branche des factures (spec 003, non publiée) prend le schéma 11. Décision (révisée en construisant) :
+le lot 1 ne prend PAS de numéro de schéma. Un numéro 12 aurait fait sauter l'étape 11 de la branche des
+factures (son garde « déjà en 11 ou plus »). Les tables du lot 1 se créent dans `obligations_schema()`,
+écrite avec `CREATE TABLE IF NOT EXISTS`, appelée par `gestion_schema` AVANT le garde du numéro de
+version, et marquée à part dans `parametres` (`schema_obligations` = 1). Ainsi l'ordre de publication
+est libre : lot 1 puis factures, ou factures puis lot 1. Celui des deux qui arrive second sur main
+rebase et refait les essais de migration.
 
 ## R2. Historique : table propre plutôt que `evenements`
 
@@ -42,7 +44,7 @@ rulebook à la publication, avec son accord).
 
 Jamais dans le dépôt. Le Claude d'Olivier prépare, après vérification de chaque point dans le Drive
 et la Mémoire, un fichier CSV dans les fichiers du projet (hors dépôt) ; Olivier l'importe par
-Paramètres › Reprise des démarches (même parcours que la reprise des factures du 07/11), puis le fichier
+Obligations › Échéances › Reprise d'une liste (compte administrateur, même parcours que la reprise des factures du 07/11), puis le fichier
 est supprimé. La reprise refuse les doublons (même titre et même échéance) et dit ce qu'elle a fait.
 
 ## R6. Déclencheur « nouveau restaurant » (corrigé, audit n° 7, constat 1)

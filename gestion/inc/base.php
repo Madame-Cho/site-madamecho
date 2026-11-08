@@ -185,6 +185,7 @@ function db(): PDO {
 }
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
+    obligations_schema($pdo);   // écran Obligations (spécification 004) : hors de la numérotation, pour ne pas gêner l'étape 11 des factures
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
     if ($v >= 10) return;
     if ($v < 1) $pdo->exec("
@@ -318,6 +319,35 @@ CREATE INDEX IF NOT EXISTS corbeille_le ON corbeille(le);
     $pdo->prepare("UPDATE utilisateurs SET pastilles_depuis = ? WHERE pastilles_depuis IS NULL")->execute([date('Y-m-d H:i:s')]);
     $pdo->exec("CREATE INDEX IF NOT EXISTS evenements_le ON evenements(le)");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '10')");
+}
+/**
+ * Les tables de l'écran Obligations (spécification 004, lot 1, 08/11/2026). Elles ne prennent pas de numéro de schéma : la branche
+ * des factures prend le 11 et s'arrête dès que le numéro l'atteint ; un numéro 12 posé ici avant elle l'aurait fait sauter
+ * (audit n° 7, constat 11). Un repère à part, « schema_obligations », dit que c'est fait ; tout est idempotent.
+ */
+function obligations_schema(PDO $pdo): void {
+    $fait = $pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_obligations'")->fetchColumn();
+    if ($fait === '1') return;
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS demarches (id INTEGER PRIMARY KEY, titre TEXT NOT NULL, explication TEXT NOT NULL DEFAULT '', ou TEXT NOT NULL DEFAULT '',
+  pour_qui TEXT NOT NULL DEFAULT 'youngmi', echeance TEXT NOT NULL DEFAULT '', a_confirmer INTEGER NOT NULL DEFAULT 0, preavis INTEGER NOT NULL DEFAULT 30,
+  priorite INTEGER NOT NULL DEFAULT 2, importante INTEGER NOT NULL DEFAULT 0, origine TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT 'a_faire',
+  preuve_lien TEXT NOT NULL DEFAULT '', preuve_note TEXT NOT NULL DEFAULT '', raison TEXT NOT NULL DEFAULT '',
+  echeance_id INTEGER, periode TEXT NOT NULL DEFAULT '', declencheur TEXT NOT NULL DEFAULT '', ref_genre TEXT NOT NULL DEFAULT '', ref_id TEXT NOT NULL DEFAULT '',
+  cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '', modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '',
+  fait_le TEXT NOT NULL DEFAULT '', fait_par TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS demarches_etat ON demarches(etat, echeance);
+CREATE UNIQUE INDEX IF NOT EXISTS demarches_periode ON demarches(echeance_id, periode) WHERE echeance_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS demarches_declencheur ON demarches(declencheur) WHERE declencheur <> '';
+CREATE TABLE IF NOT EXISTS echeances (id INTEGER PRIMARY KEY, titre TEXT NOT NULL, explication TEXT NOT NULL DEFAULT '', ou TEXT NOT NULL DEFAULT '',
+  pour_qui TEXT NOT NULL DEFAULT 'youngmi', priorite INTEGER NOT NULL DEFAULT 2, importante INTEGER NOT NULL DEFAULT 0, frequence TEXT NOT NULL DEFAULT 'annuelle',
+  depart TEXT NOT NULL DEFAULT '', preavis INTEGER NOT NULL DEFAULT 30, origine TEXT NOT NULL DEFAULT '', active INTEGER NOT NULL DEFAULT 1,
+  cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '', modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS demarches_historique (id INTEGER PRIMARY KEY, le TEXT NOT NULL, auteur TEXT NOT NULL, demarche_id INTEGER, echeance_id INTEGER,
+  type TEXT NOT NULL, champ TEXT NOT NULL DEFAULT '', ancien TEXT NOT NULL DEFAULT '', nouveau TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS demarches_historique_d ON demarches_historique(demarche_id);
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '1')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.

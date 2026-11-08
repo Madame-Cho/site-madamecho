@@ -1256,6 +1256,119 @@ Les espèces n'ont pas de rapprochement Qonto. | 현금은 Qonto 대조가 없�
 Cette commande n'a pas de paiement à retrouver dans Qonto. | 이 주문에는 Qonto에서 찾을 결제가 없어요.
 Rapprochement Qonto retiré | Qonto 대조 취소
 Rapprochement Qonto à refaire : le paiement a changé | Qonto 대조 다시 필요: 결제 내용이 바뀌었어요
+# Écran Obligations (spécification 004, lot 1, 08/11/2026)
+Obligations | 의무
+Démarche | 할 일
+Démarches et échéances pour être en règle | 규정을 지키기 위한 할 일과 정기 일정
+Tout ce qu'il faut faire ou prouver pour être en règle, le plus urgent d'abord. | 규정을 지키기 위해 해야 하거나 증명해야 하는 모든 일이에요. 가장 급한 일이 먼저 나와요.
+Les miennes | 내 일
+Échéances | 정기 일정
+Urgent | 급함
+En attente d'une réponse | 답을 기다리는 중
+Date à confirmer | 날짜 확인 필요
+Plus tard | 나중에
+Rien d'urgent. | 급한 일은 없어요.
+Faites et sans objet | 완료와 해당 없음
+Importante | 중요
+Échéance | 기한
+Récurrente | 정기
+Sans objet | 해당 없음
+Envoyé, réponse attendue | 보냄, 답 기다림
+Youngmi et Olivier | Youngmi와 Olivier
+Haute | 높음
+Normale | 보통
+Basse | 낮음
+Chaque année | 매년
+Chaque trimestre | 분기마다
+Chaque mois | 매달
+Le premier lundi du mois | 매달 첫 월요일
+Arrêtée | 중단됨
+Liste de départ pas encore reprise. | 처음 목록을 아직 넣지 않았어요.
+Olivier ajoute la liste vérifiée des démarches et des échéances ; d'ici là, cette liste n'est pas complète. | Olivier가 확인한 할 일과 정기 일정 목록을 넣을 거예요. 그때까지 이 목록은 완전하지 않아요.
+Liste de départ à relire. | 처음 목록을 다시 읽어 주세요.
+Si une démarche manque, ajoutez-la. | 빠진 할 일이 있으면 추가하세요.
+Reste à relire : | 아직 읽지 않은 사람:
+J'ai relu la liste | 목록을 다시 읽었어요
+Merci : votre relecture de la liste de départ est notée. | 고마워요. 처음 목록을 다시 읽은 것을 기록했어요.
+Échéances qui reviennent | 되풀이되는 정기 일정
+Aucune échéance pour l'instant. | 아직 정기 일정이 없어요.
+Chaque échéance crée sa démarche dans « À faire » quand son rappel commence (30 jours avant, sauf autre choix), une fois par période. Une date inconnue reste « à confirmer » : elle n'est jamais devinée. | 정기 일정마다 알림이 시작되면(따로 정하지 않으면 30일 전) 기간마다 한 번씩 ‘할 일’에 할 일이 생겨요. 모르는 날짜는 ‘날짜 확인 필요’로 남고, 절대 추측하지 않아요.
+Ajouter une échéance | 정기 일정 추가
+Reprise de la liste de départ | 처음 목록 넣기
+Fichier CSV | CSV 파일
+Reprendre ce fichier | 이 파일 넣기
+Choisissez un fichier CSV de moins de 500 ko. | 500KB보다 작은 CSV 파일을 고르세요.
+Nouvelle démarche | 새 할 일
+Modifier la démarche | 할 일 수정
+Ajouter la démarche | 할 일 추가
+Démarche ajoutée. | 할 일을 추가했어요.
+Démarche modifiée. | 할 일을 수정했어요.
+Démarche introuvable. | 할 일을 찾을 수 없어요.
+Quoi faire | 할 일
+Une phrase courte qui commence par un verbe. | 동사로 시작하는 짧은 문장으로 적어요.
+Où le faire | 어디서 하나요
+L'outil, la page et l'endroit exacts : site, Drive (dossier), mail, appel… | 정확한 도구, 페이지, 위치: 사이트, Drive(폴더), 이메일, 전화…
+L'outil, la page et l'endroit exacts. | 정확한 도구, 페이지, 위치.
+Pourquoi (facultatif) | 이유 (선택)
+Jamais de nom ni de donnée d'un client particulier. | 개인 고객의 이름이나 정보는 절대 적지 마세요.
+Pour qui | 누구의 일
+Pour le | 기한
+Rappel (jours avant) | 알림 (며칠 전)
+Date à confirmer (inconnue pour l'instant) | 날짜 확인 필요 (아직 모름)
+Priorité | 우선순위
+Importante : la preuve est obligatoire pour la clore (DDPP, assurance, impôts…) | 중요: 닫으려면 증빙이 꼭 필요해요 (DDPP, 보험, 세금…)
+Importante : la preuve est obligatoire pour clore chaque démarche | 중요: 할 일을 닫으려면 매번 증빙이 꼭 필요해요
+D'où vient-elle (facultatif) | 어디서 온 일인지 (선택)
+Quoi | 무엇을
+Où le faire ? | 어디서 하나요?
+Pourquoi | 왜
+Rappel avant l'échéance | 기한 전 알림
+D'où vient-elle | 어디서 온 일
+Preuve | 증빙
+Raison | 이유
+Ouvrir la preuve dans le Drive | Drive에서 증빙 열기
+À confirmer | 확인 필요
+Et maintenant | 이제 할 일
+C'est fait | 완료
+Lien de la preuve dans le Drive | Drive의 증빙 링크
+Lien de la preuve dans le Drive (facultatif) | Drive의 증빙 링크 (선택)
+Rangez d'abord la pièce dans le Drive (récépissé, attestation, rapport), puis copiez son lien. | 먼저 서류(접수증, 증명서, 보고서)를 Drive에 넣고 그 링크를 복사하세요.
+Envoyé, j'attends la réponse | 보냄, 답 기다림
+Par exemple : envoyé en ligne, numéro de dossier noté dans la fiche d'identité. | 예: 온라인으로 보냄, 서류 번호는 회사 정보 문서에 적음.
+Noter « envoyé » | ‘보냄’으로 기록
+Pourquoi ? | 왜요?
+Marquer sans objet | 해당 없음으로 표시
+Rouvrir | 다시 열기
+Remettre cette démarche à faire ? | 이 일을 다시 할 일로 돌릴까요?
+C'est noté : fait. | 기록했어요: 완료.
+C'est noté : envoyé, réponse attendue. | 기록했어요: 보냄, 답 기다림.
+C'est noté : sans objet. | 기록했어요: 해당 없음.
+La démarche est de nouveau à faire. | 다시 할 일이 됐어요.
+Le lien doit être une adresse du Drive (https://drive.google.com/… ou https://docs.google.com/…). | 링크는 Drive 주소여야 해요 (https://drive.google.com/… 또는 https://docs.google.com/…).
+Cette démarche est importante : collez le lien de la preuve (récépissé, attestation, rapport) rangée dans le Drive. | 중요한 일이에요. Drive에 넣은 증빙(접수증, 증명서, 보고서)의 링크를 붙여 넣으세요.
+Dites pourquoi elle est sans objet. | 왜 해당 없는지 적어 주세요.
+Écrivez ce qu'il faut faire (le titre). | 할 일(제목)을 적어 주세요.
+Dites où le faire : l'outil, la page et l'endroit exacts. | 어디서 하는지 적어 주세요: 정확한 도구, 페이지, 위치.
+Donnez la date de la prochaine échéance, ou cochez « Date à confirmer ». | 다음 기한 날짜를 적거나 ‘날짜 확인 필요’를 체크하세요.
+Ajoutée | 추가됨
+Modifiée | 수정됨
+Faite | 완료됨
+Envoyée, réponse attendue | 보냄, 답 기다림
+Rouverte | 다시 열림
+Nouvelle échéance | 새 정기 일정
+Modifier l'échéance | 정기 일정 수정
+Ajouter l'échéance | 정기 일정 추가
+Revient | 반복
+Prochaine échéance | 다음 기한
+Arrêter cette échéance | 이 정기 일정 중단
+Reprendre cette échéance | 이 정기 일정 다시 시작
+Arrêter cette échéance ? Les démarches déjà créées restent. | 이 정기 일정을 중단할까요? 이미 생긴 할 일은 남아요.
+Échéance modifiée. | 정기 일정을 수정했어요.
+Échéance ajoutée : sa démarche apparaîtra dans « À faire » quand son rappel commencera. | 정기 일정을 추가했어요. 알림이 시작되면 ‘할 일’에 나와요.
+Échéance arrêtée : plus de nouvelle démarche. | 정기 일정을 중단했어요. 새 할 일은 더 생기지 않아요.
+Échéance reprise. | 정기 일정을 다시 시작했어요.
+L'écran Obligations | 의무 화면
+Plus › Obligations : tout ce qu'il faut faire ou prouver pour être en règle, le plus urgent en haut, avec les échéances qui reviennent. | 더보기 › 의무: 규정을 지키기 위해 해야 하거나 증명할 모든 일, 가장 급한 일이 맨 위에, 되풀이되는 정기 일정과 함께 있어요.
 TXT;
 }
 
@@ -1680,6 +1793,21 @@ function coreen_motifs(): array {
         }],
         // Une liste d'allergènes seule, « Gluten, Lait » (carte de l'assistant)
         ['/^\p{Lu}[^,]*(?:, \p{Lu}[^,]*)*$/u', fn($m) => coreen_allergenes($m[0])],
+        // Écran Obligations (spécification 004)
+        ['/^En retard depuis le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '부터 늦음' : null],
+        ['/^Avant le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 전까지' : null],
+        ['/^Aujourd\'hui, (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '오늘, ' . $d : null],
+        ['/^Pour le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '까지' : null],
+        ['/^Fait le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 완료' : null],
+        ['/^Envoyé le (.+), réponse attendue$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 보냄, 답 기다림' : null],
+        ['/^Prochaine : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '다음: ' . $d : null],
+        ['/^Rappel (\d+) jours avant$/u', fn($m) => $m[1] . '일 전 알림'],
+        ['/^(\d+) jours avant$/u', fn($m) => $m[1] . '일 전'],
+        ['/^(Haute|Normale|Basse) · importante : preuve obligatoire$/u', fn($m) => ['Haute' => '높음', 'Normale' => '보통', 'Basse' => '낮음'][$m[1]] . ' · 중요: 증빙 필수'],
+        ['/^Dernière reprise : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '최근 넣은 날: ' . $d : null],
+        ['/^Reprise : (\d+) démarche\(s\) et (\d+) échéance\(s\) ajoutée\(s\), (\d+) doublon\(s\) écarté\(s\)(?:, lignes refusées : ([\d, ]+))?\.$/u',
+         fn($m) => '넣기: 할 일 ' . $m[1] . '개, 정기 일정 ' . $m[2] . '개 추가, 중복 ' . $m[3] . '개 제외' . (isset($m[4]) ? ', 거절된 줄: ' . $m[4] : '') . '.'],
+        ['/^Modifiée : (.+)$/u', fn($m) => '수정됨: ' . (['quoi' => '할 일', 'où' => '어디서', 'pourquoi' => '왜', 'pour qui' => '누구의 일', 'échéance' => '기한', 'date à confirmer' => '날짜 확인 필요', 'rappel' => '알림', 'priorité' => '우선순위', 'importante' => '중요', 'origine' => '어디서 온 일', 'état' => '상태'][$m[1]] ?? $m[1])],
     ];
     return $p;
 }

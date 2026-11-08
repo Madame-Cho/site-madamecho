@@ -437,6 +437,8 @@ function commande_statut(int $id, string $statut, array $extra = []): bool {
     client_echange((int)$k['client_id'], $now);
     $texte = STATUTS[$statut] . (($extra['motif'] ?? '') !== '' ? ' : ' . $extra['motif'] : '');
     evenement('statut', $texte, ['commande' => $id, 'client' => (int)$k['client_id']], $k['statut'], $statut, $extra['auteur'] ?? null);
+    // Première commande confirmée d'un restaurant : vérifier la dérogation avant de le livrer (écran Obligations, audit n° 7, constat 1)
+    if ($statut === 'confirmee' && function_exists(__NAMESPACE__ . '\\obligations_nouveau_restaurant') && ($k2 = commande($id))) obligations_nouveau_restaurant($k2);
     return true;
 }
 function commande_paiement(int $id, string $paiement, string $moyen, ?int $acompte, string $facture): void {

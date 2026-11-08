@@ -801,3 +801,28 @@ details.geste>form{padding:0 2px 6px}
 .par{color:var(--doux)}
 html:lang(fr) .par::before{content:"par "}
 html:lang(ko) .par::after{content:" 님"}
+
+/* Écran Obligations (spécification 004, lot 1) : l'état toujours écrit en toutes lettres, la couleur seulement en appui
+   (rouge = en retard ou dans son rappel ; ambre = en attente ou date à confirmer ; gris = plus tard ou fini) */
+.filtre-qui{display:flex;gap:8px;margin:4px 0 12px}
+.filtre-qui .btn{min-height:44px}
+.bandeau-obligations{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--p-change-f);color:var(--p-change-t);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.bandeau-obligations>span{flex:1 1 220px}
+.bandeau-obligations form{margin:0}
+.liste-demarches{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.carte-demarche{display:flex;flex-direction:column;gap:6px;padding:12px 14px;min-height:64px;border:1px solid var(--ligne);border-left:5px solid var(--fort);border-radius:12px;background:var(--carte);text-decoration:none;color:var(--texte)}
+.carte-demarche .d-titre{font-weight:500;font-size:16px;line-height:1.35}
+.d-etat{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.d-etat .ic{width:16px;height:16px}
+.d-pied{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.n-action{border-left-color:var(--p-action)}.n-action .d-etat{color:var(--p-action-t)}
+.n-bientot{border-left-color:var(--p-action)}.n-bientot .d-etat{color:var(--p-action-t)}
+.n-attente,.n-confirmer{border-left-color:var(--p-change)}.n-attente .d-etat,.n-confirmer .d-etat{color:var(--p-change-t)}
+.n-calme .d-etat,.n-fait .d-etat{color:var(--doux)}
+.n-fait{opacity:.85}
+.d-etat-grand{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:500;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--ivoire)}
+.d-etat-grand.n-action,.d-etat-grand.n-bientot{background:var(--p-action-f);color:var(--p-action-t)}
+.d-etat-grand.n-attente,.d-etat-grand.n-confirmer{background:var(--p-change-f);color:var(--p-change-t)}
+.historique-demarche{list-style:none;margin:0;padding:0}
+.historique-demarche li{padding:6px 0;border-bottom:1px solid var(--ligne)}
+.form-demarche .case{margin:6px 0}
