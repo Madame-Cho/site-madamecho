@@ -308,13 +308,15 @@ function page_echeance(): void {
 }
 
 /* ---------- Lot 4 : Volumes de la dérogation (US5) ---------- */
-const VOLUMES_NIVEAUX = ['depasse' => ['Plafond dépassé', 'retard'], 'proche' => ['Plafond proche', 'bientot'], 'ok' => ['Sous le plafond', 'fait'], 'inconnu' => ['À compléter', 'confirmer'], 'non_verifie' => ['Non vérifié', 'confirmer']];
+const VOLUMES_NIVEAUX = ['depasse' => ['Plafond dépassé', 'retard'], 'proche' => ['Plafond proche', 'bientot'], 'ok' => ['Sous le seuil saisi', 'fait'], 'inconnu' => ['À compléter', 'confirmer'], 'non_verifie' => ['Non vérifié', 'confirmer']];
 function vue_volumes(): string {
     $S = array_reverse(volumes_semaines(), true);
     $kgS = volumes_reglage('volumes_kg'); $conf = volumes_confirme();
     $c = '';
     if ($kgS === null) $c .= '<div class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Plafonds pas encore saisis.</b> Tapez ceux que la DDPP a confirmés dans « Plafonds de la dérogation », plus bas. D\'ici là, aucune alerte.</span></div>';
     elseif ($conf === '') $c .= '<div class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Plafonds à confirmer par la DDPP.</b> Les chiffres préremplis sont ceux de la réglementation, à vérifier : changez-les ou confirmez-les dans « Plafonds de la dérogation ». D\'ici là, une semaine sous le plafond reste « non vérifiée ».</span></div>';
+    // Les plafonds de l'annexe III sont par catégorie de produits : tant que la catégorie n'est pas fixée (T051), un total global n'est jamais une preuve (contre-expertise n° 9, constat 2)
+    if ($kgS !== null) $c .= '<p class="aide">' . icone('aide') . ' Un seul total pour tous les gâteaux : la réglementation fixe un plafond par catégorie de produits. Demandez à la DDPP dans quelle catégorie vont vos gâteaux. D\'ici là, « Sous le seuil saisi » veut dire seulement : sous le chiffre tapé plus bas, pas « en règle ».</p>';
     $sans = []; $mesure = [];
     $li = '';
     foreach ($S as $s => $w) {
@@ -383,7 +385,7 @@ function vue_volumes(): string {
         $x = parametre($k, '');
         $f .= champ($k, h($l), str_replace('.', ',', (string)$x), ['inputmode' => 'decimal', 'id' => 'f-' . $k]);
     }
-    $f .= case_a_cocher('confirme', 'Ces chiffres sont confirmés par la DDPP (à cocher à chaque changement)', false)
+    $f .= case_a_cocher('confirme', 'Ces chiffres sont confirmés par la DDPP pour la catégorie de mes gâteaux (à cocher à chaque changement)', false)
         . ($conf !== '' ? case_a_cocher('retirer_confirmation', 'Retirer la confirmation', false) : '') . bouton(icone('valider') . 'Enregistrer', 'principal');
     $c .= '<details class="replie bloc" id="plafonds"><summary><b>Plafonds de la dérogation</b>' . ($conf === '' ? ' <span class="etiq etiq-change">À confirmer</span>' : '') . '</summary>'
         . '<p class="aide">Préremplis avec les chiffres de la réglementation (arrêté du 8 juin 2006), à faire confirmer par la DDPP des Hauts-de-Seine : la gestion ne les tient jamais pour sûrs.</p>'

@@ -58,6 +58,7 @@ function page_hygiene(): void {
         } elseif ($a === 'livraison') {
             [$v, $err] = hygiene_livraison_lue($src);
             if ($err === null) [$v['trace'], $err] = hygiene_trace('livraison', $src, $liens);
+            if ($err === null) $err = hygiene_livraison_controle($v, $liens, $src);
             if ($err === null) { hygiene_noter('livraison', $v, $liens); hygiene_annuler_sans_production($auj, 'livraison notée'); $ok = 'Départ noté. Touchez « Arrivée » une fois sur place.'; }
             $ancre = 'livraisons';
         } elseif ($a === 'arrivee') {
@@ -233,11 +234,17 @@ function champs_livraison(array $b, ?array $avant = null): string {
     $lots = '';
     $liees = $avant ? array_map(fn($x) => (int)$x['id'], hygiene_liens_de((int)$avant['id'])) : [];
     foreach (lignes("SELECT * FROM hygiene_releves WHERE genre = 'fournee' AND remplace_par IS NULL AND jour >= ? AND dlc >= ? ORDER BY le DESC LIMIT 40", [date('Y-m-d', (int)strtotime("$auj -7 days")), $auj]) as $r)
-        $lots .= '<label class="case"><input type="checkbox" name="liens[]" value="' . (int)$r['id'] . '"' . (in_array((int)$r['id'], $liees, true) ? ' checked' : '') . '><span><span translate="no">' . h($r['produit'] . ' · ' . $r['numero_lot']) . '</span></span></label>';
+    {
+        $lie = in_array((int)$r['id'], $liees, true);
+        $pb = !$lie && probleme_ouvert_du_lot((string)$r['numero_lot']);   // un lot en problème ne se livre plus (contre-expertise n° 9, constat 1)
+        $lots .= '<label class="case' . ($pb ? ' case-bloquee' : '') . '"><input type="checkbox" name="liens[]" value="' . (int)$r['id'] . '"' . ($lie ? ' checked' : '') . ($pb ? ' disabled' : '') . '><span><span translate="no">' . h($r['produit'] . ' · ' . $r['numero_lot']) . '</span>'
+               . ($pb ? ' <span class="etiq etiq-alerte">Problème en cours : ne se livre plus</span>' : '') . '</span></label>';
+    }
     return liste_choix('commande_id', 'Commande (facultatif)', $cmd, $b['commande_id'] ?? ($avant['commande_id'] ?? ''), ['translate' => 'no'], 'Une commande d\'hier, d\'aujourd\'hui ou de demain ; elle choisit le restaurant.')
          . liste_choix('client_id', 'ou le restaurant', $rest, $b['client_id'] ?? ($avant['client_id'] ?? ''), ['translate' => 'no'])
          . '<fieldset class="champ"><legend class="etiq">Lots livrés</legend>' . ($lots !== '' ? $lots : '<p class="aide">Notez d\'abord la fournée pour relier ses lots à la livraison.</p>')
          . case_a_cocher('lot_inconnu', 'Lots livrés non notés (expliquez dans la note)', ($b['lot_inconnu'] ?? (($avant['trace'] ?? '') === 'lot_inconnu' ? '1' : '')) === '1') . '</fieldset>'
+         . ($avant ? '' : case_a_cocher('distance_ok', 'Je livre quand même (seulement si la gestion signale la distance : dites pourquoi dans la note)', ($b['distance_ok'] ?? '') === '1'))
          . champ('temp_depart', 'Température au départ (facultatif, °C)', $b['temp_depart'] ?? ($avant !== null && $avant['temp_depart'] !== null ? str_replace('.', ',', (string)$avant['temp_depart']) : ''), ['inputmode' => 'decimal', 'autocomplete' => 'off', 'id' => 'f-t-depart'], 'Celle du caisson isotherme ou de la boîte, au moment de partir.')
          . zone('note', 'Note (obligatoire si aucun lot n\'est coché)', $b['note'] ?? ($avant['note'] ?? ''), ['rows' => '2', 'maxlength' => '600', 'translate' => 'no', 'id' => 'f-note-livraison'])
          . ($avant ? '' : bouton(icone('envoyer') . 'Noter le départ', 'principal'));
@@ -349,7 +356,7 @@ function page_hygiene_appareil(): void {
         $pid = texte('produit_id', 80);
         if (!produit($pid)) flash('erreur', 'Gâteau introuvable.');
         elseif (une_ligne(texte('conservation', 200)) === '') flash('erreur', 'Écrivez les conditions de conservation (par exemple : au réfrigérateur, entre 0 et 4 °C).');
-        elseif ((string)parametre('etiquette_ingredients', '1') === '1' && une_ligne(texte('ingredients', 1200)) === '') flash('erreur', 'Écrivez la liste des ingrédients : elle est obligatoire sur l\'étiquette.');
+        elseif (une_ligne(texte('ingredients', 1200)) === '') flash('erreur', 'Écrivez la liste des ingrédients : elle est obligatoire sur l\'étiquette.');
         elseif (!isset(ETIQUETTE_MENTIONS[texte('mention', 4)])) flash('erreur', 'Choisissez la mention de la date.');
         else { etiquette_fiche_enregistrer($pid, une_ligne(texte('conservation', 200)), une_ligne(texte('ingredients', 1200)), texte('mention', 4), texte('poids_net', 40)); flash('ok', 'Texte de l\'étiquette relu et enregistré.'); }
     } elseif ($a === 'reglages') {
@@ -384,6 +391,7 @@ function page_hygiene_fiche(): void {
             elseif ($r['genre'] === 'fournee') { [$v, $err] = hygiene_fournee_lue($src, $r); if ($err === null) { if (isset($v['_retenir'])) hygiene_duree_fixer((string)$v['produit_id'], (int)$v['_retenir']); unset($v['_retenir']); } }
             else [$v, $err] = hygiene_livraison_lue($src, $r);
             if ($err === null && in_array($r['genre'], ['fournee', 'livraison'], true)) [$v['trace'], $err] = hygiene_trace($r['genre'], $src, $liens);
+            if ($err === null && $r['genre'] === 'livraison') $err = hygiene_livraison_controle($v, $liens, $src, $r);
             if ($err === null) {
                 [$nid, $err] = hygiene_noter($r['genre'], $v, in_array($r['genre'], ['fournee', 'livraison'], true) ? $liens : array_map(fn($x) => (int)$x['id'], hygiene_liens_de($id)), $id, texte('motif', 300));
                 if ($err === null || $err === '') { flash('ok', 'Correction notée : l\'original reste visible.'); rediriger('hygiene-fiche', ['id' => $nid]); }
@@ -467,7 +475,6 @@ function bloc_lot(array $r): string {
     else $et = '<form method="get" action="' . h(gestion_chemin()) . '" class="form-releve"><input type="hidden" name="p" value="hygiene-etiquettes"><input type="hidden" name="id" value="' . (int)$r['id'] . '">'
         . '<div class="ligne-champs">' . liste_choix('format', 'Format', ETIQUETTE_FORMATS, 'a4', ['id' => 'f-format-etiq'])
         . champ('n', 'Nombre', '1', ['type' => 'number', 'min' => '1', 'max' => '96', 'inputmode' => 'numeric', 'id' => 'f-n-etiq']) . '</div>'
-        . ($e['sans_ingredients'] ? '<p class="aide">' . icone('alerte') . ' Sans liste d\'ingrédients : saisissez la recette du gâteau, puis relisez le texte de l\'étiquette.</p>' : '')
         . bouton(icone('imprimer') . 'Préparer les étiquettes', 'principal') . '</form>';
     $pb = probleme_du_lot((string)$r['numero_lot']);
     $p = $pb && $pb['clos_le'] === '' ? '<p class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Problème en cours sur ce lot.</b> <a href="' . h(u('hygiene-probleme', ['id' => (int)$pb['id']])) . '">Suivre les étapes</a></span></p>'

@@ -1631,7 +1631,17 @@ Par exemple : au réfrigérateur, entre 0 et 4 °C. | 예: 냉장고에서 0~4 �
 Ingrédients, du plus lourd au plus léger | 재료 (무거운 것부터)
 Proposés depuis la recette : vérifiez les noms et l'ordre (les ingrédients comptés à la pièce, comme les œufs, sont à la fin : placez-les selon leur poids). Les allergènes s'impriment en gras. | 레시피에서 가져왔어요. 이름과 순서를 확인하세요 (달걀처럼 개수로 센 재료는 맨 뒤에 있으니 무게에 맞게 옮기세요). 알레르기 성분은 굵게 인쇄돼요.
 J'ai relu ce texte | 이 글을 확인했어요
-Ces chiffres sont confirmés par la DDPP (à cocher à chaque changement) | DDPP가 확인한 숫자예요 (바꿀 때마다 체크하세요)
+Problème en cours : ne se livre plus | 문제 진행 중: 더 이상 배송하지 않아요
+Je livre quand même (seulement si la gestion signale la distance : dites pourquoi dans la note) | 그래도 배송해요 (관리 화면이 거리를 알릴 때만: 메모에 이유를 적어 주세요)
+La distance de ce restaurant n'est pas encore tapée (Plus › Obligations › Volumes › Restaurants livrés). | 이 레스토랑의 거리를 아직 입력하지 않았어요 (더보기 › 의무 › 물량 › 배달한 레스토랑).
+Ce restaurant est plus loin que la distance de la dérogation : la DDPP doit avoir donné son accord avant de livrer. | 이 레스토랑은 예외 허가 거리보다 멀어요. 배송 전에 DDPP의 동의가 있어야 해요.
+La distance de ce restaurant n'est pas encore tapée (Plus › Obligations › Volumes › Restaurants livrés). Pour noter le départ quand même, cochez « Je livre quand même » et dites pourquoi dans la note. | 이 레스토랑의 거리를 아직 입력하지 않았어요 (더보기 › 의무 › 물량 › 배달한 레스토랑). 그래도 출발을 기록하려면 ‘그래도 배송해요’를 체크하고 메모에 이유를 적어 주세요.
+Ce restaurant est plus loin que la distance de la dérogation : la DDPP doit avoir donné son accord avant de livrer. Pour noter le départ quand même, cochez « Je livre quand même » et dites pourquoi dans la note. | 이 레스토랑은 예외 허가 거리보다 멀어요. 배송 전에 DDPP의 동의가 있어야 해요. 그래도 출발을 기록하려면 ‘그래도 배송해요’를 체크하고 메모에 이유를 적어 주세요.
+Écrivez dans la note pourquoi vous livrez quand même (distance vérifiée, accord de la DDPP…). | 그래도 배송하는 이유를 메모에 적어 주세요 (거리 확인, DDPP 동의…).
+Voir les restaurants | 레스토랑 보기
+Un problème est en cours sur ce lot : il ne se vend plus et ne se livre plus, ses étiquettes ne s'impriment plus jusqu'à la clôture du problème. | 이 로트에 문제가 진행 중이에요. 문제를 마칠 때까지 팔지도, 배송하지도 않고, 라벨도 인쇄하지 않아요.
+Un seul total pour tous les gâteaux : la réglementation fixe un plafond par catégorie de produits. Demandez à la DDPP dans quelle catégorie vont vos gâteaux. D'ici là, « Sous le seuil saisi » veut dire seulement : sous le chiffre tapé plus bas, pas « en règle ». | 모든 케이크를 합한 하나의 합계예요. 규정은 제품 분류마다 한도를 정해요. 케이크가 어느 분류인지 DDPP에 물어보세요. 그때까지 ‘입력한 기준 이하’는 아래에 입력한 숫자보다 적다는 뜻일 뿐, ‘규정에 맞다’는 뜻이 아니에요.
+Ces chiffres sont confirmés par la DDPP pour la catégorie de mes gâteaux (à cocher à chaque changement) | DDPP가 제 케이크 분류에 맞게 확인한 숫자예요 (바꿀 때마다 체크하세요)
 Retirer la confirmation | 확인 취소
 Vous avez proposé ce lien : c'est à Youngmi de le vérifier. | 이 링크를 제안한 사람이에요. 확인은 영미가 해요.
 Aucun gâteau vendu sans poids. | 무게 없이 판 케이크가 없어요.
@@ -1656,7 +1666,7 @@ Pendant la période, ces livraisons ont été notées sans leurs lots : ce lot e
 Les commandes de ce gâteau, et les commandes sur mesure, retirées ou livrées entre la fournée et sa date limite : à vérifier une par une. | 생산한 날부터 유통기한까지 찾아가거나 배달한 이 케이크의 주문과 맞춤 주문이에요. 하나씩 확인하세요.
 Traçabilité incomplète : aucune réception reliée à la fournée. | 추적 정보 불완전: 이 생산에 연결된 입고가 없어요.
 Déclarer le rappel sur RappelConso | RappelConso에 회수 신고
-Obligatoire dès qu'un rappel auprès des consommateurs est décidé (le lot a pu être reçu par des particuliers) : déclarer sur rappel.conso.gouv.fr, après avoir informé la DDPP. Sans objet seulement si aucun particulier n'a pu le recevoir : dites pourquoi. | 소비자 대상 회수를 정하면 의무예요 (개인 고객이 이 로트를 받았을 수 있을 때). DDPP에 알린 뒤 rappel.conso.gouv.fr에 신고하세요. 개인 고객이 받을 수 없었을 때만 해당 없음이에요. 이유를 적어 주세요.
+Obligatoire dès qu'un rappel auprès des consommateurs est décidé : le lot a pu être reçu par des particuliers, ou servi par un restaurant à ses clients. Déclarer sur rappel.conso.gouv.fr, après avoir informé la DDPP. Demandez à chaque restaurant si des gâteaux ont été servis ou s'il les a encore. Sans objet seulement si aucun gâteau du lot n'a pu arriver chez un consommateur (tout est encore chez vous ou chez le restaurant, ou jeté) : dites où sont les gâteaux, et ce qu'a dit la DDPP. | 소비자 대상 회수를 정하면 의무예요. 개인 고객이 이 로트를 받았거나, 레스토랑이 손님에게 냈을 수 있을 때예요. DDPP에 알린 뒤 rappel.conso.gouv.fr에 신고하세요. 레스토랑마다 케이크를 손님에게 냈는지, 아직 가지고 있는지 물어보세요. 로트의 케이크가 소비자에게 하나도 가지 않았을 때만 해당 없음이에요 (모두 아직 가게나 레스토랑에 있거나 버렸을 때). 케이크가 어디 있는지, DDPP가 뭐라고 했는지 적어 주세요.
 Note (obligatoire si sans objet) | 메모 (해당 없음이면 필수)
 Chaque étape doit être faite, ou sans objet avec sa raison. La démarche d'Obligations se clôt en même temps. | 모든 단계가 완료되었거나, 이유와 함께 해당 없음이어야 해요. 의무의 할 일도 함께 닫혀요.
 Bilan | 정리
@@ -1708,7 +1718,7 @@ Ventes par semaine | 주별 판매
 Les kilos vendus aux restaurants (B2B) et à tous, chaque semaine, d'après le poids d'une pièce de chaque gâteau. La semaine en cours et la suivante comptent aussi les commandes confirmées. Une alerte apparaît dans « À faire » quand les restaurants approchent le plafond. | 케이크 한 개의 무게로 계산한, 주마다 레스토랑(B2B)과 전체에 판 킬로그램이에요. 이번 주와 다음 주는 확정된 주문도 포함해요. 레스토랑 물량이 한도에 가까워지면 ‘할 일’에 알림이 생겨요.
 Prévu | 예정
 À compléter | 채워야 해요
-Sous le plafond | 한도 이하
+Sous le seuil saisi | 입력한 기준 이하
 Plafond proche | 한도에 가까움
 Plafond dépassé | 한도 초과
 Aucune vente | 판매 없음
@@ -2263,6 +2273,7 @@ function coreen_motifs(): array {
         ['/^Sans objet, noté le (.+) à (\d{2}:\d{2})$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' ' . $m[2] . ' 해당 없음으로 기록' : null],
         ['/^« Pas de production » est noté, mais (\d+) commande\(s\) sont retirées ou livrées ce jour-là\.$/u', fn($m) => '‘생산 없음’이 기록되어 있지만, 이날 찾아가거나 배달한 주문이 ' . $m[1] . '개 있어요.'],
         ['/^(\d+) commande\(s\) confirmée\(s\) ou remise\(s\) aujourd\'hui : le froid reste à relever\. Si une commande est annulée, changez-la d\'abord\.$/u', fn($m) => '오늘 확정되거나 전달된 주문이 ' . $m[1] . '개 있어요. 냉장 온도는 기록해야 해요. 취소된 주문이면 먼저 주문을 바꾸세요.'],
+        ['/^Le lot (\S+) a un problème en cours : il ne se livre plus\. Retirez-le de la livraison \(Plus › Hygiène › la fiche du lot\)\.$/u', fn($m) => '로트 ' . $m[1] . '에 문제가 진행 중이라 더 이상 배송하지 않아요. 배송에서 빼 주세요 (더보기 › 위생 › 로트 기록).'],
         ['/^Modifiée : (.+)$/u', fn($m) => '수정됨: ' . (['quoi' => '할 일', 'où' => '어디서', 'pourquoi' => '왜', 'pour qui' => '누구의 일', 'échéance' => '기한', 'date à confirmer' => '날짜 확인 필요', 'rappel' => '알림', 'priorité' => '우선순위', 'importante' => '중요', 'origine' => '어디서 온 일', 'état' => '상태'][$m[1]] ?? $m[1])],
     ];
     return $p;

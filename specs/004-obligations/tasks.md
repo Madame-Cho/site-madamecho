@@ -74,6 +74,7 @@ branche, pas publié. Rien n'est publié sans l'audit n° 7 et le feu vert d'Oli
 - [X] T048 C4 (sans les catégories) : « Non vérifié » tant que la DDPP n'a pas confirmé, plafond choisi sur la part en kilos (réduit si inconnue), part en euros indicative
 - [X] T049 C5, C6, C9, C13, C15 : contrôle des relevés manquants depuis le dernier passage (120 jours par nuit), « pas de production » ne cache pas un jour avec commandes, purge qui garde les relevés d'un problème et jamais sous 5 ans, numéro de lot unique (index partiel), export CSV sans formule
 - [X] T050 C7, C10, C11, C12 : validité d'un lien proposé, démarche « distance à vérifier », commandes sur mesure pesées à la main (`volumes_commandes`), alerte aggravée quand le plafond est dépassé ; repère `schema_hygiene` = 3
+- [X] T052 Contre-expertise de l'audit n° 9 (ChatGPT d'Olivier) : un lot sous un problème ouvert ne se coche plus dans une livraison (refus côté serveur, sauf correction d'une livraison qui le portait) et ses étiquettes ne s'impriment plus ; « Sous le seuil saisi » au lieu de « Sous le plafond », rappel du plafond par catégorie (annexe III) ; distance du restaurant vérifiée au départ (« Je livre quand même » + raison) et signalée sur la commande ; RappelConso pense aux clients servis par un restaurant ; plus de réglage caché qui retire les ingrédients
 - [ ] T051 C4 suite : catégorie sanitaire par gâteau et plafond par catégorie, après la réponse de la DDPP
 
 - [ ] T032 Saisie hors ligne (cas limite), l'assistant lit les relevés : plus tard

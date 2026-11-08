@@ -9,7 +9,7 @@
 declare(strict_types=1);
 namespace MadameCho\Gestion;
 
-/** Plafonds préremplis, à confirmer par la DDPP (arrêté du 8 juin 2006, annexe IV ; à vérifier, jamais tenus pour sûrs). */
+/** Plafonds préremplis, à confirmer par la DDPP (arrêté du 8 juin 2006, annexe III : un plafond par catégorie de produits, T051 ; à vérifier, jamais tenus pour sûrs). */
 const VOLUMES_DEFAUTS = ['volumes_kg' => '250', 'volumes_kg_reduit' => '100', 'volumes_part' => '30', 'volumes_km' => '80', 'volumes_alerte' => '80'];
 const VOLUMES_TITRE = 'Volumes de la dérogation : plafond proche ou dépassé';
 const VOLUMES_OU = 'Gestion : Plus › Obligations › Volumes. En cas de dépassement : la DDPP des Hauts-de-Seine (mise à jour de la dérogation, Cerfa 13982, ou demande d\'agrément), avant la livraison suivante.';
@@ -188,6 +188,21 @@ function volumes_restaurants(): array {
     $l = [];
     foreach (lignes("SELECT * FROM clients WHERE type = 'professionnel' AND statut = 'actif' ORDER BY societe, nom") as $c) $l[] = $c + ['km' => $km[(int)$c['id']] ?? null];
     return $l;
+}
+/**
+ * La distance d'un restaurant pose-t-elle question avant de livrer ? Null si elle est tapée et sous la limite (ou sans limite saisie),
+ * sinon 'inconnue' ou 'loin' (contre-expertise de l'audit n° 9, constat 3 : vérifiée au départ, pas seulement la nuit).
+ */
+function volumes_distance_etat(int $cid): ?string {
+    if (!volumes_pret()) return null;
+    $km = val("SELECT km FROM volumes_restaurants WHERE client_id = ?", [$cid]);
+    if ($km === null || $km === false) return 'inconnue';
+    $lim = volumes_reglage('volumes_km');
+    return $lim !== null && (float)$km > $lim ? 'loin' : null;
+}
+function volumes_distance_message(string $etat): string {
+    return $etat === 'inconnue' ? 'La distance de ce restaurant n\'est pas encore tapée (Plus › Obligations › Volumes › Restaurants livrés).'
+                                : 'Ce restaurant est plus loin que la distance de la dérogation : la DDPP doit avoir donné son accord avant de livrer.';
 }
 function volumes_km_fixer(int $cid, ?float $km): string {
     if (!val("SELECT 1 FROM clients WHERE id = ? AND type = 'professionnel'", [$cid])) return 'Restaurant introuvable.';

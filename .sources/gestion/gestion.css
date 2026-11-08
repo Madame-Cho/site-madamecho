@@ -907,3 +907,4 @@ html:lang(ko) .par::after{content:" 님"}
 .doc-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.doc-actions form{margin:0}
 .etiquette .e-poids{font-size:6pt}
 .tableau td{overflow-wrap:anywhere}
+.case-bloquee{opacity:.75}

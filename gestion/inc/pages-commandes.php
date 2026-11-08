@@ -308,6 +308,8 @@ function page_commande(): void {
     $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h($quand)]) : definition(['Quand' => h($quand), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
                                      'Où' => h(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Au 4 avenue du Château, 92190 Meudon')])
                       . (($ind = indispo_de_commande($k)) ? '<p class="erreur">' . icone('alerte') . ' Indispo ce jour-là : ' . h(indispo_texte($ind)) . '. Vérifiez avec le client, ou changez la date. <a href="' . h(u('agenda', ['mois' => substr((string)$k['retrait_date'], 0, 7), 'jour' => (string)$k['retrait_date']])) . '#jour">Voir l\'agenda</a></p>' : '')
+                      . ((livraison_pro($k) && in_array($k['statut'], STATUTS_EN_COURS, true) && ($de = volumes_distance_etat((int)$k['client_id'])))   // vérifiée avant de livrer (contre-expertise n° 9, constat 3)
+                          ? '<p class="erreur">' . icone('alerte') . ' ' . h(volumes_distance_message($de)) . ' <a href="' . h(u('obligations', ['vue' => 'volumes'])) . '#restaurants">Voir les restaurants</a></p>' : '')
                       . agenda_boutons($k));
     $c .= '</div>';
     // Contenu

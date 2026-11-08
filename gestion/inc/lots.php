@@ -16,7 +16,7 @@ const PROBLEME_ETAPES = [
     'retirer' => ['Retirer le lot', 'Mettre de côté tout ce qui reste du lot (cuisine, frigo, vitrine) et ne plus le vendre ni le livrer.'],
     'clients' => ['Prévenir les clients', 'Appeler chaque restaurant livré et chaque client qui a peut-être reçu le lot : ne pas servir, ne pas manger, rapporter ou jeter.'],
     'ddpp' => ['Informer la DDPP', 'Envoyer à la DDPP des Hauts-de-Seine le brouillon ci-dessous, depuis votre messagerie (la gestion ne l\'envoie jamais).'],
-    'rappelconso' => ['Déclarer le rappel sur RappelConso', 'Obligatoire dès qu\'un rappel auprès des consommateurs est décidé (le lot a pu être reçu par des particuliers) : déclarer sur rappel.conso.gouv.fr, après avoir informé la DDPP. Sans objet seulement si aucun particulier n\'a pu le recevoir : dites pourquoi.'],
+    'rappelconso' => ['Déclarer le rappel sur RappelConso', 'Obligatoire dès qu\'un rappel auprès des consommateurs est décidé : le lot a pu être reçu par des particuliers, ou servi par un restaurant à ses clients. Déclarer sur rappel.conso.gouv.fr, après avoir informé la DDPP. Demandez à chaque restaurant si des gâteaux ont été servis ou s\'il les a encore. Sans objet seulement si aucun gâteau du lot n\'a pu arriver chez un consommateur (tout est encore chez vous ou chez le restaurant, ou jeté) : dites où sont les gâteaux, et ce qu\'a dit la DDPP.'],
 ];
 const PROBLEME_TOUJOURS = ['retirer'];   // une étape qui ne peut jamais être « sans objet » (audit n° 8, constat 2)
 const ETIQUETTE_MENTIONS = ['dlc' => 'À consommer jusqu\'au', 'ddm' => 'À consommer de préférence avant le'];
@@ -77,17 +77,17 @@ function etiquette_contenu(array $f): array {
     $adr = trim((string)parametre('etiquette_exploitant', ''));
     if ($adr === '') $manque[] = 'Le nom et l\'adresse de l\'exploitant manquent (Hygiène › Appareils › Réglages).';
     if ($f['dlc'] === '' || $f['numero_lot'] === '') $manque[] = 'La fournée n\'a pas de date limite ou de numéro de lot.';
-    // Les ingrédients sont attendus (réglage) : une étiquette sans eux ne s'imprime pas (audit n° 8, constat 3)
-    $avecIng = (string)parametre('etiquette_ingredients', '1') === '1';
-    if ($avecIng && $fiche['etiquette_le'] !== '' && $fiche['ingredients'] === '') $manque[] = 'La liste d\'ingrédients manque : saisissez la recette du gâteau, puis relisez le texte de l\'étiquette (Hygiène › Appareils › Étiquettes des gâteaux).';
+    // Les ingrédients sont toujours attendus : une étiquette sans eux ne s'imprime pas (audit n° 8, constat 3 ; plus de réglage caché, contre-expertise n° 9, constat 5)
+    if ($fiche['etiquette_le'] !== '' && $fiche['ingredients'] === '') $manque[] = 'La liste d\'ingrédients manque : saisissez la recette du gâteau, puis relisez le texte de l\'étiquette (Hygiène › Appareils › Étiquettes des gâteaux).';
     // Gluten annoncé mais aucune céréale en gras dans les ingrédients (« Farine T45 ») : à préciser (INCO, revue du 08/11)
-    if ($avecIng && $fiche['ingredients'] !== '' && $all !== null && stripos($all, 'gluten') !== false
+    if ($fiche['ingredients'] !== '' && $all !== null && stripos($all, 'gluten') !== false
         && !preg_match('/\b\p{L}*(blé|froment|seigle|orge|avoine|épeautre|kamut|gluten)\p{L}*/iu', $fiche['ingredients']))
         $manque[] = 'Le gâteau contient du gluten : dans les ingrédients, écrivez la céréale (par exemple « farine de blé ») pour qu\'elle s\'imprime en gras.';
     if ($fiche['etiquette_le'] !== '' && !isset(ETIQUETTE_MENTIONS[$fiche['date_mention']])) $manque[] = 'Choisissez la mention de la date (date limite de consommation ou de préférence) dans Hygiène › Appareils › Étiquettes des gâteaux.';
+    if (probleme_ouvert_du_lot((string)$f['numero_lot'])) $manque[] = 'Un problème est en cours sur ce lot : il ne se vend plus et ne se livre plus, ses étiquettes ne s\'impriment plus jusqu\'à la clôture du problème.';
     if ($manque) return ['manque' => $manque];
     return ['manque' => [], 'nom' => (string)$p['nom'], 'allergenes' => (string)$all, 'conservation' => rtrim($cons, '.'), 'dlc' => (string)$f['dlc'], 'lot' => (string)$f['numero_lot'],
-            'exploitant' => $adr, 'ingredients' => $avecIng ? $fiche['ingredients'] : '', 'sans_ingredients' => false,
+            'exploitant' => $adr, 'ingredients' => $fiche['ingredients'],
             'mention' => ETIQUETTE_MENTIONS[$fiche['date_mention']], 'poids_net' => $fiche['poids_net']];
 }
 /** Les ingrédients avec les allergènes en gras (mots du site, comme la comparaison des fiches). */
@@ -103,6 +103,8 @@ function etiquette_ingredients_html(string $t): string {
 /* ---------- Problème sur un lot ---------- */
 
 function probleme(int $id): ?array { return ligne("SELECT * FROM hygiene_problemes WHERE id = ?", [$id]); }
+/** Le problème encore ouvert sur ce lot, s'il y en a un : le lot ne se livre plus et ses étiquettes ne s'impriment plus (contre-expertise n° 9, constat 1). */
+function probleme_ouvert_du_lot(string $numero): ?array { return $numero === '' ? null : ligne("SELECT * FROM hygiene_problemes WHERE numero_lot = ? AND clos_le = '' ORDER BY id DESC LIMIT 1", [$numero]); }
 function probleme_du_lot(string $numero): ?array { return ligne("SELECT * FROM hygiene_problemes WHERE numero_lot = ? ORDER BY clos_le = '' DESC, id DESC LIMIT 1", [$numero]); }
 /** Ouvre un problème sur un lot (un seul ouvert par lot) et la démarche importante qui le suit dans Obligations. */
 function probleme_ouvrir(int $fid, string $description): array {

@@ -251,6 +251,27 @@ function hygiene_livraison_lue(array $src, ?array $avant = null): array {
     if (!$avant) $v['depart_le'] = maintenant();
     return [$v, null];
 }
+/**
+ * Avant de noter un départ (contre-expertise de l'audit n° 9, constats 1 et 3) : aucun lot sous un problème ouvert
+ * (sauf s'il était déjà relié à la livraison qu'on corrige), et la distance du restaurant vérifiée, ou un départ noté
+ * quand même, avec la raison dans la note. Rend l'erreur, ou null.
+ */
+function hygiene_livraison_controle(array $v, array $liens, array $src, ?array $avant = null): ?string {
+    $deja = $avant ? array_map(fn($x) => (int)$x['id'], hygiene_liens_de((int)$avant['id'])) : [];
+    foreach (array_unique(array_filter(array_map('intval', $liens), fn($l) => $l > 0)) as $l) {
+        $f = hygiene_releve($l);
+        if (!$f || $f['genre'] !== 'fournee' || in_array($l, $deja, true)) continue;
+        if (probleme_ouvert_du_lot((string)$f['numero_lot']))
+            return 'Le lot ' . $f['numero_lot'] . ' a un problème en cours : il ne se livre plus. Retirez-le de la livraison (Plus › Hygiène › la fiche du lot).';
+    }
+    if ($avant || $v['client_id'] === null) return null;
+    $etat = volumes_distance_etat((int)$v['client_id']);
+    if ($etat === null) return null;
+    if ((string)($src['distance_ok'] ?? '') !== '1')
+        return volumes_distance_message($etat) . ' Pour noter le départ quand même, cochez « Je livre quand même » et dites pourquoi dans la note.';
+    if (une_ligne((string)($src['note'] ?? '')) === '') return 'Écrivez dans la note pourquoi vous livrez quand même (distance vérifiée, accord de la DDPP…).';
+    return null;
+}
 /** L'arrivée d'une livraison : une seule fois, à l'heure du toucher. */
 function hygiene_arrivee(int $id): string {
     $r = hygiene_releve($id);
