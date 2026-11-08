@@ -352,9 +352,9 @@ function page_plus(): void {
     // « Quoi de neuf » en tête, avec le point chocolat d'une nouveauté de l'outil (FR-041)
     $s = '<a class="ligne-menu" href="' . h(u('nouveautes')) . '">' . icone('cloche') . '<span><b>Quoi de neuf' . pastille_menu(0, pastilles()['outil'] ? 'outil' : '') . '</b><span class="petit">Ce qui est nouveau ou a changé, et les nouveautés de l\'outil</span></span></a>';
     // Obligations (spécification 004), juste après « Quoi de neuf », avec son chiffre rouge ou son point ambre
-    if (function_exists(__NAMESPACE__ . '\\obligations_pret') && obligations_pret()) {
+    if (function_exists(__NAMESPACE__ . '\\obligations_acces') && obligations_acces()) {
         $nOb = obligations_urgentes();
-        $s .= '<a class="ligne-menu" href="' . h(u('obligations')) . '">' . icone('obligations') . '<span><b>Obligations' . pastille_menu($nOb, $nOb === 0 && obligations_changees() ? 'change' : '') . '</b><span class="petit">Démarches et échéances pour être en règle</span></span></a>';
+        $s .= '<a class="ligne-menu" href="' . h(u('obligations')) . '">' . icone('obligations') . '<span><b>Obligations' . pastille_menu($nOb, $nOb === 0 && (obligations_changees() || obligations_changees('echeance')) ? 'change' : '') . '</b><span class="petit">Démarches et échéances pour être en règle</span></span></a>';
     }
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';

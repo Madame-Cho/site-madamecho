@@ -823,6 +823,7 @@ html:lang(ko) .par::after{content:" 님"}
 .d-etat-grand{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:500;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--ivoire)}
 .d-etat-grand.n-action,.d-etat-grand.n-bientot{background:var(--p-action-f);color:var(--p-action-t)}
 .d-etat-grand.n-attente,.d-etat-grand.n-confirmer{background:var(--p-change-f);color:var(--p-change-t)}
+.n-attente.depassee{border-left-color:var(--p-action)}.n-attente.depassee .d-etat{color:var(--p-action-t)}.d-etat-grand.n-attente.depassee{background:var(--p-action-f);color:var(--p-action-t)}
 .historique-demarche{list-style:none;margin:0;padding:0}
 .historique-demarche li{padding:6px 0;border-bottom:1px solid var(--ligne)}
 .form-demarche .case{margin:6px 0}

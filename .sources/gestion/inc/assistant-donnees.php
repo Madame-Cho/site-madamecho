@@ -140,7 +140,7 @@ function assistant_outil_lire(string $nom, array $in): array {
 
 /** Les démarches de l'écran Obligations, en lecture seule (lot 1, T012). */
 function outil_obligations(array $in): array {
-    if (!function_exists(__NAMESPACE__ . '\\obligations_pret') || !obligations_pret()) return ['demarches' => 'aucune (écran pas encore prêt)'];
+    if (!function_exists(__NAMESPACE__ . '\\obligations_acces') || !obligations_acces()) return ['demarches' => 'non disponible pour ce compte (réservé à Youngmi et à Olivier)'];
     $fait = ($in['fait'] ?? false) === true;
     $l = array_slice(demarches_lister($fait ? 'fait' : 'a_faire', 'toutes', obligations_moi()), 0, ia_limite($in, 30));
     $out = array_map(fn(array $d): array => array_filter([

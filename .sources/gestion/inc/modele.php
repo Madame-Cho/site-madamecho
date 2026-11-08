@@ -372,6 +372,8 @@ function commande_creer(array $d): int {
     $id = (int)db()->lastInsertId();
     client_echange((int)$d['client_id'], $d['recue_le'] ?? $now);
     evenement('creation', $d['origine'] ?? 'Demande créée', ['commande' => $id, 'client' => (int)$d['client_id']], '', $d['statut'] ?? 'demande', $d['auteur'] ?? null);
+    // Dès la demande d'un client professionnel : vérifier les obligations avant de confirmer (écran Obligations, audit n° 7, P2-02)
+    if (function_exists(__NAMESPACE__ . '\\obligations_client_pro')) obligations_client_pro((int)$d['client_id']);
     return $id;
 }
 /** Ce qui a changé, en clair, pour le bandeau vert (retour d'Olivier en test, 07/11/2026) : « heure du retrait : 09 h 00 → 10 h 00 ; gâteaux ». */
@@ -437,8 +439,8 @@ function commande_statut(int $id, string $statut, array $extra = []): bool {
     client_echange((int)$k['client_id'], $now);
     $texte = STATUTS[$statut] . (($extra['motif'] ?? '') !== '' ? ' : ' . $extra['motif'] : '');
     evenement('statut', $texte, ['commande' => $id, 'client' => (int)$k['client_id']], $k['statut'], $statut, $extra['auteur'] ?? null);
-    // Première commande confirmée d'un restaurant : vérifier la dérogation avant de le livrer (écran Obligations, audit n° 7, constat 1)
-    if ($statut === 'confirmee' && function_exists(__NAMESPACE__ . '\\obligations_nouveau_restaurant') && ($k2 = commande($id))) obligations_nouveau_restaurant($k2);
+    // Client professionnel : vérifier les obligations avant de livrer, et pour chaque gâteau qu'il n'a jamais eu (écran Obligations, audit n° 7, P2-02)
+    if ($statut === 'confirmee' && function_exists(__NAMESPACE__ . '\\obligations_commande_pro') && ($k2 = commande($id))) obligations_commande_pro($k2);
     return true;
 }
 function commande_paiement(int $id, string $paiement, string $moyen, ?int $acompte, string $facture): void {

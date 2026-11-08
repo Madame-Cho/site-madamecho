@@ -47,14 +47,19 @@ et la Mémoire, un fichier CSV dans les fichiers du projet (hors dépôt) ; Oliv
 Obligations › Échéances › Reprise d'une liste (compte administrateur, même parcours que la reprise des factures du 07/11), puis le fichier
 est supprimé. La reprise refuse les doublons (même titre et même échéance) et dit ce qu'elle a fait.
 
-## R6. Déclencheur « nouveau restaurant » (corrigé, audit n° 7, constat 1)
+## R6. Nouveau client professionnel (corrigé, audit n° 7 passe 1 constat 1, passe 2 P2-02 et P2-14)
 
-Quand une commande d'un client professionnel passe « confirmée » et que c'est sa première commande
-confirmée, une démarche importante « Vérifier la dérogation (Cerfa 13982) avant de livrer » est créée
-pour Youngmi, échéance la veille de la livraison, sauf si une démarche du même déclencheur existe
-déjà pour ce client (clé unique `declencheur`). La dérogation se déclare avant de fournir un nouveau
-commerce et se met à jour à tout changement important (destinataires, produits, quantités). Le texte de la démarche ne
-reprend que le nom commercial du restaurant (donnée de la société cliente, pas d'une personne).
+Dès qu'un client est professionnel (fiche « professionnel » ou commande « pro » ni annulée ni sans suite),
+à la création d'une commande, à sa confirmation, et au calcul de nuit ou à l'ouverture de l'écran (rattrapage
+d'une fiche passée « professionnel »), une démarche importante « Nouveau client professionnel : vérifier les
+obligations » est créée pour Youngmi, échéance la veille de sa prochaine livraison (sinon dans 7 jours), une
+seule fois par client (déclencheur `pro:<id>`). Elle n'affirme pas que le Cerfa 13982 est toujours obligatoire :
+elle fait vérifier l'usage des gâteaux (restaurant ou commerce qui sert ou revend, ou entreprise pour ses
+équipes), les produits, quantités et distance, les déclarations déjà faites, la facture pro ; « Sans objet »
+demande la raison et sa source. Une fois cette vérification close, chaque gâteau que ce client n'a jamais eu
+redemande une vérification (déclencheur `pro:<id>:<produit>`), jamais de rappel répété. Le titre ne contient
+aucun nom : le client est relié par `ref_genre` = client et `ref_id`, et son nom ne s'affiche que dans la
+fiche de la gestion. Les textes écrits par la gestion se traduisent en coréen ; ceux tapés jamais.
 
 ## R8. Récurrence et tâche de nuit (audit n° 7, constats 3 et 4)
 
@@ -79,3 +84,21 @@ commencé, sans limite de rattrapage au-delà de 12 périodes. La date du dernie
 Les deux comptes actuels ont les mêmes droits (choix d'Olivier, Q1). L'historique dit qui a fait quoi ;
 la pastille ambre signale à l'un ce que l'autre a ajouté ou changé (système « vu par personne » des
 pastilles, genre `demarche`).
+
+## R10. Corrections de la passe 2 de l'audit n° 7 (version 828f56a)
+
+- P2-01 : le plafond de 12 porte sur les périodes manquantes (les plus récentes), avec un curseur : jamais
+  de retour avant la dernière période créée (hors « sans objet »).
+- P2-03 : le mail du lundi ne recopie que des titres contrôlés (écrits par la gestion, venus d'une échéance
+  ou de la liste de départ) ; une démarche tapée à la main y figure comme « Démarche ajoutée à la main ».
+  Jamais d'explication, d'origine, de note ni de nom.
+- P2-04 : l'écran est réservé à contact@ et aux comptes administrateurs actifs (`obligations_acces`).
+- P2-05 : une échéance modifiée met à jour ses démarches ouvertes ; si la date ou la fréquence change,
+  celles pas encore dues hors calendrier passent « sans objet » (la nouvelle date les remplace).
+- P2-06 : une démarche en attente dont l'échéance est passée le dit en rouge, sans compter dans le chiffre.
+- P2-07 : la semaine du mail est réservée en base avant l'envoi (`obligations_mail_AAAA-SNN`).
+- P2-09 : l'historique garde `auteur_id` ; « Ajoutée » / « A changé » par démarche et par échéance, vus
+  seulement une fois affichés.
+- P2-10 : une date impossible est refusée avec un message (jamais effacée en silence).
+- P2-13 : le filtre « Les miennes » passe avant la limite des 200.
+- P2-08, P2-11, P2-12 : hors code (liste de départ T017, registre des traitements, recette avec Youngmi).

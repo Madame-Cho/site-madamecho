@@ -161,7 +161,7 @@ function pastilles_vu(string $genre, string $objet, int $jusqua = 0): void {
     if (isset($GLOBALS['mc_pastilles'])) {
         $r = &$GLOBALS['mc_pastilles'];
         if ($genre === 'outil') $r['outil'] = array_values(array_filter($r['outil'], fn($n) => $n['id'] !== $objet));
-        else {
+        elseif (in_array($genre, ['commande', 'client'], true)) {
             $cle = $genre === 'commande' ? 'commandes' : 'clients';
             if (isset($r[$cle][(int)$objet]) && (int)$r[$cle][(int)$objet]['evs'][0]['id'] <= $jusqua) {
                 if ($cle === 'commandes' && $r[$cle][(int)$objet]['niveau'] === 'action') $r['action']--;

@@ -51,6 +51,7 @@ commence, que la précédente soit close ou non.
 |---------|------|------|
 | id | INTEGER PK | numéro croissant (comparé par les pastilles) |
 | le, auteur | TEXT | |
+| auteur_id | INTEGER | compte de l'auteur (NULL pour la gestion elle-même) ; sert au « a changé » (P2-09) |
 | demarche_id, echeance_id | INTEGER | |
 | type | TEXT | `creation`, `modification`, `fait`, `sans_objet`, `rouverte`, `regle` |
 | champ, ancien, nouveau | TEXT | |

@@ -108,8 +108,9 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
         $dansPlus = in_array($actif, ['plus', 'statistiques', 'production', 'reglages', 'ingredients', 'manuel', 'assistant', 'nouveautes', 'obligations'], true);
         // Obligations (spécification 004) : un chiffre rouge pour ce qui est en retard ou dans son rappel, un point ambre si l'autre y a touché
         $nOb = function_exists(__NAMESPACE__ . '\\obligations_urgentes') ? obligations_urgentes() : 0;
-        $ob = pastille_menu($nOb, $nOb === 0 && function_exists(__NAMESPACE__ . '\\obligations_changees') && obligations_changees() ? 'change' : '');
-        foreach ([['obligations', 'Obligations', 'obligations'], ['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Paramètres', 'reglages']] as [$p, $l, $i]) {
+        $ob = pastille_menu($nOb, $nOb === 0 && function_exists(__NAMESPACE__ . '\\obligations_changees') && (obligations_changees() || obligations_changees('echeance')) ? 'change' : '');
+        $acces = function_exists(__NAMESPACE__ . '\\obligations_acces') && obligations_acces();
+        foreach (array_merge($acces ? [['obligations', 'Obligations', 'obligations']] : [], [['statistiques', 'Statistiques', 'stats'], ['production', 'Production', 'imprimer'], ['manuel', 'Manuel', 'livre'], ['assistant', 'Assistant', 'ia'], ['reglages', 'Paramètres', 'reglages']]) as [$p, $l, $i]) {
             $nav .= '<a class="secondaire" href="' . h(u($p)) . '"' . ($actif === $p ? ' aria-current="page"' : '') . '>' . icone($i) . h($l) . ($p === 'manuel' ? $outil : ($p === 'obligations' ? $ob : '')) . '</a>';
         }
         $plusMarque = $nOb > 0 ? pastille_menu($nOb) : ($outil !== '' ? $outil : $ob);

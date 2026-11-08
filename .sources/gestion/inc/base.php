@@ -343,7 +343,7 @@ CREATE TABLE IF NOT EXISTS echeances (id INTEGER PRIMARY KEY, titre TEXT NOT NUL
   pour_qui TEXT NOT NULL DEFAULT 'youngmi', priorite INTEGER NOT NULL DEFAULT 2, importante INTEGER NOT NULL DEFAULT 0, frequence TEXT NOT NULL DEFAULT 'annuelle',
   depart TEXT NOT NULL DEFAULT '', preavis INTEGER NOT NULL DEFAULT 30, origine TEXT NOT NULL DEFAULT '', active INTEGER NOT NULL DEFAULT 1,
   cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '', modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '');
-CREATE TABLE IF NOT EXISTS demarches_historique (id INTEGER PRIMARY KEY, le TEXT NOT NULL, auteur TEXT NOT NULL, demarche_id INTEGER, echeance_id INTEGER,
+CREATE TABLE IF NOT EXISTS demarches_historique (id INTEGER PRIMARY KEY, le TEXT NOT NULL, auteur TEXT NOT NULL, auteur_id INTEGER, demarche_id INTEGER, echeance_id INTEGER,
   type TEXT NOT NULL, champ TEXT NOT NULL DEFAULT '', ancien TEXT NOT NULL DEFAULT '', nouveau TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS demarches_historique_d ON demarches_historique(demarche_id);
 ");
