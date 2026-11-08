@@ -33,6 +33,7 @@ branche, pas publié. Rien n'est publié sans l'audit n° 7 et le feu vert d'Oli
 - [X] T015 Régénérer ; essais unitaires (dont migrations dans les deux ordres avec les factures, deux passages de nuit simultanés) et parcours ; captures FR/KO et téléphone
 - [X] T016 Commande d'audit n° 7 pour le ChatGPT d'Olivier (P-26), passe 1 sur spec, plan et tâches ; passe 2 sur la version construite
 - [X] T020 Corrections de la passe 2 (P2-01 à P2-07, P2-09, P2-10, P2-13) et alerte « nouveau client professionnel » (P2-14), choix d'Olivier « Tout, avec l'alerte client pro » ; essais des cas de l'audit
-- [ ] T021 Passe 3 de l'audit n° 7 sur la version corrigée
+- [X] T021 Passe 3 de l'audit n° 7 sur 8ae744b, puis corrections P3-01 à P3-10
+- [ ] T022 Passe 4 de l'audit n° 7 sur la version corrigée
 - [ ] T017 Liste initiale vérifiée dans le Drive et la Mémoire (CM2C, AXA T-01, impots.gouv T-02, Workspace, DDPP, extincteur, électricité, calendrier 20/02, registre RGPD, factures dues…), CSV dans les fichiers du projet, jamais dans le dépôt
 - [ ] T018 Feu vert d'Olivier sur la version exacte ; fetch et rebase sur main ; publication ; Journal des publications, Registre ; reprise par Olivier, fichier supprimé

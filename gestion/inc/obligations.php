@@ -27,13 +27,21 @@ function obligations_moi(?array $u = null): string {
     return $u && strtolower((string)$u['email']) === GESTION_COMPTE_INITIAL ? 'youngmi' : 'olivier';
 }
 /**
+ * Le compte d'Olivier : le plus ancien compte administrateur actif autre que contact@. Un autre administrateur invité n'a pas
+ * accès à l'écran et ne peut jamais valider ni agir sous le nom d'Olivier (audit n° 7, passe 3, P3-03).
+ */
+function obligations_olivier_id(): int {
+    static $id = null;
+    return $id ??= (int)(val("SELECT id FROM utilisateurs WHERE role = 'admin' AND actif = 1 AND lower(email) <> ? ORDER BY cree_le, id LIMIT 1", [GESTION_COMPTE_INITIAL]) ?? 0);
+}
+/**
  * Qui voit l'écran : Youngmi (contact@) et les comptes administrateurs (Olivier). Un membre invité n'y a pas accès
  * et n'agit jamais sous le nom d'Olivier (audit n° 7, passe 2, P2-04).
  */
 function obligations_acces(?array $u = null): bool {
     $u = $u ?? utilisateur_courant();
     if (!$u || !obligations_pret() || !(int)($u['actif'] ?? 1)) return false;
-    return strtolower((string)$u['email']) === GESTION_COMPTE_INITIAL || ($u['role'] ?? '') === 'admin';
+    return strtolower((string)$u['email']) === GESTION_COMPTE_INITIAL || (($u['role'] ?? '') === 'admin' && (int)$u['id'] === obligations_olivier_id());
 }
 function obligations_pour_moi(array $d, string $moi): bool { return $d['pour_qui'] === $moi || $d['pour_qui'] === 'deux'; }
 
@@ -276,28 +284,35 @@ function echeance_a_la_periode(array $e, string $p): bool {
     return false;
 }
 /**
- * Après la modification d'une échéance, ses démarches ouvertes suivent (audit n° 7, passe 2, P2-05) : le titre, le lieu, la personne,
- * la priorité, le préavis… changent aussi chez elles ; si la date ou la fréquence a changé, celles qui ne sont pas encore dues
- * et ne tombent plus sur le nouveau calendrier passent « sans objet » (la bonne date les remplace). Celles déjà en retard restent :
- * elles sont toujours dues, et on les clôt à la main. Tout est noté dans leur historique. Rend [mises à jour, remplacées].
+ * Après la modification d'une échéance, ses démarches ouvertes (à faire ou en attente) suivent : le titre, le lieu, la personne,
+ * la priorité, le préavis… changent aussi chez elles (audit n° 7, passe 2, P2-05). Si la date ou la fréquence a changé, rien n'est
+ * clos automatiquement (passe 3, P3-07) : celles qui ne tombent plus sur le nouveau calendrier gardent leur date, portent
+ * « Date d'avant la modification » et un mot dans leur historique ; Youngmi ou Olivier décide de les clore ou de les garder.
+ * La nouvelle date crée sa démarche au calcul suivant. Rend [mises à jour, à revoir].
  */
 function echeance_repercuter(array $avant, array $apres): array {
     $copie = ['titre', 'explication', 'ou', 'pour_qui', 'priorite', 'importante', 'preavis', 'origine'];
     $chg = array_values(array_filter($copie, fn($c) => (string)$avant[$c] !== (string)$apres[$c]));
     $calendrier = (string)$avant['depart'] !== (string)$apres['depart'] || (string)$avant['frequence'] !== (string)$apres['frequence'];
-    $maj = 0; $remplacees = 0;
+    $maj = 0; $revoir = 0;
     foreach (lignes("SELECT * FROM demarches WHERE echeance_id = ? AND etat IN ('a_faire', 'attente')", [(int)$avant['id']]) as $d) {
-        if ($calendrier && $d['etat'] === 'a_faire' && $d['periode'] !== 'a-confirmer' && (string)$d['echeance'] >= aujourdhui() && !echeance_a_la_periode($apres, (string)$d['periode'])) {
-            demarche_changer_etat((int)$d['id'], 'sans_objet', '', '', 'Échéance modifiée le ' . date_fr(aujourdhui(), 'longue') . ' : la nouvelle date la remplace.');
-            $remplacees++;
-            continue;
+        if ($chg) {
+            $v = $d; foreach ($chg as $c) $v[$c] = $apres[$c];
+            demarche_modifier((int)$d['id'], $v);
+            $maj++;
         }
-        if (!$chg) continue;
-        $v = $d; foreach ($chg as $c) $v[$c] = $apres[$c];
-        demarche_modifier((int)$d['id'], $v);
-        $maj++;
+        if ($calendrier && $d['periode'] !== 'a-confirmer' && !echeance_a_la_periode($apres, (string)$d['periode'])) {
+            demarche_historique_noter('modification', (int)$d['id'], null, 'calendrier', (string)$d['echeance'], 'échéance modifiée : à revoir');
+            $revoir++;
+        }
     }
-    return [$maj, $remplacees];
+    return [$maj, $revoir];
+}
+/** La démarche vient d'une échéance dont le calendrier a changé depuis : sa date est celle d'avant (P3-07). */
+function demarche_hors_calendrier(array $d): bool {
+    if ($d['echeance_id'] === null || $d['periode'] === '' || $d['periode'] === 'a-confirmer' || !in_array($d['etat'], ['a_faire', 'attente'], true)) return false;
+    $e = echeance((int)$d['echeance_id']);
+    return $e && (string)$e['depart'] !== '' && !echeance_a_la_periode($e, (string)$d['periode']);
 }
 function echeance_enregistrer(?int $id, array $e, ?array &$compte = null): int {
     $now = maintenant();
@@ -339,8 +354,12 @@ function premier_lundi(string $date): string {
 }
 /** La date de la période n d'une échéance (n = 0 : la date de départ). */
 function echeance_periode(array $e, int $n): string {
-    $d = date_plus_mois((string)$e['depart'], $n * ECHEANCE_PAS[$e['frequence']]);
-    return $e['frequence'] === 'premier_lundi' ? premier_lundi($d) : $d;
+    if ($e['frequence'] === 'premier_lundi') {
+        // Le premier lundi du mois de départ s'il ne tombe pas avant la date donnée, sinon celui du mois suivant (P3-10)
+        $decale = premier_lundi((string)$e['depart']) < (string)$e['depart'] ? 1 : 0;
+        return premier_lundi(date_plus_mois(substr((string)$e['depart'], 0, 8) . '01', $n + $decale));
+    }
+    return date_plus_mois((string)$e['depart'], $n * ECHEANCE_PAS[$e['frequence']]);
 }
 
 /**
@@ -371,7 +390,10 @@ function obligations_generer(?string $auj = null): int {
         // (audit n° 7, passe 2, P2-01).
         $creee = substr((string)$e['cree_le'], 0, 10);
         // Curseur : on ne revient jamais en arrière de la dernière période déjà créée (pas de flot de démarches passées)
-        $dernier = (string)(val("SELECT MAX(periode) FROM demarches WHERE echeance_id = ? AND periode <> 'a-confirmer' AND etat <> 'sans_objet'", [(int)$e['id']]) ?? '');
+        // (seules comptent les périodes du calendrier en vigueur : après un changement de date, l'ancienne ne bloque rien)
+        $dernier = '';
+        foreach (array_column(lignes("SELECT periode FROM demarches WHERE echeance_id = ? AND periode <> 'a-confirmer' AND etat <> 'sans_objet'", [(int)$e['id']]), 'periode') as $pp)
+            if ($pp > $dernier && echeance_a_la_periode($e, (string)$pp)) $dernier = (string)$pp;
         $existantes = array_flip(array_column(lignes("SELECT periode FROM demarches WHERE echeance_id = ?", [(int)$e['id']]), 'periode'));
         $manquantes = [];
         for ($i = 0; $i < 1200; $i++) {
@@ -390,8 +412,18 @@ function obligations_generer(?string $auj = null): int {
 
 /* ---------- Nouveau client professionnel : vérifier les obligations (audit n° 7, passe 1 constat 1, passe 2 P2-02 et P2-14) ---------- */
 
+const OBLIGATIONS_PRO_TITRE = 'Nouveau client professionnel : vérifier les obligations';
+const OBLIGATIONS_PRO_TITRE_GATEAU = 'Nouveau gâteau pour un client professionnel : vérifier les obligations';
+const OBLIGATIONS_PRO_TITRE_MESURE = 'Gâteau sur mesure pour un client professionnel : vérifier les obligations';
+const OBLIGATIONS_PRO_TITRE_LIVRAISON = 'Première livraison pour un client professionnel : vérifier les obligations';
 const OBLIGATIONS_PRO_OU = 'Gestion : la fiche du client (lien ci-dessus). mesdemarches.agriculture.gouv.fr › Mes démarches : déclaration d\'activité (Cerfa 13984) et dérogation à l\'agrément (Cerfa 13982). Les récépissés dans le Drive : 01 › 09-Certifications, labels et agréments. En cas de doute : la DDPP des Hauts-de-Seine.';
 const OBLIGATIONS_PRO_POURQUOI = 'Vendre à un professionnel peut créer de nouvelles obligations ; ce n\'est pas toujours le cas. Avant de confirmer ou de livrer, vérifiez : 1) ce qu\'il fait des gâteaux : un restaurant ou un commerce qui les sert ou les revend (la dérogation à l\'agrément, Cerfa 13982, doit peut-être le compter parmi les destinataires), ou une entreprise qui les offre ou les sert à ses équipes (à vérifier aussi) ; 2) les produits, les quantités par semaine et la distance de livraison ; 3) la déclaration d\'activité et la dérogation déjà faites auprès de la DDPP ; 4) la facture professionnelle (mentions obligatoires). Si une démarche a été faite, collez le lien du récépissé et touchez « C\'est fait ». S\'il n\'y a rien à faire, touchez « Sans objet » et écrivez la raison et sa source (DDPP, Ithea, page officielle).';
+
+/** Les libellés écrits par la gestion elle-même, jamais modifiables : eux seuls vont dans le mail et se traduisent (P3-01, P3-05). */
+function obligations_textes_figes(): array {
+    return [OBLIGATIONS_PRO_TITRE, OBLIGATIONS_PRO_TITRE_GATEAU, OBLIGATIONS_PRO_TITRE_MESURE, OBLIGATIONS_PRO_TITRE_LIVRAISON, OBLIGATIONS_PRO_OU, OBLIGATIONS_PRO_POURQUOI,
+            'Nouveau client professionnel', 'Nouveau gâteau pour un client professionnel', 'Gâteau sur mesure pour un client professionnel', 'Première livraison pour un client professionnel'];
+}
 
 /** La date pour vérifier : la veille du prochain retrait ou de la prochaine livraison de ce client, sinon dans 7 jours ; jamais avant aujourd'hui. */
 function obligations_pro_date(int $cid): string {
@@ -413,7 +445,7 @@ function obligations_client_est_pro(int $cid): bool {
 function obligations_client_pro(int $cid): int {
     if (!obligations_pret() || !obligations_client_est_pro($cid)) return 0;
     return demarche_creer([
-        'titre' => 'Nouveau client professionnel : vérifier les obligations', 'explication' => OBLIGATIONS_PRO_POURQUOI, 'ou' => OBLIGATIONS_PRO_OU,
+        'titre' => OBLIGATIONS_PRO_TITRE, 'explication' => OBLIGATIONS_PRO_POURQUOI, 'ou' => OBLIGATIONS_PRO_OU,
         'pour_qui' => 'youngmi', 'echeance' => obligations_pro_date($cid), 'a_confirmer' => 0, 'preavis' => OBLIGATIONS_JOURS, 'priorite' => 1, 'importante' => 1,
         'origine' => 'Nouveau client professionnel',
     ], 'système', ['declencheur' => 'pro:' . $cid, 'ref_genre' => 'client', 'ref_id' => (string)$cid]);
@@ -428,20 +460,30 @@ function obligations_commande_pro(array $k): void {
     $cid = (int)$k['client_id'];
     if (!obligations_client_est_pro($cid)) return;
     obligations_client_pro($cid);
-    if (val("SELECT 1 FROM demarches WHERE declencheur = ? AND etat IN ('a_faire', 'attente')", ['pro:' . $cid])) return;
+    $base = ligne("SELECT * FROM demarches WHERE declencheur = ?", ['pro:' . $cid]);
+    if (!$base || in_array($base['etat'], ['a_faire', 'attente'], true)) return;   // la première vérification couvre encore tout
+    // Ce qui a été vu à la première vérification : les commandes de ce client déjà reçues quand elle a été close (P3-09)
     $deja = [];
-    foreach (lignes("SELECT lignes FROM commandes WHERE client_id = ? AND id <> ? AND statut IN ('confirmee', 'remise')", [$cid, (int)$k['id']]) as $o)
+    foreach (lignes("SELECT lignes FROM commandes WHERE client_id = ? AND statut NOT IN ('annulee', 'sans_suite') AND (cree_le <= ? OR (id <> ? AND statut IN ('confirmee', 'remise')))",
+                    [$cid, (string)$base['fait_le'], (int)$k['id']]) as $o)
         foreach (json_decode((string)$o['lignes'], true) ?: [] as $l) $deja[explode('|', (string)($l['v'] ?? ''))[0]] = true;
+    $verifier = function (string $suffixe, string $titre, string $origine) use ($cid): void {
+        demarche_creer(['titre' => $titre, 'explication' => OBLIGATIONS_PRO_POURQUOI, 'ou' => OBLIGATIONS_PRO_OU, 'pour_qui' => 'youngmi', 'echeance' => obligations_pro_date($cid),
+                        'a_confirmer' => 0, 'preavis' => OBLIGATIONS_JOURS, 'priorite' => 1, 'importante' => 1, 'origine' => $origine],
+                       'système', ['declencheur' => 'pro:' . $cid . ':' . $suffixe, 'ref_genre' => 'client', 'ref_id' => (string)$cid]);
+    };
+    $mesure = trim((string)($k['perso'] ?? '')) !== '' || trim((string)($k['besoin'] ?? '')) !== '';
     foreach (json_decode((string)($k['lignes'] ?? '[]'), true) ?: [] as $l) {
         $prod = explode('|', (string)($l['v'] ?? ''))[0];
-        if ($prod === '' || isset($deja[$prod])) continue;
+        if ($prod === '') { $mesure = true; continue; }           // gâteau sans fiche : traité comme sur mesure (P3-02)
+        if (isset($deja[$prod])) continue;
         $deja[$prod] = true;
-        demarche_creer([
-            'titre' => 'Nouveau gâteau pour un client professionnel : vérifier les obligations', 'explication' => OBLIGATIONS_PRO_POURQUOI, 'ou' => OBLIGATIONS_PRO_OU,
-            'pour_qui' => 'youngmi', 'echeance' => obligations_pro_date($cid), 'a_confirmer' => 0, 'preavis' => OBLIGATIONS_JOURS, 'priorite' => 1, 'importante' => 1,
-            'origine' => 'Nouveau gâteau pour un client professionnel',
-        ], 'système', ['declencheur' => 'pro:' . $cid . ':' . $prod, 'ref_genre' => 'client', 'ref_id' => (string)$cid]);
+        $verifier($prod, OBLIGATIONS_PRO_TITRE_GATEAU, 'Nouveau gâteau pour un client professionnel');
     }
+    if ($mesure) $verifier('mesure:' . (int)$k['id'], OBLIGATIONS_PRO_TITRE_MESURE, 'Gâteau sur mesure pour un client professionnel');
+    // Première livraison (la distance compte pour la dérogation) : une fois par client
+    if (($k['mode'] ?? '') === 'livraison' && !val("SELECT 1 FROM commandes WHERE client_id = ? AND id <> ? AND mode = 'livraison' AND statut IN ('confirmee', 'remise') AND cree_le <= ?", [$cid, (int)$k['id'], (string)$base['fait_le']]))
+        $verifier('livraison', OBLIGATIONS_PRO_TITRE_LIVRAISON, 'Première livraison pour un client professionnel');
 }
 /** Rattrapage (nuit et ouverture de l'écran) : chaque client professionnel a sa vérification, même s'il l'est devenu par sa fiche. */
 function obligations_clients_pro(): int {
@@ -478,12 +520,14 @@ function obligations_resume(): array {
  * Jamais d'explication, d'origine, de note ni de nom de client (exception R-01 limitée ; audit n° 7, passe 2, P2-03).
  */
 function obligations_titre_mail(array $d): string {
-    $controle = (string)$d['declencheur'] !== '' || $d['echeance_id'] !== null || (string)$d['ref_genre'] === 'reprise';
-    return $controle ? (string)$d['titre'] : 'Démarche ajoutée à la main';
+    // Seulement un libellé figé de la gestion ; tout titre tapé (démarche, échéance, liste reprise) devient « Démarche n° … » (P3-01)
+    return in_array((string)$d['titre'], obligations_textes_figes(), true) ? (string)$d['titre'] : 'Démarche n° ' . (int)$d['id'];
 }
 function obligations_mail_texte(array $l): string {
     $t = "Obligations de la semaine (gestion Madame Cho, " . date_fr(aujourdhui(), 'longue') . ")\n\n";
-    if (!$l) return $t . "Rien en retard ni à faire dans les " . OBLIGATIONS_JOURS . " prochains jours.\n";
+    // Liste de départ pas encore reprise ou relue : ne jamais conclure « rien à faire » (P3-08)
+    if (obligations_liste_a_valider()) $t .= "ATTENTION : la liste de départ n'est pas encore " . ((string)parametre('obligations_reprise_le', '') === '' ? 'reprise' : 'relue par Youngmi et Olivier') . " : cette liste n'est pas complète, aucune conclusion possible.\n\n";
+    if (!$l) return $t . "Rien en retard ni à faire dans les " . OBLIGATIONS_JOURS . " prochains jours parmi les démarches connues.\nLe détail : gestion, Plus › Obligations.\n";
     foreach (['retard' => 'En retard', 'bientot' => 'À faire bientôt', 'confirmer' => 'Date à confirmer', 'attente' => 'Envoyé, réponse attendue'] as $niv => $titre) {
         $g = array_filter($l, fn($d) => $d['_etat']['niveau'] === $niv);
         if (!$g) continue;
@@ -505,6 +549,28 @@ function obligations_mail_lundi(?string $auj = null): string {
     // (audit n° 7, passe 2, P2-07). Un échec garde la réservation (pas de nouvel essai la même semaine) et se voit dans Paramètres.
     q("INSERT OR IGNORE INTO parametres (cle, valeur) VALUES (?, ?)", [$cle, 'en cours ' . maintenant()]);
     if ((int)q("SELECT changes()")->fetchColumn() !== 1) return 'deja';
+    $texte = obligations_mail_texte(obligations_resume());
+    if (GESTION_ESSAI) { parametre_ecrire('essai_mail_obligations', $texte); $ok = true; }
+    else $ok = envoyer_email(GESTION_COMPTE_INITIAL, 'Obligations de la semaine · gestion Madame Cho', $texte);
+    parametre_ecrire($cle, ($ok ? 'envoyé ' : 'échec ') . maintenant());
+    return $ok ? 'envoye' : 'echec';
+}
+
+/** L'état du dernier mail du lundi, pour Paramètres (P3-06) : [semaine, valeur] ou null. */
+function obligations_mail_etat(): ?array {
+    $r = ligne("SELECT cle, valeur FROM parametres WHERE cle LIKE 'obligations_mail_____-S__' ORDER BY cle DESC LIMIT 1");
+    return $r ? [substr((string)$r['cle'], 17), (string)$r['valeur']] : null;
+}
+/**
+ * Renvoi À LA MAIN (toucher d'un administrateur dans Paramètres) du mail de la semaine dont l'envoi a échoué. Une seule fois :
+ * la réservation repasse « en cours » d'un seul geste, seulement si elle était en échec. Rend 'envoye', 'echec' ou 'rien'.
+ */
+function obligations_mail_relancer(): string {
+    $e = obligations_mail_etat();
+    if (!$e || !str_starts_with($e[1], 'échec')) return 'rien';
+    $cle = 'obligations_mail_' . $e[0];
+    q("UPDATE parametres SET valeur = ? WHERE cle = ? AND valeur LIKE 'échec%'", ['en cours ' . maintenant(), $cle]);
+    if ((int)q("SELECT changes()")->fetchColumn() !== 1) return 'rien';
     $texte = obligations_mail_texte(obligations_resume());
     if (GESTION_ESSAI) { parametre_ecrire('essai_mail_obligations', $texte); $ok = true; }
     else $ok = envoyer_email(GESTION_COMPTE_INITIAL, 'Obligations de la semaine · gestion Madame Cho', $texte);

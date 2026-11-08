@@ -74,9 +74,9 @@ function page_obligations(): void {
     mise_en_page('Obligations', $c, 'obligations', 'page-obligations');
 }
 
-/** Les textes écrits par la gestion elle-même (vérification d'un client pro) se traduisent ; ceux tapés par Youngmi ou Olivier jamais. */
-function demarche_tn(array $d): string {
-    return str_starts_with((string)$d['declencheur'], 'pro:') && (string)$d['modifie_par'] === 'système' ? '' : ' translate="no"';
+/** Un libellé figé de la gestion (vérification d'un client pro) se traduit ; un texte tapé par Youngmi ou Olivier jamais (P3-05). */
+function demarche_tn(string $texte): string {
+    return in_array($texte, obligations_textes_figes(), true) ? '' : ' translate="no"';
 }
 
 /** Une démarche dans une liste : l'état en toutes lettres et en couleur, le titre, pour qui, et « nouveau » ou « a changé » si l'autre y a touché. */
@@ -87,9 +87,9 @@ function carte_demarche(array $d, array $changees = []): string {
     $dep = !empty($e['depassee']);
     return '<li><a class="carte-demarche n-' . h(OBLIGATIONS_NIVEAUX[$e['niveau']]) . ($dep ? ' depassee' : '') . '" href="' . h(u('demarche', ['id' => (int)$d['id']])) . '">'
          . '<span class="d-etat">' . icone(in_array($e['niveau'], ['retard', 'bientot'], true) || $dep ? 'alerte' : ($e['niveau'] === 'fait' ? 'valider' : 'mois')) . '<span>' . h($e['texte']) . '</span></span>'
-         . '<b class="d-titre"' . demarche_tn($d) . '>' . h($d['titre']) . '</b>'
+         . '<b class="d-titre"' . demarche_tn((string)$d['titre']) . '>' . h($d['titre']) . '</b>'
          . '<span class="d-pied"><span class="chip-par">' . h(DEMARCHE_POUR[$d['pour_qui']] ?? '') . '</span>'
-         . ((int)$d['importante'] ? '<span class="chip-par">Importante</span>' : '') . ($d['echeance_id'] !== null ? '<span class="chip-par">Récurrente</span>' : '') . $etiq . '</span></a></li>';
+         . ((int)$d['importante'] ? '<span class="chip-par">Importante</span>' : '') . ($d['echeance_id'] !== null ? '<span class="chip-par">Récurrente</span>' : '') . (demarche_hors_calendrier($d) ? '<span class="etiq etiq-change">Date d\'avant la modification</span>' : '') . $etiq . '</span></a></li>';
 }
 
 /** La rubrique Échéances : les règles récurrentes, leur fréquence, la prochaine date et leur préavis. */
@@ -162,15 +162,16 @@ function page_demarche(): void {
     $ouverte = in_array($d['etat'], ['a_faire', 'attente'], true);
     $fiche = '<p class="d-etat-grand n-' . h(OBLIGATIONS_NIVEAUX[$e['niveau']]) . (!empty($e['depassee']) ? ' depassee' : '') . '">' . icone(in_array($e['niveau'], ['retard', 'bientot'], true) || !empty($e['depassee']) ? 'alerte' : 'mois') . '<span>' . h($e['texte']) . '</span></p>'
            . definition([
-               'Quoi' => '<span' . demarche_tn($d) . '>' . nl2br(h($d['titre'])) . '</span>',
+               'Quoi' => '<span' . demarche_tn((string)$d['titre']) . '>' . nl2br(h($d['titre'])) . '</span>',
                'Client' => $d['ref_genre'] === 'client' && ($cl = client((int)$d['ref_id'])) ? '<a href="' . h(u('client', ['id' => (int)$cl['id']])) . '" translate="no">' . h(client_nom($cl)) . '</a>' : '',
-               'Où le faire ?' => '<span' . demarche_tn($d) . '>' . nl2br(h($d['ou'])) . '</span>',
-               'Pourquoi' => $d['explication'] !== '' ? '<span' . demarche_tn($d) . '>' . nl2br(h($d['explication'])) . '</span>' : '',
+               'Où le faire ?' => '<span' . demarche_tn((string)$d['ou']) . '>' . nl2br(h($d['ou'])) . '</span>',
+               'Pourquoi' => $d['explication'] !== '' ? '<span' . demarche_tn((string)$d['explication']) . '>' . nl2br(h($d['explication'])) . '</span>' : '',
                'Pour qui' => h(DEMARCHE_POUR[$d['pour_qui']] ?? ''),
                'Échéance' => $d['echeance'] !== '' ? h(date_fr($d['echeance'], 'longue')) : ((int)$d['a_confirmer'] ? 'À confirmer' : 'Sans date'),
+               'Calendrier' => demarche_hors_calendrier($d) ? 'Date d\'avant la modification de l\'échéance : gardez-la si elle est toujours due, sinon « Sans objet ».' : '',
                'Rappel avant l\'échéance' => h((int)$d['preavis'] . ' jours avant'),
                'Priorité' => h(DEMARCHE_PRIORITES[(int)$d['priorite']] ?? '') . ((int)$d['importante'] ? ' · importante : preuve obligatoire' : ''),
-               'D\'où vient-elle' => $d['origine'] !== '' ? '<span' . demarche_tn($d) . '>' . h($d['origine']) . '</span>' : '',
+               'D\'où vient-elle' => $d['origine'] !== '' ? '<span' . demarche_tn((string)$d['origine']) . '>' . h($d['origine']) . '</span>' : '',
                'Preuve' => $d['preuve_lien'] !== '' ? '<a href="' . h($d['preuve_lien']) . '" target="_blank" rel="noopener noreferrer">Ouvrir la preuve dans le Drive</a>' : '',
                'Note' => $d['preuve_note'] !== '' ? '<span translate="no">' . nl2br(h($d['preuve_note'])) . '</span>' : '',
                'Raison' => $d['raison'] !== '' ? '<span translate="no">' . h($d['raison']) . '</span>' : '',
@@ -233,8 +234,8 @@ function page_echeance(): void {
             $id = echeance_enregistrer($e ? $id : null, $v, $cpt);
             if (!$e) flash('ok', 'Échéance ajoutée : sa démarche apparaîtra dans « À faire » quand son rappel commencera.');
             else {
-                [$maj, $remp] = $cpt ?? [0, 0];
-                flash('ok', 'Échéance modifiée.' . ($maj ? ' Démarches ouvertes mises à jour : ' . $maj . '.' : '') . ($remp ? ' Démarches remplacées par la nouvelle date : ' . $remp . '.' : ''));
+                [$maj, $revoir] = $cpt ?? [0, 0];
+                flash('ok', 'Échéance modifiée.' . ($maj ? ' Démarches ouvertes mises à jour : ' . $maj . '.' : '') . ($revoir ? ' Démarches à revoir (date d\'avant) : ' . $revoir . '.' : ''));
             }
         }
         if ($e && in_array($a, ['arreter', 'reprendre'], true)) { echeance_arreter($id, $a === 'reprendre'); flash('ok', $a === 'arreter' ? 'Échéance arrêtée : plus de nouvelle démarche.' : 'Échéance reprise.'); }
@@ -244,7 +245,7 @@ function page_echeance(): void {
     $v = $_SESSION['echeance_brouillon'] ?? null;
     unset($_SESSION['echeance_brouillon']);
     $v = ($v !== null ? $v + ($e ?? []) : null) ?? $e ?? ['titre' => '', 'explication' => '', 'ou' => '', 'pour_qui' => 'youngmi', 'priorite' => 2, 'importante' => 0, 'frequence' => 'annuelle', 'depart' => '', 'preavis' => OBLIGATIONS_JOURS, 'origine' => ''];
-    $champs = champ('titre', 'Quoi faire', $v['titre'], ['maxlength' => '160', 'required' => true, 'placeholder' => 'Faire vérifier l\'extincteur'], 'Une phrase courte qui commence par un verbe, jamais un nom de client : le titre figure dans le mail du lundi.')
+    $champs = champ('titre', 'Quoi faire', $v['titre'], ['maxlength' => '160', 'required' => true, 'placeholder' => 'Faire vérifier l\'extincteur'], 'Une phrase courte qui commence par un verbe, jamais un nom de client.')
             . zone('ou', 'Où le faire', $v['ou'], ['rows' => '2', 'maxlength' => '600', 'required' => true], 'L\'outil, la page et l\'endroit exacts.')
             . zone('explication', 'Pourquoi (facultatif)', $v['explication'], ['rows' => '3', 'maxlength' => '1500'])
             . liste_choix('frequence', 'Revient', ECHEANCE_FREQUENCES, $v['frequence'])

@@ -327,7 +327,14 @@ CREATE INDEX IF NOT EXISTS corbeille_le ON corbeille(le);
  */
 function obligations_schema(PDO $pdo): void {
     $fait = $pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_obligations'")->fetchColumn();
-    if ($fait === '1') return;
+    if ($fait === '2') return;
+    if ($fait === '1') {
+        // Étape 2 (audit n° 7, passe 3, P3-04) : une base créée par la première version reçoit la colonne auteur_id
+        $cols = array_column($pdo->query("PRAGMA table_info(demarches_historique)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+        if (!in_array('auteur_id', $cols, true)) $pdo->exec("ALTER TABLE demarches_historique ADD COLUMN auteur_id INTEGER");
+        $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '2')");
+        return;
+    }
     $pdo->exec("
 CREATE TABLE IF NOT EXISTS demarches (id INTEGER PRIMARY KEY, titre TEXT NOT NULL, explication TEXT NOT NULL DEFAULT '', ou TEXT NOT NULL DEFAULT '',
   pour_qui TEXT NOT NULL DEFAULT 'youngmi', echeance TEXT NOT NULL DEFAULT '', a_confirmer INTEGER NOT NULL DEFAULT 0, preavis INTEGER NOT NULL DEFAULT 30,
@@ -347,7 +354,7 @@ CREATE TABLE IF NOT EXISTS demarches_historique (id INTEGER PRIMARY KEY, le TEXT
   type TEXT NOT NULL, champ TEXT NOT NULL DEFAULT '', ancien TEXT NOT NULL DEFAULT '', nouveau TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS demarches_historique_d ON demarches_historique(demarche_id);
 ");
-    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '1')");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '2')");
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.

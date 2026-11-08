@@ -102,3 +102,25 @@ pastilles, genre `demarche`).
 - P2-10 : une date impossible est refusée avec un message (jamais effacée en silence).
 - P2-13 : le filtre « Les miennes » passe avant la limite des 200.
 - P2-08, P2-11, P2-12 : hors code (liste de départ T017, registre des traitements, recette avec Youngmi).
+
+## R11. Corrections de la passe 3 de l'audit n° 7 (version 8ae744b)
+
+- P3-01 : le mail du lundi ne contient plus aucun texte tapé : seuls les libellés figés de la gestion
+  (`obligations_textes_figes`) gardent leur titre ; toute autre démarche y figure par « Démarche n° … »,
+  sa date et pour qui.
+- P3-02 : vérification aussi quand une fiche passe « professionnel » (`client_modifier`), quand une
+  commande pro est modifiée (gâteau, type, mode, sur mesure) même après confirmation, pour un gâteau sans
+  fiche ou sur mesure (`pro:<id>:mesure:<commande>`) et pour la première livraison (`pro:<id>:livraison`).
+  Les quantités déclarées (volumes de la dérogation) relèvent du lot 4 « Volumes ».
+- P3-03 : seul le compte d'Olivier (le plus ancien administrateur actif autre que contact@) a accès ;
+  un autre administrateur non.
+- P3-04 : repère `schema_obligations` = 2 ; une base au repère 1 reçoit `auteur_id` (ALTER idempotent).
+- P3-05 : la traduction dépend du texte (libellé figé ou non), plus du dernier auteur.
+- P3-06 : l'état du mail de la semaine se voit dans Paramètres › Conservation ; après un échec, un bouton
+  le renvoie à la main, une seule fois (réservation repassée « en cours » d'un seul geste).
+- P3-07 : plus de clôture automatique après un changement de calendrier : les démarches d'avant restent
+  ouvertes avec « Date d'avant la modification » ; le curseur ne compte que le calendrier en vigueur.
+- P3-08 : tant que la liste de départ n'est pas reprise et relue, le mail le dit (« aucune conclusion
+  possible ») et ne dit jamais « rien à faire » sans réserve.
+- P3-09 : les gâteaux des commandes déjà reçues quand la première vérification est close ne redemandent rien.
+- P3-10 : « premier lundi » ne tombe jamais avant la date donnée (sinon le mois suivant).

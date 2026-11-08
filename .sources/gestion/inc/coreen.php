@@ -1368,10 +1368,22 @@ Arrêter cette échéance ? Les démarches déjà créées restent. | 이 정기
 Échéance reprise. | 정기 일정을 다시 시작했어요.
 L'écran Obligations est réservé à Youngmi et à Olivier. | 의무 화면은 Youngmi와 Olivier만 볼 수 있어요.
 Cette date n'est pas valide : choisissez-la dans le calendrier, ou cochez « Date à confirmer ». | 날짜가 올바르지 않아요. 달력에서 고르거나 ‘날짜 확인 필요’를 체크하세요.
-Une phrase courte qui commence par un verbe, jamais un nom de client : le titre figure dans le mail du lundi. | 동사로 시작하는 짧은 문장으로 적고, 고객 이름은 절대 적지 마세요. 제목은 월요일 메일에 나와요.
+Une phrase courte qui commence par un verbe, jamais un nom de client. | 동사로 시작하는 짧은 문장으로 적고, 고객 이름은 절대 적지 마세요.
 Nouveau client professionnel : vérifier les obligations | 새 사업자 고객: 의무 확인하기
 Nouveau gâteau pour un client professionnel : vérifier les obligations | 사업자 고객의 새 케이크: 의무 확인하기
 Nouveau client professionnel | 새 사업자 고객
+Gâteau sur mesure pour un client professionnel : vérifier les obligations | 사업자 고객의 맞춤 케이크: 의무 확인하기
+Première livraison pour un client professionnel : vérifier les obligations | 사업자 고객 첫 배달: 의무 확인하기
+Gâteau sur mesure pour un client professionnel | 사업자 고객의 맞춤 케이크
+Première livraison pour un client professionnel | 사업자 고객 첫 배달
+Date d'avant la modification | 수정 전 날짜
+Calendrier | 일정
+Date d'avant la modification de l'échéance : gardez-la si elle est toujours due, sinon « Sans objet ». | 정기 일정을 고치기 전의 날짜예요. 아직 해야 하면 그대로 두고, 아니면 ‘해당 없음’을 누르세요.
+Renvoyer le mail de la semaine | 이번 주 메일 다시 보내기
+Renvoyer maintenant le mail interne « Obligations de la semaine » à contact@ ? | 내부 메일 ‘이번 주 의무’를 지금 contact@로 다시 보낼까요?
+Le mail « Obligations de la semaine » est parti à contact@. | ‘이번 주 의무’ 메일을 contact@로 보냈어요.
+L'envoi a encore échoué : prévenez Olivier (signature DKIM du site). | 다시 보내지 못했어요. Olivier에게 알려 주세요 (사이트 DKIM 서명).
+Rien à renvoyer. | 다시 보낼 것이 없어요.
 Nouveau gâteau pour un client professionnel | 사업자 고객의 새 케이크
 Gestion : la fiche du client (lien ci-dessus). mesdemarches.agriculture.gouv.fr › Mes démarches : déclaration d'activité (Cerfa 13984) et dérogation à l'agrément (Cerfa 13982). Les récépissés dans le Drive : 01 › 09-Certifications, labels et agréments. En cas de doute : la DDPP des Hauts-de-Seine. | 관리 화면: 고객 정보(위 링크). mesdemarches.agriculture.gouv.fr › Mes démarches: 활동 신고(Cerfa 13984)와 위생 승인 면제(Cerfa 13982). 접수증은 Drive: 01 › 09-Certifications, labels et agréments. 잘 모르면 Hauts-de-Seine DDPP에 물어보세요.
 Vendre à un professionnel peut créer de nouvelles obligations ; ce n'est pas toujours le cas. Avant de confirmer ou de livrer, vérifiez : 1) ce qu'il fait des gâteaux : un restaurant ou un commerce qui les sert ou les revend (la dérogation à l'agrément, Cerfa 13982, doit peut-être le compter parmi les destinataires), ou une entreprise qui les offre ou les sert à ses équipes (à vérifier aussi) ; 2) les produits, les quantités par semaine et la distance de livraison ; 3) la déclaration d'activité et la dérogation déjà faites auprès de la DDPP ; 4) la facture professionnelle (mentions obligatoires). Si une démarche a été faite, collez le lien du récépissé et touchez « C'est fait ». S'il n'y a rien à faire, touchez « Sans objet » et écrivez la raison et sa source (DDPP, Ithea, page officielle). | 사업자에게 팔면 새 의무가 생길 수 있어요. 항상 그런 것은 아니에요. 확정하거나 배달하기 전에 확인하세요: 1) 케이크를 어떻게 쓰는지: 케이크를 내놓거나 다시 파는 레스토랑이나 가게(위생 승인 면제 Cerfa 13982에 받는 곳으로 넣어야 할 수 있어요), 또는 직원에게 주거나 내놓는 회사(이것도 확인); 2) 제품, 주당 수량, 배달 거리; 3) DDPP에 이미 한 활동 신고와 면제 신청; 4) 사업자 청구서(필수 기재 사항). 신청을 했으면 접수증 링크를 붙여 넣고 ‘완료’를 누르세요. 할 일이 없으면 ‘해당 없음’을 누르고 이유와 출처(DDPP, Ithea, 공식 페이지)를 적으세요.
@@ -1808,9 +1820,10 @@ function coreen_motifs(): array {
         ['/^Pour le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '까지' : null],
         ['/^Fait le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 완료' : null],
         ['/^Envoyé le (.+), réponse attendue · échéance du (.+) passée$/u', fn($m) => ($d = coreen_date($m[1])) && ($e = coreen_date($m[2])) ? $d . ' 보냄, 답 기다림 · 기한 ' . $e . ' 지남' : null],
-        ['/^Échéance modifiée\.(?: Démarches ouvertes mises à jour : (\d+)\.)?(?: Démarches remplacées par la nouvelle date : (\d+)\.)?$/u',
-         fn($m) => '정기 일정을 수정했어요.' . (($m[1] ?? '') !== '' ? ' 열린 할 일 ' . $m[1] . '개를 고쳤어요.' : '') . (($m[2] ?? '') !== '' ? ' 새 날짜로 바뀐 할 일: ' . $m[2] . '개.' : '')],
-        ['/^Échéance modifiée le (.+) : la nouvelle date la remplace\.$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 정기 일정 수정: 새 날짜로 바뀜.' : null],
+        ['/^Échéance modifiée\.(?: Démarches ouvertes mises à jour : (\d+)\.)?(?: Démarches à revoir \(date d\'avant\) : (\d+)\.)?$/u',
+         fn($m) => '정기 일정을 수정했어요.' . (($m[1] ?? '') !== '' ? ' 열린 할 일 ' . $m[1] . '개를 고쳤어요.' : '') . (($m[2] ?? '') !== '' ? ' 다시 볼 할 일(수정 전 날짜): ' . $m[2] . '개.' : '')],
+        ['/^Mail du lundi « Obligations de la semaine » \((\d{4}-S\d{2})\) : (l\'envoi a échoué|envoyé|en cours)\.$/u',
+         fn($m) => '월요일 메일 ‘이번 주 의무’ (' . $m[1] . '): ' . ['l\'envoi a échoué' => '보내지 못했어요.', 'envoyé' => '보냈어요.', 'en cours' => '보내는 중이에요.'][$m[2]]],
         ['/^Envoyé le (.+), réponse attendue$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 보냄, 답 기다림' : null],
         ['/^Prochaine : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '다음: ' . $d : null],
         ['/^Rappel (\d+) jours avant$/u', fn($m) => $m[1] . '일 전 알림'],
