@@ -563,15 +563,20 @@
     var s = d.getElementById("f-produit-fournee"), c = d.getElementById("f-dlc-fournee");
     if (!s || !c) return;
     var j; try { j = JSON.parse(s.getAttribute("data-durees") || "{}")[s.value]; } catch (x) { j = undefined; }
-    if (j === undefined || c.getAttribute("data-tape") === "1") return;
+    if (c.getAttribute("data-tape") === "1") return;
+    // Gâteau sans durée fixée : la date proposée pour le gâteau d'avant s'efface (jamais devinée)
+    if (j === undefined) { if (c.getAttribute("data-auto") === "1") { c.value = ""; c.removeAttribute("data-auto"); } return; }
     var t = new Date((s.getAttribute("data-jour") || "") + "T12:00:00"); t.setDate(t.getDate() + j);
     c.value = t.getFullYear() + "-" + ("0" + (t.getMonth() + 1)).slice(-2) + "-" + ("0" + t.getDate()).slice(-2);
+    c.setAttribute("data-auto", "1");
   };
   d.addEventListener("change", function (e) {
     if (e.target.id === "f-produit-fournee") dlc();
-    if (e.target.id === "f-dlc-fournee") e.target.setAttribute("data-tape", "1");
+    if (e.target.id === "f-dlc-fournee") { e.target.setAttribute("data-tape", "1"); e.target.removeAttribute("data-auto"); }
   });
-  dlc();
+  // Une date déjà là (correction, formulaire refusé) n'est jamais remplacée à l'ouverture
+  var c0 = d.getElementById("f-dlc-fournee");
+  if (c0 && c0.value) c0.setAttribute("data-tape", "1"); else dlc();
   // Une photo de téléphone (3 à 6 Mo) devient un JPEG d'environ 1600 px avant l'envoi ; sans ce geste, l'original part tel quel
   d.addEventListener("change", function (e) {
     var i = e.target;

@@ -117,7 +117,8 @@ function hygiene_noter(string $genre, array $v, array $liens = [], ?int $corrige
     $pdo = db();
     $pdo->beginTransaction();
     try {
-        if ($avant) q("UPDATE hygiene_releves SET remplace_par = -1 WHERE id = ?", [$corrige]);   // réservé : le numéro de lot reste unique
+        // Réservé (le numéro de lot reste unique) ; deux corrections en même temps : la seconde est refusée (revue du 08/11)
+        if ($avant && q("UPDATE hygiene_releves SET remplace_par = -1 WHERE id = ? AND remplace_par IS NULL", [$corrige])->rowCount() !== 1) { $pdo->rollBack(); return [0, 'Ce relevé a déjà été corrigé : ouvrez sa dernière version.']; }
         q("INSERT INTO hygiene_releves (genre, jour, le, par, par_id, " . implode(', ', $cols) . ", remplace_id, motif) VALUES (?, ?, ?, ?, ?, " . implode(', ', array_fill(0, count($cols), '?')) . ", ?, ?)",
           array_merge([$genre, $jour, maintenant(), auteur(), $u ? (int)$u['id'] : null], array_map(fn($c) => $v[$c], $cols), [$corrige, une_ligne($motif)]));
         $id = (int)$pdo->lastInsertId();
@@ -181,8 +182,10 @@ function hygiene_froid_lu(array $src, ?array $avant = null): array {
     if (!$a || (!(int)$a['actif'] && !$avant)) return [null, 'Choisissez un appareil.'];
     $t = hygiene_lire_temperature((string)($src['temperature'] ?? ''));
     if ($t === null) return [null, 'Tapez la température lue, en chiffres (par exemple 3 ou -18).'];
-    $min = $a['tmin'] !== null ? (float)$a['tmin'] : null;
-    $max = $a['tmax'] !== null ? (float)$a['tmax'] : null;
+    // Corriger un relevé garde la plage en vigueur ce jour-là (sauf si l'appareil change)
+    $ref = $avant && (int)$avant['appareil_id'] === (int)$a['id'] ? $avant : $a;
+    $min = $ref['tmin'] !== null ? (float)$ref['tmin'] : null;
+    $max = $ref['tmax'] !== null ? (float)$ref['tmax'] : null;
     $hors = hygiene_hors_plage($t, $min, $max);
     $action = mb_substr(trim((string)($src['action'] ?? '')), 0, 600);
     $v = ['appareil_id' => (int)$a['id'], 'temperature' => $t, 'tmin' => $min, 'tmax' => $max, 'hors_plage' => $hors ? 1 : 0, 'action' => $hors ? $action : ''];
@@ -306,6 +309,8 @@ function hygiene_jour_production(string $jour): bool {
 function hygiene_manques(string $jour): array {
     $m = [];
     $n = hygiene_par_jour();
+    // Deux relevés par jour seulement depuis le jour où le réglage a changé : jamais rétroactif (revue du 08/11)
+    if ($n === 2 && $jour < (string)parametre('hygiene_releves_jour_depuis', '')) $n = 1;
     foreach (lignes("SELECT * FROM hygiene_appareils WHERE actif = 1 AND genre <> 'caisson' AND substr(cree_le, 1, 10) <= ?", [$jour]) as $a) {
         $k = (int)val("SELECT COUNT(*) FROM hygiene_releves WHERE jour = ? AND genre = 'froid' AND appareil_id = ? AND remplace_par IS NULL", [$jour, (int)$a['id']]);
         if ($k < $n) $m[] = [$a, $k, $n];
@@ -389,7 +394,7 @@ function hygiene_export_csv(string $du, string $au): string {
                      (int)$r['hors_plage'] ? 'oui' : '', $x('action'), $x('fournisseur'), $x('produit'), $x('lot'), $r['dlc'], $r['photo'] !== '' ? 'oui' : '', $x('numero_lot'), $x('quantite'),
                      $cl ? csv_texte(hygiene_restaurant($cl)) : '', $k ? csv_texte((string)$k['reference']) : '', substr($r['depart_le'], 11, 5), substr($r['arrivee_le'], 11, 5),
                      $r['temp_depart'] !== null ? hygiene_temperature((float)$r['temp_depart']) : '', csv_texte($liens . ($r['trace'] !== '' ? ($liens !== '' ? ' ; ' : '') . (HYGIENE_TRACES[$r['trace']] ?? '') : '')), $x('note'),
-                     ($r['remplace_par'] !== null ? 'corrigé (voir #' . (int)$r['remplace_par'] . ')' : 'en cours') . ($r['remplace_id'] !== null ? ', corrige #' . (int)$r['remplace_id'] . ' : ' . $r['motif'] : '')], ';');
+                     ($r['remplace_par'] === null ? 'en cours' : ((int)$r['remplace_par'] > 0 ? 'corrigé (voir #' . (int)$r['remplace_par'] . ')' : 'annulé')) . ($r['remplace_id'] !== null ? ', corrige #' . (int)$r['remplace_id'] . ' : ' . $r['motif'] : '')], ';');
     }
     rewind($o);
     $s = (string)stream_get_contents($o);

@@ -80,6 +80,10 @@ function etiquette_contenu(array $f): array {
     // Les ingrédients sont attendus (réglage) : une étiquette sans eux ne s'imprime pas (audit n° 8, constat 3)
     $avecIng = (string)parametre('etiquette_ingredients', '1') === '1';
     if ($avecIng && $fiche['etiquette_le'] !== '' && $fiche['ingredients'] === '') $manque[] = 'La liste d\'ingrédients manque : saisissez la recette du gâteau, puis relisez le texte de l\'étiquette (Hygiène › Appareils › Étiquettes des gâteaux).';
+    // Gluten annoncé mais aucune céréale en gras dans les ingrédients (« Farine T45 ») : à préciser (INCO, revue du 08/11)
+    if ($avecIng && $fiche['ingredients'] !== '' && $all !== null && stripos($all, 'gluten') !== false
+        && !preg_match('/\b\p{L}*(blé|froment|seigle|orge|avoine|épeautre|kamut|gluten)\p{L}*/iu', $fiche['ingredients']))
+        $manque[] = 'Le gâteau contient du gluten : dans les ingrédients, écrivez la céréale (par exemple « farine de blé ») pour qu\'elle s\'imprime en gras.';
     if ($fiche['etiquette_le'] !== '' && !isset(ETIQUETTE_MENTIONS[$fiche['date_mention']])) $manque[] = 'Choisissez la mention de la date (date limite de consommation ou de préférence) dans Hygiène › Appareils › Étiquettes des gâteaux.';
     if ($manque) return ['manque' => $manque];
     return ['manque' => [], 'nom' => (string)$p['nom'], 'allergenes' => (string)$all, 'conservation' => rtrim($cons, '.'), 'dlc' => (string)$f['dlc'], 'lot' => (string)$f['numero_lot'],
@@ -92,7 +96,7 @@ function etiquette_ingredients_html(string $t): string {
     $mots = [];
     // Les mots du site, plus ceux d'une liste d'ingrédients (beurre et crème pour le lait, autres céréales à gluten)
     foreach (array_merge(...array_values(ALLERGENES_MOTS)) + [] as $m) $mots[] = preg_quote(h($m), '/');
-    foreach (['beurre', 'crème', 'fromage', 'mascarpone', 'lactose', 'seigle', 'orge', 'avoine', 'épeautre', 'kamut'] as $m) $mots[] = preg_quote(h($m), '/');
+    foreach (['beurre', 'crème', 'fromage', 'mascarpone', 'lactose', 'froment', 'seigle', 'orge', 'avoine', 'épeautre', 'kamut'] as $m) $mots[] = preg_quote(h($m), '/');
     return preg_replace('/\b(\p{L}*(?:' . implode('|', $mots) . ')\p{L}*)/iu', '<b>$1</b>', $h) ?? $h;
 }
 

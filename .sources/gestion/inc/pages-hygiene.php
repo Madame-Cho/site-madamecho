@@ -199,9 +199,12 @@ function champs_fournee(array $b, ?array $avant = null): string {
     $pid = $b['produit_id'] ?? ($avant ? ($avant['produit_id'] !== '' ? $avant['produit_id'] : 'autre') : '');
     $sel = liste_choix('produit_id', 'Gâteau', $opts, $pid, ['required' => true, 'data-durees' => json_encode($jours, JSON_UNESCAPED_UNICODE) ?: '{}', 'data-jour' => $avant['jour'] ?? aujourdhui(), 'id' => 'f-produit-fournee']);
     $rec = '';
-    foreach (lignes("SELECT * FROM hygiene_releves WHERE genre = 'reception' AND remplace_par IS NULL AND jour >= ? AND (dlc = '' OR dlc >= ?) ORDER BY le DESC LIMIT 40",
-                    [date('Y-m-d', (int)strtotime('-30 days')), $avant['jour'] ?? aujourdhui()]) as $r) {
-        $coche = $avant ? in_array((int)$r['id'], array_map(fn($x) => (int)$x['id'], hygiene_liens_de((int)$avant['id'])), true) : false;
+    // Les réceptions des 30 jours avant la fournée, et toujours celles déjà reliées (une correction ne les perd pas)
+    $ref = $avant['jour'] ?? aujourdhui();
+    $lies = $avant ? array_map(fn($x) => (int)$x['id'], hygiene_liens_de((int)$avant['id'])) : [];
+    foreach (lignes("SELECT * FROM hygiene_releves WHERE genre = 'reception' AND remplace_par IS NULL AND ((jour BETWEEN ? AND ? AND (dlc = '' OR dlc >= ?)) OR id IN (" . ($lies ? implode(',', $lies) : '0') . ")) ORDER BY le DESC LIMIT 60",
+                    [date('Y-m-d', (int)strtotime("$ref -30 days")), $ref, $ref]) as $r) {
+        $coche = in_array((int)$r['id'], $lies, true);
         $rec .= '<label class="case"><input type="checkbox" name="liens[]" value="' . (int)$r['id'] . '"' . ($coche ? ' checked' : '') . '><span><span translate="no">' . h($r['produit'] !== '' ? $r['produit'] : 'Étiquette en photo') . ($r['lot'] !== '' ? ' · ' . $r['lot'] : '') . '</span> · ' . h(date_fr($r['jour'], 'courte')) . '</span></label>';
     }
     return $sel
@@ -222,6 +225,9 @@ function champs_livraison(array $b, ?array $avant = null): string {
                      WHERE k.statut IN ('confirmee', 'remise') AND k.retrait_date BETWEEN ? AND ? AND (k.type = 'pro' OR c.type = 'professionnel') ORDER BY k.retrait_date, k.id",
                     [date('Y-m-d', (int)strtotime("$auj -1 day")), date('Y-m-d', (int)strtotime("$auj +1 day"))]) as $k)
         if ($cl = client((int)$k['client_id'])) $cmd[(string)$k['id']] = $k['reference'] . ' · ' . hygiene_restaurant($cl) . ' · ' . date_fr((string)$k['retrait_date'], 'courte');
+    // La commande déjà reliée reste proposée, même si elle a changé de date ou d'état (une correction ne la perd pas)
+    if ($avant && $avant['commande_id'] !== null && !isset($cmd[(string)$avant['commande_id']]) && ($k = commande((int)$avant['commande_id'])) && ($cl = client((int)$k['client_id'])))
+        $cmd[(string)$k['id']] = $k['reference'] . ' · ' . hygiene_restaurant($cl);
     $rest = ['' => 'Choisir le restaurant'];
     foreach (lignes("SELECT * FROM clients WHERE statut <> 'efface' AND type = 'professionnel' ORDER BY societe, nom") as $cl) $rest[(string)$cl['id']] = hygiene_restaurant($cl);
     $lots = '';
@@ -308,7 +314,7 @@ function vue_hygiene_appareils(): string {
             . champ('jours', 'Jours', $j === null ? '' : (string)$j, ['type' => 'number', 'min' => '0', 'max' => '365', 'inputmode' => 'numeric', 'id' => 'f-jours-' . h($p['id'])]) . bouton('Enregistrer', 'discret') . '</div>', ['class' => 'form-duree'], u('hygiene-appareil'));
     }
     $reg = formulaire('reglages', liste_choix('par_jour', 'Relevés de froid par jour de production', ['1' => 'Un (le matin)', '2' => 'Deux (le matin et le soir)'], (string)hygiene_par_jour())
-            . liste_choix('ans', 'Garder les relevés et les photos', ['1' => '1 an', '2' => '2 ans', '3' => '3 ans', '5' => '5 ans', '10' => '10 ans', '0' => 'Ne rien effacer'], (string)hygiene_conservation_ans())
+            . liste_choix('ans', 'Garder les relevés et les photos', ['5' => '5 ans', '10' => '10 ans', '0' => 'Ne rien effacer'], (string)hygiene_conservation_ans())
             . zone('exploitant', 'Exploitant sur les étiquettes', (string)parametre('etiquette_exploitant', ''), ['rows' => '2', 'maxlength' => '200', 'translate' => 'no', 'placeholder' => 'Madame Cho, numéro et rue, code postal et ville'],
                 'Le nom et l\'adresse imprimés sur chaque étiquette (l\'adresse de production déclarée à la DDPP).')
             . bouton('Enregistrer', 'secondaire'), ['class' => 'form-releve'], u('hygiene-appareil'));
@@ -347,8 +353,10 @@ function page_hygiene_appareil(): void {
         elseif (!isset(ETIQUETTE_MENTIONS[texte('mention', 4)])) flash('erreur', 'Choisissez la mention de la date.');
         else { etiquette_fiche_enregistrer($pid, une_ligne(texte('conservation', 200)), une_ligne(texte('ingredients', 1200)), texte('mention', 4), texte('poids_net', 40)); flash('ok', 'Texte de l\'étiquette relu et enregistré.'); }
     } elseif ($a === 'reglages') {
-        parametre_ecrire('hygiene_releves_jour', choix('par_jour', ['1' => 1, '2' => 1], '1'));
-        parametre_ecrire('hygiene_conservation_ans', choix('ans', ['0' => 1, '1' => 1, '2' => 1, '3' => 1, '5' => 1, '10' => 1], (string)HYGIENE_CONSERVATION_ANS));
+        $pj = choix('par_jour', ['1' => 1, '2' => 1], '1');
+        if ($pj === '2' && hygiene_par_jour() !== 2) parametre_ecrire('hygiene_releves_jour_depuis', aujourdhui());
+        parametre_ecrire('hygiene_releves_jour', $pj);
+        parametre_ecrire('hygiene_conservation_ans', choix('ans', ['0' => 1, '5' => 1, '10' => 1], (string)HYGIENE_CONSERVATION_ANS));
         parametre_ecrire('etiquette_exploitant', une_ligne(texte('exploitant', 200)));
         evenement('hygiene', 'Réglages de l\'hygiène : ' . hygiene_par_jour() . ' relevé(s) par jour, conservation ' . hygiene_conservation_ans() . ' an(s)');
         flash('ok', 'Réglages enregistrés.');

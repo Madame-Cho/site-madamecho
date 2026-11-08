@@ -1631,6 +1631,12 @@ Par exemple : au réfrigérateur, entre 0 et 4 °C. | 예: 냉장고에서 0~4 �
 Ingrédients, du plus lourd au plus léger | 재료 (무거운 것부터)
 Proposés depuis la recette : vérifiez les noms et l'ordre (les ingrédients comptés à la pièce, comme les œufs, sont à la fin : placez-les selon leur poids). Les allergènes s'impriment en gras. | 레시피에서 가져왔어요. 이름과 순서를 확인하세요 (달걀처럼 개수로 센 재료는 맨 뒤에 있으니 무게에 맞게 옮기세요). 알레르기 성분은 굵게 인쇄돼요.
 J'ai relu ce texte | 이 글을 확인했어요
+Ces chiffres sont confirmés par la DDPP (à cocher à chaque changement) | DDPP가 확인한 숫자예요 (바꿀 때마다 체크하세요)
+Retirer la confirmation | 확인 취소
+Vous avez proposé ce lien : c'est à Youngmi de le vérifier. | 이 링크를 제안한 사람이에요. 확인은 영미가 해요.
+Aucun gâteau vendu sans poids. | 무게 없이 판 케이크가 없어요.
+Les autres gâteaux (pas vendus ces dernières semaines) | 다른 케이크 (최근 몇 주 동안 팔지 않음)
+Le gâteau contient du gluten : dans les ingrédients, écrivez la céréale (par exemple « farine de blé ») pour qu'elle s'imprime en gras. | 이 케이크에는 글루텐이 있어요. 재료에 곡물 이름(예: « farine de blé »)을 적어야 굵게 인쇄돼요.
 Aucune réception notée (expliquez dans la note) | 기록한 입고 없음 (메모에 이유를 적어 주세요)
 Note (obligatoire si rien n'est coché) | 메모 (아무것도 체크하지 않으면 필수)
 Produits du placard, réception non relevée… | 찬장 재료, 기록하지 않은 입고…

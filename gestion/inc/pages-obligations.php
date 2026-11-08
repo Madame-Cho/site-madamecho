@@ -56,7 +56,7 @@ function page_obligations(): void {
                 [, $err] = document_enregistrer(entier('id', 1) ?: null, $_POST);
                 if (!$err) flash('ok', 'Document enregistré.');
             } elseif ($a === 'document_confirmer') {
-                document_confirmer(entier('id', 1)); flash('ok', 'Merci : le document est vérifié.');
+                $err = document_confirmer(entier('id', 1)); if (!$err) flash('ok', 'Merci : le document est vérifié.');
             } elseif ($a === 'documents_proposer') {
                 if (!est_admin()) $err = 'Réservé à Olivier.';
                 else { $cr = documents_proposer(texte('liens', 20000)); flash($cr['proposes'] ? 'ok' : 'erreur', 'Liens proposés : ' . $cr['proposes'] . ($cr['refusees'] ? ' ; lignes refusées : ' . implode(', ', $cr['refusees']) : '') . '.'); }
@@ -359,27 +359,32 @@ function vue_volumes(): string {
     $c .= bloc('Restaurants livrés', '<p class="aide">Les clients professionnels actifs. La dérogation limite la distance de livraison ; tapez la distance depuis la cuisine (un itinéraire Google Maps suffit). Un restaurant qui arrête passe « inactif » dans sa fiche et sort de cette liste.</p>'
         . ($r !== '' ? '<ul class="liste-restaurants">' . $r . '</ul>' : '<p class="vide">Aucun client professionnel actif.</p>'), '', 'restaurants');
     // Poids d'une pièce
-    $P = volumes_poids_tous(); $p = ''; $n = 0;
+    // D'abord les gâteaux vendus ces dernières semaines sans poids : les seuls à saisir pour que les kilos soient complets (revue du 08/11)
+    $P = volumes_poids_tous(); $p = ''; $autres = ''; $n = 0;
     foreach (variantes_toutes() as $v => $d) {
         [$pid, $code] = array_pad(explode('|', $v, 2), 2, '');
         $g = $P[$v] ?? null; $prop = $g === null ? volumes_poids_recette($pid, $code) : null;
-        if ($g === null) $n++;
-        $p .= '<li class="ligne-poids' . ($g === null ? ' a-faire' : '') . (isset($sans[$v]) ? ' vendu' : '') . '"><span><b translate="no">' . h($d['nom']) . '</b>' . (($d['libelle'] ?? '') !== '' ? ' <span class="petit" translate="no">' . h($d['libelle']) . '</span>' : '') . '</span>'
+        $urgent = $g === null && isset($sans[$v]);
+        if ($urgent) $n++;
+        $ligne = '<li class="ligne-poids' . ($g === null ? ' a-faire' : '') . (isset($sans[$v]) ? ' vendu' : '') . '"><span><b translate="no">' . h($d['nom']) . '</b>' . (($d['libelle'] ?? '') !== '' ? ' <span class="petit" translate="no">' . h($d['libelle']) . '</span>' : '') . '</span>'
             . formulaire('poids', '<input type="hidden" name="vue" value="volumes"><input type="hidden" name="produit" value="' . h($pid) . '"><input type="hidden" name="variante" value="' . h($code) . '">'
                 . champ('grammes', 'Poids d\'une pièce (g)', $g !== null ? (string)$g : '', ['inputmode' => 'numeric', 'id' => 'f-g-' . preg_replace('/[^a-z0-9]+/i', '-', $v), 'size' => '6'] + ($prop !== null ? ['placeholder' => (string)$prop] : []),
                     $g === null ? ($prop !== null ? h('Proposé d\'après la recette : ' . $prop . ' g. Pesez une pièce finie si possible.') : 'Pas de recette pesée : pesez une pièce finie.') : '')
                 . bouton($g === null ? 'Confirmer' : 'Enregistrer', $g === null ? 'principal' : 'secondaire'), ['class' => 'form-poids'], u('obligations')) . '</li>';
+        if ($urgent || $g !== null) $p .= $ligne; else $autres .= $ligne;
     }
     $c .= '<details class="replie bloc" id="poids"><summary><b>Poids d\'une pièce</b>' . ($n ? ' <span class="etiq etiq-change">' . h($n . ' à saisir') . '</span>' : '') . '</summary>'
         . '<p class="aide">Les kilos se calculent avec ce poids, jamais avec un poids deviné. La recette propose un poids (la somme de ses ingrédients en grammes) : pesez de préférence une pièce finie, puis touchez « Confirmer ».</p>'
-        . '<ul class="liste-poids">' . $p . '</ul></details>';
+        . ($p !== '' ? '<ul class="liste-poids">' . $p . '</ul>' : '<p class="vide">Aucun gâteau vendu sans poids.</p>')
+        . ($autres !== '' ? '<details class="replie"><summary>Les autres gâteaux (pas vendus ces dernières semaines)</summary><ul class="liste-poids">' . $autres . '</ul></details>' : '') . '</details>';
     // Plafonds
     $f = '<input type="hidden" name="vue" value="volumes">';
     foreach (['volumes_kg' => 'Plafond par semaine (kg)', 'volumes_kg_reduit' => 'Plafond si la part des restaurants dépasse la limite (kg)', 'volumes_part' => 'Limite de la part des restaurants (%)', 'volumes_km' => 'Distance maximale (km)', 'volumes_alerte' => 'Alerte à partir de (% du plafond)'] as $k => $l) {
         $x = parametre($k, '');
         $f .= champ($k, h($l), str_replace('.', ',', (string)$x), ['inputmode' => 'decimal', 'id' => 'f-' . $k]);
     }
-    $f .= case_a_cocher('confirme', 'Ces chiffres sont confirmés par la DDPP', $conf !== '') . bouton(icone('valider') . 'Enregistrer', 'principal');
+    $f .= case_a_cocher('confirme', 'Ces chiffres sont confirmés par la DDPP (à cocher à chaque changement)', false)
+        . ($conf !== '' ? case_a_cocher('retirer_confirmation', 'Retirer la confirmation', false) : '') . bouton(icone('valider') . 'Enregistrer', 'principal');
     $c .= '<details class="replie bloc" id="plafonds"><summary><b>Plafonds de la dérogation</b>' . ($conf === '' ? ' <span class="etiq etiq-change">À confirmer</span>' : '') . '</summary>'
         . '<p class="aide">Préremplis avec les chiffres de la réglementation (arrêté du 8 juin 2006), à faire confirmer par la DDPP des Hauts-de-Seine : la gestion ne les tient jamais pour sûrs.</p>'
         . ($conf !== '' ? '<p class="petit">' . h('Confirmés le ' . date_fr(substr($conf, 0, 10), 'longue')) . '</p>' : '')

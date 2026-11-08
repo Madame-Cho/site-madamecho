@@ -27,6 +27,9 @@ const GESTION_ASSISTANT_FENETRE = 40;          // messages de la conversation re
 const GESTION_ASSISTANT_TOURS = 6;             // allers-retours avec les outils pour une même question (le dernier sans outil : une réponse)
 const GESTION_ASSISTANT_MAX_JOUR = 60;         // questions par jour, tous comptes : garde-fou sur le coût
 const GESTION_ASSISTANT_MAX_CAR = 2000;        // longueur d'un message
+// Les spécifications des parties en ligne (le pourquoi et les règles fines), lues dans le dépôt (specs/ n'est jamais servi) ;
+// celle des factures des particuliers s'ajoutera à sa publication (demande d'Olivier du 08/11/2026)
+const GESTION_ASSISTANT_SPECS = ['001-site-madamecho' => 'Le site public', '002-espace-gestion' => 'L\'espace de gestion', '004-obligations' => 'L\'écran Obligations et l\'écran Hygiène'];
 // GESTION_ASSISTANT_MOIS (6 mois) et GESTION_RAPPORTS_MOIS (12 mois) sont dans base.php : la purge de nuit ne charge pas ce fichier (audit du 07/11, C1)
 const GESTION_ASSISTANT_PLAFOND = 10;          // plafond du mois par défaut, en dollars (réglable dans Paramètres) : garde-fou sur le coût (audit C9)
 // Prix publics d'Anthropic pour ce modèle, en dollars par million de jetons : pour l'estimation affichée à Olivier
@@ -122,6 +125,8 @@ Ton rôle
 5. Recueillir ses idées d'amélioration et les discuter honnêtement : ce que ça apporterait, ce que ça compliquerait, si ça respecte les règles.
 6. Quand un vrai problème ou un vrai besoin d'amélioration est établi, appelle l'outil proposer_rapport. Le rapport s'affiche sous ta réponse avec un bouton : c'est elle qui l'envoie à Olivier. Tu ne peux rien envoyer toi-même : ne dis jamais que tu as envoyé ou transmis quelque chose. Pas de rapport pour une simple question de fonctionnement, pour une erreur de manipulation, ni pour une idée contraire aux règles. Une question à laquelle le manuel ne répond pas peut mériter un rapport de type « question ». Avant de proposer un rapport, assure-toi d'avoir compris : au besoin, une ou deux questions d'abord.
 7. Quand tu ne sais pas, ou quand la question dépasse la gestion, dis-le en une phrase, sans inventer. Le lien « Écrire à Olivier », en haut de ton écran, envoie un message tel quel à Olivier, sans passer par toi : indique-le quand c'est le plus simple.
+8. Quand Youngmi ne comprend pas ce qu'elle doit faire, hésite encore après ton explication, ou risque de se tromper sur une démarche importante (hygiène, DDPP, facture, données d'un client) : ne la laisse pas seule. Invite-la à demander à Olivier, de vive voix ou par « Écrire à Olivier » (ou un mail), et propose-lui la question à lui poser, en une phrase claire. Mieux vaut une question de trop à Olivier qu'une erreur.
+9. Tu connais aussi les spécifications de Madame Cho (plus bas) : pourquoi chaque fonction existe, ses règles fines, ce qu'Olivier a décidé. Sers-t'en pour comprendre ce que Youngmi doit faire et pour le lui expliquer finement, avec la raison, dans des mots simples. Le manuel dit ce qui est en ligne : si une spécification et le manuel diffèrent, suis le manuel et dis que c'est à vérifier avec Olivier. Une fonction marquée « plus tard », « à cadrer » ou non cochée dans une spécification n'existe pas encore. Ne cite jamais les numéros internes (FR-…, SC-…, T…, US…) ni les noms de fichiers.
 
 Ce que tu ne fais jamais
 - Toucher aux paramètres, aux comptes et aux invitations, aux mots de passe, aux clés, à l'import et à l'export, à la fusion de deux fiches ou à l'effacement d'un client (RGPD) : ce n'est pas dans tes outils. Explique, d'après le manuel, où elle le fait elle-même.
@@ -151,7 +156,8 @@ Les règles de la maison, à connaître et à faire respecter
 - Olivier s'occupe de la technique, des données et des factures. Un point des commandes avec Olivier ou son agent Mathieu est prévu le mardi et le vendredi, mais il n'est pas encore en place : en attendant, c'est Youngmi qui vérifie Aujourd'hui chaque jour.
 TXT;
     $manuel = "Le manuel de la gestion, en français (les libellés de l'écran en français) :\n\n" . manuel_texte('fr')
-            . "\n\nLe même manuel en coréen (les libellés de l'écran en coréen) :\n\n" . manuel_texte('ko');
+            . "\n\nLe même manuel en coréen (les libellés de l'écran en coréen) :\n\n" . manuel_texte('ko')
+            . assistant_specs();
     $contexte = 'Maintenant : ' . JOURS[(int)date('w')] . ' ' . date_fr(maintenant(), 'heure') . ' (heure de Paris). La personne connectée : ' . $u['nom']
               . '. Son écran est en ' . (coreen_actif() ? 'coréen' : 'français') . '. Version de la gestion : ' . GESTION_VERSION . '.';
     if ($uid && ($p = propositions_contexte($uid, $fil)) !== '') $contexte .= "\n\n" . $p;
@@ -162,6 +168,17 @@ TXT;
         ['type' => 'text', 'text' => $consignes . "\n\n" . $manuel, 'cache_control' => ['type' => 'ephemeral']],
         ['type' => 'text', 'text' => $contexte],
     ];
+}
+
+/** Les spécifications des parties en ligne, pour une vraie connaissance du site et de la gestion ; vide si le dossier manque. */
+function assistant_specs(): string {
+    $t = '';
+    foreach (GESTION_ASSISTANT_SPECS as $dossier => $titre) {
+        $f = dirname(__DIR__, 2) . '/specs/' . $dossier . '/spec.md';
+        $s = is_file($f) ? (string)file_get_contents($f) : '';
+        if ($s !== '') $t .= "\n\n=== Spécification : " . $titre . " ===\n\n" . $s;
+    }
+    return $t === '' ? '' : "\n\nLes spécifications (le pourquoi et les règles détaillées ; le manuel dit ce qui est en ligne) :" . $t;
 }
 
 /** L'appel au modèle. Si l'API refuse l'option de repli (bêta) ou le cache automatique, on réessaie sans. */

@@ -70,8 +70,11 @@ function volumes_reglages_enregistrer(array $src): string {
         if (!is_numeric($s) || (float)$s < 0 || (float)$s > 100000) return 'Un nombre positif, s\'il vous plaît (par exemple 250).';
         $v[$k] = rtrim(rtrim(number_format((float)$s, 1, '.', ''), '0'), '.');
     }
+    // La confirmation vaut pour des chiffres précis : changer un chiffre sans recocher la case la retire (revue du 08/11)
+    $change = (bool)array_filter($v, fn($x, $k) => (string)parametre($k, '') !== $x, ARRAY_FILTER_USE_BOTH);
     foreach ($v as $k => $x) parametre_ecrire($k, $x);
     if (!empty($src['confirme'])) parametre_ecrire('volumes_confirme', maintenant() . ' ' . auteur());
+    elseif ($change || !empty($src['retirer_confirmation'])) parametre_ecrire('volumes_confirme', '');
     evenement('hygiene', 'Plafonds de la dérogation enregistrés' . (!empty($src['confirme']) ? ' (confirmés par la DDPP)' : ''));
     return '';
 }
@@ -225,15 +228,20 @@ function document_enregistrer(?int $id, array $src): array {
     if ($lien !== '' && !lien_drive_valide($lien)) return [0, 'Le lien doit être une adresse du Drive (https://drive.google.com/… ou https://docs.google.com/…).'];
     if ($val !== '' && !date_valide($val)) return [0, 'La date de validité n\'est pas une date.'];
     $now = maintenant();
-    // Enregistrer le formulaire vaut vérification d'un lien proposé
-    if ($d) q("UPDATE documents SET titre = ?, lien = ?, valide_jusqua = ?, note = ?, maj_le = ?, maj_par = ?, propose_par = '' WHERE id = ?", [$titre, $lien, $val, $note, $now, auteur(), $id]);
+    // Enregistrer le formulaire vaut vérification d'un lien proposé, sauf par la personne qui l'a proposé avec le même lien (revue du 08/11)
+    $propose = $d && $d['propose_par'] !== '' && $d['propose_par'] === auteur() && $lien === $d['lien'] ? $d['propose_par'] : '';
+    if ($d) q("UPDATE documents SET titre = ?, lien = ?, valide_jusqua = ?, note = ?, maj_le = ?, maj_par = ?, propose_par = ? WHERE id = ?", [$titre, $lien, $val, $note, $now, auteur(), $propose, $id]);
     else { q("INSERT INTO documents (titre, lien, valide_jusqua, note, cree_le, cree_par, maj_le, maj_par) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [$titre, $lien, $val, $note, $now, auteur(), $now, auteur()]); $id = (int)db()->lastInsertId(); }
     evenement('hygiene', 'Document de preuve ' . ($d ? 'modifié' : 'ajouté') . ' (n° ' . $id . ')');
     return [$id, ''];
 }
 /** « C'est le bon document » : le lien proposé devient vérifié. */
-function document_confirmer(int $id): void {
+function document_confirmer(int $id): string {
+    $d = document($id);
+    if (!$d || $d['propose_par'] === '') return 'Document introuvable.';
+    if ($d['propose_par'] === auteur()) return 'Vous avez proposé ce lien : c\'est à Youngmi de le vérifier.';
     q("UPDATE documents SET propose_par = '', maj_le = ?, maj_par = ? WHERE id = ? AND propose_par <> ''", [maintenant(), auteur(), $id]);
+    return '';
 }
 /** Liens proposés par Olivier (administrateur), collés une fois : « code | lien | note » par ligne. Jamais par-dessus un lien vérifié.
  *  Les liens restent hors du dépôt public : ils ne vivent que dans la base. */
