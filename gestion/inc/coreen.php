@@ -1346,6 +1346,7 @@ function coreen_motifs(): array {
         // Agenda, indispos et ventes par gâteau (07/11/2026)
         ['/^(\d{1,2}) h(?: (\d{2}))? – (\d{1,2}) h(?: (\d{2}))?$/u', fn($m) => $plage($m[0])],
         ['/^(\d+) commande\(s\) en cours$/', fn($m) => '진행 중인 주문 ' . $m[1] . '건'],
+        ['/^(\d+) rappels? à envoyer$/u', fn($m) => '보낼 픽업 알림 ' . $m[1] . '건'],
         ['/^Indispo (ajoutée|modifiée)\. Attention : (\d+) commandes? en cours tombe(?:nt)? dessus, à voir avec le client\.$/u',
             fn($m) => '예약 불가를 ' . ($m[1] === 'ajoutée' ? '추가' : '수정') . '했어요. 주의: 진행 중인 주문 ' . $m[2] . '건이 겹쳐요. 고객과 상의하세요.'],
         ['/^Commande confirmée, mais le retrait tombe sur une indispo : (.+)\. Vérifiez avec le client, ou changez la date\.$/us',

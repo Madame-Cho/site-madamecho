@@ -14,7 +14,7 @@ function page_accueil(): void {
     $tx = taxe();   // montants HT ou TTC, comme dans Statistiques (demande d'Olivier, 07/11/2026)
     $kpi = '<div class="tuiles">'
          . tuile('À répondre', (string)count($t['a_repondre']), count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) ? count(array_filter($t['a_repondre'], fn($k) => commande_en_retard($k))) . ' en retard' : 'réponse promise sous 24 h', '#demandes')
-         . tuile('Retraits à venir', (string)count($t['retraits']), '7 prochains jours', '#retraits')
+         . tuile('Retraits à venir', (string)count($t['retraits']), $t['rappels'] ? count($t['rappels']) . ' rappel' . (count($t['rappels']) > 1 ? 's' : '') . ' à envoyer' : '7 prochains jours', $t['rappels'] ? '#rappels' : '#retraits')
          . tuile('Remises en ' . $moisNom, (string)$t['mois']['n'], euros($t['mois']['ca'][$tx]) . ' ' . TAXES[$tx], u('statistiques'))
          . tuile('Panier moyen, particuliers', $t['mois']['n_part'] ? euros($t['mois']['panier'][$tx]) : '—', $moisNom . ' · ' . TAXES[$tx], u('statistiques'))
          . '</div>';
