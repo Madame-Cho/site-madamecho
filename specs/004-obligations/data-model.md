@@ -12,17 +12,22 @@
 | echeance | TEXT | `AAAA-MM-JJ` ou '' (sans date) |
 | priorite | INTEGER | 1 haute, 2 normale, 3 basse |
 | origine | TEXT | chantier ou fil d'origine (texte libre) |
-| etat | TEXT | `a_faire`, `fait`, `sans_objet` |
+| etat | TEXT | `a_faire`, `attente` (fait, réponse attendue), `fait`, `sans_objet` |
+| importante | INTEGER | 1 : preuve obligatoire pour clore |
+| preavis | INTEGER | jours avant l'échéance où elle passe orange (30 par défaut) |
+| a_confirmer | INTEGER | 1 : date pas encore connue (jamais devinée) |
+| periode | TEXT | pour une démarche née d'une règle : la date d'échéance de la période ; UNIQUE(echeance_id, periode) |
+| ref_genre, ref_id | TEXT | référence facultative (lots 2-4) |
 | preuve_lien | TEXT | lien Drive (https://drive.google.com/… ou docs.google.com/…) |
 | preuve_note | TEXT | note libre |
 | raison | TEXT | raison d'un « sans objet » |
 | echeance_id | INTEGER | règle d'origine, sinon NULL |
-| declencheur | TEXT | ex. `restaurant:<client_id>`, sinon '' |
+| declencheur | TEXT | ex. `restaurant:<client_id>`, sinon '' ; UNIQUE quand non vide |
 | cree_le, cree_par | TEXT | |
 | modifie_le, modifie_par | TEXT | |
 | fait_le, fait_par | TEXT | |
 
-Jamais supprimée. Index : `(etat, echeance)`.
+Jamais supprimée par une personne ; effacée par la tâche de nuit 10 ans après sa clôture. Index : `(etat, echeance)`.
 
 ## Table `echeances` (règles récurrentes)
 
@@ -30,14 +35,15 @@ Jamais supprimée. Index : `(etat, echeance)`.
 |---------|------|------|
 | id | INTEGER PK | |
 | titre, explication, ou, pour_qui, priorite | | recopiés dans chaque démarche créée |
-| frequence | TEXT | `annuelle`, `mensuelle`, `trimestrielle` |
-| prochaine | TEXT | date de la prochaine échéance |
+| frequence | TEXT | `annuelle`, `trimestrielle`, `mensuelle`, `premier_lundi` |
+| depart | TEXT | date de la première échéance (ou '' si à confirmer) |
+| preavis | INTEGER | jours (30 par défaut) |
+| importante | INTEGER | recopié dans chaque démarche |
 | active | INTEGER | 1 ou 0 |
 | cree_le, cree_par, modifie_le, modifie_par | TEXT | |
 
-La tâche de nuit crée la démarche quand `prochaine` est à 30 jours ou moins et qu'aucune démarche
-ouverte de cette règle n'existe ; quand elle est faite, `prochaine` avance d'une période (depuis la date
-d'échéance, pas la date du jour, pour garder le rythme).
+Les occurrences se calculent depuis `depart` (R8) ; une démarche par période, créée quand son préavis
+commence, que la précédente soit close ou non.
 
 ## Table `demarches_historique`
 
@@ -52,5 +58,5 @@ d'échéance, pas la date du jour, pour garder le rythme).
 ## Pastilles
 
 - Rouge (chiffre) sur Obligations : démarches `a_faire` de la personne (`pour_qui` = elle ou `deux`)
-  en retard ou à 30 jours ou moins.
+  en retard ou dans leur préavis (les « en attente » comptent aussi).
 - Ambre : historique postérieur au « vu » de la personne (`vus`, genre `demarche`), fait par l'autre.

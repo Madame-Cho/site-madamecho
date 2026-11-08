@@ -40,7 +40,22 @@ les adresses des restaurants et les relevés vivent dans la base de la gestion s
 - Q: Où apparaissent les rappels ? → A : pastilles dans la gestion ET une ligne dans le récap du lundi
   de Ferdinand (boîte d'Olivier) ; rien n'est envoyé à Youngmi.
 - Q: Quand une échéance devient-elle « à faire » ? → A : 30 jours avant (orange), rouge une fois en
-  retard, pour toutes les échéances.
+  retard ; ajusté après l'audit n° 7 : 30 jours par défaut, préavis propre à chaque échéance (repris du
+  calendrier des obligations 20/02 : 60, 15 ou 7 jours).
+
+### Audit n° 7, passe 1 (ChatGPT d'Olivier, 2026-11-08 ; décision d'Olivier 19:39 « Tout retenir, garder le mail »)
+
+- Rappel de la dérogation dès la première commande confirmée d'un nouveau client professionnel, avant
+  la livraison (et non à la deuxième).
+- Préavis par échéance ; état « date à confirmer » ; une seule démarche par échéance et par période,
+  même si la tâche de nuit saute ou passe deux fois.
+- Démarche importante : preuve obligatoire pour la clore ; état « fait, en attente de confirmation »
+  (envoyé, récépissé attendu).
+- Démarches closes gardées 10 ans après leur clôture, puis effacées par la tâche de nuit.
+- Textes « En retard depuis le … » et « Avant le … » en toutes lettres, pas seulement des couleurs.
+- Bandeau « Liste de départ à valider » tant qu'Olivier et Youngmi n'ont pas relu la reprise.
+- Référence facultative (genre + identifiant) pour relier plus tard une démarche à un relevé, un lot
+  ou un document (lots 2 à 4).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -156,10 +171,12 @@ plafonds et doit être mise à jour à chaque nouveau restaurant régulier.
 
 **Acceptance Scenarios**:
 
-1. **Given** une échéance récurrente, **When** sa date approche (30 jours), **Then** elle devient une
-   démarche « À faire » ; une fois faite, la suivante est créée (année suivante).
-2. **Given** un nouveau client professionnel qui reçoit une deuxième commande, **When** elle est
-   confirmée, **Then** la démarche « mettre à jour la dérogation (Cerfa 13982) » apparaît.
+1. **Given** une échéance récurrente, **When** sa date approche (son préavis, 30 jours par défaut),
+   **Then** elle devient une démarche « À faire » ; la démarche de la période suivante est créée à son
+   tour, que la précédente soit close ou non (une seule par période).
+2. **Given** un nouveau client professionnel, **When** sa première commande est confirmée, **Then**
+   la démarche « Vérifier la dérogation (Cerfa 13982) avant de livrer ce restaurant » apparaît, pour
+   la veille de la livraison, en importante (audit n° 7, constat 1).
 3. **Given** les commandes des restaurants, **When** Youngmi ouvre « Volumes », **Then** elle voit
    par semaine la part des ventes aux restaurants et, si les poids sont renseignés dans les fiches
    produits, les kilos par catégorie, avec une alerte avant les plafonds confirmés par la DDPP
@@ -218,6 +235,12 @@ la DDPP, diplômes, attestation d'assurance, rapports de vérification, registre
   modifier, marquer faite ou sans objet ; une démarche n'est jamais effacée.
 - **FR-014**: Chaque lundi, les démarches en retard ou à moins de 30 jours rejoignent le récap
   hebdomadaire de Ferdinand dans la boîte d'Olivier ; rien n'est envoyé à Youngmi (R-01).
+- **FR-015**: Préavis propre à chaque échéance (30 jours par défaut) ; échéance « date à confirmer »
+  montrée à part, jamais devinée (R-40).
+- **FR-016**: Une démarche « importante » ne se clôt qu'avec un lien de preuve ; l'état « fait, en
+  attente de confirmation » la garde visible jusqu'au récépissé.
+- **FR-017**: Démarches closes ou sans objet effacées 10 ans après leur clôture par la tâche de nuit,
+  avec leur historique.
 - **FR-012**: Durées de conservation des relevés fixées avant la mise en ligne, avec la tâche de
   nuit existante ; rien n'est purgé avant d'avoir une durée confirmée.
 

@@ -1,6 +1,6 @@
 # Research : écran « Obligations », lot 1
 
-## R1. Numéro de schéma
+## R1. Numéro de schéma (essais dans les deux ordres, audit n° 7, constat 11)
 
 La branche des factures (spec 003, non publiée) prend le schéma 11. Décision : les tables du lot 1 se
 créent dans une étape propre, « schéma 12 », écrite avec `CREATE TABLE IF NOT EXISTS` et indépendante
@@ -17,7 +17,10 @@ Y mêler les démarches compliquerait ces requêtes (audit n° 5). Décision : `
 ## R3. Couleurs et ordre
 
 - Rouge : échéance dépassée et pas faite.
-- Orange : échéance dans 30 jours ou moins (choix d'Olivier, Q5), valeur unique `OBLIGATIONS_JOURS = 30`.
+- Orange : échéance dans son préavis (30 jours par défaut, `OBLIGATIONS_JOURS = 30` ; préavis propre
+  à chaque règle et chaque démarche, audit n° 7, constat 2).
+- « Date à confirmer » : ni rouge ni orange, rubrique à part en haut de « Échéances ».
+- Le texte dit toujours l'état : « En retard depuis le 3 novembre », « Avant le 1er décembre ».
 - Sans couleur : sans date ou plus loin.
 - Ordre : rouge, orange, puis par date, puis sans date, puis priorité, puis plus ancienne.
 
@@ -42,12 +45,32 @@ et la Mémoire, un fichier CSV dans les fichiers du projet (hors dépôt) ; Oliv
 Paramètres › Reprise des démarches (même parcours que la reprise des factures du 07/11), puis le fichier
 est supprimé. La reprise refuse les doublons (même titre et même échéance) et dit ce qu'elle a fait.
 
-## R6. Déclencheur « nouveau restaurant »
+## R6. Déclencheur « nouveau restaurant » (corrigé, audit n° 7, constat 1)
 
-Quand une commande d'un client professionnel passe « confirmée » et que c'est sa deuxième commande
-confirmée, une démarche « Mettre à jour la dérogation (Cerfa 13982) » est créée pour Youngmi, sauf si
-une démarche ouverte du même déclencheur existe déjà pour ce client. Le texte de la démarche ne
+Quand une commande d'un client professionnel passe « confirmée » et que c'est sa première commande
+confirmée, une démarche importante « Vérifier la dérogation (Cerfa 13982) avant de livrer » est créée
+pour Youngmi, échéance la veille de la livraison, sauf si une démarche du même déclencheur existe
+déjà pour ce client (clé unique `declencheur`). La dérogation se déclare avant de fournir un nouveau
+commerce et se met à jour à tout changement important (destinataires, produits, quantités). Le texte de la démarche ne
 reprend que le nom commercial du restaurant (donnée de la société cliente, pas d'une personne).
+
+## R8. Récurrence et tâche de nuit (audit n° 7, constats 3 et 4)
+
+Chaque règle a une date de départ, une fréquence (annuelle, trimestrielle, mensuelle, ou « premier
+lundi du mois ») et un préavis. La période d'une occurrence est sa date d'échéance calculée (jour du
+mois ramené au dernier jour si besoin : 31 → 30 ou 28/29 ; 29 février → 28 février). Une démarche par
+(règle, période), contrainte UNIQUE en base : la création est idempotente (`INSERT OR IGNORE`). La
+tâche de nuit, et aussi l'ouverture de l'écran, créent toutes les occurrences dont le préavis est
+commencé, sans limite de rattrapage au-delà de 12 périodes. La date du dernier calcul est gardée.
+
+## R9. Preuve, conservation, références (constats 7, 8, 10)
+
+- `importante` (0/1) : « C'est fait » demande alors un lien Drive ; « Envoyé, j'attends la réponse »
+  donne l'état `attente` (orange tant qu'il dure, sans échéance).
+- Conservation : `fait` et `sans_objet` effacés 10 ans après `fait_le` (tâche de nuit), historique
+  compris ; aide sous les champs libres : jamais de nom ni de donnée d'un client particulier.
+- `ref_genre` + `ref_id` facultatifs, vides au lot 1.
+- Registre des traitements : T8 (gestion) complété d'une ligne « démarches internes » à la publication.
 
 ## R7. Qui peut faire quoi
 
