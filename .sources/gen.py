@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-07-agenda"
+VERSION = "2026-11-08-boutons"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -28,6 +28,16 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 COMMUN = os.path.join(ICI, "commun") + "/"   # police Jost et logo, repris des maquettes (retirées du site le 03/11/2026)
 E = html.escape
 PHOTOS = json.load(open(os.path.join(ICI, "photos.json")))   # dimensions des photos de assets/photos (photos.py)
+
+# Adresse email cliquable (ouvre la messagerie) suivie d'un bouton « copier » : sur un ordinateur sans
+# messagerie installée, le lien mailto ne fait rien ; l'icône copie l'adresse (demande d'Olivier, 08/11/2026).
+EMAIL_HTML = (f'<span class="email"><a href="mailto:{EMAIL}">{EMAIL}</a>'
+              f'<button type="button" class="copier-email" data-copier-email="{EMAIL}" '
+              'aria-label="Copier l\'adresse email" title="Copier l\'adresse">'
+              '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16">'
+              '<rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>'
+              '<path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>'
+              '<span class="copie-ok" aria-live="polite"></span></button></span>')
 
 def R(prof):
     """Préfixe des liens : relatif (../) selon la profondeur, ou absolu (prof < 0) pour la page 404."""
@@ -90,7 +100,7 @@ def pied(prof):
  <img class="logo-pied" src="{r}assets/logo-chocolat.svg" alt="Madame Cho" width="150" height="45" loading="lazy">
  <p class="activite">{E(ACTIVITE).replace("Hauts-de-Seine", '<span class="insecable">Hauts-de-Seine</span>')}</p>
  <address>{E(ADRESSE)}<br><a href="{lien('retrait/', prof)}">Retrait sur rendez-vous</a>, tous les jours de 9 h à 19 h<br>
- <a href="tel:{TEL_LIEN}">{TEL}</a> · <a href="mailto:{EMAIL}">{EMAIL}</a><br>
+ <a href="tel:{TEL_LIEN}">{TEL}</a> · {EMAIL_HTML}<br>
  </address>
  {bouton_insta("insta-pied")}
  <nav class="liens-pied" aria-label="Informations légales">
@@ -370,7 +380,7 @@ def demande():
   <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
   <p class="aide" data-sans-stockage hidden>Votre navigateur ne garde pas la demande d'une page à l'autre. Si vous voulez d'autres gâteaux, ajoutez-les depuis leur page juste avant d'envoyer, ou écrivez-les dans « Votre envie ».</p>
   <button class="bouton plein envoyer" type="submit" data-envoyer>Envoyer ma demande, sans engagement</button>
-  <p class="aide centre">Un souci ? Appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+  <p class="aide centre">Un souci ? Appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à {EMAIL_HTML}.</p>
  </form>
 
  <div class="recu" data-recu hidden tabindex="-1">
@@ -405,7 +415,7 @@ def questions():
     items = "".join(f'<h2 class="sous-titre">{E(q)}</h2><p>{E(r)}</p>' for q, r in FAQ)
     corps = f'''<section class="bloc premier" aria-labelledby="t-faq"><div class="etroit texte-long">
  <h1 class="titre" id="t-faq">Questions fréquentes</h1>{items}
- <p>Une autre question ? <a href="tel:{TEL_LIEN}">{TEL}</a> · <a href="mailto:{EMAIL}">{EMAIL}</a>, ou <a href="{lien('ma-demande/', prof)}">votre demande en ligne</a>.</p></div></section>'''
+ <p>Une autre question ? <a href="tel:{TEL_LIEN}">{TEL}</a> · {EMAIL_HTML}, ou <a href="{lien('ma-demande/', prof)}">votre demande en ligne</a>.</p></div></section>'''
     ld = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": r}} for q, r in FAQ]}
     return page("questions/index.html", "Questions fréquentes · Madame Cho, pâtisserie à Meudon",
@@ -425,7 +435,7 @@ def retrait():
  <p>Meudon est à quelques minutes de {E(liste)}. Pour un gâteau d'anniversaire, un entremets ou des choux, vous choisissez le jour et l'heure du retrait dans votre demande, Madame Cho vous confirme le rendez-vous.</p>
  <p><a href="{E(itineraire)}" rel="noopener" target="_blank">Préparer l'itinéraire jusqu'au 4 avenue du Château</a></p>
  <h2 class="sous-titre">Comment commander</h2>
- <p>Choisissez vos gâteaux sur <a href="{lien('carte/', prof)}">la carte</a> et envoyez votre demande, sans engagement. Madame Cho vous répond sous 24 heures avec une proposition écrite : le prix, le jour et l'heure du retrait. Pour une question : <a href="tel:{TEL_LIEN}">{TEL}</a> ou <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+ <p>Choisissez vos gâteaux sur <a href="{lien('carte/', prof)}">la carte</a> et envoyez votre demande, sans engagement. Madame Cho vous répond sous 24 heures avec une proposition écrite : le prix, le jour et l'heure du retrait. Pour une question : <a href="tel:{TEL_LIEN}">{TEL}</a> ou {EMAIL_HTML}.</p>
  <p class="centre"><a class="bouton plein" href="{lien('ma-demande/', prof)}">Faire ma demande</a></p></div></section>'''
     ld = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "Accueil", "item": SITE},
@@ -441,7 +451,7 @@ GARANTIES = '<div class="encadre" role="note" aria-label="Garanties légales"><p
 
 MENTIONS = [
  ("Éditeur du site", ["MADAME CHO, société par actions simplifiée unipersonnelle au capital de 1 000 €, immatriculée au RCS de Nanterre sous le numéro 941 761 918. TVA intracommunautaire : FR37941761918.",
-   f"Siège : {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : <a href=\"mailto:{EMAIL}\">{EMAIL}</a>.",
+   f"Siège : {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : {EMAIL_HTML}.",
    "Directrice de la publication : Youngmi Cho, présidente."]),
  ("Hébergeur", ["OVH SAS, 2 rue Kellermann, 59100 Roubaix, France. Téléphone : 1007."]),
  ("Médiation de la consommation", [MEDIATION]),
@@ -450,7 +460,7 @@ MENTIONS = [
  ("Cookies", [("Ce site ne dépose aucun cookie. Il compte ses visites de façon anonyme, sans cookie, avec Matomo installé chez son hébergeur ; vous pouvez refuser cette mesure sur la page <a href=\"../confidentialite/#mesure\">Confidentialité</a>." if MESURE else "Ce site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités) est gardée dans votre navigateur, pour ne pas la perdre : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Vous pouvez la vider à tout moment en retirant les gâteaux."]),
 ]
 CONFID = [
- ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
+ ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, {EMAIL_HTML}."]),
  ("Pourquoi", ["Seulement pour répondre à votre demande, vous faire une proposition, préparer et retirer votre commande. Base légale : les mesures prises à votre demande avant un contrat, puis le contrat lui-même. Aucune publicité, aucune revente."]),
  ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande, puis le suivi de votre commande (étapes, montant, paiement, notes de préparation) et les échanges à son sujet : emails, et résumé des appels ou messages notés par Madame Cho. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
  ("Qui les reçoit", ["Madame Cho. Prestataires techniques : OVH (hébergement du site, envoi du formulaire et outil de suivi des commandes, en France) et Google (messagerie).",
@@ -460,7 +470,7 @@ CONFID = [
    "Google, Apple, Anthropic et OpenAI peuvent traiter des données hors de l'Union européenne, notamment aux États-Unis, avec les garanties prévues par leurs conditions (cadre de protection des données UE–États-Unis ou clauses contractuelles types de la Commission européenne)."]),
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
  ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les échanges d'une commande suivent la même durée que la commande. Les informations d'un client sont effacées 3 ans après sa dernière commande ou son dernier échange avec Madame Cho. Les factures sont conservées 10 ans, comme la loi l'exige. Les échanges avec l'assistant de l'outil de suivi des commandes sont effacés après 6 mois. Une commande ou une fiche supprimée par erreur reste 30 jours dans la corbeille de l'outil, puis elle est effacée."]),
- ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à <a href=\"mailto:{EMAIL}\">{EMAIL}</a>. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
+ ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à {EMAIL_HTML}. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
  ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Quand vous choisissez la date et le moment du retrait, la page demande au site si Madame Cho est disponible : seuls la date et le moment sont envoyés, et rien n'est enregistré. Si vous arrivez par le QR code d'un emballage, les pages que vous ouvrez ensuite gardent cette indication dans leur adresse, et votre demande la signale à Madame Cho ; rien d'autre n'est noté."]),
 ] + ([("Mesure d'audience", [
    "Pour savoir quelles pages sont lues et améliorer le site, Madame Cho compte les visites avec Matomo, un outil installé sur son propre hébergement chez OVH, en France. "
@@ -468,7 +478,7 @@ CONFID = [
    "Elles sont conservées 13 mois au plus. Cette mesure est exemptée de consentement, selon les recommandations de la CNIL ; si votre navigateur demande de ne pas être suivi, le site n'est pas mesuré.",
    '<p class="choix-mesure" id="mesure"><label><input type="checkbox" id="mesure-choix" checked> Compter mes visites de façon anonyme</label> <span id="mesure-etat" class="petit" aria-live="polite"></span></p>'])] if MESURE else [])
 CONDITIONS = [
- ("Madame Cho", [f"MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : <a href=\"mailto:{EMAIL}\">{EMAIL}</a>."]),
+ ("Madame Cho", [f"MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : {EMAIL_HTML}."]),
  ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau."]),
  ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et heure du retrait, acompte éventuel. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
  ("3. Les prix", ["Les prix sont indiqués en euros TTC. Le prix de la carte est celui de la proposition ; une personnalisation au-delà de la plaque en chocolat (comprise) est chiffrée dans la proposition."]),
@@ -479,7 +489,7 @@ CONDITIONS = [
  ("7. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait. Passé ce délai, l'acompte versé, s'il y en a un, reste acquis à Madame Cho."]),
  ("8. Droit de rétractation", ["Les gâteaux de la carte sont des denrées fraîches, à consommer dans les 3 jours : le droit de rétractation ne s'applique pas à eux, car ils sont susceptibles de se détériorer rapidement (code de la consommation, article L221-28, 4°). Il ne s'applique pas non plus à un gâteau confectionné selon les choix du client, comme un gâteau personnalisé (même article, 3°)."]),
  ("9. Allergènes", ["Les allergènes de chaque gâteau sont indiqués sur sa page et rappelés au retrait. Tous les gâteaux sont préparés dans un atelier qui utilise aussi des fruits à coque et des arachides."]),
- ("10. Réclamations", [f"Une réclamation s'adresse à <a href=\"mailto:{EMAIL}\">{EMAIL}</a> ou au {TEL}, de préférence le jour du retrait."]),
+ ("10. Réclamations", [f"Une réclamation s'adresse à {EMAIL_HTML} ou au {TEL}, de préférence le jour du retrait."]),
  ("11. Garanties légales", ["Le client consommateur bénéficie des garanties légales rappelées ci-dessous.", GARANTIES]),
  ("12. Médiation", [MEDIATION]),
 ]
@@ -489,7 +499,7 @@ def introuvable():
     prof = -1
     corps = f'''<section class="bloc premier" aria-labelledby="t-404"><div class="etroit">
  <h1 class="titre" id="t-404"><span class="etiquette">Page introuvable</span> Cette page n'existe pas, ou plus.</h1>
- <p>Les gâteaux de Madame Cho sont sur la carte. Pour une question, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+ <p>Les gâteaux de Madame Cho sont sur la carte. Pour une question, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à {EMAIL_HTML}.</p>
  <p class="liens-404"><a class="bouton plein" href="{lien('carte/', prof)}">Voir la carte</a> <a class="bouton" href="{lien('', prof)}">Retour à l'accueil</a></p>
 </div></section>'''
     return page("404.html", "Page introuvable · Madame Cho", "Cette page n'existe pas sur le site de Madame Cho.", corps, prof, indexer=False)

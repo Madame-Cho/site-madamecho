@@ -189,10 +189,30 @@
   }
 
   function copier(texte, fin) {
+    function secours() {   // navigateurs sans presse-papiers moderne : zone de texte temporaire
+      var t = document.createElement('textarea'), ok = false;
+      t.value = texte; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(t); fin(ok);
+    }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(texte).then(function () { fin(true); }, function () { fin(false); });
-    } else fin(false);
+      navigator.clipboard.writeText(texte).then(function () { fin(true); }, secours);
+    } else secours();
   }
+
+  /* Bouton « copier » à côté de l'adresse email (toutes les pages) */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-copier-email]');
+    if (!b) return;
+    var msg = b.querySelector('.copie-ok');
+    copier(b.getAttribute('data-copier-email'), function (ok) {
+      b.classList.add(ok ? 'copie' : 'copie-ko');
+      if (msg) msg.textContent = ok ? 'Adresse copiée' : 'Copie impossible';
+      clearTimeout(b._t);
+      b._t = setTimeout(function () { b.classList.remove('copie', 'copie-ko'); if (msg) msg.textContent = ''; }, 2000);
+    });
+  });
 
   /* ---------- Ma demande ---------- */
   function iso(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
