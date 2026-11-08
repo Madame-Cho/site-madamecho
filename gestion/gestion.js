@@ -590,6 +590,16 @@
   });
 })();
 
+/* Étiquettes (lot 3) : prévient si le texte déborde d'une étiquette (rien n'est coupé sans le dire) */
+(function () {
+  var e = document.querySelector(".planche .etiquette");
+  if (!e || e.scrollHeight <= e.clientHeight + 1) return;
+  var p = document.createElement("p");
+  p.className = "erreur etiquettes-trop ecran-seul";
+  p.textContent = document.documentElement.getAttribute("lang") === "ko" ? "이 라벨에는 글이 너무 길어요. 재료 목록을 줄이거나 A4 시트를 고르세요." : "Texte trop long pour cette étiquette : raccourcissez la liste d'ingrédients ou choisissez la planche A4.";
+  e.parentNode.parentNode.insertBefore(p, e.parentNode);
+})();
+
 /* Pastilles (FR-041) : le nombre rouge sur l'icône de l'application, quand le téléphone ou l'ordinateur le permet */
 (function () {
   var n = parseInt(document.body.getAttribute("data-pastilles") || "", 10);

@@ -83,3 +83,11 @@ Jamais supprimée par une personne ; effacée par la tâche de nuit après la du
 
 ## Table `hygiene_durees`
 produit_id, jours (durée de conservation fixée par Youngmi), maj_le, maj_par.
+
+## Lot 3 : colonnes ajoutées à `hygiene_durees`
+
+`conservation` (texte de l'étiquette), `ingredients` (relu par Youngmi), `etiquette_le`, `etiquette_par` (relu le / par). Paramètre `etiquette_exploitant` (adresse, jamais dans le dépôt).
+
+## Table `hygiene_problemes`
+
+`id`, `fournee_id`, `numero_lot`, `ouvert_le`, `ouvert_par`, `description`, `etapes` (JSON : retirer, clients, ddpp, rappelconso, chacune le / par / note), `demarche_id`, `clos_le`, `clos_par`, `bilan`. Jamais supprimée ; pas de purge automatique pour l'instant (durée à trancher à l'audit unique).

@@ -372,7 +372,10 @@ CREATE TABLE IF NOT EXISTS hygiene_releves (id INTEGER PRIMARY KEY, genre TEXT N
   note TEXT NOT NULL DEFAULT '', remplace_id INTEGER, remplace_par INTEGER, motif TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS hygiene_releves_jour ON hygiene_releves(jour, genre);
 CREATE TABLE IF NOT EXISTS hygiene_liens (de INTEGER NOT NULL, vers INTEGER NOT NULL, PRIMARY KEY (de, vers));
-CREATE TABLE IF NOT EXISTS hygiene_durees (produit_id TEXT PRIMARY KEY, jours INTEGER NOT NULL, maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS hygiene_durees (produit_id TEXT PRIMARY KEY, jours INTEGER, maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '',
+  conservation TEXT NOT NULL DEFAULT '', ingredients TEXT NOT NULL DEFAULT '', etiquette_le TEXT NOT NULL DEFAULT '', etiquette_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS hygiene_problemes (id INTEGER PRIMARY KEY, fournee_id INTEGER NOT NULL, numero_lot TEXT NOT NULL, ouvert_le TEXT NOT NULL, ouvert_par TEXT NOT NULL DEFAULT '',
+  description TEXT NOT NULL DEFAULT '', etapes TEXT NOT NULL DEFAULT '{}', demarche_id INTEGER, clos_le TEXT NOT NULL DEFAULT '', clos_par TEXT NOT NULL DEFAULT '', bilan TEXT NOT NULL DEFAULT '');
 ");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_hygiene', '1')");
 }

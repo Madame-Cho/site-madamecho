@@ -1552,6 +1552,93 @@ Gestion, Plus › Hygiène, au jour indiqué ci-dessous : touchez « C'est fait 
 Relevés de froid du jour : faits | 오늘 온도 기록: 완료
 L'écran Hygiène | 위생 화면
 Plus › Hygiène : la température des frigos, les réceptions, les fournées avec leur numéro de lot et les livraisons aux restaurants, notées en quelques touches sur le téléphone. | 더보기 › 위생: 냉장고 온도, 입고, 로트 번호가 붙는 생산, 레스토랑 배달을 휴대폰에서 몇 번만 눌러 기록해요.
+# Écran Hygiène, lot 3 : étiquettes et problème sur un lot (spécification 004, 08/11/2026)
+Étiquettes des boîtes | 상자 라벨
+Étiquette impossible pour l'instant. | 지금은 라벨을 만들 수 없어요.
+Ce gâteau n'a pas de fiche produit : une étiquette ne se fait que pour un gâteau de la carte ou de la gamme pro. | 이 케이크는 제품 정보가 없어요. 라벨은 메뉴나 사업자용 제품의 케이크만 만들 수 있어요.
+La fiche du gâteau n'est pas validée par Youngmi (Produits › le gâteau › « Fiche validée le »). | Youngmi가 케이크 정보를 아직 확인하지 않았어요 (제품 › 케이크 › ‘확인한 날’).
+Les allergènes ne sont pas connus : ni texte sur le site, ni recette dans la gestion. | 알레르기 유발 성분을 알 수 없어요. 사이트 글도, 관리 화면의 레시피도 없어요.
+Le texte de l'étiquette n'est pas encore relu (Hygiène › Appareils › Étiquettes des gâteaux). | 라벨 글을 아직 확인하지 않았어요 (위생 › 기기 › 케이크 라벨).
+Les conditions de conservation manquent (Hygiène › Appareils › Étiquettes des gâteaux). | 보관 방법이 없어요 (위생 › 기기 › 케이크 라벨).
+Le nom et l'adresse de l'exploitant manquent (Hygiène › Appareils › Réglages). | 사업자 이름과 주소가 없어요 (위생 › 기기 › 설정).
+La fournée n'a pas de date limite ou de numéro de lot. | 이 생산에는 유통기한이나 로트 번호가 없어요.
+Format | 형식
+Nombre | 개수
+Planche A4 (24 étiquettes de 63,5 x 33,9 mm) | A4 시트 (63.5 x 33.9 mm 라벨 24개)
+Rouleau (étiquettes de 55 x 30 mm) | 롤 (55 x 30 mm 라벨)
+Sans liste d'ingrédients : saisissez la recette du gâteau, puis relisez le texte de l'étiquette. | 재료 목록이 없어요. 케이크 레시피를 입력한 뒤 라벨 글을 다시 확인하세요.
+Préparer les étiquettes | 라벨 준비
+En cas de problème | 문제가 생기면
+Problème sur ce lot | 이 로트에 문제
+Que s'est-il passé ? | 무슨 일이 있었나요?
+Qui l'a signalé, quoi, quand : un restaurant, un client malade, un défaut vu en cuisine… Pas de nom de particulier. | 누가, 무엇을, 언제 알렸는지: 레스토랑, 아픈 고객, 주방에서 본 문제… 개인 고객 이름은 적지 마세요.
+Ouvrir le suivi du problème | 문제 처리 시작
+Ouvrir un problème sur ce lot ? La gestion montre qui l'a reçu et les étapes du retrait. | 이 로트에 문제를 기록할까요? 누가 받았는지와 회수 단계를 보여 줘요.
+Problème en cours sur ce lot. | 이 로트에 처리 중인 문제가 있어요.
+Suivre les étapes | 단계 보기
+Étiquettes | 라벨
+Planche A4 de 24 étiquettes (3 x 8, 63,5 x 33,9 mm). À l'impression : taille réelle (100 %), sans marges ajoutées. | 라벨 24개 A4 시트 (3 x 8, 63.5 x 33.9 mm). 인쇄할 때: 실제 크기(100%), 여백 추가 없음.
+Rouleau 55 x 30 mm : une étiquette par page. À l'impression, choisissez l'imprimante à étiquettes et le format 55 x 30 mm. | 55 x 30 mm 롤: 한 페이지에 라벨 하나. 인쇄할 때 라벨 프린터와 55 x 30 mm 형식을 고르세요.
+Étiquette impossible pour l'instant : voyez ce qui manque sur la fiche du lot. | 지금은 라벨을 만들 수 없어요. 로트 기록에서 빠진 것을 확인하세요.
+Lot introuvable. | 로트를 찾을 수 없어요.
+Problème sur un lot | 로트 문제
+Problème introuvable. | 문제를 찾을 수 없어요.
+Ne vendez plus et ne livrez plus ce lot. | 이 로트는 더 이상 팔거나 배달하지 마세요.
+En cas de malaise grave, le 15 d'abord. | 심하게 아픈 사람이 있으면 먼저 15번에 전화하세요.
+Fabriqué le | 만든 날
+Ouvert | 시작
+Clos | 종료
+Qui a reçu ce lot ? | 이 로트를 누가 받았나요?
+Restaurants livrés | 배달한 레스토랑
+Aucune livraison reliée à ce lot. | 이 로트와 연결된 배달이 없어요.
+Commandes peut-être concernées | 관련됐을 수 있는 주문
+Les commandes de ce gâteau retirées ou livrées entre la fournée et sa date limite : à vérifier une par une. | 생산한 날부터 유통기한까지 찾아가거나 배달한 이 케이크의 주문이에요. 하나씩 확인하세요.
+Matières premières utilisées | 사용한 재료
+Aucune réception reliée à ce lot. | 이 로트와 연결된 입고가 없어요.
+Les étapes du retrait | 회수 단계
+Retirer le lot | 로트 회수
+Mettre de côté tout ce qui reste du lot (cuisine, frigo, vitrine) et ne plus le vendre ni le livrer. | 남은 로트(주방, 냉장고, 진열장)를 모두 따로 두고 더 이상 팔거나 배달하지 마세요.
+Prévenir les clients | 고객에게 알리기
+Appeler chaque restaurant livré et chaque client qui a peut-être reçu le lot : ne pas servir, ne pas manger, rapporter ou jeter. | 배달한 레스토랑과 이 로트를 받았을 수 있는 고객에게 전화하세요: 내놓지 말고, 먹지 말고, 돌려주거나 버리기.
+Informer la DDPP | DDPP에 알리기
+Envoyer à la DDPP des Hauts-de-Seine le brouillon ci-dessous, depuis votre messagerie (la gestion ne l'envoie jamais). | 아래 초안을 직접 메일로 Hauts-de-Seine DDPP에 보내세요 (관리 화면은 절대 보내지 않아요).
+Déclarer sur RappelConso si la DDPP le demande | DDPP가 요청하면 RappelConso에 신고
+Site officiel rappel.conso.gouv.fr : un rappel public seulement si le lot a pu être mangé par des particuliers ou si la DDPP le demande. | 공식 사이트 rappel.conso.gouv.fr: 개인 고객이 먹었을 수 있거나 DDPP가 요청할 때만 공개 회수를 해요.
+Décocher | 체크 해제
+Brouillon pour la DDPP | DDPP용 초안
+À coller dans un mail à la DDPP des Hauts-de-Seine, envoyé par vous depuis contact@ (la gestion n'envoie rien). Relisez-le avant : il reprend les étapes déjà cochées. | contact@에서 Hauts-de-Seine DDPP에 보내는 메일에 붙여 넣으세요 (관리 화면은 아무것도 보내지 않아요). 보내기 전에 다시 읽어 보세요. 이미 체크한 단계가 들어 있어요.
+Clore | 끝내기
+Bilan (obligatoire s'il reste des étapes) | 정리 (남은 단계가 있으면 필수)
+Par exemple : la DDPP n'a pas demandé de rappel public. | 예: DDPP가 공개 회수를 요청하지 않았어요.
+Clore le problème | 문제 끝내기
+Clore ce problème ? | 이 문제를 끝낼까요?
+Étape notée. | 단계를 기록했어요.
+Étape inconnue. | 알 수 없는 단계예요.
+Ce problème est clos. | 끝난 문제예요.
+Ce problème est déjà clos. | 이미 끝난 문제예요.
+Il reste des étapes : cochez-les, ou écrivez dans le bilan pourquoi elles ne s'appliquent pas. | 남은 단계가 있어요. 체크하거나, 해당하지 않는 이유를 정리에 적으세요.
+Problème ouvert : suivez les étapes, la démarche est aussi dans Obligations. | 문제를 기록했어요. 단계를 따라가세요. 의무에도 할 일이 생겼어요.
+Problème clos. Pensez à clore aussi la démarche dans Obligations, avec le lien de la preuve. | 문제를 끝냈어요. 의무의 할 일도 증빙 링크와 함께 닫으세요.
+Décrivez le problème en une phrase (qui l'a signalé, quoi, quand). | 문제를 한 문장으로 적어 주세요 (누가, 무엇을, 언제).
+Problème sur un lot : retrait et information | 로트 문제: 회수와 알림
+Gestion, Plus › Hygiène › la fiche du lot › « Problème sur ce lot » : cochez chaque étape une fois faite. Rangez les preuves (mail à la DDPP, notes d'appel) dans le Drive. | 관리 화면, 더보기 › 위생 › 로트 기록 › ‘이 로트에 문제’: 단계를 마칠 때마다 체크하세요. 증빙(DDPP 메일, 통화 메모)은 Drive에 넣으세요.
+Étiquettes des gâteaux | 케이크 라벨
+L'étiquette ne reprend que ce que vous avez relu ici, avec les allergènes du site (ou de la recette pour la gamme pro), la date limite et le numéro du lot. | 라벨에는 여기서 확인한 글과, 사이트의 알레르기 성분(사업자용 제품은 레시피), 유통기한, 로트 번호만 들어가요.
+Relu | 확인함
+À relire | 확인 필요
+Fiche non validée | 정보 미확인
+Par exemple : au réfrigérateur, entre 0 et 4 °C. | 예: 냉장고에서 0~4 °C.
+Ingrédients, du plus lourd au plus léger | 재료 (무거운 것부터)
+Proposés depuis la recette : vérifiez les noms et l'ordre (les ingrédients comptés à la pièce, comme les œufs, sont à la fin : placez-les selon leur poids). Les allergènes s'impriment en gras. | 레시피에서 가져왔어요. 이름과 순서를 확인하세요 (달걀처럼 개수로 센 재료는 맨 뒤에 있으니 무게에 맞게 옮기세요). 알레르기 성분은 굵게 인쇄돼요.
+J'ai relu ce texte | 이 글을 확인했어요
+Texte de l'étiquette relu et enregistré. | 라벨 글을 확인하고 저장했어요.
+Écrivez les conditions de conservation (par exemple : au réfrigérateur, entre 0 et 4 °C). | 보관 방법을 적어 주세요 (예: 냉장고에서 0~4 °C).
+Exploitant sur les étiquettes | 라벨의 사업자
+Madame Cho, numéro et rue, code postal et ville | Madame Cho, 번지와 거리, 우편번호와 도시
+Le nom et l'adresse imprimés sur chaque étiquette (l'adresse de production déclarée à la DDPP). | 라벨마다 인쇄되는 이름과 주소 (DDPP에 신고한 생산 주소).
+inconnus (ni site, ni recette) | 알 수 없음 (사이트도 레시피도 없음)
+À faire | 할 일
+Texte trop long pour cette étiquette : raccourcissez la liste d'ingrédients ou choisissez la planche A4. | 이 라벨에는 글이 너무 길어요. 재료 목록을 줄이거나 A4 시트를 고르세요.
 TXT;
 }
 
@@ -2011,6 +2098,9 @@ function coreen_motifs(): array {
         ['/^Jour concerné : (.+)\.$/u', fn($m) => ($d = coreen_date($m[1])) ? '해당 날짜: ' . $d . '.' : null],
         ['/^Les relevés et les photos sont gardés (\d+) ans, puis effacés par la tâche de nuit\.$/u', fn($m) => '기록과 사진은 ' . $m[1] . '년 동안 보관한 뒤 밤 작업이 지워요.'],
         ['/^Température hors plage \((.+)\) : écrivez ce que vous avez fait \(porte fermée, produits déplacés ou jetés, réglage…\)\.$/u', fn($m) => '범위 밖 온도예요 (' . (coreen_motif($m[1]) ?? $m[1]) . '). 어떻게 했는지 적어 주세요 (문 닫음, 제품을 옮기거나 버림, 온도 조절…).'],
+        ['/^Problème clos le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 문제 끝남' : null],
+        ['/^Lot (\d{6}-[A-Z0-9]+-\d+)\.$/u', fn($m) => '로트 ' . $m[1] . '.'],
+        ['/^Fait le (.+) à (\d{2}:\d{2})$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' ' . $m[2] . ' 완료' : null],
         ['/^Modifiée : (.+)$/u', fn($m) => '수정됨: ' . (['quoi' => '할 일', 'où' => '어디서', 'pourquoi' => '왜', 'pour qui' => '누구의 일', 'échéance' => '기한', 'date à confirmer' => '날짜 확인 필요', 'rappel' => '알림', 'priorité' => '우선순위', 'importante' => '중요', 'origine' => '어디서 온 일', 'état' => '상태'][$m[1]] ?? $m[1])],
     ];
     return $p;

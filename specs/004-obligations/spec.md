@@ -64,6 +64,12 @@ les adresses des restaurants et les relevés vivent dans la base de la gestion s
 - Q : Fréquence des relevés de froid ? → R : Une fois par appareil et par jour de production ; « deux » reste possible dans les réglages.
 - Audit : un seul audit (P-26) après le lot 4, pas d'audit par lot.
 
+### Session 2026-11-08, lot 3 (Olivier : « Enchaîne lot 3 » ; cartes 21:19, heure de Paris)
+
+- Q : Quel format d'étiquette ? → R : Les deux : planche A4 de 24 étiquettes (3 x 8, 63,5 x 33,9 mm) et rouleau 55 x 30 mm, choisis à l'impression.
+- Q : La liste des ingrédients sur l'étiquette ? → R : Oui, proposée depuis la recette (par poids décroissant), allergènes en gras ; Youngmi la relit et la valide avant la première étiquette (« J'ai relu ce texte ») ; sans fiche validée, allergènes connus, texte relu, conservation et adresse de l'exploitant, aucune étiquette (la gestion dit ce qui manque, n'invente rien).
+- « Problème sur ce lot » : périmètre (restaurants, commandes de particuliers du gâteau entre la fournée et la date limite, réceptions utilisées), 4 étapes cochées avec note, brouillon DDPP sans nom de particulier, copié et envoyé par Youngmi (R-01) ; démarche importante dans Obligations jusqu'à la clôture, bilan exigé s'il reste des étapes. Rien ne s'efface.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Voir d'un coup d'œil ce qui reste à faire (Priority: P1)

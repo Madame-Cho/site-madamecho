@@ -177,7 +177,7 @@ const ICONES_PAGES = ['accueil' => 'jour', 'agenda' => 'mois', 'commandes' => 'c
     'ingredients' => 'produits', 'ingredient' => 'produits', 'statistiques' => 'stats', 'taxe' => 'stats', 'production' => 'imprimer', 'plus' => 'plus',
     'rapprochement' => 'paiement', 'corbeille' => 'supprimer', 'manuel' => 'livre', 'aide' => 'livre', 'assistant' => 'ia', 'olivier' => 'ia', 'reglages' => 'reglages', 'nouveautes' => 'cloche',
     'obligations' => 'obligations', 'demarche' => 'obligations', 'echeance' => 'obligations',
-    'hygiene' => 'hygiene', 'hygiene-fiche' => 'hygiene', 'hygiene-appareil' => 'hygiene'];
+    'hygiene' => 'hygiene', 'hygiene-fiche' => 'hygiene', 'hygiene-appareil' => 'hygiene', 'hygiene-etiquettes' => 'imprimer', 'hygiene-probleme' => 'alerte'];
 function titre_page(string $titre, string $sous = '', string $actions = '', string $retour = ''): string {
     $r = $retour !== '' ? '<a class="retour" href="' . h($retour) . '">' . icone('retour') . '<span>Retour</span></a>' : '';
     // Chaque titre de page porte l'icône de sa rubrique, la même que dans le menu (retour d'Olivier, 07/11/2026)

@@ -165,6 +165,7 @@ function page_demarche(): void {
                'Quoi' => '<span' . demarche_tn((string)$d['titre']) . '>' . nl2br(h($d['titre'])) . '</span>',
                'Client' => $d['ref_genre'] === 'client' && ($cl = client((int)$d['ref_id'])) ? '<a href="' . h(u('client', ['id' => (int)$cl['id']])) . '" translate="no">' . h(client_nom($cl)) . '</a>' : '',
                'Jour concerné' => $d['ref_genre'] === 'hygiene' && date_valide((string)$d['ref_id']) ? '<a href="' . h(u('hygiene', ['vue' => 'jour', 'jour' => (string)$d['ref_id']])) . '">' . h(ucfirst(date_fr((string)$d['ref_id'], 'jour'))) . '</a>' : '',
+               'Lot' => $d['ref_genre'] === 'probleme' && ($pbm = probleme((int)$d['ref_id'])) ? '<a href="' . h(u('hygiene-probleme', ['id' => (int)$pbm['id']])) . '" translate="no">' . h($pbm['numero_lot']) . '</a>' : '',
                'Où le faire ?' => '<span' . demarche_tn((string)$d['ou']) . '>' . nl2br(h($d['ou'])) . '</span>',
                'Pourquoi' => $d['explication'] !== '' ? '<span' . demarche_tn((string)$d['explication']) . '>' . nl2br(h($d['explication'])) . '</span>' : '',
                'Pour qui' => h(DEMARCHE_POUR[$d['pour_qui']] ?? ''),

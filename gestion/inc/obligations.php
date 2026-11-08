@@ -425,11 +425,11 @@ const OBLIGATIONS_PRO_POURQUOI = 'Vendre à un professionnel peut créer de nouv
 function obligations_textes_figes(): array {
     return [OBLIGATIONS_PRO_TITRE, OBLIGATIONS_PRO_TITRE_GATEAU, OBLIGATIONS_PRO_TITRE_MESURE, OBLIGATIONS_PRO_TITRE_LIVRAISON, OBLIGATIONS_PRO_OU, OBLIGATIONS_PRO_POURQUOI,
             'Nouveau client professionnel', 'Nouveau gâteau pour un client professionnel', 'Gâteau sur mesure pour un client professionnel', 'Première livraison pour un client professionnel',
-            HYGIENE_MANQUANT_TITRE, HYGIENE_MANQUANT_OU];
+            HYGIENE_MANQUANT_TITRE, HYGIENE_MANQUANT_OU, PROBLEME_TITRE, PROBLEME_OU];
 }
 /** Un texte écrit par la gestion (traduit en coréen), jamais un texte tapé : les libellés figés et le jour d'un relevé manquant. */
 function obligations_texte_fige(string $t): bool {
-    return in_array($t, obligations_textes_figes(), true) || (bool)preg_match('/^Jour concerné : \d{1,2} \p{L}+ \d{4}\.$/u', $t);
+    return in_array($t, obligations_textes_figes(), true) || (bool)preg_match('/^Jour concerné : \d{1,2} \p{L}+ \d{4}\.$/u', $t) || (bool)preg_match('/^Lot \d{6}-[A-Z0-9]+-\d+\.$/', $t);
 }
 
 /** La date pour vérifier : la veille du prochain retrait ou de la prochaine livraison de ce client, sinon dans 7 jours ; jamais avant aujourd'hui. */

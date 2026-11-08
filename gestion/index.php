@@ -34,7 +34,8 @@ $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'command
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',
           'statistiques' => 'page_statistiques', 'taxe' => 'page_taxe', 'plus' => 'page_plus', 'rapprochement' => 'page_rapprochement', 'corbeille' => 'page_corbeille', 'manuel' => 'page_manuel', 'aide' => 'page_manuel', 'assistant' => 'page_assistant', 'olivier' => 'page_olivier', 'reglages' => 'page_reglages', 'export' => 'page_export',
           'nouveautes' => 'page_nouveautes', 'pastilles' => 'page_pastilles', 'obligations' => 'page_obligations', 'demarche' => 'page_demarche', 'echeance' => 'page_echeance',
-          'hygiene' => 'page_hygiene', 'hygiene-fiche' => 'page_hygiene_fiche', 'hygiene-appareil' => 'page_hygiene_appareil', 'hygiene-photo' => 'page_hygiene_photo', 'hygiene-export' => 'page_hygiene_export'];
+          'hygiene' => 'page_hygiene', 'hygiene-fiche' => 'page_hygiene_fiche', 'hygiene-appareil' => 'page_hygiene_appareil', 'hygiene-photo' => 'page_hygiene_photo', 'hygiene-export' => 'page_hygiene_export',
+          'hygiene-etiquettes' => 'page_hygiene_etiquettes', 'hygiene-probleme' => 'page_hygiene_probleme'];
 
 $p = is_string($_GET['p'] ?? null) ? $_GET['p'] : 'accueil';
 try {

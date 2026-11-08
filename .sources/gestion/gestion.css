@@ -854,3 +854,36 @@ html:lang(ko) .par::after{content:" 님"}
 .rappel-hygiene a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--p-change-f);color:var(--p-change-t);text-decoration:none;font-weight:600}
 .rappel-hygiene.fait a{background:var(--ivoire);color:inherit;font-weight:400}
 .rappel-hygiene.hors a{background:var(--p-action-f,#fde7e4);color:var(--p-action-t,#b3261e)}
+/* Lot 3 : étiquettes des boîtes (planche A4 3 x 8 de 63,5 x 33,9 mm ; rouleau 55 x 30 mm) et problème sur un lot */
+.etapes-probleme{padding-left:20px;margin:0}
+.etapes-probleme li{margin:0 0 14px}
+.etapes-probleme li>b{display:block}
+.etapes-probleme li.fait>b{text-decoration:line-through;text-decoration-thickness:1px}
+.etapes-probleme .form-etape{margin-top:6px}
+.planche{display:grid;gap:0;background:#fff;color:#000;margin:0 auto}
+.etiquette{box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;gap:.3mm;font:7pt/1.15 Arial,Helvetica,sans-serif;color:#000;border:1px dashed #bbb;background:#fff}
+.etiquette b{font-weight:700}
+.etiquette .e-nom{font-size:8.5pt}
+.etiquette .e-ing{font-size:6pt}
+.etiquette .e-exp{font-size:6pt;margin-top:auto}
+.planche-a4{grid-template-columns:repeat(3,63.5mm);grid-auto-rows:33.9mm;column-gap:2.5mm;width:195.5mm}
+.planche-a4 .etiquette{width:63.5mm;height:33.9mm;padding:2mm 2.5mm}
+.planche-rouleau{grid-template-columns:55mm;grid-auto-rows:30mm;row-gap:3mm;width:55mm}
+.planche-rouleau .etiquette{width:55mm;height:30mm;padding:1.2mm 1.6mm;font-size:5.6pt;gap:0}
+.planche-rouleau .etiquette .e-nom{font-size:7pt}
+.planche-rouleau .etiquette .e-ing,.planche-rouleau .etiquette .e-exp{font-size:5pt}
+.etiquettes-trop{margin:0 0 12px}
+@page etiq-a4{size:A4;margin:12.9mm 7.2mm}
+@page etiq-rouleau{size:55mm 30mm;margin:0}
+@media print{
+ .page-etiquettes .tete,.page-etiquettes .ecran-seul,.page-etiquettes .bandeau-essai,.page-etiquettes .rappel-fr{display:none!important}
+ .planche-a4{page:etiq-a4;row-gap:0}
+ .planche-rouleau{page:etiq-rouleau;row-gap:0}
+ .planche-rouleau .etiquette{break-after:page}
+ .etiquette{border:0}
+ .page-etiquettes main,.page-etiquettes .page{padding:0!important;margin:0!important;max-width:none}
+ .page-etiquettes .planche{margin:0}
+}
+.etiquette .e-lot{white-space:nowrap}
+#brouillon-ddpp{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.92em}
+.etapes-probleme li>.aide,.etapes-probleme li>.petit{display:block}

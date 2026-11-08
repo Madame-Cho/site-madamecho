@@ -10,6 +10,8 @@
 declare(strict_types=1);
 namespace MadameCho\Gestion;
 
+require_once __DIR__ . '/lots.php';   // lot 3 : étiquettes et problème sur un lot
+
 const HYGIENE_GENRES = ['froid' => 'Froid', 'reception' => 'Réception', 'fournee' => 'Fournée', 'livraison' => 'Livraison', 'sans_production' => 'Pas de production'];
 const HYGIENE_APPAREILS = ['frigo' => 'Réfrigérateur', 'congelateur' => 'Congélateur', 'vitrine' => 'Vitrine réfrigérée', 'caisson' => 'Caisson isotherme'];
 const HYGIENE_PHOTO_MAX = 8000000;          // 8 Mo : la page réduit la photo avant l'envoi ; ceci est la limite côté serveur
@@ -171,8 +173,9 @@ function hygiene_reception_lue(array $src, string $photo, ?array $avant = null):
 }
 /** La durée de conservation d'un gâteau, fixée par Youngmi (jamais devinée). */
 function hygiene_duree(string $pid): ?int { $j = val("SELECT jours FROM hygiene_durees WHERE produit_id = ?", [$pid]); return $j === null || $j === false ? null : (int)$j; }
-function hygiene_duree_fixer(string $pid, int $jours): void {
-    q("INSERT OR REPLACE INTO hygiene_durees (produit_id, jours, maj_le, maj_par) VALUES (?, ?, ?, ?)", [$pid, $jours, maintenant(), auteur()]);
+function hygiene_duree_fixer(string $pid, ?int $jours): void {
+    q("INSERT INTO hygiene_durees (produit_id, jours, maj_le, maj_par) VALUES (?, ?, ?, ?) ON CONFLICT(produit_id) DO UPDATE SET jours = excluded.jours, maj_le = excluded.maj_le, maj_par = excluded.maj_par",
+      [$pid, $jours, maintenant(), auteur()]);
 }
 /** Le prochain numéro de lot : AAMMJJ-GATEAU-n (date + gâteau, US2, scénario 3). */
 function hygiene_numero_lot(string $jour, string $pid): string {

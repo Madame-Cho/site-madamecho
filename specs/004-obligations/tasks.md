@@ -50,6 +50,14 @@ branche, pas publié. Rien n'est publié sans l'audit n° 7 et le feu vert d'Oli
 - [X] T029 [US2] Relevé de froid manquant (démarche figée, une par jour), tâche de nuit ; conservation 5 ans avec les photos (carte d'Olivier)
 - [X] T030 [US2] Historique 30 jours, export CSV ; rappel sur Aujourd'hui ; Plus › Hygiène ; coréen, manuel, Quoi de neuf
 - [X] T031 Essais hors dépôt `tests-gestion/hygiene/` (parcours téléphone FR/KO, unitaires) et non-régression (Obligations, pastilles, rappel)
+## Lot 3 : Étiquettes et problème sur un lot (US3, US4), « Enchaîne lot 3 » d'Olivier du 2026-11-08
+
+- [X] T035 [US3] Textes d'étiquette par gâteau (`hygiene_durees` : conservation, ingrédients, relu le / par) ; ingrédients proposés depuis la recette ; adresse de l'exploitant dans les réglages
+- [X] T036 [US3] Étiquettes A4 3 x 8 et rouleau 55 x 30 (cartes d'Olivier), impression sans rien d'autre, refus motivé s'il manque quelque chose, texte toujours en français
+- [X] T037 [US4] Table `hygiene_problemes` ; ouverture depuis la fiche du lot, périmètre, étapes avec note, clôture avec bilan ; démarche importante `probleme:<id>`
+- [X] T038 [US4] Brouillon DDPP copiable, sans nom de particulier (R-01 : Youngmi l'envoie) ; lot marqué « Problème » ; coréen, manuel
+- [X] T039 Essais `tests-gestion/hygiene/lot3.js` (26/26) et non-régression
+
 - [ ] T032 Saisie hors ligne (cas limite), l'assistant lit les relevés : plus tard
 - [ ] T033 Audit unique des lots 1 à 4 (P-26) après le lot 4 (choix d'Olivier) ; registre des traitements (T8) ; pilote avec Youngmi
 - [ ] T034 Feu vert d'Olivier sur la version exacte ; fetch et rebase ; publication ; Journal des publications, Registre
