@@ -235,6 +235,8 @@ function demarche_modifier(int $id, array $d): void {
 function demarche_changer_etat(int $id, string $etat, string $lien = '', string $note = '', string $raison = ''): string {
     $d = demarche($id);
     if (!$d || !isset(DEMARCHE_ETATS[$etat])) return 'Démarche introuvable.';
+    if (in_array($etat, ['fait', 'sans_objet'], true) && function_exists(__NAMESPACE__ . '\\probleme_ouvert_de_demarche') && probleme_ouvert_de_demarche($d))
+        return 'Cette démarche suit un problème sur un lot encore ouvert : clôturez-le dans Hygiène (fiche du problème) ; la démarche se clôt avec lui.';
     if ($lien !== '' && !lien_drive_valide($lien)) return 'Le lien doit être une adresse du Drive (https://drive.google.com/… ou https://docs.google.com/…).';
     if ($etat === 'fait' && (int)$d['importante'] === 1 && $lien === '' && $d['preuve_lien'] === '')
         return 'Cette démarche est importante : collez le lien de la preuve (récépissé, attestation, rapport) rangée dans le Drive.';
@@ -426,12 +428,13 @@ const OBLIGATIONS_PRO_POURQUOI = 'Vendre à un professionnel peut créer de nouv
 function obligations_textes_figes(): array {
     return [OBLIGATIONS_PRO_TITRE, OBLIGATIONS_PRO_TITRE_GATEAU, OBLIGATIONS_PRO_TITRE_MESURE, OBLIGATIONS_PRO_TITRE_LIVRAISON, OBLIGATIONS_PRO_OU, OBLIGATIONS_PRO_POURQUOI,
             'Nouveau client professionnel', 'Nouveau gâteau pour un client professionnel', 'Gâteau sur mesure pour un client professionnel', 'Première livraison pour un client professionnel',
-            HYGIENE_MANQUANT_TITRE, HYGIENE_MANQUANT_OU, PROBLEME_TITRE, PROBLEME_OU, VOLUMES_TITRE, VOLUMES_OU, DOCUMENTS_TITRE, DOCUMENTS_OU];
+            HYGIENE_MANQUANT_TITRE, HYGIENE_MANQUANT_OU, PROBLEME_TITRE, PROBLEME_OU, VOLUMES_TITRE, VOLUMES_OU, DOCUMENTS_TITRE, DOCUMENTS_OU, VOLUMES_KM_TITRE, VOLUMES_KM_OU];
 }
 /** Un texte écrit par la gestion (traduit en coréen), jamais un texte tapé : les libellés figés et le jour d'un relevé manquant. */
 function obligations_texte_fige(string $t): bool {
     return in_array($t, obligations_textes_figes(), true) || (bool)preg_match('/^Jour concerné : \d{1,2} \p{L}+ \d{4}\.$/u', $t) || (bool)preg_match('/^Lot \d{6}-[A-Z0-9]+-\d+\.$/', $t)
-        || (bool)preg_match('/^Semaine du \d{1,2} \p{L}+ \d{4}\.$/u', $t) || (bool)preg_match('/^Document n° \d+\.$/u', $t);
+        || (bool)preg_match('/^Semaine du \d{1,2} \p{L}+ \d{4}\.$/u', $t) || (bool)preg_match('/^Document n° \d+\.$/u', $t)
+        || (bool)preg_match('/^Restaurant n° \d+\.$/u', $t);
 }
 
 /** La date pour vérifier : la veille du prochain retrait ou de la prochaine livraison de ce client, sinon dans 7 jours ; jamais avant aujourd'hui. */

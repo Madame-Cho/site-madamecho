@@ -32,13 +32,18 @@ function page_obligations(): void {
             }
         }
         $ancre = '';
-        if (in_array($a, ['poids', 'km', 'plafonds', 'document', 'document_retirer', 'document_confirmer', 'documents_proposer'], true)) {
+        if (in_array($a, ['poids', 'poids_commande', 'km', 'plafonds', 'document', 'document_retirer', 'document_confirmer', 'documents_proposer'], true)) {
             $err = '';
             if ($a === 'poids') {
                 $g = trim(texte('grammes', 8));
                 $err = volumes_poids_fixer(texte('produit', 80), texte('variante', 40), $g === '' ? null : (preg_match('/^\d{1,5}$/', $g) ? (int)$g : -1));
                 if (!$err) flash('ok', $g === '' ? 'Poids retiré.' : 'Poids enregistré.');
                 $ancre = 'poids';
+            } elseif ($a === 'poids_commande') {
+                $g = trim(texte('grammes', 8));
+                $err = volumes_poids_commande_fixer(entier('commande', 1), $g === '' ? null : (preg_match('/^\d{1,6}$/', $g) ? (int)$g : -1));
+                if (!$err) flash('ok', $g === '' ? 'Poids retiré.' : 'Poids enregistré.');
+                $ancre = 'sur-mesure';
             } elseif ($a === 'km') {
                 $k = str_replace(',', '.', trim(texte('km', 8)));
                 $err = volumes_km_fixer(entier('client', 1), $k === '' ? null : (is_numeric($k) ? (float)$k : -1.0));
@@ -303,30 +308,42 @@ function page_echeance(): void {
 }
 
 /* ---------- Lot 4 : Volumes de la dérogation (US5) ---------- */
-const VOLUMES_NIVEAUX = ['depasse' => ['Plafond dépassé', 'retard'], 'proche' => ['Plafond proche', 'bientot'], 'ok' => ['Sous le plafond', 'fait'], 'inconnu' => ['À compléter', 'confirmer']];
+const VOLUMES_NIVEAUX = ['depasse' => ['Plafond dépassé', 'retard'], 'proche' => ['Plafond proche', 'bientot'], 'ok' => ['Sous le plafond', 'fait'], 'inconnu' => ['À compléter', 'confirmer'], 'non_verifie' => ['Non vérifié', 'confirmer']];
 function vue_volumes(): string {
     $S = array_reverse(volumes_semaines(), true);
     $kgS = volumes_reglage('volumes_kg'); $conf = volumes_confirme();
     $c = '';
     if ($kgS === null) $c .= '<div class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Plafonds pas encore saisis.</b> Tapez ceux que la DDPP a confirmés dans « Plafonds de la dérogation », plus bas. D\'ici là, aucune alerte.</span></div>';
-    elseif ($conf === '') $c .= '<div class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Plafonds à confirmer par la DDPP.</b> Les chiffres préremplis sont ceux de la réglementation, à vérifier : changez-les ou confirmez-les dans « Plafonds de la dérogation ».</span></div>';
-    $sans = [];
+    elseif ($conf === '') $c .= '<div class="bandeau-obligations" role="note">' . icone('alerte') . '<span><b>Plafonds à confirmer par la DDPP.</b> Les chiffres préremplis sont ceux de la réglementation, à vérifier : changez-les ou confirmez-les dans « Plafonds de la dérogation ». D\'ici là, une semaine sous le plafond reste « non vérifiée ».</span></div>';
+    $sans = []; $mesure = [];
     $li = '';
     foreach ($S as $s => $w) {
         [$etat, $n] = VOLUMES_NIVEAUX[$w['niveau']];
         $kgT = fn(float $kg, bool $vide): string => $vide ? '—' : kilos($kg);
-        $incomplet = (bool)$w['sans_poids'];
+        $incomplet = $w['incomplet'];
         if ($w['pieces'] === 0 && $w['niveau'] !== 'depasse') { $etat = 'Aucune vente'; $n = 'sans_date'; }
         foreach ($w['sans_poids'] as $v => $nom) $sans[$v] = $nom;
         $li .= '<li class="semaine-volumes n-' . h($n) . '"><span class="sv-tete"><b>' . h('Semaine du ' . date_fr($s, 'longue')) . '</b>' . ($w['prevu'] ? '<span class="chip-par">Prévu</span>' : '')
-            . '<span class="etiq ' . ($w['niveau'] === 'depasse' ? 'etiq-alerte' : ($w['niveau'] === 'proche' || $w['niveau'] === 'inconnu' ? 'etiq-change' : 'etiq-outil')) . '">' . h($etat) . '</span></span>'
+            . '<span class="etiq ' . ($w['niveau'] === 'depasse' ? 'etiq-alerte' : (in_array($w['niveau'], ['proche', 'inconnu', 'non_verifie'], true) ? 'etiq-change' : 'etiq-outil')) . '">' . h($etat) . '</span></span>'
             . '<span class="sv-chiffres"><span><span class="petit">Restaurants</span> <b>' . h($kgT($w['kg_pro'], $incomplet && $w['kg_pro'] == 0 && $w['pieces_pro'] > 0)) . '</b></span><span><span class="petit">En tout</span> <b>' . h($kgT($w['kg'], $incomplet && $w['kg'] == 0)) . '</b></span>'
-            . '<span><span class="petit">Part des restaurants</span> <b>' . ($w['part'] !== null ? h(str_replace('.', ',', (string)$w['part']) . ' %') : '—') . '</b>' . ($w['part'] !== null && $w['part_sur'] === 'ttc' ? ' <span class="petit">en montant</span>' : '') . '</span>'
+            . '<span><span class="petit">Part des restaurants</span> <b>' . ($w['part'] !== null ? h(str_replace('.', ',', (string)$w['part']) . ' %') : '—') . '</b>' . ($w['part'] !== null && $w['part_sur'] === 'ttc' ? ' <span class="petit">en montant, indicatif</span>' : '') . '</span>'
             . '<span><span class="petit">Plafond</span> <b>' . ($w['plafond'] !== null ? h(kilos($w['plafond'])) : '—') . '</b></span></span>'
             . ($w['sans_poids'] && $w['pieces'] ? '<span class="petit">' . h(count($w['sans_poids']) . ' gâteau(x) sans poids : kilos incomplets') . '</span>' : '')
+            . ($w['sur_mesure_sans_poids'] ? '<span class="petit">' . h($w['sur_mesure_sans_poids'] . ' commande(s) sur mesure sans poids : kilos incomplets') . '</span>' : '')
             . '</li>';
+        foreach ($w['sur_mesure'] as $m) $mesure[$m['id']] = $m;
     }
     $c .= bloc('Ventes par semaine', '<p class="aide">Les kilos vendus aux restaurants (B2B) et à tous, chaque semaine, d\'après le poids d\'une pièce de chaque gâteau. La semaine en cours et la suivante comptent aussi les commandes confirmées. Une alerte apparaît dans « À faire » quand les restaurants approchent le plafond.</p><ul class="liste-semaines">' . $li . '</ul>');
+    // Commandes sur mesure : le poids se tape à la main (audit n° 8, constat 11)
+    if ($mesure) {
+        $m = '';
+        foreach ($mesure as $x) $m .= '<li class="ligne-poids' . ($x['grammes'] === null ? ' a-faire' : '') . '"><span><a href="' . h(u('commande', ['id' => $x['id']])) . '" translate="no">' . h($x['reference']) . '</a>'
+            . ($x['pro'] ? ' <span class="chip-par">Restaurant</span>' : '') . '</span>'
+            . formulaire('poids_commande', '<input type="hidden" name="vue" value="volumes"><input type="hidden" name="commande" value="' . $x['id'] . '">'
+                . champ('grammes', 'Poids total (g)', $x['grammes'] !== null ? (string)$x['grammes'] : '', ['inputmode' => 'numeric', 'id' => 'f-gk-' . $x['id'], 'size' => '7'])
+                . bouton('Enregistrer', $x['grammes'] === null ? 'principal' : 'secondaire'), ['class' => 'form-poids'], u('obligations')) . '</li>';
+        $c .= bloc('Commandes sur mesure', '<p class="aide">Ces commandes n\'ont pas de gâteau de la carte : tapez leur poids total pour que les kilos de la semaine soient complets.</p><ul class="liste-poids">' . $m . '</ul>', '', 'sur-mesure');
+    }
     // Restaurants et distance
     $km = volumes_reglage('volumes_km');
     $r = '';
@@ -384,7 +401,9 @@ function vue_documents(): string {
             . champ('valide_jusqua', 'Valable jusqu\'au (facultatif)', $d['valide_jusqua'], ['type' => 'date', 'id' => 'f-val-' . (int)$d['id']])
             . zone('note', 'Note (facultatif)', $d['note'], ['rows' => '2', 'maxlength' => '500', 'id' => 'f-note-' . (int)$d['id'], 'translate' => 'no'])
             . bouton(icone('valider') . 'Enregistrer', 'principal');
-        $item = '<li class="carte-document" id="doc-' . (int)$d['id'] . '"><span class="doc-tete"><b' . $tn . '>' . h(document_titre($d)) . '</b>' . ($retire ? '<span class="chip-par">Retiré</span>' : '<span class="etiq ' . $cl . '">' . h($etat) . '</span>') . '</span>'
+        $va = document_etat($d) === 'propose' ? document_validite($d) : '';
+        $item = '<li class="carte-document" id="doc-' . (int)$d['id'] . '"><span class="doc-tete"><b' . $tn . '>' . h(document_titre($d)) . '</b>' . ($retire ? '<span class="chip-par">Retiré</span>' : '<span class="etiq ' . $cl . '">' . h($etat) . '</span>'
+            . ($va !== '' ? '<span class="etiq ' . DOCUMENTS_ETATS[$va][1] . '">' . h(DOCUMENTS_ETATS[$va][0]) . '</span>' : '')) . '</span>'
             . ($d['valide_jusqua'] !== '' ? '<span class="petit">' . h('Valable jusqu\'au ' . date_fr($d['valide_jusqua'], 'longue')) . '</span>' : '')
             . ($d['note'] !== '' ? '<span class="petit" translate="no">' . h($d['note']) . '</span>' : '')
             . ($d['lien'] !== '' ? '<span class="doc-actions">' . lien_bouton($d['lien'], icone('suivant') . 'Ouvrir', 'secondaire', ['target' => '_blank', 'rel' => 'noopener noreferrer'])

@@ -590,10 +590,13 @@
   });
 })();
 
-/* Étiquettes (lot 3) : prévient si le texte déborde d'une étiquette (rien n'est coupé sans le dire) */
+/* Étiquettes (lot 3) : si le texte déborde d'une seule étiquette, l'impression est bloquée (rien n'est coupé ; audit n° 8, constat 14) */
 (function () {
-  var e = document.querySelector(".planche .etiquette");
-  if (!e || e.scrollHeight <= e.clientHeight + 1) return;
+  var l = document.querySelectorAll(".planche .etiquette"), e = null;
+  for (var i = 0; i < l.length; i++) if (l[i].scrollHeight > l[i].clientHeight + 1 || l[i].scrollWidth > l[i].clientWidth + 1) { e = l[i]; break; }
+  if (!e) return;
+  document.body.classList.add("etiquettes-bloquees");
+  document.querySelectorAll("[data-imprimer]").forEach(function (b) { b.disabled = true; });
   var p = document.createElement("p");
   p.className = "erreur etiquettes-trop ecran-seul";
   p.textContent = document.documentElement.getAttribute("lang") === "ko" ? "이 라벨에는 글이 너무 길어요. 재료 목록을 줄이거나 A4 시트를 고르세요." : "Texte trop long pour cette étiquette : raccourcissez la liste d'ingrédients ou choisissez la planche A4.";

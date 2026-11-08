@@ -66,6 +66,16 @@ branche, pas publié. Rien n'est publié sans l'audit n° 7 et le feu vert d'Oli
 - [X] T043 [US6] Documents : 9 pièces attendues (carte d'Olivier), lien Drive seulement, validité et alerte 30 jours avant, retirer sans effacer ; liens proposés par Olivier (collés une fois), vérifiés par Youngmi
 - [X] T044 Coréen, manuel, essais `hygiene/lot4.js` (21/21) et `lot4-unitaires.php` (30/30), non-régression
 
+## Audit n° 8 (lots 2 à 4), « Tout, catégories après la DDPP » d'Olivier du 2026-11-08
+
+- [X] T045 C1 traçabilité : fournée sans réception ou livraison sans lot seulement avec la case « aucune » et une note (colonne `trace`) ; périmètre avec les livraisons aux lots non notés et les commandes sur mesure ; brouillon DDPP sans « aucun » non vérifié
+- [X] T046 C2, C8 : RappelConso obligatoire dès qu'un rappel aux consommateurs est décidé ; chaque étape faite ou « sans objet » avec raison (jamais pour retirer) ; clôture = toutes les étapes + bilan + lien de preuve, la démarche se clôt avec le problème et pas avant
+- [X] T047 C3, C14 : ingrédients obligatoires, mention DLC ou DDM, poids net facultatif ; impression bloquée si une étiquette déborde
+- [X] T048 C4 (sans les catégories) : « Non vérifié » tant que la DDPP n'a pas confirmé, plafond choisi sur la part en kilos (réduit si inconnue), part en euros indicative
+- [X] T049 C5, C6, C9, C13, C15 : contrôle des relevés manquants depuis le dernier passage (120 jours par nuit), « pas de production » ne cache pas un jour avec commandes, purge qui garde les relevés d'un problème et jamais sous 5 ans, numéro de lot unique (index partiel), export CSV sans formule
+- [X] T050 C7, C10, C11, C12 : validité d'un lien proposé, démarche « distance à vérifier », commandes sur mesure pesées à la main (`volumes_commandes`), alerte aggravée quand le plafond est dépassé ; repère `schema_hygiene` = 3
+- [ ] T051 C4 suite : catégorie sanitaire par gâteau et plafond par catégorie, après la réponse de la DDPP
+
 - [ ] T032 Saisie hors ligne (cas limite), l'assistant lit les relevés : plus tard
 - [ ] T033 Audit unique des lots 1 à 4 (P-26) après le lot 4 (choix d'Olivier) ; registre des traitements (T8) ; pilote avec Youngmi
 - [ ] T034 Feu vert d'Olivier sur la version exacte ; fetch et rebase ; publication ; Journal des publications, Registre

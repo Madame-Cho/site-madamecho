@@ -14,6 +14,9 @@ const VOLUMES_DEFAUTS = ['volumes_kg' => '250', 'volumes_kg_reduit' => '100', 'v
 const VOLUMES_TITRE = 'Volumes de la dérogation : plafond proche ou dépassé';
 const VOLUMES_OU = 'Gestion : Plus › Obligations › Volumes. En cas de dépassement : la DDPP des Hauts-de-Seine (mise à jour de la dérogation, Cerfa 13982, ou demande d\'agrément), avant la livraison suivante.';
 const VOLUMES_SEMAINES = 8;
+const VOLUMES_KM_TITRE = 'Distance de livraison à vérifier avant la prochaine commande';
+const VOLUMES_KM_OU = 'Gestion : Plus › Obligations › Volumes › Restaurants livrés : tapez la distance depuis la cuisine. Plus loin que la distance de la dérogation : la DDPP des Hauts-de-Seine, avant de livrer.';
+const VOLUMES_KM_JOURS = 14;   // une commande confirmée dans les 14 jours rend la distance urgente (audit n° 8, constat 10)
 
 /** Les pièces qu'on s'attend à montrer lors d'un contrôle ; une pièce sans lien est « à ajouter ». */
 const DOCUMENTS_ATTENDUS = [
@@ -50,10 +53,13 @@ function volumes_reglage(string $cle): ?float {
     return $v === null || $v === '' || !is_numeric($v) ? null : (float)$v;
 }
 function volumes_confirme(): string { return (string)parametre('volumes_confirme', ''); }
-/** Le plafond qui s'applique cette semaine : le plein si la part des restaurants reste sous la limite, le réduit sinon ; null si non saisi. */
-function volumes_plafond(?float $part): ?float {
+/**
+ * Le plafond qui s'applique cette semaine, d'après la part des restaurants EN KILOS : le plein si elle reste sous la limite, le réduit sinon.
+ * Part en kilos inconnue (gâteaux sans poids) : le réduit, par prudence ; jamais choisi d'après les montants (audit n° 8, constat 4). Null si non saisi.
+ */
+function volumes_plafond(?float $partKg): ?float {
     $kg = volumes_reglage('volumes_kg'); $red = volumes_reglage('volumes_kg_reduit'); $lim = volumes_reglage('volumes_part');
-    if ($part !== null && $lim !== null && $part > $lim && $red !== null) return $red;
+    if ($red !== null && $lim !== null && ($partKg === null || $partKg > $lim)) return $red;
     return $kg;
 }
 function volumes_reglages_enregistrer(array $src): string {
@@ -102,18 +108,29 @@ function volumes_semaines(?string $auj = null, int $n = VOLUMES_SEMAINES): array
     $fin = date('Y-m-d', (int)strtotime("$lundi +13 days"));
     $S = [];
     for ($d = $debut; $d <= $fin; $d = date('Y-m-d', (int)strtotime("$d +7 days")))
-        $S[$d] = ['lundi' => $d, 'kg_pro' => 0.0, 'kg' => 0.0, 'ttc_pro' => 0, 'ttc' => 0, 'pieces_pro' => 0, 'pieces' => 0, 'sans_poids' => [], 'prevu' => $d >= $lundi, 'restaurants' => []];
-    $poids = volumes_poids_tous(); $V = variantes_toutes();
-    foreach (lignes("SELECT k.id, k.lignes, k.type, k.statut, k.client_id, c.type AS client_type, COALESCE(k.retrait_date, substr(k.remise_le, 1, 10), substr(k.recue_le, 1, 10)) AS jour
+        $S[$d] = ['lundi' => $d, 'kg_pro' => 0.0, 'kg' => 0.0, 'ttc_pro' => 0, 'ttc' => 0, 'pieces_pro' => 0, 'pieces' => 0, 'sans_poids' => [], 'prevu' => $d >= $lundi, 'restaurants' => [],
+                  'sur_mesure' => [], 'sur_mesure_sans_poids' => 0];
+    $poids = volumes_poids_tous(); $V = variantes_toutes(); $PK = volumes_poids_commandes();
+    foreach (lignes("SELECT k.id, k.reference, k.lignes, k.type, k.statut, k.client_id, c.type AS client_type, COALESCE(k.retrait_date, substr(k.remise_le, 1, 10), substr(k.recue_le, 1, 10)) AS jour
                      FROM commandes k JOIN clients c ON c.id = k.client_id
                      WHERE (k.statut = 'remise' OR (k.statut = 'confirmee' AND COALESCE(k.retrait_date, '') >= ?)) AND COALESCE(k.retrait_date, substr(k.remise_le, 1, 10), substr(k.recue_le, 1, 10)) BETWEEN ? AND ?",
                     [$lundi, $debut, $fin]) as $k) {
         $s = lundi_de((string)$k['jour']);
         if (!isset($S[$s])) continue;
         $pro = commande_est_pro($k);
-        foreach (json_decode((string)$k['lignes'], true) ?: [] as $l) {
+        $lignes = array_filter(json_decode((string)$k['lignes'], true) ?: [], fn($l) => (string)($l['v'] ?? '') !== '' && (int)($l['q'] ?? 0) >= 1);
+        if (!$lignes) {
+            // Une commande sur mesure (sans ligne de la carte) compte aussi : son poids se tape à la main (audit n° 8, constat 11)
+            $g = $PK[(int)$k['id']] ?? null;
+            $S[$s]['sur_mesure'][(int)$k['id']] = ['id' => (int)$k['id'], 'reference' => (string)$k['reference'], 'pro' => $pro, 'grammes' => $g];
+            $S[$s]['pieces']++;
+            if ($pro) { $S[$s]['pieces_pro']++; $S[$s]['restaurants'][(int)$k['client_id']] = true; }
+            if ($g !== null) { $S[$s]['kg'] += $g / 1000; if ($pro) $S[$s]['kg_pro'] += $g / 1000; }
+            else $S[$s]['sur_mesure_sans_poids']++;
+            continue;
+        }
+        foreach ($lignes as $l) {
             $v = (string)($l['v'] ?? ''); $q = (int)($l['q'] ?? 0);
-            if ($v === '' || $q < 1) continue;
             $ttc = $q * (int)($l['prix'] ?? 0);
             $S[$s]['ttc'] += $ttc; $S[$s]['pieces'] += $q;
             if ($pro) { $S[$s]['ttc_pro'] += $ttc; $S[$s]['pieces_pro'] += $q; $S[$s]['restaurants'][(int)$k['client_id']] = true; }
@@ -122,20 +139,42 @@ function volumes_semaines(?string $auj = null, int $n = VOLUMES_SEMAINES): array
         }
     }
     foreach ($S as &$w) {
-        $w['part'] = $w['kg'] > 0 && !$w['sans_poids'] ? round($w['kg_pro'] * 100 / $w['kg'], 1) : ($w['ttc'] > 0 ? round($w['ttc_pro'] * 100 / $w['ttc'], 1) : null);
-        $w['part_sur'] = $w['kg'] > 0 && !$w['sans_poids'] ? 'kg' : 'ttc';
-        $w['plafond'] = volumes_plafond($w['part']);
+        $w['incomplet'] = $w['sans_poids'] || $w['sur_mesure_sans_poids'] > 0;
+        $w['part_kg'] = $w['kg'] > 0 && !$w['incomplet'] ? round($w['kg_pro'] * 100 / $w['kg'], 1) : null;
+        // La part en montant n'est qu'une indication : elle ne choisit jamais le plafond
+        $w['part'] = $w['part_kg'] ?? ($w['ttc'] > 0 ? round($w['ttc_pro'] * 100 / $w['ttc'], 1) : null);
+        $w['part_sur'] = $w['part_kg'] !== null ? 'kg' : 'ttc';
+        $w['plafond'] = volumes_plafond($w['part_kg']);
         $w['niveau'] = volumes_niveau($w);
     }
     return $S;
 }
-/** « depasse », « proche », « ok », ou « inconnu » (pas de plafond, ou des gâteaux sans poids vendus aux restaurants). */
+/**
+ * « depasse », « proche », « ok », « inconnu » (pas de plafond, ou des gâteaux sans poids vendus aux restaurants),
+ * ou « non_verifie » : sous le plafond, mais plafonds pas encore confirmés par la DDPP (jamais « ok » avant ; audit n° 8, constat 4).
+ */
 function volumes_niveau(array $w): string {
     if ($w['plafond'] === null) return 'inconnu';
     $alerte = volumes_reglage('volumes_alerte') ?? 80.0;
     if ($w['kg_pro'] > $w['plafond']) return 'depasse';
     if ($w['kg_pro'] >= $w['plafond'] * $alerte / 100) return 'proche';
-    return $w['sans_poids'] && $w['pieces_pro'] > 0 ? 'inconnu' : 'ok';
+    if (($w['incomplet'] ?? (bool)$w['sans_poids']) && $w['pieces_pro'] > 0) return 'inconnu';
+    return volumes_confirme() === '' ? 'non_verifie' : 'ok';
+}
+/** Le poids tapé des commandes sur mesure, en grammes. */
+function volumes_poids_commandes(): array {
+    $p = [];
+    foreach (lignes("SELECT commande_id, grammes FROM volumes_commandes") as $r) $p[(int)$r['commande_id']] = (int)$r['grammes'];
+    return $p;
+}
+function volumes_poids_commande_fixer(int $kid, ?int $g): string {
+    if (!commande($kid)) return 'Commande introuvable.';
+    if ($g === null) { q("DELETE FROM volumes_commandes WHERE commande_id = ?", [$kid]); return ''; }
+    if ($g < 1 || $g > 200000) return 'Un poids en grammes, entre 1 et 200 000.';
+    q("INSERT INTO volumes_commandes (commande_id, grammes, maj_le, maj_par) VALUES (?, ?, ?, ?)
+       ON CONFLICT(commande_id) DO UPDATE SET grammes = excluded.grammes, maj_le = excluded.maj_le, maj_par = excluded.maj_par", [$kid, $g, maintenant(), auteur()]);
+    evenement('hygiene', 'Poids d\'une commande sur mesure : ' . $g . ' g', ['commande' => $kid]);
+    return '';
 }
 function kilos(float $kg): string { return str_replace('.', ',', rtrim(rtrim(number_format($kg, 1, '.', ''), '0'), '.')) . ' kg'; }
 
@@ -160,14 +199,18 @@ function documents(bool $retires = false): array {
     return lignes("SELECT * FROM documents" . ($retires ? '' : " WHERE retire_le = ''") . " ORDER BY retire_le <> '', CASE WHEN lien = '' THEN 0 ELSE 1 END, id");
 }
 function document(int $id): ?array { return ligne("SELECT * FROM documents WHERE id = ?", [$id]); }
-/** « manquant », « propose » (lien proposé par Olivier, à vérifier par Youngmi), « expire », « bientot », « ok ». */
-function document_etat(array $d, ?string $auj = null): string {
+/** La validité seule, que le lien soit vérifié ou proposé : « expire », « bientot », ou « » (audit n° 8, constat 7). */
+function document_validite(array $d, ?string $auj = null): string {
     $auj = $auj ?? aujourdhui();
-    if ($d['lien'] === '') return 'manquant';
-    if (($d['propose_par'] ?? '') !== '') return 'propose';
     if ($d['valide_jusqua'] !== '' && $d['valide_jusqua'] < $auj) return 'expire';
     if ($d['valide_jusqua'] !== '' && $d['valide_jusqua'] <= date('Y-m-d', (int)strtotime("$auj +" . DOCUMENTS_PREAVIS . ' days'))) return 'bientot';
-    return 'ok';
+    return '';
+}
+/** « manquant », « propose » (lien proposé par Olivier, à vérifier par Youngmi), « expire », « bientot », « ok ». */
+function document_etat(array $d, ?string $auj = null): string {
+    if ($d['lien'] === '') return 'manquant';
+    if (($d['propose_par'] ?? '') !== '') return 'propose';
+    return document_validite($d, $auj) ?: 'ok';
 }
 /** Le titre affiché : celui de la pièce attendue (traduit), sinon celui tapé. */
 function document_titre(array $d): string { return $d['attendu'] !== '' && isset(DOCUMENTS_ATTENDUS[$d['attendu']]) ? DOCUMENTS_ATTENDUS[$d['attendu']] : (string)$d['titre']; }
@@ -222,15 +265,47 @@ function volumes_nuit(?string $auj = null): array {
     $lundi = lundi_de($auj);
     foreach (volumes_semaines($auj) as $s => $w) {
         if ($s < date('Y-m-d', (int)strtotime("$lundi -7 days")) || $s > $lundi || !in_array($w['niveau'], ['proche', 'depasse'], true)) continue;
+        // Déjà prévenu « proche », la semaine passe « dépassé » : la démarche devient importante et prioritaire (audit n° 8, constat 12)
+        $ex = ligne("SELECT * FROM demarches WHERE declencheur = ?", ['volumes:' . $s]);
+        if ($ex) {
+            if ($w['niveau'] === 'depasse' && (int)$ex['importante'] === 0) {
+                $rouvre = in_array($ex['etat'], ['fait', 'sans_objet'], true);
+                q("UPDATE demarches SET importante = 1, priorite = 1, modifie_le = ?, modifie_par = 'gestion'" . ($rouvre ? ", etat = 'a_faire', fait_le = '', fait_par = ''" : '') . " WHERE id = ?", [maintenant(), (int)$ex['id']]);
+                demarche_historique_noter('modification', (int)$ex['id'], null, 'importante', '0', '1', 'système');
+                if ($rouvre) demarche_historique_noter('rouverte', (int)$ex['id'], null, 'etat', (string)$ex['etat'], 'a_faire', 'système');
+                $cr['volumes_aggraves'] = ($cr['volumes_aggraves'] ?? 0) + 1;
+            }
+            continue;
+        }
         $cr['volumes'] += demarche_creer(['titre' => VOLUMES_TITRE, 'explication' => 'Semaine du ' . date_fr($s, 'longue') . '.', 'ou' => VOLUMES_OU, 'pour_qui' => 'deux',
             'echeance' => max($auj, date('Y-m-d', (int)strtotime("$s +6 days"))), 'a_confirmer' => 0, 'preavis' => OBLIGATIONS_JOURS, 'priorite' => 1,
             'importante' => $w['niveau'] === 'depasse' ? 1 : 0, 'origine' => 'Hygiène'], 'gestion', ['declencheur' => 'volumes:' . $s, 'ref_genre' => 'volumes', 'ref_id' => $s]) ? 1 : 0;
     }
     foreach (documents() as $d) {
-        if ($d['valide_jusqua'] === '' || !in_array(document_etat($d, $auj), ['bientot', 'expire'], true)) continue;
+        if ($d['lien'] === '' || document_validite($d, $auj) === '') continue;   // un lien proposé expire aussi
+        
         $cr['documents'] += demarche_creer(['titre' => DOCUMENTS_TITRE, 'explication' => 'Document n° ' . (int)$d['id'] . '.', 'ou' => DOCUMENTS_OU, 'pour_qui' => 'youngmi',
             'echeance' => $d['valide_jusqua'], 'a_confirmer' => 0, 'preavis' => DOCUMENTS_PREAVIS, 'priorite' => 2, 'importante' => 0, 'origine' => 'Documents'], 'gestion',
             ['declencheur' => 'document:' . (int)$d['id'] . ':' . $d['valide_jusqua'], 'ref_genre' => 'document', 'ref_id' => (string)$d['id']]) ? 1 : 0;
     }
+    $cr['distances'] = volumes_distances_nuit($auj);
     return $cr;
+}
+/**
+ * Un restaurant actif avec une commande confirmée dans les 14 jours, dont la distance est inconnue ou au-delà de la limite :
+ * une démarche à faire avant de livrer (audit n° 8, constat 10). Une seule par restaurant et par distance tapée.
+ */
+function volumes_distances_nuit(string $auj): int {
+    $lim = volumes_reglage('volumes_km');
+    $n = 0;
+    foreach (volumes_restaurants() as $c) {
+        if ($c['km'] !== null && ($lim === null || $c['km'] <= $lim)) continue;
+        $k = ligne("SELECT MIN(retrait_date) AS j FROM commandes WHERE client_id = ? AND statut = 'confirmee' AND retrait_date BETWEEN ? AND ?",
+                   [(int)$c['id'], $auj, date('Y-m-d', (int)strtotime("$auj +" . VOLUMES_KM_JOURS . ' days'))]);
+        if (!$k || $k['j'] === null) continue;
+        $n += demarche_creer(['titre' => VOLUMES_KM_TITRE, 'explication' => 'Restaurant n° ' . (int)$c['id'] . '.', 'ou' => VOLUMES_KM_OU, 'pour_qui' => 'deux',
+            'echeance' => (string)$k['j'], 'a_confirmer' => 0, 'preavis' => OBLIGATIONS_JOURS, 'priorite' => 1, 'importante' => $c['km'] !== null ? 1 : 0, 'origine' => 'Hygiène'], 'gestion',
+            ['declencheur' => 'distance:' . (int)$c['id'] . ':' . ($c['km'] === null ? 'inconnue' : rtrim(rtrim(number_format((float)$c['km'], 1, '.', ''), '0'), '.')), 'ref_genre' => 'client', 'ref_id' => (string)$c['id']]) ? 1 : 0;
+    }
+    return $n;
 }

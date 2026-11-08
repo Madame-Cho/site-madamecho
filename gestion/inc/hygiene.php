@@ -17,6 +17,10 @@ const HYGIENE_APPAREILS = ['frigo' => 'Réfrigérateur', 'congelateur' => 'Cong�
 const HYGIENE_PHOTO_MAX = 8000000;          // 8 Mo : la page réduit la photo avant l'envoi ; ceci est la limite côté serveur
 const HYGIENE_PHOTO_TYPES = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
 const HYGIENE_CONSERVATION_ANS = 5;          // durée par défaut des relevés et des photos (FR-012), modifiable dans Paramètres
+const HYGIENE_CONSERVATION_MIN = 5;          // jamais moins de 5 ans quand la gestion efface (audit n° 8, constat 9)
+const HYGIENE_CONTROLE_MAX = 120;            // jours passés contrôlés au plus par nuit (relevés manquants, audit n° 8, constat 5)
+// Une fournée sans réception reliée, une livraison sans lot : possible, mais dit et expliqué (audit n° 8, constat 1)
+const HYGIENE_TRACES = ['aucune_reception' => 'Aucune réception notée', 'lot_inconnu' => 'Lots livrés non notés'];
 // Les seuils de l'arrêté du 21/12/2009 (annexe I) : pâtisseries à la crème +3 °C, denrées congelées -18 °C ; à confirmer par Youngmi (FR-005)
 const HYGIENE_SEUILS = [['Réfrigérateur', 'frigo', 0.0, 3.0], ['Congélateur', 'congelateur', null, -18.0]];
 const HYGIENE_MANQUANT_TITRE = 'Relevé de froid manquant';
@@ -29,7 +33,11 @@ function hygiene_pret(): bool {
 /** Combien de relevés de froid par appareil et par jour de production (1 ou 2, Paramètres). */
 function hygiene_par_jour(): int { return (string)parametre('hygiene_releves_jour', '1') === '2' ? 2 : 1; }
 /** Années de conservation des relevés (0 : rien n'est effacé). */
-function hygiene_conservation_ans(): int { $v = (string)parametre('hygiene_conservation_ans', (string)HYGIENE_CONSERVATION_ANS); return preg_match('/^\d{1,2}$/', $v) ? (int)$v : HYGIENE_CONSERVATION_ANS; }
+function hygiene_conservation_ans(): int {
+    $v = (string)parametre('hygiene_conservation_ans', (string)HYGIENE_CONSERVATION_ANS);
+    $n = preg_match('/^\d{1,2}$/', $v) ? (int)$v : HYGIENE_CONSERVATION_ANS;
+    return $n === 0 ? 0 : max(HYGIENE_CONSERVATION_MIN, $n);
+}
 
 /* ---------- Appareils de froid ---------- */
 
@@ -100,7 +108,7 @@ function hygiene_noter(string $genre, array $v, array $liens = [], ?int $corrige
     if ($corrige && une_ligne($motif) === '') return [0, 'Dites pourquoi vous corrigez ce relevé.'];
     $jour = $avant['jour'] ?? aujourdhui();
     $cols = ['appareil_id', 'temperature', 'tmin', 'tmax', 'hors_plage', 'action', 'fournisseur', 'produit', 'lot', 'dlc', 'photo', 'produit_id', 'quantite',
-             'numero_lot', 'commande_id', 'client_id', 'depart_le', 'arrivee_le', 'temp_depart', 'note'];
+             'numero_lot', 'commande_id', 'client_id', 'depart_le', 'arrivee_le', 'temp_depart', 'note', 'trace'];
     $base = array_fill_keys($cols, '') + [];
     foreach (['appareil_id', 'temperature', 'tmin', 'tmax', 'commande_id', 'client_id', 'temp_depart'] as $c) $base[$c] = null;
     $base['hors_plage'] = 0;
@@ -121,6 +129,28 @@ function hygiene_noter(string $genre, array $v, array $liens = [], ?int $corrige
         $pdo->commit();
     } catch (\Throwable $e) { $pdo->rollBack(); throw $e; }
     return [$id, ''];
+}
+/**
+ * Une fournée sans réception reliée, ou une livraison sans lot : refusée, sauf si la case « aucune réception notée » (ou « lots non notés »)
+ * est cochée avec une note qui explique (audit n° 8, constat 1). Rend [trace, erreur] ; trace vide quand tout est relié.
+ */
+function hygiene_trace(string $genre, array $src, array $liens): array {
+    if (!in_array($genre, ['fournee', 'livraison'], true) || array_filter(array_map('intval', $liens), fn($l) => $l > 0)) return ['', null];
+    $cle = $genre === 'fournee' ? 'aucune_reception' : 'lot_inconnu';
+    if ((string)($src[$cle] ?? '') !== '1')
+        return ['', $genre === 'fournee' ? 'Cochez les réceptions utilisées, ou « Aucune réception notée » en expliquant pourquoi dans la note.'
+                                         : 'Cochez les lots livrés, ou « Lots livrés non notés » en expliquant pourquoi dans la note.'];
+    if (une_ligne((string)($src['note'] ?? '')) === '') return ['', 'Écrivez dans la note pourquoi rien n\'est relié (produits du placard, réception non relevée, fournée non notée…).'];
+    return [$cle, null];
+}
+/** Note une nouvelle fournée avec son numéro de lot, unique même si deux téléphones notent en même temps (audit n° 8, constat 13). */
+function hygiene_noter_fournee(array $v, array $liens, string $jour): array {
+    for ($i = 0; $i < 5; $i++) {
+        $v['numero_lot'] = hygiene_numero_lot($jour, $v['produit_id'] !== '' ? (string)$v['produit_id'] : (string)$v['produit']);
+        try { [$id, $e] = hygiene_noter('fournee', $v, $liens); return [$id, $e, $v['numero_lot']]; }
+        catch (\PDOException $x) { if (!str_contains($x->getMessage(), 'UNIQUE')) throw $x; }
+    }
+    return [0, 'Le numéro de lot n\'a pas pu être attribué : réessayez.', ''];
 }
 /** Les relevés reliés (réceptions d'une fournée, fournées d'une livraison), dans leur dernière version. */
 function hygiene_liens_de(int $id): array {
@@ -261,11 +291,16 @@ function hygiene_photo_chemin(string $nom): ?string {
 
 /* ---------- Jours de production, relevés manquants, tâche de nuit ---------- */
 
-/** Un jour compte comme jour de production s'il a une fournée, une livraison, ou une commande retirée ou livrée ce jour-là (hors « pas de production »). */
+/** Les commandes confirmées ou remises ce jour-là : des gâteaux sont passés par le froid. */
+function hygiene_commandes_du_jour(string $jour): int { return (int)val("SELECT COUNT(*) FROM commandes WHERE retrait_date = ? AND statut IN ('confirmee', 'remise')", [$jour]); }
+/**
+ * Un jour compte comme jour de production s'il a une fournée, une livraison, ou une commande retirée ou livrée ce jour-là.
+ * « Pas de production » ne cache jamais un jour qui a des commandes (audit n° 8, constat 6).
+ */
 function hygiene_jour_production(string $jour): bool {
-    if (val("SELECT 1 FROM hygiene_releves WHERE jour = ? AND genre = 'sans_production' AND remplace_par IS NULL", [$jour])) return false;
     if (val("SELECT 1 FROM hygiene_releves WHERE jour = ? AND genre IN ('fournee', 'livraison') AND remplace_par IS NULL", [$jour])) return true;
-    return (bool)val("SELECT 1 FROM commandes WHERE retrait_date = ? AND statut IN ('confirmee', 'remise')", [$jour]);
+    if (hygiene_commandes_du_jour($jour) > 0) return true;
+    return false;
 }
 /** Les appareils dont il manque des relevés ce jour-là : [appareil, notés, attendus]. */
 function hygiene_manques(string $jour): array {
@@ -284,13 +319,18 @@ function hygiene_manquants(?string $auj = null): int {
     if ($debut === '') return 0;
     $auj = $auj ?? aujourdhui();
     $n = 0;
-    for ($i = 7; $i >= 1; $i--) {
-        $j = date('Y-m-d', (int)strtotime("$auj -$i days"));
-        if ($j < $debut || !hygiene_jour_production($j) || !hygiene_manques($j)) continue;
+    // Tous les jours depuis le dernier contrôle (au plus 120 par nuit), et toujours les 7 derniers : une nuit manquée ne perd rien (audit n° 8, constat 5)
+    $hier = date('Y-m-d', (int)strtotime("$auj -1 day"));
+    $cur = (string)parametre('hygiene_controle_jusqua', '');
+    $de = max($debut, min($cur !== '' ? date('Y-m-d', (int)strtotime("$cur +1 day")) : $debut, date('Y-m-d', (int)strtotime("$auj -7 days"))));
+    $fin = min($hier, date('Y-m-d', (int)strtotime("$de +" . (HYGIENE_CONTROLE_MAX - 1) . ' days')));
+    for ($j = $de; $j <= $fin; $j = date('Y-m-d', (int)strtotime("$j +1 day"))) {
+        if (!hygiene_jour_production($j) || !hygiene_manques($j)) continue;
         $n += demarche_creer(['titre' => HYGIENE_MANQUANT_TITRE, 'explication' => 'Jour concerné : ' . date_fr($j, 'longue') . '.', 'ou' => HYGIENE_MANQUANT_OU,
                               'pour_qui' => 'youngmi', 'echeance' => date('Y-m-d', (int)strtotime("$j +1 day")), 'a_confirmer' => 0, 'preavis' => OBLIGATIONS_JOURS,
                               'priorite' => 2, 'importante' => 0, 'origine' => 'Hygiène'], 'gestion', ['declencheur' => 'hygiene:froid:' . $j, 'ref_genre' => 'hygiene', 'ref_id' => $j]) ? 1 : 0;
     }
+    if ($fin >= $de && $fin > $cur) parametre_ecrire('hygiene_controle_jusqua', $fin);
     return $n;
 }
 /** La tâche de nuit : relevés manquants, puis effacement des relevés et des photos plus vieux que la durée choisie (FR-012). */
@@ -300,7 +340,9 @@ function hygiene_nuit(): array {
     $ans = hygiene_conservation_ans();
     if ($ans > 0) {
         $limite = date('Y-m-d', (int)strtotime('-' . $ans . ' years'));
+        $garder = hygiene_releves_des_problemes($limite);
         foreach (lignes("SELECT id, photo FROM hygiene_releves WHERE jour < ?", [$limite]) as $r) {
+            if (isset($garder[(int)$r['id']])) continue;
             if ($r['photo'] !== '' && !val("SELECT 1 FROM hygiene_releves WHERE photo = ? AND jour >= ?", [$r['photo'], $limite]) && ($f = hygiene_photo_chemin((string)$r['photo']))) @unlink($f);
             q("DELETE FROM hygiene_liens WHERE de = ? OR vers = ?", [(int)$r['id'], (int)$r['id']]);
             q("DELETE FROM hygiene_releves WHERE id = ?", [(int)$r['id']]);
@@ -310,7 +352,27 @@ function hygiene_nuit(): array {
     return $cr;
 }
 
+/**
+ * Les relevés d'un problème ouvert, ou clos depuis moins longtemps que la durée de conservation : jamais effacés (audit n° 8, constat 9).
+ * La fournée (toutes ses versions), ses réceptions et ses livraisons.
+ */
+function hygiene_releves_des_problemes(string $limite): array {
+    $g = [];
+    foreach (lignes("SELECT numero_lot FROM hygiene_problemes WHERE clos_le = '' OR substr(clos_le, 1, 10) >= ?", [$limite]) as $pb)
+        foreach (lignes("SELECT id FROM hygiene_releves WHERE numero_lot = ?", [$pb['numero_lot']]) as $f) {
+            $g[(int)$f['id']] = true;
+            foreach (lignes("SELECT de, vers FROM hygiene_liens WHERE de = ? OR vers = ?", [(int)$f['id'], (int)$f['id']]) as $l) { $g[(int)$l['de']] = true; $g[(int)$l['vers']] = true; }
+        }
+    return $g;
+}
+
 /* ---------- Export pour un contrôle ou l'expert-comptable (FR-011) ---------- */
+
+/** Un texte tapé ne s'ouvre jamais comme une formule dans un tableur (audit n° 8, constat 15). */
+function csv_texte(?string $t): string {
+    $t = (string)$t;
+    return preg_match('/^[=+\-@\t\r]/', $t) ? "'" . $t : $t;
+}
 
 function hygiene_export_csv(string $du, string $au): string {
     $o = fopen('php://temp', 'r+');
@@ -321,11 +383,12 @@ function hygiene_export_csv(string $du, string $au): string {
         $cl = $r['client_id'] !== null ? client((int)$r['client_id']) : null;
         $k = $r['commande_id'] !== null ? commande((int)$r['commande_id']) : null;
         $liens = implode(', ', array_map(fn($x) => $x['numero_lot'] !== '' ? $x['numero_lot'] : '#' . $x['id'], hygiene_liens_de((int)$r['id'])));
-        fputcsv($o, [$r['jour'], substr($r['le'], 11, 5), HYGIENE_GENRES[$r['genre']] ?? $r['genre'], $r['par'], (string)$r['appareil_nom'],
+        $x = fn(string $c) => csv_texte((string)$r[$c]);
+        fputcsv($o, [$r['jour'], substr($r['le'], 11, 5), HYGIENE_GENRES[$r['genre']] ?? $r['genre'], $x('par'), csv_texte((string)$r['appareil_nom']),
                      $r['temperature'] !== null ? hygiene_temperature((float)$r['temperature']) : '', $r['genre'] === 'froid' ? hygiene_plage($r['tmin'] !== null ? (float)$r['tmin'] : null, $r['tmax'] !== null ? (float)$r['tmax'] : null) : '',
-                     (int)$r['hors_plage'] ? 'oui' : '', $r['action'], $r['fournisseur'], $r['produit'], $r['lot'], $r['dlc'], $r['photo'] !== '' ? 'oui' : '', $r['numero_lot'], $r['quantite'],
-                     $cl ? hygiene_restaurant($cl) : '', $k ? (string)$k['reference'] : '', substr($r['depart_le'], 11, 5), substr($r['arrivee_le'], 11, 5),
-                     $r['temp_depart'] !== null ? hygiene_temperature((float)$r['temp_depart']) : '', $liens, $r['note'],
+                     (int)$r['hors_plage'] ? 'oui' : '', $x('action'), $x('fournisseur'), $x('produit'), $x('lot'), $r['dlc'], $r['photo'] !== '' ? 'oui' : '', $x('numero_lot'), $x('quantite'),
+                     $cl ? csv_texte(hygiene_restaurant($cl)) : '', $k ? csv_texte((string)$k['reference']) : '', substr($r['depart_le'], 11, 5), substr($r['arrivee_le'], 11, 5),
+                     $r['temp_depart'] !== null ? hygiene_temperature((float)$r['temp_depart']) : '', csv_texte($liens . ($r['trace'] !== '' ? ($liens !== '' ? ' ; ' : '') . (HYGIENE_TRACES[$r['trace']] ?? '') : '')), $x('note'),
                      ($r['remplace_par'] !== null ? 'corrigé (voir #' . (int)$r['remplace_par'] . ')' : 'en cours') . ($r['remplace_id'] !== null ? ', corrige #' . (int)$r['remplace_id'] . ' : ' . $r['motif'] : '')], ';');
     }
     rewind($o);
@@ -338,7 +401,7 @@ function hygiene_export_csv(string $du, string $au): string {
 function hygiene_resume_jour(): ?array {
     if (!hygiene_pret() || (string)parametre('hygiene_prepare', '') === '') return null;
     $auj = aujourdhui();
-    if (val("SELECT 1 FROM hygiene_releves WHERE jour = ? AND genre = 'sans_production' AND remplace_par IS NULL", [$auj])) return ['sans_production' => true, 'notes' => 0, 'attendus' => 0, 'hors' => 0];
+    if (hygiene_commandes_du_jour($auj) === 0 && val("SELECT 1 FROM hygiene_releves WHERE jour = ? AND genre = 'sans_production' AND remplace_par IS NULL", [$auj])) return ['sans_production' => true, 'notes' => 0, 'attendus' => 0, 'hors' => 0];
     $app = lignes("SELECT id FROM hygiene_appareils WHERE actif = 1 AND genre <> 'caisson'");
     $n = hygiene_par_jour();
     $notes = 0;

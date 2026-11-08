@@ -883,6 +883,7 @@ html:lang(ko) .par::after{content:" 님"}
  .etiquette{border:0}
  .page-etiquettes main,.page-etiquettes .page{padding:0!important;margin:0!important;max-width:none}
  .page-etiquettes .planche{margin:0}
+ .etiquettes-bloquees .planche{display:none!important}
 }
 .etiquette .e-lot{white-space:nowrap}
 #brouillon-ddpp{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.92em}
@@ -904,3 +905,4 @@ html:lang(ko) .par::after{content:" 님"}
 .carte-document .btn{align-self:flex-start}
 .carte-document details form{margin-top:8px}
 .doc-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.doc-actions form{margin:0}
+.etiquette .e-poids{font-size:6pt}
