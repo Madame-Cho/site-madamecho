@@ -107,6 +107,11 @@
 - [ ] T067 Audit n° 5, constats 7, 11, 12 pendant le pilote (T-22) : compteur des tâches, essai sur le téléphone de Youngmi FR/KO, bruit de l'ambre
 - [ ] T064 Audit n° 5 du ChatGPT d'Olivier (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
 
+## Phase 11 : Majuscules des noms et correction du nom (2026-11-08, demande d'Olivier, FR-042)
+
+- [X] T068 `nom_majuscules()` (gestion) et `nomMajuscules()` (formulaire du site), même règle ; `client_creer`, `client_modifier` ; reprise unique des fiches par la tâche de nuit (`noms_majuscules_reprise`, paramètre `noms_majuscules`) ; `autocapitalize="words"` ; « Corriger le nom ou les coordonnées » sur la fiche et la commande (le rappel avant d'émettre une facture vient avec la spécification 003) ; coréen, manuel et nouveauté « Les majuscules des noms » (pastille). Essais 45/45 et parcours 10/10 (hors dépôt, tests-gestion/noms)
+- [ ] T069 Feu vert d'Olivier sur la version exacte, publication (seule ou avec les factures, spécification 003), Journal des publications, Registre
+
 ## Dependencies & Execution Order
 
 - Phase 2 dépend de la phase 1 ; T011 clôt le lot.

@@ -13,6 +13,7 @@ require_once __DIR__ . '/reponses.php';   // reponses_purger() : sans lui, la t�
 function tache_de_nuit(): array {
     if (!gestion_base_existante()) return [];
     $cr = conservation_executer('tâche de nuit');
+    noms_majuscules_reprise();   // une seule fois : majuscules oubliées dans les noms déjà enregistrés (demande d'Olivier du 08/11/2026)
     parametre_ecrire('derniere_nuit', maintenant());
     return $cr;
 }

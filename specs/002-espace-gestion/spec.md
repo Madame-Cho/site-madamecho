@@ -601,6 +601,15 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   porte le nom d'une utilisatrice ; aucune limite globale MUST NOT faire perdre une commande ; les
   « vus » MUST être purgés (60 jours, compte désactivé, objet disparu) ; l'ambre MUST atteindre un
   contraste de 3:1.
+- **FR-042**: (demande d'Olivier, 2026-11-08) Un prénom ou un nom saisi sans aucune majuscule
+  (formulaire du site, fiche du client, nouvelle commande, demande du site enregistrée) MUST
+  recevoir ses majuscules (« jean-pierre le gall » → « Jean-Pierre Le Gall », particules « de »,
+  « du », « van »… en minuscule sauf en dernier mot, « d'Artagnan ») ; un nom écrit avec au moins
+  une majuscule MUST rester tel quel. Les fiches déjà enregistrées MUST être reprises une fois, la
+  nuit suivant la mise en ligne, avec un événement « système » qui n'allume pas de pastille.
+  Youngmi MUST pouvoir corriger un nom ou un prénom depuis la fiche et depuis le cadre Client
+  d'une commande (« Corriger le nom ou les coordonnées ») ; les champs de nom demandent la
+  majuscule au clavier du téléphone (autocapitalize).
 
 ### Key Entities *(include if feature involves data)*
 

@@ -371,6 +371,7 @@ Prénom | 이름
 Ville | 도시
 Historique | 기록
 Voir la fiche du client | 고객 정보 보기
+Corriger le nom ou les coordonnées | 이름이나 연락처 고치기
 Quand | 언제
 Moment demandé | 요청한 시간대
 Où | 장소
@@ -1205,6 +1206,8 @@ Nouveauté | 새 기능
 (a changé) | (바뀜)
 Les pastilles de couleur | 색깔 표시
 Rouge : à regarder en premier. Ambre : quelque chose a changé. Elles s'éteignent quand vous ouvrez la commande ou la fiche. | 빨간색은 먼저 볼 것, 주황색은 바뀐 것이에요. 주문이나 고객 정보를 열면 사라져요.
+Les majuscules des noms | 이름의 대문자
+Les majuscules oubliées dans les noms et prénoms sont ajoutées toutes seules. Pour corriger un nom : « Corriger le nom ou les coordonnées », sur la fiche ou dans la commande. | 이름에 빠뜨린 대문자는 저절로 붙어요. 이름을 고치려면 고객 정보나 주문에서 ‘이름이나 연락처 고치기’를 눌러요.
 Le rappel de retrait | 픽업 알림
 La veille du retrait, Aujourd'hui liste les rappels à envoyer au client, par mail ou par SMS. | 픽업 전날, 오늘 화면에 고객에게 보낼 픽업 알림이 나와요. 메일이나 문자로 보내요.
 téléphone | 전화번호
@@ -1648,6 +1651,7 @@ function coreen_motifs(): array {
         ['/^Rapprochée avec Qonto : (.+)$/u', fn($m) => 'Qonto와 대조 완료: ' . $m[1]],
         // Historique
         ['/^Fiche modifiée : (.+)$/u', fn($m) => '고객 정보 수정: ' . coreen_champs($m[1])],
+        ['/^Majuscules ajoutées au nom : (.+)$/u', fn($m) => '이름에 대문자 추가: ' . $m[1]],
         ['/^Commande modifiée : (.+)$/u', fn($m) => '주문 수정: ' . coreen_champs($m[1])],
         ['/^Fiche produit modifiée : (.+)$/u', fn($m) => '제품 시트 수정: ' . coreen_champs($m[1])],
         ['/^Doublon (.+) fusionné dans cette fiche$/u', fn($m) => '중복 고객 ' . $m[1] . ' 합침'],

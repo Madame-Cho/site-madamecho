@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-noms', 'le' => '2026-11-08', 'titre' => 'Les majuscules des noms',
+     'texte' => 'Les majuscules oubliées dans les noms et prénoms sont ajoutées toutes seules. Pour corriger un nom : « Corriger le nom ou les coordonnées », sur la fiche ou dans la commande.',
+     'lien' => ['manuel', 'clients']],
     ['id' => '2026-11-08-pastilles', 'le' => '2026-11-08', 'titre' => 'Les pastilles de couleur',
      'texte' => 'Rouge : à regarder en premier. Ambre : quelque chose a changé. Elles s\'éteignent quand vous ouvrez la commande ou la fiche.',
      'lien' => ['manuel', 'pastilles']],

@@ -162,7 +162,7 @@ function page_client(): void {
         $c .= bloc('Coordonnées', definition(['Type' => h(TYPES_CLIENT_LONGS[$cl['type']] ?? $cl['type']) . ' · ' . ($cl['type'] === 'professionnel' ? 'montants HT' : 'montants TTC'), 'Entreprise' => $tel_quel($cl['societe']), 'Contact' => $tel_quel($cl['contact']), 'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $tel_quel($cl['ville']),
                                                'Premier contact' => h(CANAUX[$cl['canal']] ?? $cl['canal']) . ', le ' . h(date_fr($cl['premier_contact'], 'longue')),
                                                'Dernier échange' => h(date_fr($cl['dernier_echange'], 'heure')), 'Dans Qonto' => $cl['qonto'] !== '' ? 'Oui' : ''])
-             . '<p>' . lien_bouton(u('client-edition', ['id' => $id]), 'Modifier', 'discret') . '</p>');
+             . '<p>' . lien_bouton(u('client-edition', ['id' => $id]), icone('crayon') . 'Corriger le nom ou les coordonnées', 'discret') . '</p>');
     } else {
         $c .= bloc('Coordonnées', '<p class="aide">Données personnelles effacées le ' . h(date_fr($cl['efface_le'], 'longue')) . '. Il ne reste que le numéro, les dates et les montants des commandes.</p>');
     }
@@ -323,7 +323,7 @@ function page_client_edition(): void {
     $c = titre_page(h($titre), $cl ? h($cl['numero']) : '', '', $cl ? u('client', ['id' => $id]) : u('clients'));
     if ($erreurs) $c .= '<div class="erreur" role="alert">' . implode('<br>', $erreurs) . '</div>';
     $f = liste_choix('type', 'Type', TYPES_CLIENT_LONGS, $d['type'])
-       . '<div class="ligne-champs">' . champ('prenom', 'Prénom', $d['prenom'], ['autocomplete' => 'off']) . champ('nom', 'Nom de famille', $d['nom'], ['autocomplete' => 'off']) . '</div>'
+       . '<div class="ligne-champs">' . champ('prenom', 'Prénom', $d['prenom'], ['autocomplete' => 'off', 'autocapitalize' => 'words']) . champ('nom', 'Nom de famille', $d['nom'], ['autocomplete' => 'off', 'autocapitalize' => 'words']) . '</div>'
        . champ('societe', 'Entreprise ou restaurant (professionnels)', $d['societe'], ['autocomplete' => 'off'])
        . champ('contact', 'Personne à contacter (professionnels)', $d['contact'], ['autocomplete' => 'off'])
        . '<div class="ligne-champs">' . champ('email', 'Email', $d['email'], ['type' => 'email', 'autocomplete' => 'off']) . champ('telephone', 'Téléphone', $d['telephone'], ['type' => 'tel', 'autocomplete' => 'off']) . '</div>'

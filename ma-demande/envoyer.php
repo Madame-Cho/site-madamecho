@@ -69,6 +69,23 @@ function champ(string $nom, int $max): string {
     return mb_substr($v, 0, $max);
 }
 function uneLigne(string $v): string { return trim(preg_replace('/\s+/u', ' ', $v) ?? ''); }
+/**
+ * Majuscules oubliées (demande d'Olivier du 08/11/2026) : « jean-pierre » → « Jean-Pierre », « le gall » → « Le Gall »,
+ * « de la fontaine » → « de La Fontaine », « d'artagnan » → « d'Artagnan ». Seulement quand il n'y a aucune majuscule : ce qui a
+ * été écrit exprès (« McDonald », « de Gaulle ») reste tel quel. Même règle que nom_majuscules() de la gestion (inc/modele.php).
+ */
+function nomMajuscules(string $s): string {
+    $s = uneLigne($s);
+    if ($s === '' || mb_strtolower($s) !== $s) return $s;
+    $particules = ['de', 'du', 'des', 'van', 'von', 'der', 'den', 'di', 'da', 'del', 'della', 'dos', 'das', 'y'];
+    $mots = explode(' ', $s); $n = count($mots);
+    foreach ($mots as $i => $m) {
+        if ($i < $n - 1 && in_array($m, $particules, true)) continue;
+        $m = (string)preg_replace_callback("/(^|[-'’])(\p{Ll})/u", fn($x) => $x[1] . mb_strtoupper($x[2]), $m);
+        $mots[$i] = (string)preg_replace("/^D(['’])/u", 'd$1', $m);
+    }
+    return implode(' ', $mots);
+}
 
 /* ---------- L'agenda de la gestion (demande d'Olivier du 07/11/2026) ---------- */
 // Les indispos de Youngmi (vacances, journée complète…) ferment aussi ce formulaire : la phrase dit le jour ou le moment, jamais le motif.
@@ -97,8 +114,8 @@ if (champ('site_web', 200) !== '') {
 $erreurs = [];
 // Prénom et nom en deux champs depuis le 07/11/2026 ; une page du formulaire restée ouverte avant envoie encore « Prénom et nom » en un seul champ
 $deuxChamps = isset($_POST['prenom']);
-$prenom = $deuxChamps ? uneLigne(champ('prenom', 60)) : '';
-$nom = uneLigne(champ('nom', 80));
+$prenom = $deuxChamps ? nomMajuscules(champ('prenom', 60)) : '';
+$nom = nomMajuscules(champ('nom', 80));
 $nomComplet = trim($prenom . ' ' . $nom);
 $email = uneLigne(champ('email', 120));
 $tel = uneLigne(champ('telephone', 30));

@@ -365,8 +365,8 @@ def demande():
 
   <h2 class="sous-titre" id="coordonnees">Vos coordonnées</h2>
   <div class="deux-champs">
-   <label class="champ"><span>Prénom</span><input type="text" name="prenom" autocomplete="given-name" required maxlength="60"></label>
-   <label class="champ"><span>Nom</span><input type="text" name="nom" autocomplete="family-name" required maxlength="80"></label>
+   <label class="champ"><span>Prénom</span><input type="text" name="prenom" autocomplete="given-name" autocapitalize="words" required maxlength="60"></label>
+   <label class="champ"><span>Nom</span><input type="text" name="nom" autocomplete="family-name" autocapitalize="words" required maxlength="80"></label>
   </div>
   <label class="champ"><span>Email</span><input type="email" name="email" autocomplete="email" required maxlength="120"></label>
   <label class="champ"><span>Téléphone <i>(facultatif)</i></span><input type="tel" name="telephone" autocomplete="tel" maxlength="30"></label>

@@ -295,7 +295,8 @@ function page_commande(): void {
                                      'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $k['client_ville'] !== '' ? '<span translate="no">' . h($k['client_ville']) . '</span>' : '',
                                      'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . ($k['client_type'] === 'professionnel' ? euros($ch['total_ht']) . ' HT' : euros($ch['total']) . ' TTC') : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
                      . avertissement_doublon((int)$k['client_id'])
-                     . '<p>' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret') . '</p>');
+                     . '<p class="actions">' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret')
+                     . ($k['client_statut'] !== 'efface' ? lien_bouton(u('client-edition', ['id' => $k['client_id']]), icone('crayon') . 'Corriger le nom ou les coordonnées', 'discret') : '') . '</p>');
     $quand = preg_replace('/ \(livraison\)$/', '', retrait_texte($k));   // le bloc s'appelle déjà « Livraison »
     $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
     $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h($quand)]) : definition(['Quand' => h($quand), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
@@ -706,7 +707,7 @@ function page_commande_edition(): void {
         $f .= bloc('Client', champ('client_ref', 'Client déjà connu', $val('client_ref'), ['list' => 'liste-clients', 'placeholder' => 'Tapez un nom ou CL-…', 'autocomplete' => 'off']) . '<datalist id="liste-clients">' . $opts . '</datalist>'
             . '<details class="replie"' . ($val('c_nom') !== '' || $val('c_societe') !== '' ? ' open' : '') . '><summary>Ou un nouveau client</summary>'
             . liste_choix('c_type', 'Type', TYPES_CLIENT_LONGS, $val('c_type', 'particulier'))
-            . '<div class="ligne-champs">' . champ('c_prenom', 'Prénom', $val('c_prenom'), ['autocomplete' => 'off']) . champ('c_nom', 'Nom de famille', $val('c_nom'), ['autocomplete' => 'off']) . '</div>'
+            . '<div class="ligne-champs">' . champ('c_prenom', 'Prénom', $val('c_prenom'), ['autocomplete' => 'off', 'autocapitalize' => 'words']) . champ('c_nom', 'Nom de famille', $val('c_nom'), ['autocomplete' => 'off', 'autocapitalize' => 'words']) . '</div>'
             . champ('c_societe', 'Entreprise ou restaurant', $val('c_societe'), ['autocomplete' => 'off'])
             . '<div class="ligne-champs">' . champ('c_email', 'Email', $val('c_email'), ['type' => 'email', 'autocomplete' => 'off']) . champ('c_telephone', 'Téléphone', $val('c_telephone'), ['type' => 'tel', 'autocomplete' => 'off']) . '</div>'
             . champ('c_ville', 'Ville', $val('c_ville'), ['autocomplete' => 'off']) . '</details>');
