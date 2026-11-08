@@ -185,6 +185,8 @@ function db(): PDO {
 }
 function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
+    obligations_schema($pdo);   // écran Obligations (spécification 004) : hors de la numérotation, pour ne pas gêner l'étape 11 des factures
+    hygiene_schema($pdo);       // relevés d'hygiène (spécification 004, lot 2), même principe : marqueur à part
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
     if ($v >= 11) return;
     if ($v < 1) $pdo->exec("
@@ -335,6 +337,80 @@ CREATE INDEX IF NOT EXISTS factures_remises_facture ON factures_remises(facture_
     $pdo->exec("INSERT OR IGNORE INTO parametres (cle, valeur) VALUES ('factures_depuis', '" . date('Y-m-d H:i:s') . "')");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '11')");
 }
+/**
+ * Les tables de l'écran Obligations (spécification 004, lot 1, 08/11/2026). Elles ne prennent pas de numéro de schéma : la branche
+ * des factures prend le 11 et s'arrête dès que le numéro l'atteint ; un numéro 12 posé ici avant elle l'aurait fait sauter
+ * (audit n° 7, constat 11). Un repère à part, « schema_obligations », dit que c'est fait ; tout est idempotent.
+ */
+function obligations_schema(PDO $pdo): void {
+    $fait = $pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_obligations'")->fetchColumn();
+    if ($fait === '2') return;
+    if ($fait === '1') {
+        // Étape 2 (audit n° 7, passe 3, P3-04) : une base créée par la première version reçoit la colonne auteur_id
+        $cols = array_column($pdo->query("PRAGMA table_info(demarches_historique)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+        if (!in_array('auteur_id', $cols, true)) $pdo->exec("ALTER TABLE demarches_historique ADD COLUMN auteur_id INTEGER");
+        $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '2')");
+        return;
+    }
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS demarches (id INTEGER PRIMARY KEY, titre TEXT NOT NULL, explication TEXT NOT NULL DEFAULT '', ou TEXT NOT NULL DEFAULT '',
+  pour_qui TEXT NOT NULL DEFAULT 'youngmi', echeance TEXT NOT NULL DEFAULT '', a_confirmer INTEGER NOT NULL DEFAULT 0, preavis INTEGER NOT NULL DEFAULT 30,
+  priorite INTEGER NOT NULL DEFAULT 2, importante INTEGER NOT NULL DEFAULT 0, origine TEXT NOT NULL DEFAULT '', etat TEXT NOT NULL DEFAULT 'a_faire',
+  preuve_lien TEXT NOT NULL DEFAULT '', preuve_note TEXT NOT NULL DEFAULT '', raison TEXT NOT NULL DEFAULT '',
+  echeance_id INTEGER, periode TEXT NOT NULL DEFAULT '', declencheur TEXT NOT NULL DEFAULT '', ref_genre TEXT NOT NULL DEFAULT '', ref_id TEXT NOT NULL DEFAULT '',
+  cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '', modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '',
+  fait_le TEXT NOT NULL DEFAULT '', fait_par TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS demarches_etat ON demarches(etat, echeance);
+CREATE UNIQUE INDEX IF NOT EXISTS demarches_periode ON demarches(echeance_id, periode) WHERE echeance_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS demarches_declencheur ON demarches(declencheur) WHERE declencheur <> '';
+CREATE TABLE IF NOT EXISTS echeances (id INTEGER PRIMARY KEY, titre TEXT NOT NULL, explication TEXT NOT NULL DEFAULT '', ou TEXT NOT NULL DEFAULT '',
+  pour_qui TEXT NOT NULL DEFAULT 'youngmi', priorite INTEGER NOT NULL DEFAULT 2, importante INTEGER NOT NULL DEFAULT 0, frequence TEXT NOT NULL DEFAULT 'annuelle',
+  depart TEXT NOT NULL DEFAULT '', preavis INTEGER NOT NULL DEFAULT 30, origine TEXT NOT NULL DEFAULT '', active INTEGER NOT NULL DEFAULT 1,
+  cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '', modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS demarches_historique (id INTEGER PRIMARY KEY, le TEXT NOT NULL, auteur TEXT NOT NULL, auteur_id INTEGER, demarche_id INTEGER, echeance_id INTEGER,
+  type TEXT NOT NULL, champ TEXT NOT NULL DEFAULT '', ancien TEXT NOT NULL DEFAULT '', nouveau TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS demarches_historique_d ON demarches_historique(demarche_id);
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '2')");
+}
+/** Les relevés d'hygiène (spécification 004, lot 2) : tables à part, marqueur schema_hygiene. */
+function hygiene_schema(PDO $pdo): void {
+    if ($pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_hygiene'")->fetchColumn() === '3') return;
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS hygiene_appareils (id INTEGER PRIMARY KEY, nom TEXT NOT NULL, genre TEXT NOT NULL DEFAULT 'frigo', tmin REAL, tmax REAL,
+  a_confirmer INTEGER NOT NULL DEFAULT 0, actif INTEGER NOT NULL DEFAULT 1, cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '',
+  modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS hygiene_releves (id INTEGER PRIMARY KEY, genre TEXT NOT NULL, jour TEXT NOT NULL, le TEXT NOT NULL, par TEXT NOT NULL DEFAULT '', par_id INTEGER,
+  appareil_id INTEGER, temperature REAL, tmin REAL, tmax REAL, hors_plage INTEGER NOT NULL DEFAULT 0, action TEXT NOT NULL DEFAULT '',
+  fournisseur TEXT NOT NULL DEFAULT '', produit TEXT NOT NULL DEFAULT '', lot TEXT NOT NULL DEFAULT '', dlc TEXT NOT NULL DEFAULT '', photo TEXT NOT NULL DEFAULT '',
+  produit_id TEXT NOT NULL DEFAULT '', quantite TEXT NOT NULL DEFAULT '', numero_lot TEXT NOT NULL DEFAULT '',
+  commande_id INTEGER, client_id INTEGER, depart_le TEXT NOT NULL DEFAULT '', arrivee_le TEXT NOT NULL DEFAULT '', temp_depart REAL,
+  note TEXT NOT NULL DEFAULT '', remplace_id INTEGER, remplace_par INTEGER, motif TEXT NOT NULL DEFAULT '', trace TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS hygiene_releves_jour ON hygiene_releves(jour, genre);
+CREATE TABLE IF NOT EXISTS hygiene_liens (de INTEGER NOT NULL, vers INTEGER NOT NULL, PRIMARY KEY (de, vers));
+CREATE TABLE IF NOT EXISTS hygiene_durees (produit_id TEXT PRIMARY KEY, jours INTEGER, maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '',
+  conservation TEXT NOT NULL DEFAULT '', ingredients TEXT NOT NULL DEFAULT '', etiquette_le TEXT NOT NULL DEFAULT '', etiquette_par TEXT NOT NULL DEFAULT '',
+  date_mention TEXT NOT NULL DEFAULT '', poids_net TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS hygiene_problemes (id INTEGER PRIMARY KEY, fournee_id INTEGER NOT NULL, numero_lot TEXT NOT NULL, ouvert_le TEXT NOT NULL, ouvert_par TEXT NOT NULL DEFAULT '',
+  description TEXT NOT NULL DEFAULT '', etapes TEXT NOT NULL DEFAULT '{}', demarche_id INTEGER, clos_le TEXT NOT NULL DEFAULT '', clos_par TEXT NOT NULL DEFAULT '', bilan TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS volumes_poids (produit_id TEXT NOT NULL, variante TEXT NOT NULL, grammes INTEGER NOT NULL, maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (produit_id, variante));
+CREATE TABLE IF NOT EXISTS volumes_restaurants (client_id INTEGER PRIMARY KEY, km REAL, maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS documents (id INTEGER PRIMARY KEY, attendu TEXT NOT NULL DEFAULT '', titre TEXT NOT NULL, lien TEXT NOT NULL DEFAULT '', valide_jusqua TEXT NOT NULL DEFAULT '',
+  note TEXT NOT NULL DEFAULT '', cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '', maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '', retire_le TEXT NOT NULL DEFAULT '', retire_par TEXT NOT NULL DEFAULT '',
+  propose_par TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS volumes_commandes (commande_id INTEGER PRIMARY KEY, grammes INTEGER NOT NULL, maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '');
+");
+    // Repère 3 (audit n° 8) : traçabilité incomplète assumée (trace), mention et poids net des étiquettes, numéro de lot unique
+    $cols = fn(string $t) => array_column($pdo->query("PRAGMA table_info($t)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+    if (!in_array('trace', $cols('hygiene_releves'), true)) $pdo->exec("ALTER TABLE hygiene_releves ADD COLUMN trace TEXT NOT NULL DEFAULT ''");
+    $d = $cols('hygiene_durees');
+    if (!in_array('date_mention', $d, true)) $pdo->exec("ALTER TABLE hygiene_durees ADD COLUMN date_mention TEXT NOT NULL DEFAULT ''");
+    if (!in_array('poids_net', $d, true)) $pdo->exec("ALTER TABLE hygiene_durees ADD COLUMN poids_net TEXT NOT NULL DEFAULT ''");
+    $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS hygiene_releves_lot ON hygiene_releves(numero_lot) WHERE numero_lot <> '' AND remplace_par IS NULL");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_hygiene', '3')");
+}
+
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 // Colonnes entières : PHP 8.0 rend les nombres de SQLite en texte, PHP 8.1 et plus en nombres ; on les rend toujours en entiers.
 const COLONNES_ENTIERES = ['id' => 1, 'client_id' => 1, 'commande_id' => 1, 'utilisateur_id' => 1, 'ingredient_id' => 1, 'probleme' => 1, 'total_indicatif' => 1,

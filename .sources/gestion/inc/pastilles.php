@@ -30,6 +30,15 @@ const NOUVEAUTES = [
     ['id' => '2026-11-factures', 'le' => '2026-11-08', 'titre' => 'Les factures des particuliers',
      'texte' => 'La gestion fait la facture d\'une commande payée et remise : vous la relisez, l\'émettez, puis la remettez par mail, SMS, QR code ou papier.',
      'lien' => ['manuel', 'factures']],
+    ['id' => '2026-11-hygiene', 'le' => '2026-11-08', 'titre' => 'L\'écran Hygiène',
+     'texte' => 'Plus › Hygiène : la température des frigos, les réceptions, les fournées avec leur numéro de lot et les livraisons aux restaurants, notées en quelques touches sur le téléphone.',
+     'lien' => ['manuel', 'hygiene']],
+    ['id' => '2026-11-obligations', 'le' => '2026-11-08', 'titre' => 'L\'écran Obligations',
+     'texte' => 'Plus › Obligations : tout ce qu\'il faut faire ou prouver pour être en règle, le plus urgent en haut, avec les échéances qui reviennent.',
+     'lien' => ['manuel', 'obligations']],
+    ['id' => '2026-11-noms', 'le' => '2026-11-08', 'titre' => 'Les majuscules des noms',
+     'texte' => 'Les majuscules oubliées dans les noms et prénoms sont ajoutées toutes seules. Pour corriger un nom : « Corriger le nom ou les coordonnées », sur la fiche ou dans la commande.',
+     'lien' => ['manuel', 'clients']],
     ['id' => '2026-11-08-pastilles', 'le' => '2026-11-08', 'titre' => 'Les pastilles de couleur',
      'texte' => 'Rouge : à regarder en premier. Ambre : quelque chose a changé. Elles s\'éteignent quand vous ouvrez la commande ou la fiche.',
      'lien' => ['manuel', 'pastilles']],
@@ -158,7 +167,7 @@ function pastilles_vu(string $genre, string $objet, int $jusqua = 0): void {
     if (isset($GLOBALS['mc_pastilles'])) {
         $r = &$GLOBALS['mc_pastilles'];
         if ($genre === 'outil') $r['outil'] = array_values(array_filter($r['outil'], fn($n) => $n['id'] !== $objet));
-        else {
+        elseif (in_array($genre, ['commande', 'client'], true)) {
             $cle = $genre === 'commande' ? 'commandes' : 'clients';
             if (isset($r[$cle][(int)$objet]) && (int)$r[$cle][(int)$objet]['evs'][0]['id'] <= $jusqua) {
                 if ($cle === 'commandes' && $r[$cle][(int)$objet]['niveau'] === 'action') $r['action']--;

@@ -1209,6 +1209,8 @@ Nouveauté | 새 기능
 (a changé) | (바뀜)
 Les pastilles de couleur | 색깔 표시
 Rouge : à regarder en premier. Ambre : quelque chose a changé. Elles s'éteignent quand vous ouvrez la commande ou la fiche. | 빨간색은 먼저 볼 것, 주황색은 바뀐 것이에요. 주문이나 고객 정보를 열면 사라져요.
+Les majuscules des noms | 이름의 대문자
+Les majuscules oubliées dans les noms et prénoms sont ajoutées toutes seules. Pour corriger un nom : « Corriger le nom ou les coordonnées », sur la fiche ou dans la commande. | 이름에 빠뜨린 대문자는 저절로 붙어요. 이름을 고치려면 고객 정보나 주문에서 ‘이름이나 연락처 고치기’를 눌러요.
 Le rappel de retrait | 픽업 알림
 La veille du retrait, Aujourd'hui liste les rappels à envoyer au client, par mail ou par SMS. | 픽업 전날, 오늘 화면에 고객에게 보낼 픽업 알림이 나와요. 메일이나 문자로 보내요.
 téléphone | 전화번호
@@ -1426,6 +1428,547 @@ Facture émise, pas encore remise au client | 청구서 발행됨, 아직 고객
 Facture à corriger (avoir) | 고칠 청구서 (정정 청구서)
 Les factures des particuliers | 개인 고객 청구서
 La gestion fait la facture d'une commande payée et remise : vous la relisez, l'émettez, puis la remettez par mail, SMS, QR code ou papier. | 결제되고 전달된 주문의 청구서를 관리 시스템이 만들어요. 확인하고 발행한 뒤 이메일, SMS, QR 코드나 종이로 전달해요.
+# Écran Obligations (spécification 004, lot 1, 08/11/2026)
+Obligations | 의무
+Démarche | 할 일
+Démarches et échéances pour être en règle | 규정을 지키기 위한 할 일과 정기 일정
+Tout ce qu'il faut faire ou prouver pour être en règle, le plus urgent d'abord. | 규정을 지키기 위해 해야 하거나 증명해야 하는 모든 일이에요. 가장 급한 일이 먼저 나와요.
+Les miennes | 내 일
+Échéances | 정기 일정
+Urgent | 급함
+En attente d'une réponse | 답을 기다리는 중
+Date à confirmer | 날짜 확인 필요
+Plus tard | 나중에
+Rien d'urgent. | 급한 일은 없어요.
+Faites et sans objet | 완료와 해당 없음
+Importante | 중요
+Échéance | 기한
+Récurrente | 정기
+Sans objet | 해당 없음
+Envoyé, réponse attendue | 보냄, 답 기다림
+Youngmi et Olivier | Youngmi와 Olivier
+Haute | 높음
+Normale | 보통
+Basse | 낮음
+Chaque année | 매년
+Chaque trimestre | 분기마다
+Chaque mois | 매달
+Le premier lundi du mois | 매달 첫 월요일
+Arrêtée | 중단됨
+Liste de départ pas encore reprise. | 처음 목록을 아직 넣지 않았어요.
+Olivier ajoute la liste vérifiée des démarches et des échéances ; d'ici là, cette liste n'est pas complète. | Olivier가 확인한 할 일과 정기 일정 목록을 넣을 거예요. 그때까지 이 목록은 완전하지 않아요.
+Liste de départ à relire. | 처음 목록을 다시 읽어 주세요.
+Si une démarche manque, ajoutez-la. | 빠진 할 일이 있으면 추가하세요.
+Reste à relire : | 아직 읽지 않은 사람:
+J'ai relu la liste | 목록을 다시 읽었어요
+Merci : votre relecture de la liste de départ est notée. | 고마워요. 처음 목록을 다시 읽은 것을 기록했어요.
+Échéances qui reviennent | 되풀이되는 정기 일정
+Aucune échéance pour l'instant. | 아직 정기 일정이 없어요.
+Chaque échéance crée sa démarche dans « À faire » quand son rappel commence (30 jours avant, sauf autre choix), une fois par période. Une date inconnue reste « à confirmer » : elle n'est jamais devinée. | 정기 일정마다 알림이 시작되면(따로 정하지 않으면 30일 전) 기간마다 한 번씩 ‘할 일’에 할 일이 생겨요. 모르는 날짜는 ‘날짜 확인 필요’로 남고, 절대 추측하지 않아요.
+Ajouter une échéance | 정기 일정 추가
+Reprise de la liste de départ | 처음 목록 넣기
+Fichier CSV | CSV 파일
+Reprendre ce fichier | 이 파일 넣기
+Choisissez un fichier CSV de moins de 500 ko. | 500KB보다 작은 CSV 파일을 고르세요.
+Nouvelle démarche | 새 할 일
+Modifier la démarche | 할 일 수정
+Ajouter la démarche | 할 일 추가
+Démarche ajoutée. | 할 일을 추가했어요.
+Démarche modifiée. | 할 일을 수정했어요.
+Démarche introuvable. | 할 일을 찾을 수 없어요.
+Quoi faire | 할 일
+Une phrase courte qui commence par un verbe. | 동사로 시작하는 짧은 문장으로 적어요.
+Où le faire | 어디서 하나요
+L'outil, la page et l'endroit exacts : site, Drive (dossier), mail, appel… | 정확한 도구, 페이지, 위치: 사이트, Drive(폴더), 이메일, 전화…
+L'outil, la page et l'endroit exacts. | 정확한 도구, 페이지, 위치.
+Pourquoi (facultatif) | 이유 (선택)
+Jamais de nom ni de donnée d'un client particulier. | 개인 고객의 이름이나 정보는 절대 적지 마세요.
+Pour qui | 누구의 일
+Pour le | 기한
+Rappel (jours avant) | 알림 (며칠 전)
+Date à confirmer (inconnue pour l'instant) | 날짜 확인 필요 (아직 모름)
+Priorité | 우선순위
+Importante : la preuve est obligatoire pour la clore (DDPP, assurance, impôts…) | 중요: 닫으려면 증빙이 꼭 필요해요 (DDPP, 보험, 세금…)
+Importante : la preuve est obligatoire pour clore chaque démarche | 중요: 할 일을 닫으려면 매번 증빙이 꼭 필요해요
+D'où vient-elle (facultatif) | 어디서 온 일인지 (선택)
+Quoi | 무엇을
+Où le faire ? | 어디서 하나요?
+Pourquoi | 왜
+Rappel avant l'échéance | 기한 전 알림
+D'où vient-elle | 어디서 온 일
+Preuve | 증빙
+Raison | 이유
+Ouvrir la preuve dans le Drive | Drive에서 증빙 열기
+À confirmer | 확인 필요
+Et maintenant | 이제 할 일
+C'est fait | 완료
+Lien de la preuve dans le Drive | Drive의 증빙 링크
+Lien de la preuve dans le Drive (facultatif) | Drive의 증빙 링크 (선택)
+Rangez d'abord la pièce dans le Drive (récépissé, attestation, rapport), puis copiez son lien. | 먼저 서류(접수증, 증명서, 보고서)를 Drive에 넣고 그 링크를 복사하세요.
+Envoyé, j'attends la réponse | 보냄, 답 기다림
+Par exemple : envoyé en ligne, numéro de dossier noté dans la fiche d'identité. | 예: 온라인으로 보냄, 서류 번호는 회사 정보 문서에 적음.
+Noter « envoyé » | ‘보냄’으로 기록
+Pourquoi ? | 왜요?
+Marquer sans objet | 해당 없음으로 표시
+Rouvrir | 다시 열기
+Remettre cette démarche à faire ? | 이 일을 다시 할 일로 돌릴까요?
+C'est noté : fait. | 기록했어요: 완료.
+C'est noté : envoyé, réponse attendue. | 기록했어요: 보냄, 답 기다림.
+C'est noté : sans objet. | 기록했어요: 해당 없음.
+La démarche est de nouveau à faire. | 다시 할 일이 됐어요.
+Le lien doit être une adresse du Drive (https://drive.google.com/… ou https://docs.google.com/…). | 링크는 Drive 주소여야 해요 (https://drive.google.com/… 또는 https://docs.google.com/…).
+Cette démarche est importante : collez le lien de la preuve (récépissé, attestation, rapport) rangée dans le Drive. | 중요한 일이에요. Drive에 넣은 증빙(접수증, 증명서, 보고서)의 링크를 붙여 넣으세요.
+Dites pourquoi elle est sans objet. | 왜 해당 없는지 적어 주세요.
+Écrivez ce qu'il faut faire (le titre). | 할 일(제목)을 적어 주세요.
+Dites où le faire : l'outil, la page et l'endroit exacts. | 어디서 하는지 적어 주세요: 정확한 도구, 페이지, 위치.
+Donnez la date de la prochaine échéance, ou cochez « Date à confirmer ». | 다음 기한 날짜를 적거나 ‘날짜 확인 필요’를 체크하세요.
+Ajoutée | 추가됨
+Modifiée | 수정됨
+Faite | 완료됨
+Envoyée, réponse attendue | 보냄, 답 기다림
+Rouverte | 다시 열림
+Nouvelle échéance | 새 정기 일정
+Modifier l'échéance | 정기 일정 수정
+Ajouter l'échéance | 정기 일정 추가
+Revient | 반복
+Prochaine échéance | 다음 기한
+Arrêter cette échéance | 이 정기 일정 중단
+Reprendre cette échéance | 이 정기 일정 다시 시작
+Arrêter cette échéance ? Les démarches déjà créées restent. | 이 정기 일정을 중단할까요? 이미 생긴 할 일은 남아요.
+Échéance ajoutée : sa démarche apparaîtra dans « À faire » quand son rappel commencera. | 정기 일정을 추가했어요. 알림이 시작되면 ‘할 일’에 나와요.
+Échéance arrêtée : plus de nouvelle démarche. | 정기 일정을 중단했어요. 새 할 일은 더 생기지 않아요.
+Échéance reprise. | 정기 일정을 다시 시작했어요.
+L'écran Obligations est réservé à Youngmi et à Olivier. | 의무 화면은 Youngmi와 Olivier만 볼 수 있어요.
+Cette date n'est pas valide : choisissez-la dans le calendrier, ou cochez « Date à confirmer ». | 날짜가 올바르지 않아요. 달력에서 고르거나 ‘날짜 확인 필요’를 체크하세요.
+Une phrase courte qui commence par un verbe, jamais un nom de client. | 동사로 시작하는 짧은 문장으로 적고, 고객 이름은 절대 적지 마세요.
+Nouveau client professionnel : vérifier les obligations | 새 사업자 고객: 의무 확인하기
+Nouveau gâteau pour un client professionnel : vérifier les obligations | 사업자 고객의 새 케이크: 의무 확인하기
+Nouveau client professionnel | 새 사업자 고객
+Gâteau sur mesure pour un client professionnel : vérifier les obligations | 사업자 고객의 맞춤 케이크: 의무 확인하기
+Première livraison pour un client professionnel : vérifier les obligations | 사업자 고객 첫 배달: 의무 확인하기
+Gâteau sur mesure pour un client professionnel | 사업자 고객의 맞춤 케이크
+Première livraison pour un client professionnel | 사업자 고객 첫 배달
+Date d'avant la modification | 수정 전 날짜
+Calendrier | 일정
+Date d'avant la modification de l'échéance : gardez-la si elle est toujours due, sinon « Sans objet ». | 정기 일정을 고치기 전의 날짜예요. 아직 해야 하면 그대로 두고, 아니면 ‘해당 없음’을 누르세요.
+Renvoyer le mail de la semaine | 이번 주 메일 다시 보내기
+Renvoyer maintenant le mail interne « Obligations de la semaine » à contact@ ? | 내부 메일 ‘이번 주 의무’를 지금 contact@로 다시 보낼까요?
+Le mail « Obligations de la semaine » est parti à contact@. | ‘이번 주 의무’ 메일을 contact@로 보냈어요.
+L'envoi a encore échoué : prévenez Olivier (signature DKIM du site). | 다시 보내지 못했어요. Olivier에게 알려 주세요 (사이트 DKIM 서명).
+Rien à renvoyer. | 다시 보낼 것이 없어요.
+Nouveau gâteau pour un client professionnel | 사업자 고객의 새 케이크
+Gestion : la fiche du client (lien ci-dessus). mesdemarches.agriculture.gouv.fr › Mes démarches : déclaration d'activité (Cerfa 13984) et dérogation à l'agrément (Cerfa 13982). Les récépissés dans le Drive : 01 › 09-Certifications, labels et agréments. En cas de doute : la DDPP des Hauts-de-Seine. | 관리 화면: 고객 정보(위 링크). mesdemarches.agriculture.gouv.fr › Mes démarches: 활동 신고(Cerfa 13984)와 위생 승인 면제(Cerfa 13982). 접수증은 Drive: 01 › 09-Certifications, labels et agréments. 잘 모르면 Hauts-de-Seine DDPP에 물어보세요.
+Vendre à un professionnel peut créer de nouvelles obligations ; ce n'est pas toujours le cas. Avant de confirmer ou de livrer, vérifiez : 1) ce qu'il fait des gâteaux : un restaurant ou un commerce qui les sert ou les revend (la dérogation à l'agrément, Cerfa 13982, doit peut-être le compter parmi les destinataires), ou une entreprise qui les offre ou les sert à ses équipes (à vérifier aussi) ; 2) les produits, les quantités par semaine et la distance de livraison ; 3) la déclaration d'activité et la dérogation déjà faites auprès de la DDPP ; 4) la facture professionnelle (mentions obligatoires). Si une démarche a été faite, collez le lien du récépissé et touchez « C'est fait ». S'il n'y a rien à faire, touchez « Sans objet » et écrivez la raison et sa source (DDPP, Ithea, page officielle). | 사업자에게 팔면 새 의무가 생길 수 있어요. 항상 그런 것은 아니에요. 확정하거나 배달하기 전에 확인하세요: 1) 케이크를 어떻게 쓰는지: 케이크를 내놓거나 다시 파는 레스토랑이나 가게(위생 승인 면제 Cerfa 13982에 받는 곳으로 넣어야 할 수 있어요), 또는 직원에게 주거나 내놓는 회사(이것도 확인); 2) 제품, 주당 수량, 배달 거리; 3) DDPP에 이미 한 활동 신고와 면제 신청; 4) 사업자 청구서(필수 기재 사항). 신청을 했으면 접수증 링크를 붙여 넣고 ‘완료’를 누르세요. 할 일이 없으면 ‘해당 없음’을 누르고 이유와 출처(DDPP, Ithea, 공식 페이지)를 적으세요.
+L'écran Obligations | 의무 화면
+Plus › Obligations : tout ce qu'il faut faire ou prouver pour être en règle, le plus urgent en haut, avec les échéances qui reviennent. | 더보기 › 의무: 규정을 지키기 위해 해야 하거나 증명할 모든 일, 가장 급한 일이 맨 위에, 되풀이되는 정기 일정과 함께 있어요.
+# Écran Hygiène (spécification 004, lot 2, 08/11/2026)
+Hygiène | 위생
+Froid, réceptions, fournées et livraisons du jour | 오늘의 냉장·입고·생산·배달
+Les relevés du jour : froid, réceptions, fournées et livraisons. Rien ne s'efface : une erreur se corrige. | 오늘의 기록: 냉장 온도, 입고, 생산, 배달. 아무것도 지워지지 않아요. 잘못 쓴 것은 고칠 수 있어요.
+L'écran Hygiène est réservé à Youngmi et à Olivier. | 위생 화면은 Youngmi와 Olivier만 볼 수 있어요.
+Plages à confirmer par Youngmi. | Youngmi가 확인할 온도 범위가 있어요.
+Les plages préremplies sont les seuils de la réglementation (pâtisserie à la crème : 3 °C au plus ; congelé : -18 °C ou moins). | 미리 넣어 둔 범위는 규정의 기준이에요 (크림 디저트: 최대 3 °C, 냉동: -18 °C 이하).
+Vérifier les appareils | 기기 확인하기
+Appareils | 기기
+Froid | 냉장·냉동
+Réceptions | 입고
+Fournées | 생산
+Fournée | 생산
+Réception | 입고
+Livraisons aux restaurants | 레스토랑 배달
+Réfrigérateur | 냉장고
+Congélateur | 냉동고
+Vitrine réfrigérée | 냉장 진열장
+Caisson isotherme | 보냉 상자
+Fait | 완료
+Au départ des livraisons | 배달 출발할 때
+Plage à saisir | 범위를 입력하세요
+Température lue (°C) | 읽은 온도 (°C)
+Noter | 기록
+Hors plage : qu'avez-vous fait ? | 범위 밖: 어떻게 했나요?
+Porte fermée, produits déplacés ou jetés, réglage du thermostat, réparateur appelé… | 문을 닫음, 제품을 옮기거나 버림, 온도 조절, 수리 기사 부름…
+Hors plage | 범위 밖
+Corrigé | 고침
+Aucun appareil : ajoutez vos frigos dans « Appareils ». | 기기가 없어요. ‘기기’에서 냉장고를 추가하세요.
+Un relevé par appareil et par jour de production, de préférence le matin. | 생산하는 날마다 기기당 한 번, 되도록 아침에 기록해요.
+Deux relevés par appareil et par jour de production : le matin et le soir. | 생산하는 날마다 기기당 두 번: 아침과 저녁.
+Aucune réception notée. | 기록된 입고가 없어요.
+Noter une réception | 입고 기록하기
+Pour les matières premières fragiles (crème, œufs, beurre, fruits) : le produit, le lot et la date limite, ou une photo de l'étiquette. | 상하기 쉬운 재료(크림, 달걀, 버터, 과일): 제품, 로트, 유통기한을 적거나 라벨 사진을 찍어요.
+Aucune fournée notée. | 기록된 생산이 없어요.
+Noter une fournée | 생산 기록하기
+Chaque fournée reçoit son numéro de lot (date et gâteau) et sa date limite, reprise de la durée de conservation que vous avez fixée. | 생산할 때마다 로트 번호(날짜와 케이크)와, 정해 둔 보관 기간으로 계산한 유통기한이 붙어요.
+Aucune livraison notée. | 기록된 배달이 없어요.
+Départ d'une livraison | 배달 출발
+Pas de production aujourd'hui | 오늘은 생산 없음
+Noter « pas de production aujourd'hui » ? Aucun relevé ne sera attendu. | ‘오늘은 생산 없음’으로 기록할까요? 오늘은 기록이 필요 없어요.
+Pas de production ce jour-là. | 이날은 생산이 없었어요.
+Aucun relevé n'est attendu. | 기록할 것이 없어요.
+Finalement, je produis | 생산하기로 했어요
+un jour passé ne se complète pas après coup ; un relevé faux se corrige depuis sa fiche. | 지난 날은 나중에 채우지 않아요. 잘못된 기록은 그 기록 화면에서 고쳐요.
+Étiquette en photo | 라벨 사진
+Photo de l'étiquette (facultatif) | 라벨 사진 (선택)
+Elle remplace le produit, le lot et la date si vous êtes pressée. | 바쁠 때는 제품, 로트, 날짜 대신 사진만 찍어도 돼요.
+Fournisseur (facultatif) | 공급업체 (선택)
+Lot | 로트
+Date limite | 유통기한
+Température à la réception (facultatif, °C) | 받을 때 온도 (선택, °C)
+Noter la réception | 입고 기록
+Choisir le gâteau | 케이크 선택
+Autre gâteau (sur mesure) | 다른 케이크 (주문 제작)
+Nom du gâteau (si « Autre ») | 케이크 이름 (‘다른 케이크’일 때)
+Quantité (facultatif) | 수량 (선택)
+ou durée (jours) | 또는 기간 (일)
+Retenir cette durée pour ce gâteau (la date limite se calculera seule) | 이 케이크의 기간으로 저장 (유통기한이 자동으로 계산돼요)
+Réceptions utilisées (facultatif) | 사용한 입고 (선택)
+Réceptions utilisées | 사용한 입고
+Noter la fournée | 생산 기록
+Sans commande | 주문 없음
+Commande (facultatif) | 주문 (선택)
+Une commande d'hier, d'aujourd'hui ou de demain ; elle choisit le restaurant. | 어제, 오늘, 내일의 주문이에요. 주문을 고르면 레스토랑이 정해져요.
+Choisir le restaurant | 레스토랑 선택
+ou le restaurant | 또는 레스토랑
+Lots livrés | 배달한 로트
+Notez d'abord la fournée pour relier ses lots à la livraison. | 로트를 배달과 연결하려면 먼저 생산을 기록하세요.
+Température au départ (facultatif, °C) | 출발 온도 (선택, °C)
+Celle du caisson isotherme ou de la boîte, au moment de partir. | 출발할 때 보냉 상자나 상자의 온도.
+Noter le départ | 출발 기록
+Arrivée | 도착
+Départ | 출발
+Les 30 derniers jours | 최근 30일
+Pas de production | 생산 없음
+Exporter pour un contrôle | 점검용 내보내기
+Au | 까지
+Télécharger (CSV) | 내려받기 (CSV)
+Rien n'est effacé pour l'instant : la durée de conservation n'est pas encore fixée. | 보관 기간이 아직 정해지지 않아서 지금은 아무것도 지우지 않아요.
+Appareils de froid | 냉장·냉동 기기
+Arrêté | 사용 중지
+Confirmer cette plage | 이 범위 확인
+Ajouter un appareil | 기기 추가
+En service | 사용 중
+La plage vient de vous : la gestion ne la devine pas. Un caisson isotherme sert aux livraisons ; il n'a pas de relevé du matin. | 온도 범위는 직접 정해요. 관리 화면은 짐작하지 않아요. 보냉 상자는 배달용이라 아침 기록이 없어요.
+Durées de conservation des gâteaux | 케이크 보관 기간
+En jours après la fournée. Vide : la date limite se tape à chaque fournée. 0 : à consommer le jour même. | 생산한 날부터 며칠인지 적어요. 비워 두면 생산할 때마다 유통기한을 입력해요. 0: 당일 소비.
+Jours | 일
+Réglages | 설정
+Relevés de froid par jour de production | 생산하는 날의 온도 기록 횟수
+Un (le matin) | 한 번 (아침)
+Deux (le matin et le soir) | 두 번 (아침과 저녁)
+Garder les relevés et les photos | 기록과 사진 보관 기간
+1 an | 1년
+2 ans | 2년
+3 ans | 3년
+5 ans | 5년
+10 ans | 10년
+Ne rien effacer | 지우지 않기
+Frigo de la cuisine | 주방 냉장고
+Minimum (°C, facultatif) | 최저 (°C, 선택)
+Maximum (°C) | 최고 (°C)
+Relevé | 기록
+Noté | 기록한 때
+Température | 온도
+Ce qui a été fait | 한 조치
+Numéro de lot | 로트 번호
+Livré à | 배달한 곳
+Utilisée dans | 사용한 곳
+Photo de l'étiquette | 라벨 사진
+Version corrigée. | 고친 기록이에요.
+Voir la dernière version | 마지막 기록 보기
+Annulé | 취소됨
+Corriger ce relevé | 이 기록 고치기
+Pourquoi cette correction ? | 왜 고치나요?
+Erreur de frappe, mauvais appareil… | 오타, 다른 기기…
+L'original reste visible avec l'heure et la personne ; rien n'est effacé. | 원래 기록은 시간과 사람과 함께 그대로 보여요. 아무것도 지워지지 않아요.
+Enregistrer la correction | 수정 저장
+Versions | 기록 변경
+Original | 원래 기록
+Correction | 수정
+Pas encore notée | 아직 기록 안 함
+Relevé introuvable. | 기록을 찾을 수 없어요.
+Relevé noté. | 기록했어요.
+Relevé noté, hors plage, avec ce que vous avez fait. | 범위 밖 온도와 조치를 기록했어요.
+Réception notée. | 입고를 기록했어요.
+Départ noté. Touchez « Arrivée » une fois sur place. | 출발을 기록했어요. 도착하면 ‘도착’을 누르세요.
+Arrivée notée. | 도착을 기록했어요.
+L'arrivée est déjà notée. | 도착은 이미 기록했어요.
+Livraison introuvable. | 배달을 찾을 수 없어요.
+C'est noté : pas de production aujourd'hui. | 기록했어요: 오늘은 생산 없음.
+C'est noté : il y a une production aujourd'hui. | 기록했어요: 오늘은 생산이 있어요.
+Une fournée ou une livraison est déjà notée aujourd'hui. | 오늘 생산이나 배달이 이미 기록되어 있어요.
+Correction notée : l'original reste visible. | 수정을 기록했어요. 원래 기록도 그대로 보여요.
+Appareil enregistré. | 기기를 저장했어요.
+Durée enregistrée. | 기간을 저장했어요.
+Durée retirée : la date limite se tapera à chaque fournée. | 기간을 지웠어요. 생산할 때마다 유통기한을 입력해요.
+Réglages enregistrés. | 설정을 저장했어요.
+Gâteau introuvable. | 케이크를 찾을 수 없어요.
+Une durée s'écrit en jours, de 0 à 365. | 기간은 0일에서 365일 사이로 적어요.
+Choisissez un appareil. | 기기를 고르세요.
+Tapez la température lue, en chiffres (par exemple 3 ou -18). | 읽은 온도를 숫자로 적어 주세요 (예: 3 또는 -18).
+Une température s'écrit en chiffres, par exemple 3 ou -18. | 온도는 숫자로 적어요 (예: 3 또는 -18).
+Saisissez au moins la température maximale. | 최고 온도는 꼭 적어 주세요.
+La température minimale doit être plus basse que la maximale. | 최저 온도는 최고 온도보다 낮아야 해요.
+Donnez un nom à l'appareil (par exemple : frigo de la cuisine). | 기기 이름을 적어 주세요 (예: 주방 냉장고).
+Notez le produit avec son lot ou sa date limite, ou prenez l'étiquette en photo. | 제품과 로트 또는 유통기한을 적거나, 라벨을 사진으로 찍어 주세요.
+Choisissez le gâteau. | 케이크를 고르세요.
+Indiquez la date limite de ce gâteau (ou sa durée de conservation en jours) : la gestion ne la devine jamais. | 이 케이크의 유통기한(또는 보관 일수)을 적어 주세요. 관리 화면은 절대 짐작하지 않아요.
+La date limite ne peut pas être avant le jour de la fournée. | 유통기한은 생산한 날보다 빠를 수 없어요.
+Choisissez le restaurant (ou la commande). | 레스토랑(또는 주문)을 고르세요.
+Dites pourquoi vous corrigez ce relevé. | 왜 고치는지 적어 주세요.
+Ce relevé a déjà été corrigé : ouvrez sa dernière version. | 이미 고친 기록이에요. 마지막 기록을 여세요.
+La photo n'a pas pu être envoyée (8 Mo au plus) : réessayez. | 사진을 보내지 못했어요 (최대 8 MB). 다시 해 보세요.
+Ce fichier n'est pas une photo (JPEG, PNG ou WebP). | 이 파일은 사진이 아니에요 (JPEG, PNG, WebP).
+La photo n'a pas pu être gardée : réessayez. | 사진을 저장하지 못했어요. 다시 해 보세요.
+Relevé de froid manquant | 빠진 온도 기록
+Jour concerné | 해당 날짜
+Gestion, Plus › Hygiène, au jour indiqué ci-dessous : touchez « C'est fait » en écrivant dans la note ce qui s'est passé (oubli, frigo vide, pas de production…). Un relevé ne se note jamais après coup. | 관리 화면, 더보기 › 위생, 아래 날짜: 무슨 일이 있었는지(잊음, 냉장고 비어 있음, 생산 없음…) 메모에 적고 ‘완료’를 누르세요. 온도 기록은 절대 나중에 적지 않아요.
+Relevés de froid du jour : faits | 오늘 온도 기록: 완료
+L'écran Hygiène | 위생 화면
+Plus › Hygiène : la température des frigos, les réceptions, les fournées avec leur numéro de lot et les livraisons aux restaurants, notées en quelques touches sur le téléphone. | 더보기 › 위생: 냉장고 온도, 입고, 로트 번호가 붙는 생산, 레스토랑 배달을 휴대폰에서 몇 번만 눌러 기록해요.
+# Écran Hygiène, lot 3 : étiquettes et problème sur un lot (spécification 004, 08/11/2026)
+Étiquettes des boîtes | 상자 라벨
+Étiquette impossible pour l'instant. | 지금은 라벨을 만들 수 없어요.
+Ce gâteau n'a pas de fiche produit : une étiquette ne se fait que pour un gâteau de la carte ou de la gamme pro. | 이 케이크는 제품 정보가 없어요. 라벨은 메뉴나 사업자용 제품의 케이크만 만들 수 있어요.
+La fiche du gâteau n'est pas validée par Youngmi (Produits › le gâteau › « Fiche validée le »). | Youngmi가 케이크 정보를 아직 확인하지 않았어요 (제품 › 케이크 › ‘확인한 날’).
+Les allergènes ne sont pas connus : ni texte sur le site, ni recette dans la gestion. | 알레르기 유발 성분을 알 수 없어요. 사이트 글도, 관리 화면의 레시피도 없어요.
+Le texte de l'étiquette n'est pas encore relu (Hygiène › Appareils › Étiquettes des gâteaux). | 라벨 글을 아직 확인하지 않았어요 (위생 › 기기 › 케이크 라벨).
+Les conditions de conservation manquent (Hygiène › Appareils › Étiquettes des gâteaux). | 보관 방법이 없어요 (위생 › 기기 › 케이크 라벨).
+Le nom et l'adresse de l'exploitant manquent (Hygiène › Appareils › Réglages). | 사업자 이름과 주소가 없어요 (위생 › 기기 › 설정).
+La fournée n'a pas de date limite ou de numéro de lot. | 이 생산에는 유통기한이나 로트 번호가 없어요.
+Format | 형식
+Nombre | 개수
+Planche A4 (24 étiquettes de 63,5 x 33,9 mm) | A4 시트 (63.5 x 33.9 mm 라벨 24개)
+Rouleau (étiquettes de 55 x 30 mm) | 롤 (55 x 30 mm 라벨)
+Sans liste d'ingrédients : saisissez la recette du gâteau, puis relisez le texte de l'étiquette. | 재료 목록이 없어요. 케이크 레시피를 입력한 뒤 라벨 글을 다시 확인하세요.
+Préparer les étiquettes | 라벨 준비
+En cas de problème | 문제가 생기면
+Problème sur ce lot | 이 로트에 문제
+Que s'est-il passé ? | 무슨 일이 있었나요?
+Qui l'a signalé, quoi, quand : un restaurant, un client malade, un défaut vu en cuisine… Pas de nom de particulier. | 누가, 무엇을, 언제 알렸는지: 레스토랑, 아픈 고객, 주방에서 본 문제… 개인 고객 이름은 적지 마세요.
+Ouvrir le suivi du problème | 문제 처리 시작
+Ouvrir un problème sur ce lot ? La gestion montre qui l'a reçu et les étapes du retrait. | 이 로트에 문제를 기록할까요? 누가 받았는지와 회수 단계를 보여 줘요.
+Problème en cours sur ce lot. | 이 로트에 처리 중인 문제가 있어요.
+Suivre les étapes | 단계 보기
+Étiquettes | 라벨
+Planche A4 de 24 étiquettes (3 x 8, 63,5 x 33,9 mm). À l'impression : taille réelle (100 %), sans marges ajoutées. | 라벨 24개 A4 시트 (3 x 8, 63.5 x 33.9 mm). 인쇄할 때: 실제 크기(100%), 여백 추가 없음.
+Rouleau 55 x 30 mm : une étiquette par page. À l'impression, choisissez l'imprimante à étiquettes et le format 55 x 30 mm. | 55 x 30 mm 롤: 한 페이지에 라벨 하나. 인쇄할 때 라벨 프린터와 55 x 30 mm 형식을 고르세요.
+Étiquette impossible pour l'instant : voyez ce qui manque sur la fiche du lot. | 지금은 라벨을 만들 수 없어요. 로트 기록에서 빠진 것을 확인하세요.
+Lot introuvable. | 로트를 찾을 수 없어요.
+Problème sur un lot | 로트 문제
+Problème introuvable. | 문제를 찾을 수 없어요.
+Ne vendez plus et ne livrez plus ce lot. | 이 로트는 더 이상 팔거나 배달하지 마세요.
+En cas de malaise grave, le 15 d'abord. | 심하게 아픈 사람이 있으면 먼저 15번에 전화하세요.
+Fabriqué le | 만든 날
+Ouvert | 시작
+Clos | 종료
+Qui a reçu ce lot ? | 이 로트를 누가 받았나요?
+Restaurants livrés | 배달한 레스토랑
+Aucune livraison reliée à ce lot. | 이 로트와 연결된 배달이 없어요.
+Commandes peut-être concernées | 관련됐을 수 있는 주문
+Les commandes de ce gâteau retirées ou livrées entre la fournée et sa date limite : à vérifier une par une. | 생산한 날부터 유통기한까지 찾아가거나 배달한 이 케이크의 주문이에요. 하나씩 확인하세요.
+Matières premières utilisées | 사용한 재료
+Aucune réception reliée à ce lot. | 이 로트와 연결된 입고가 없어요.
+Les étapes du retrait | 회수 단계
+Retirer le lot | 로트 회수
+Mettre de côté tout ce qui reste du lot (cuisine, frigo, vitrine) et ne plus le vendre ni le livrer. | 남은 로트(주방, 냉장고, 진열장)를 모두 따로 두고 더 이상 팔거나 배달하지 마세요.
+Prévenir les clients | 고객에게 알리기
+Appeler chaque restaurant livré et chaque client qui a peut-être reçu le lot : ne pas servir, ne pas manger, rapporter ou jeter. | 배달한 레스토랑과 이 로트를 받았을 수 있는 고객에게 전화하세요: 내놓지 말고, 먹지 말고, 돌려주거나 버리기.
+Informer la DDPP | DDPP에 알리기
+Envoyer à la DDPP des Hauts-de-Seine le brouillon ci-dessous, depuis votre messagerie (la gestion ne l'envoie jamais). | 아래 초안을 직접 메일로 Hauts-de-Seine DDPP에 보내세요 (관리 화면은 절대 보내지 않아요).
+Déclarer sur RappelConso si la DDPP le demande | DDPP가 요청하면 RappelConso에 신고
+Site officiel rappel.conso.gouv.fr : un rappel public seulement si le lot a pu être mangé par des particuliers ou si la DDPP le demande. | 공식 사이트 rappel.conso.gouv.fr: 개인 고객이 먹었을 수 있거나 DDPP가 요청할 때만 공개 회수를 해요.
+Décocher | 체크 해제
+Brouillon pour la DDPP | DDPP용 초안
+À coller dans un mail à la DDPP des Hauts-de-Seine, envoyé par vous depuis contact@ (la gestion n'envoie rien). Relisez-le avant : il reprend les étapes déjà cochées. | contact@에서 Hauts-de-Seine DDPP에 보내는 메일에 붙여 넣으세요 (관리 화면은 아무것도 보내지 않아요). 보내기 전에 다시 읽어 보세요. 이미 체크한 단계가 들어 있어요.
+Clore | 끝내기
+Bilan (obligatoire s'il reste des étapes) | 정리 (남은 단계가 있으면 필수)
+Par exemple : la DDPP n'a pas demandé de rappel public. | 예: DDPP가 공개 회수를 요청하지 않았어요.
+Clore le problème | 문제 끝내기
+Clore ce problème ? | 이 문제를 끝낼까요?
+Étape notée. | 단계를 기록했어요.
+Étape inconnue. | 알 수 없는 단계예요.
+Ce problème est clos. | 끝난 문제예요.
+Ce problème est déjà clos. | 이미 끝난 문제예요.
+Il reste des étapes : cochez-les, ou écrivez dans le bilan pourquoi elles ne s'appliquent pas. | 남은 단계가 있어요. 체크하거나, 해당하지 않는 이유를 정리에 적으세요.
+Problème ouvert : suivez les étapes, la démarche est aussi dans Obligations. | 문제를 기록했어요. 단계를 따라가세요. 의무에도 할 일이 생겼어요.
+Problème clos. Pensez à clore aussi la démarche dans Obligations, avec le lien de la preuve. | 문제를 끝냈어요. 의무의 할 일도 증빙 링크와 함께 닫으세요.
+Décrivez le problème en une phrase (qui l'a signalé, quoi, quand). | 문제를 한 문장으로 적어 주세요 (누가, 무엇을, 언제).
+Problème sur un lot : retrait et information | 로트 문제: 회수와 알림
+Gestion, Plus › Hygiène › la fiche du lot › « Problème sur ce lot » : cochez chaque étape une fois faite. Rangez les preuves (mail à la DDPP, notes d'appel) dans le Drive. | 관리 화면, 더보기 › 위생 › 로트 기록 › ‘이 로트에 문제’: 단계를 마칠 때마다 체크하세요. 증빙(DDPP 메일, 통화 메모)은 Drive에 넣으세요.
+Étiquettes des gâteaux | 케이크 라벨
+L'étiquette ne reprend que ce que vous avez relu ici, avec les allergènes du site (ou de la recette pour la gamme pro), la date limite et le numéro du lot. | 라벨에는 여기서 확인한 글과, 사이트의 알레르기 성분(사업자용 제품은 레시피), 유통기한, 로트 번호만 들어가요.
+Relu | 확인함
+À relire | 확인 필요
+Fiche non validée | 정보 미확인
+Par exemple : au réfrigérateur, entre 0 et 4 °C. | 예: 냉장고에서 0~4 °C.
+Ingrédients, du plus lourd au plus léger | 재료 (무거운 것부터)
+Proposés depuis la recette : vérifiez les noms et l'ordre (les ingrédients comptés à la pièce, comme les œufs, sont à la fin : placez-les selon leur poids). Les allergènes s'impriment en gras. | 레시피에서 가져왔어요. 이름과 순서를 확인하세요 (달걀처럼 개수로 센 재료는 맨 뒤에 있으니 무게에 맞게 옮기세요). 알레르기 성분은 굵게 인쇄돼요.
+J'ai relu ce texte | 이 글을 확인했어요
+Problème en cours : ne se livre plus | 문제 진행 중: 더 이상 배송하지 않아요
+Je livre quand même (seulement si la gestion signale la distance : dites pourquoi dans la note) | 그래도 배송해요 (관리 화면이 거리를 알릴 때만: 메모에 이유를 적어 주세요)
+La distance de ce restaurant n'est pas encore tapée (Plus › Obligations › Volumes › Restaurants livrés). | 이 레스토랑의 거리를 아직 입력하지 않았어요 (더보기 › 의무 › 물량 › 배달한 레스토랑).
+Ce restaurant est plus loin que la distance de la dérogation : la DDPP doit avoir donné son accord avant de livrer. | 이 레스토랑은 예외 허가 거리보다 멀어요. 배송 전에 DDPP의 동의가 있어야 해요.
+La distance de ce restaurant n'est pas encore tapée (Plus › Obligations › Volumes › Restaurants livrés). Pour noter le départ quand même, cochez « Je livre quand même » et dites pourquoi dans la note. | 이 레스토랑의 거리를 아직 입력하지 않았어요 (더보기 › 의무 › 물량 › 배달한 레스토랑). 그래도 출발을 기록하려면 ‘그래도 배송해요’를 체크하고 메모에 이유를 적어 주세요.
+Ce restaurant est plus loin que la distance de la dérogation : la DDPP doit avoir donné son accord avant de livrer. Pour noter le départ quand même, cochez « Je livre quand même » et dites pourquoi dans la note. | 이 레스토랑은 예외 허가 거리보다 멀어요. 배송 전에 DDPP의 동의가 있어야 해요. 그래도 출발을 기록하려면 ‘그래도 배송해요’를 체크하고 메모에 이유를 적어 주세요.
+Écrivez dans la note pourquoi vous livrez quand même (distance vérifiée, accord de la DDPP…). | 그래도 배송하는 이유를 메모에 적어 주세요 (거리 확인, DDPP 동의…).
+Voir les restaurants | 레스토랑 보기
+Un problème est en cours sur ce lot : il ne se vend plus et ne se livre plus, ses étiquettes ne s'impriment plus jusqu'à la clôture du problème. | 이 로트에 문제가 진행 중이에요. 문제를 마칠 때까지 팔지도, 배송하지도 않고, 라벨도 인쇄하지 않아요.
+Un seul total pour tous les gâteaux : la réglementation fixe un plafond par catégorie de produits. Demandez à la DDPP dans quelle catégorie vont vos gâteaux. D'ici là, « Sous le seuil saisi » veut dire seulement : sous le chiffre tapé plus bas, pas « en règle ». | 모든 케이크를 합한 하나의 합계예요. 규정은 제품 분류마다 한도를 정해요. 케이크가 어느 분류인지 DDPP에 물어보세요. 그때까지 ‘입력한 기준 이하’는 아래에 입력한 숫자보다 적다는 뜻일 뿐, ‘규정에 맞다’는 뜻이 아니에요.
+Ces chiffres sont confirmés par la DDPP pour la catégorie de mes gâteaux (à cocher à chaque changement) | DDPP가 제 케이크 분류에 맞게 확인한 숫자예요 (바꿀 때마다 체크하세요)
+Retirer la confirmation | 확인 취소
+Vous avez proposé ce lien : c'est à Youngmi de le vérifier. | 이 링크를 제안한 사람이에요. 확인은 영미가 해요.
+Aucun gâteau vendu sans poids. | 무게 없이 판 케이크가 없어요.
+Les autres gâteaux (pas vendus ces dernières semaines) | 다른 케이크 (최근 몇 주 동안 팔지 않음)
+Le gâteau contient du gluten : dans les ingrédients, écrivez la céréale (par exemple « farine de blé ») pour qu'elle s'imprime en gras. | 이 케이크에는 글루텐이 있어요. 재료에 곡물 이름(예: « farine de blé »)을 적어야 굵게 인쇄돼요.
+Aucune réception notée (expliquez dans la note) | 기록한 입고 없음 (메모에 이유를 적어 주세요)
+Note (obligatoire si rien n'est coché) | 메모 (아무것도 체크하지 않으면 필수)
+Produits du placard, réception non relevée… | 찬장 재료, 기록하지 않은 입고…
+Lots livrés non notés (expliquez dans la note) | 배송한 로트를 기록하지 않음 (메모에 이유를 적어 주세요)
+Note (obligatoire si aucun lot n'est coché) | 메모 (로트를 체크하지 않으면 필수)
+Traçabilité | 추적
+Traçabilité incomplète | 추적 정보 불완전
+Aucune réception notée | 기록한 입고 없음
+Lots livrés non notés | 배송한 로트를 기록하지 않음
+Cochez les réceptions utilisées, ou « Aucune réception notée » en expliquant pourquoi dans la note. | 사용한 입고를 체크하거나, ‘기록한 입고 없음’을 체크하고 메모에 이유를 적어 주세요.
+Cochez les lots livrés, ou « Lots livrés non notés » en expliquant pourquoi dans la note. | 배송한 로트를 체크하거나, ‘배송한 로트를 기록하지 않음’을 체크하고 메모에 이유를 적어 주세요.
+Écrivez dans la note pourquoi rien n'est relié (produits du placard, réception non relevée, fournée non notée…). | 연결된 기록이 없는 이유를 메모에 적어 주세요 (찬장 재료, 기록하지 않은 입고, 기록하지 않은 생산…).
+Le numéro de lot n'a pas pu être attribué : réessayez. | 로트 번호를 정하지 못했어요. 다시 시도해 주세요.
+Le froid reste attendu. | 냉장 온도 기록은 여전히 필요해요.
+Livraisons à vérifier | 확인할 배송
+Pendant la période, ces livraisons ont été notées sans leurs lots : ce lot en faisait peut-être partie. | 이 기간에 로트 없이 기록된 배송이에요. 이 로트가 들어 있었을 수 있어요.
+Les commandes de ce gâteau, et les commandes sur mesure, retirées ou livrées entre la fournée et sa date limite : à vérifier une par une. | 생산한 날부터 유통기한까지 찾아가거나 배달한 이 케이크의 주문과 맞춤 주문이에요. 하나씩 확인하세요.
+Traçabilité incomplète : aucune réception reliée à la fournée. | 추적 정보 불완전: 이 생산에 연결된 입고가 없어요.
+Déclarer le rappel sur RappelConso | RappelConso에 회수 신고
+Obligatoire dès qu'un rappel auprès des consommateurs est décidé : le lot a pu être reçu par des particuliers, ou servi par un restaurant à ses clients. Déclarer sur rappel.conso.gouv.fr, après avoir informé la DDPP. Demandez à chaque restaurant si des gâteaux ont été servis ou s'il les a encore. Sans objet seulement si aucun gâteau du lot n'a pu arriver chez un consommateur (tout est encore chez vous ou chez le restaurant, ou jeté) : dites où sont les gâteaux, et ce qu'a dit la DDPP. | 소비자 대상 회수를 정하면 의무예요. 개인 고객이 이 로트를 받았거나, 레스토랑이 손님에게 냈을 수 있을 때예요. DDPP에 알린 뒤 rappel.conso.gouv.fr에 신고하세요. 레스토랑마다 케이크를 손님에게 냈는지, 아직 가지고 있는지 물어보세요. 로트의 케이크가 소비자에게 하나도 가지 않았을 때만 해당 없음이에요 (모두 아직 가게나 레스토랑에 있거나 버렸을 때). 케이크가 어디 있는지, DDPP가 뭐라고 했는지 적어 주세요.
+Note (obligatoire si sans objet) | 메모 (해당 없음이면 필수)
+Chaque étape doit être faite, ou sans objet avec sa raison. La démarche d'Obligations se clôt en même temps. | 모든 단계가 완료되었거나, 이유와 함께 해당 없음이어야 해요. 의무의 할 일도 함께 닫혀요.
+Bilan | 정리
+Ce qui s'est passé, ce qui a été fait, ce que la DDPP a répondu. | 무슨 일이 있었는지, 무엇을 했는지, DDPP가 뭐라고 답했는지.
+Le mail à la DDPP, les notes d'appel : rangés dans le Drive. | DDPP에 보낸 메일, 통화 메모: Drive에 넣어 두세요.
+Clore ce problème et sa démarche ? | 이 문제와 할 일을 닫을까요?
+Problème clos, et sa démarche dans Obligations avec lui. | 문제를 끝냈고, 의무의 할 일도 함께 닫았어요.
+Retirer le lot est toujours à faire. | 로트 회수는 언제나 해야 해요.
+Dites pourquoi cette étape est sans objet (et qui l'a dit : la DDPP, par exemple). | 이 단계가 왜 해당 없는지 적어 주세요 (누가 그렇게 말했는지도, 예: DDPP).
+Il reste des étapes : marquez chacune « C'est fait » ou « Sans objet » avec sa raison. | 남은 단계가 있어요. 하나씩 ‘완료’ 또는 이유와 함께 ‘해당 없음’으로 표시하세요.
+Écrivez le bilan : ce qui s'est passé, ce qui a été fait, ce que la DDPP a répondu. | 정리를 적어 주세요: 무슨 일이 있었는지, 무엇을 했는지, DDPP가 뭐라고 답했는지.
+Collez le lien de la preuve rangée dans le Drive (mail à la DDPP, notes d'appel) : la démarche d'Obligations se clôt avec le problème. | Drive에 넣은 증빙(DDPP에 보낸 메일, 통화 메모)의 링크를 붙여 넣으세요. 의무의 할 일이 문제와 함께 닫혀요.
+Cette démarche suit un problème sur un lot encore ouvert : clôturez-le dans Hygiène (fiche du problème) ; la démarche se clôt avec lui. | 이 할 일은 아직 열려 있는 로트 문제를 따라가요. 위생(문제 화면)에서 문제를 끝내면 할 일도 함께 닫혀요.
+Mention de la date | 날짜 문구
+À consommer jusqu'au (date limite : gâteau à la crème, frais) | À consommer jusqu'au (소비기한: 크림 케이크, 생과자)
+À consommer de préférence avant le (gâteau sec, biscuit) | À consommer de préférence avant le (마른 과자, 비스킷)
+Poids net (facultatif) | 순중량 (선택)
+Pour un gâteau vendu emballé à poids fixe. | 정해진 무게로 포장해 파는 케이크일 때.
+Écrivez la liste des ingrédients : elle est obligatoire sur l'étiquette. | 재료 목록을 적어 주세요. 라벨에 꼭 들어가야 해요.
+Choisissez la mention de la date. | 날짜 문구를 고르세요.
+La liste d'ingrédients manque : saisissez la recette du gâteau, puis relisez le texte de l'étiquette (Hygiène › Appareils › Étiquettes des gâteaux). | 재료 목록이 없어요. 케이크 레시피를 입력한 뒤 라벨 글을 확인하세요 (위생 › 기기 › 케이크 라벨).
+Choisissez la mention de la date (date limite de consommation ou de préférence) dans Hygiène › Appareils › Étiquettes des gâteaux. | 위생 › 기기 › 케이크 라벨에서 날짜 문구(소비기한 또는 품질유지기한)를 고르세요.
+Non vérifié | 확인 안 됨
+en montant, indicatif | 금액 기준, 참고용
+Les chiffres préremplis sont ceux de la réglementation, à vérifier : changez-les ou confirmez-les dans « Plafonds de la dérogation ». D'ici là, une semaine sous le plafond reste « non vérifiée ». | 미리 넣은 숫자는 규정 기준이라 확인이 필요해요. ‘면제 한도’에서 바꾸거나 확인하세요. 그때까지 한도 아래인 주도 ‘확인 안 됨’으로 남아요.
+Commandes sur mesure | 맞춤 주문
+Ces commandes n'ont pas de gâteau de la carte : tapez leur poids total pour que les kilos de la semaine soient complets. | 이 주문에는 메뉴의 케이크가 없어요. 주간 킬로그램이 완전하도록 전체 무게를 입력하세요.
+Poids total (g) | 전체 무게 (g)
+Un poids en grammes, entre 1 et 200 000. | 1에서 200 000 사이의 그램 무게를 입력하세요.
+Commande introuvable. | 주문을 찾을 수 없어요.
+Distance de livraison à vérifier avant la prochaine commande | 다음 주문 전에 배송 거리 확인
+Gestion : Plus › Obligations › Volumes › Restaurants livrés : tapez la distance depuis la cuisine. Plus loin que la distance de la dérogation : la DDPP des Hauts-de-Seine, avant de livrer. | 관리: 더보기 › 의무 › 물량 › 배송하는 레스토랑에서 주방부터의 거리를 입력하세요. 면제 거리보다 멀면 배달하기 전에 오드센 DDPP에 문의하세요.
+Lien proposé, à vérifier | 제안된 링크, 확인 필요
+C'est le bon document | 맞는 서류예요
+Ouvrez-le pour vérifier ; si ce n'est pas le bon, touchez « Modifier » et collez le bon lien. | 열어서 확인하세요. 맞지 않으면 ‘수정’을 눌러 맞는 링크를 붙여 넣으세요.
+Merci : le document est vérifié. | 고마워요. 서류를 확인했어요.
+Proposer des liens (Olivier) | 링크 제안 (올리비에)
+Une ligne par pièce : le code, le lien du Drive, une note facultative, séparés par une barre verticale. Un lien vérifié par Youngmi n'est jamais remplacé. | 서류마다 한 줄: 코드, Drive 링크, 선택 메모를 세로 막대(|)로 나눠요. 영미가 확인한 링크는 절대 바뀌지 않아요.
+Liens | 링크
+Proposer | 제안
+Réservé à Olivier. | 올리비에만 할 수 있어요.
+Volumes | 물량
+Documents | 서류
+Plafonds à confirmer par la DDPP. | DDPP 확인이 필요한 한도예요.
+Les chiffres préremplis sont ceux de la réglementation, à vérifier : changez-les ou confirmez-les dans « Plafonds de la dérogation ». | 미리 넣은 숫자는 규정 기준이라 확인이 필요해요. ‘면제 한도’에서 바꾸거나 확인하세요.
+Plafonds pas encore saisis. | 한도를 아직 입력하지 않았어요.
+Tapez ceux que la DDPP a confirmés dans « Plafonds de la dérogation », plus bas. D'ici là, aucune alerte. | 아래 ‘면제 한도’에 DDPP가 확인한 숫자를 적으세요. 그때까지는 알림이 없어요.
+Ventes par semaine | 주별 판매
+Les kilos vendus aux restaurants (B2B) et à tous, chaque semaine, d'après le poids d'une pièce de chaque gâteau. La semaine en cours et la suivante comptent aussi les commandes confirmées. Une alerte apparaît dans « À faire » quand les restaurants approchent le plafond. | 케이크 한 개의 무게로 계산한, 주마다 레스토랑(B2B)과 전체에 판 킬로그램이에요. 이번 주와 다음 주는 확정된 주문도 포함해요. 레스토랑 물량이 한도에 가까워지면 ‘할 일’에 알림이 생겨요.
+Prévu | 예정
+À compléter | 채워야 해요
+Sous le seuil saisi | 입력한 기준 이하
+Plafond proche | 한도에 가까움
+Plafond dépassé | 한도 초과
+Aucune vente | 판매 없음
+Restaurants | 레스토랑
+En tout | 전체
+Part des restaurants | 레스토랑 비율
+en montant | 금액 기준
+Plafond | 한도
+Les clients professionnels actifs. La dérogation limite la distance de livraison ; tapez la distance depuis la cuisine (un itinéraire Google Maps suffit). Un restaurant qui arrête passe « inactif » dans sa fiche et sort de cette liste. | 활동 중인 사업자 고객이에요. 면제에는 배달 거리 제한이 있어요. 주방에서의 거리를 적으세요 (구글 지도 경로면 충분해요). 거래를 멈춘 레스토랑은 고객 정보에서 ‘비활동’으로 바꾸면 이 목록에서 빠져요.
+Aucun client professionnel actif. | 활동 중인 사업자 고객이 없어요.
+Distance (km) | 거리 (km)
+Distance à saisir | 거리 입력 필요
+Poids d'une pièce | 한 개의 무게
+Poids d'une pièce (g) | 한 개의 무게 (g)
+Les kilos se calculent avec ce poids, jamais avec un poids deviné. La recette propose un poids (la somme de ses ingrédients en grammes) : pesez de préférence une pièce finie, puis touchez « Confirmer ». | 킬로그램은 이 무게로만 계산하고, 절대 짐작하지 않아요. 레시피가 무게(재료 그램의 합)를 제안해요. 가능하면 완성된 케이크 한 개를 재고 ‘확인’을 누르세요.
+Pas de recette pesée : pesez une pièce finie. | 무게가 있는 레시피가 없어요. 완성된 케이크 한 개를 재 주세요.
+Plafonds de la dérogation | 면제 한도
+Préremplis avec les chiffres de la réglementation (arrêté du 8 juin 2006), à faire confirmer par la DDPP des Hauts-de-Seine : la gestion ne les tient jamais pour sûrs. | 규정(2006년 6월 8일 고시)의 숫자로 미리 넣었어요. 오드센 DDPP의 확인이 필요해요. 관리 화면은 이 숫자를 절대 확실하다고 보지 않아요.
+Plafond par semaine (kg) | 주별 한도 (kg)
+Plafond si la part des restaurants dépasse la limite (kg) | 레스토랑 비율이 기준을 넘을 때의 한도 (kg)
+Limite de la part des restaurants (%) | 레스토랑 비율 기준 (%)
+Distance maximale (km) | 최대 거리 (km)
+Alerte à partir de (% du plafond) | 알림 시작 (한도의 %)
+Ces chiffres sont confirmés par la DDPP | DDPP가 확인한 숫자예요
+Documents de preuve | 증빙 서류
+Les pièces à montrer lors d'un contrôle, rangées dans le Drive ; la gestion garde seulement le lien, jamais de copie. Une pièce sans lien est « à ajouter ». Avec une date de validité, la gestion prévient 30 jours avant dans « À faire ». | 점검 때 보여 줄 서류로, Drive에 보관해요. 관리 화면에는 링크만 있고 사본은 절대 없어요. 링크가 없는 서류는 ‘추가 필요’예요. 유효 기간이 있으면 30일 전에 ‘할 일’에서 알려 줘요.
+Lien à ajouter | 링크 추가 필요
+Expiré | 기간 만료
+À renouveler bientôt | 곧 갱신 필요
+Prêt | 준비됨
+Retirés | 뺀 서류
+Lien dans le Drive | Drive 링크
+Valable jusqu'au (facultatif) | 유효 기간 (선택)
+Retirer de la liste | 목록에서 빼기
+Remettre dans la liste | 목록에 다시 넣기
+Retirer ce document de la liste ? Il restera dans « Retirés ». | 이 서류를 목록에서 뺄까요? ‘뺀 서류’에 남아요.
+Ajouter un document | 서류 추가
+Aucun document. | 서류가 없어요.
+Récépissé de la déclaration d'activité (Cerfa 13984) | 영업 신고 접수증 (Cerfa 13984)
+Récépissé de la dérogation à l'agrément (Cerfa 13982) | 위생 승인 면제 접수증 (Cerfa 13982)
+CAP Pâtisserie de Youngmi | 영미의 제과 CAP
+CAP Boulangerie de Youngmi | 영미의 제빵 CAP
+Attestation d'assurance responsabilité civile | 배상 책임 보험 증명서
+Rapport de vérification de l'extincteur | 소화기 점검 보고서
+Rapport de vérification de l'installation électrique | 전기 설비 점검 보고서
+Plan de maîtrise sanitaire | 위생 관리 계획
+Registre des traitements (RGPD) | 개인정보 처리 대장 (RGPD)
+Un document de preuve arrive à échéance | 증빙 서류의 기한이 다가와요
+Gestion : Plus › Obligations › Documents. Rangez le nouveau document dans le Drive, puis collez son lien et sa date de validité. | 관리 화면: 더보기 › 의무 › 서류. 새 서류를 Drive에 넣고 링크와 유효 기간을 붙여 넣으세요.
+Volumes de la dérogation : plafond proche ou dépassé | 면제 물량: 한도에 가깝거나 초과
+Gestion : Plus › Obligations › Volumes. En cas de dépassement : la DDPP des Hauts-de-Seine (mise à jour de la dérogation, Cerfa 13982, ou demande d'agrément), avant la livraison suivante. | 관리 화면: 더보기 › 의무 › 물량. 초과했다면 다음 배달 전에 오드센 DDPP에 연락해요 (면제 갱신 Cerfa 13982, 또는 위생 승인 신청).
+Semaine | 주
+Document | 서류
+Poids retiré. | 무게를 지웠어요.
+Poids enregistré. | 무게를 저장했어요.
+Distance enregistrée. | 거리를 저장했어요.
+Plafonds enregistrés. | 한도를 저장했어요.
+Document enregistré. | 서류를 저장했어요.
+Document retiré de la liste : il reste dans « Retirés ». | 서류를 목록에서 뺐어요. ‘뺀 서류’에 남아 있어요.
+Document remis dans la liste. | 서류를 목록에 다시 넣었어요.
+Un poids en grammes, entre 1 et 20 000. | 1에서 20,000 사이의 그램으로 적어 주세요.
+Restaurant introuvable. | 레스토랑을 찾을 수 없어요.
+Une distance en kilomètres, entre 0 et 2 000. | 0에서 2,000 사이의 킬로미터로 적어 주세요.
+Un nombre positif, s'il vous plaît (par exemple 250). | 양수를 적어 주세요 (예: 250).
+Document introuvable. | 서류를 찾을 수 없어요.
+Donnez un titre au document. | 서류 제목을 적어 주세요.
+La date de validité n'est pas une date. | 유효 기간이 날짜가 아니에요.
+Titre | 제목
+Confirmer | 확인
+Ouvrir | 열기
+Texte de l'étiquette relu et enregistré. | 라벨 글을 확인하고 저장했어요.
+Écrivez les conditions de conservation (par exemple : au réfrigérateur, entre 0 et 4 °C). | 보관 방법을 적어 주세요 (예: 냉장고에서 0~4 °C).
+Exploitant sur les étiquettes | 라벨의 사업자
+Madame Cho, numéro et rue, code postal et ville | Madame Cho, 번지와 거리, 우편번호와 도시
+Le nom et l'adresse imprimés sur chaque étiquette (l'adresse de production déclarée à la DDPP). | 라벨마다 인쇄되는 이름과 주소 (DDPP에 신고한 생산 주소).
+inconnus (ni site, ni recette) | 알 수 없음 (사이트도 레시피도 없음)
+À faire | 할 일
+Texte trop long pour cette étiquette : raccourcissez la liste d'ingrédients ou choisissez la planche A4. | 이 라벨에는 글이 너무 길어요. 재료 목록을 줄이거나 A4 시트를 고르세요.
 TXT;
 }
 
@@ -1873,6 +2416,60 @@ function coreen_motifs(): array {
         ['/^([A-Z]{1,6}-?\d{4}-\d{4}) : le PDF a été modifié\.$/u', fn($m) => $m[1] . ': PDF가 바뀌었어요.'],
         ['/^([A-Z]{1,6}-?\d{4}-\d{4}) : la ligne a été modifiée, ou une ligne avant elle a été retirée\.$/u', fn($m) => $m[1] . ': 이 줄이 바뀌었거나 앞의 줄이 지워졌어요.'],
         ['/^([A-Z]{1,6}-?\d{4}-\d{4}) : la série saute \(numéro (\d+) attendu\)\.$/u', fn($m) => $m[1] . ': 번호가 건너뛰었어요 (' . $m[2] . '번이어야 해요).'],
+        // Écran Obligations (spécification 004)
+        ['/^En retard depuis le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '부터 늦음' : null],
+        ['/^Avant le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 전까지' : null],
+        ['/^Aujourd\'hui, (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '오늘, ' . $d : null],
+        ['/^Pour le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '까지' : null],
+        ['/^Fait le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 완료' : null],
+        ['/^Envoyé le (.+), réponse attendue · échéance du (.+) passée$/u', fn($m) => ($d = coreen_date($m[1])) && ($e = coreen_date($m[2])) ? $d . ' 보냄, 답 기다림 · 기한 ' . $e . ' 지남' : null],
+        ['/^Échéance modifiée\.(?: Démarches ouvertes mises à jour : (\d+)\.)?(?: Démarches à revoir \(date d\'avant\) : (\d+)\.)?$/u',
+         fn($m) => '정기 일정을 수정했어요.' . (($m[1] ?? '') !== '' ? ' 열린 할 일 ' . $m[1] . '개를 고쳤어요.' : '') . (($m[2] ?? '') !== '' ? ' 다시 볼 할 일(수정 전 날짜): ' . $m[2] . '개.' : '')],
+        ['/^Mail du lundi « Obligations de la semaine » \((\d{4}-S\d{2})\) : (l\'envoi a échoué|envoyé|en cours)\.$/u',
+         fn($m) => '월요일 메일 ‘이번 주 의무’ (' . $m[1] . '): ' . ['l\'envoi a échoué' => '보내지 못했어요.', 'envoyé' => '보냈어요.', 'en cours' => '보내는 중이에요.'][$m[2]]],
+        ['/^Envoyé le (.+), réponse attendue$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 보냄, 답 기다림' : null],
+        ['/^Prochaine : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '다음: ' . $d : null],
+        ['/^Rappel (\d+) jours avant$/u', fn($m) => $m[1] . '일 전 알림'],
+        ['/^(\d+) jours avant$/u', fn($m) => $m[1] . '일 전'],
+        ['/^(Haute|Normale|Basse) · importante : preuve obligatoire$/u', fn($m) => ['Haute' => '높음', 'Normale' => '보통', 'Basse' => '낮음'][$m[1]] . ' · 중요: 증빙 필수'],
+        ['/^Dernière reprise : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '최근 넣은 날: ' . $d : null],
+        ['/^Reprise : (\d+) démarche\(s\) et (\d+) échéance\(s\) ajoutée\(s\), (\d+) doublon\(s\) écarté\(s\)(?:, lignes refusées : ([\d, ]+))?\.$/u',
+         fn($m) => '넣기: 할 일 ' . $m[1] . '개, 정기 일정 ' . $m[2] . '개 추가, 중복 ' . $m[3] . '개 제외' . (isset($m[4]) ? ', 거절된 줄: ' . $m[4] : '') . '.'],
+        ['/^(\d+) sur (\d+)$/u', fn($m) => $m[2] . '번 중 ' . $m[1] . '번'],
+        ['/^Relevés de froid du jour : (\d+) sur (\d+)$/u', fn($m) => '오늘 온도 기록: ' . $m[2] . '번 중 ' . $m[1] . '번'],
+        ['/^(\d+) hors plage$/u', fn($m) => '범위 밖 ' . $m[1] . '번'],
+        ['/^(\d+) corrigé\(s\)$/u', fn($m) => '수정 ' . $m[1] . '개'],
+        ['/^(\d+) froid$/u', fn($m) => '온도 ' . $m[1] . '번'],
+        ['/^(\d+) réception\(s\)$/u', fn($m) => '입고 ' . $m[1] . '개'],
+        ['/^(\d+) fournée\(s\)$/u', fn($m) => '생산 ' . $m[1] . '개'],
+        ['/^(\d+) livraison\(s\)$/u', fn($m) => '배달 ' . $m[1] . '개'],
+        ['/^Date limite : (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? '유통기한: ' . $d : null],
+        ['/^(Départ|Arrivée) (\d{2}:\d{2})$/u', fn($m) => ($m[1] === 'Départ' ? '출발 ' : '도착 ') . $m[2]],
+        ['/^(-?[\d,]+ °C) à (-?[\d,]+ °C)$/u', fn($m) => $m[1] . ' ~ ' . $m[2]],
+        ['/^(-?[\d,]+ °C) ou (moins|plus)$/u', fn($m) => $m[1] . ($m[2] === 'moins' ? ' 이하' : ' 이상')],
+        ['/^Fournée notée : lot (.+)\.$/u', fn($m) => '생산을 기록했어요: 로트 ' . $m[1] . '.'],
+        ['/^Jour concerné : (.+)\.$/u', fn($m) => ($d = coreen_date($m[1])) ? '해당 날짜: ' . $d . '.' : null],
+        ['/^Les relevés et les photos sont gardés (\d+) ans, puis effacés par la tâche de nuit\.$/u', fn($m) => '기록과 사진은 ' . $m[1] . '년 동안 보관한 뒤 밤 작업이 지워요.'],
+        ['/^Température hors plage \((.+)\) : écrivez ce que vous avez fait \(porte fermée, produits déplacés ou jetés, réglage…\)\.$/u', fn($m) => '범위 밖 온도예요 (' . (coreen_motif($m[1]) ?? $m[1]) . '). 어떻게 했는지 적어 주세요 (문 닫음, 제품을 옮기거나 버림, 온도 조절…).'],
+        ['/^Problème clos le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 문제 끝남' : null],
+        ['/^Lot (\d{6}-[A-Z0-9]+-\d+)\.$/u', fn($m) => '로트 ' . $m[1] . '.'],
+        ['/^Fait le (.+) à (\d{2}:\d{2})$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' ' . $m[2] . ' 완료' : null],
+        ['/^Semaine du (.+)$/u', fn($m) => ($d = coreen_date(rtrim($m[1], '.'))) ? $d . ' 주' . (str_ends_with($m[1], '.') ? '.' : '') : null],
+        ['/^Document n° (\d+)\.$/u', fn($m) => '서류 ' . $m[1] . '번.'],
+        ['/^(\d+) gâteau\(x\) sans poids : kilos incomplets$/u', fn($m) => '무게 없는 케이크 ' . $m[1] . '개: 킬로그램이 불완전해요'],
+        ['/^(\d+) à saisir$/u', fn($m) => $m[1] . '개 입력 필요'],
+        ['/^Proposé d\'après la recette : (\d+) g\. Pesez une pièce finie si possible\.$/u', fn($m) => '레시피 기준 제안: ' . $m[1] . ' g. 가능하면 완성된 케이크를 재 주세요.'],
+        ['/^Plus loin que ([\d,]+) km$/u', fn($m) => $m[1] . ' km보다 멀어요'],
+        ['/^Valable jusqu\'au (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '까지 유효' : null],
+        ['/^Confirmés le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 확인됨' : null],
+        ['/^Liens proposés : (\d+)(?: ; lignes refusées : ([\d, ]+))?\.$/u', fn($m) => '제안한 링크: ' . $m[1] . '개' . (!empty($m[2]) ? ', 거부된 줄: ' . $m[2] : '') . '.'],
+        ['/^Restaurant n° (\d+)\.$/u', fn($m) => '레스토랑 ' . $m[1] . '번.'],
+        ['/^(\d+) commande\(s\) sur mesure sans poids : kilos incomplets$/u', fn($m) => '무게 없는 맞춤 주문 ' . $m[1] . '개: 킬로그램이 불완전해요'],
+        ['/^Sans objet, noté le (.+) à (\d{2}:\d{2})$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' ' . $m[2] . ' 해당 없음으로 기록' : null],
+        ['/^« Pas de production » est noté, mais (\d+) commande\(s\) sont retirées ou livrées ce jour-là\.$/u', fn($m) => '‘생산 없음’이 기록되어 있지만, 이날 찾아가거나 배달한 주문이 ' . $m[1] . '개 있어요.'],
+        ['/^(\d+) commande\(s\) confirmée\(s\) ou remise\(s\) aujourd\'hui : le froid reste à relever\. Si une commande est annulée, changez-la d\'abord\.$/u', fn($m) => '오늘 확정되거나 전달된 주문이 ' . $m[1] . '개 있어요. 냉장 온도는 기록해야 해요. 취소된 주문이면 먼저 주문을 바꾸세요.'],
+        ['/^Le lot (\S+) a un problème en cours : il ne se livre plus\. Retirez-le de la livraison \(Plus › Hygiène › la fiche du lot\)\.$/u', fn($m) => '로트 ' . $m[1] . '에 문제가 진행 중이라 더 이상 배송하지 않아요. 배송에서 빼 주세요 (더보기 › 위생 › 로트 기록).'],
+        ['/^Modifiée : (.+)$/u', fn($m) => '수정됨: ' . (['quoi' => '할 일', 'où' => '어디서', 'pourquoi' => '왜', 'pour qui' => '누구의 일', 'échéance' => '기한', 'date à confirmer' => '날짜 확인 필요', 'rappel' => '알림', 'priorité' => '우선순위', 'importante' => '중요', 'origine' => '어디서 온 일', 'état' => '상태'][$m[1]] ?? $m[1])],
     ];
     return $p;
 }

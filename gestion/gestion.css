@@ -835,3 +835,109 @@ html:lang(ko) .par::after{content:" 님"}
 .defs .remises{list-style:none;padding:0}
 .defs .remises li+li{margin-top:4px}
 .erreur p+p,.erreur p+form{margin-top:8px}
+/* Écran Obligations (spécification 004, lot 1) : l'état toujours écrit en toutes lettres, la couleur seulement en appui
+   (rouge = en retard ou dans son rappel ; ambre = en attente ou date à confirmer ; gris = plus tard ou fini) */
+.filtre-qui{display:flex;gap:8px;margin:4px 0 12px}
+.filtre-qui .btn{min-height:44px}
+.bandeau-obligations{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--p-change-f);color:var(--p-change-t);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.bandeau-obligations>span{flex:1 1 220px}
+.bandeau-obligations form{margin:0}
+.liste-demarches{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.carte-demarche{display:flex;flex-direction:column;gap:6px;padding:12px 14px;min-height:64px;border:1px solid var(--ligne);border-left:5px solid var(--fort);border-radius:12px;background:var(--carte);text-decoration:none;color:var(--texte)}
+.carte-demarche .d-titre{font-weight:500;font-size:16px;line-height:1.35}
+.d-etat{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.d-etat .ic{width:16px;height:16px}
+.d-pied{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.n-action{border-left-color:var(--p-action)}.n-action .d-etat{color:var(--p-action-t)}
+.n-bientot{border-left-color:var(--p-action)}.n-bientot .d-etat{color:var(--p-action-t)}
+.n-attente,.n-confirmer{border-left-color:var(--p-change)}.n-attente .d-etat,.n-confirmer .d-etat{color:var(--p-change-t)}
+.n-calme .d-etat,.n-fait .d-etat{color:var(--doux)}
+.n-fait{opacity:.85}
+.d-etat-grand{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:500;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--ivoire)}
+.d-etat-grand.n-action,.d-etat-grand.n-bientot{background:var(--p-action-f);color:var(--p-action-t)}
+.d-etat-grand.n-attente,.d-etat-grand.n-confirmer{background:var(--p-change-f);color:var(--p-change-t)}
+.n-attente.depassee{border-left-color:var(--p-action)}.n-attente.depassee .d-etat{color:var(--p-action-t)}.d-etat-grand.n-attente.depassee{background:var(--p-action-f);color:var(--p-action-t)}
+.historique-demarche{list-style:none;margin:0;padding:0}
+.historique-demarche li{padding:6px 0;border-bottom:1px solid var(--ligne)}
+.form-demarche .case{margin:6px 0}
+
+/* Hygiène (spécification 004, lot 2) */
+.bandeau-obligations.calme{background:var(--ivoire);color:inherit}
+.carte-appareil{border:1px solid var(--ligne);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:var(--carte)}
+.carte-appareil.fait{opacity:.85}
+.carte-appareil .l1{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px}
+.carte-appareil .l1 .petit{margin-left:auto}
+.form-froid .ligne-champs{align-items:flex-end}
+.form-froid .ligne-champs .btn{margin-bottom:2px}
+.liste-releves{list-style:none;margin:0 0 10px;padding:0}
+.liste-releves li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--ligne)}
+.liste-releves li:last-child{border-bottom:0}
+.liste-releves li>a{flex:1 1 200px;color:inherit;text-decoration:none}
+.liste-releves li.hors>a b{color:var(--p-action-t,#b3261e)}
+.liste-releves .form-arrivee{margin:0}
+.etiq-alerte{background:var(--p-action-f,#fde7e4);color:var(--p-action-t,#b3261e)}
+.form-releve fieldset.champ{border:0;padding:0;margin:0 0 12px}
+.form-releve fieldset .case{display:flex;margin:6px 0}
+.photo-releve{max-width:100%;max-height:420px;border-radius:10px;display:block}
+.ligne-duree{align-items:flex-end}
+.ligne-duree .nom-duree{flex:1 1 160px;padding-bottom:12px}
+.form-duree{margin:0}
+.pied-hygiene{margin:8px 0 24px}
+.rappel-hygiene{margin:0 0 14px}
+.rappel-hygiene a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--p-change-f);color:var(--p-change-t);text-decoration:none;font-weight:600}
+.rappel-hygiene.fait a{background:var(--ivoire);color:inherit;font-weight:400}
+.rappel-hygiene.hors a{background:var(--p-action-f,#fde7e4);color:var(--p-action-t,#b3261e)}
+/* Lot 3 : étiquettes des boîtes (planche A4 3 x 8 de 63,5 x 33,9 mm ; rouleau 55 x 30 mm) et problème sur un lot */
+.etapes-probleme{padding-left:20px;margin:0}
+.etapes-probleme li{margin:0 0 14px}
+.etapes-probleme li>b{display:block}
+.etapes-probleme li.fait>b{text-decoration:line-through;text-decoration-thickness:1px}
+.etapes-probleme .form-etape{margin-top:6px}
+.planche{display:grid;gap:0;background:#fff;color:#000;margin:0 auto}
+.etiquette{box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;gap:.3mm;font:7pt/1.15 Arial,Helvetica,sans-serif;color:#000;border:1px dashed #bbb;background:#fff}
+.etiquette b{font-weight:700}
+.etiquette .e-nom{font-size:8.5pt}
+.etiquette .e-ing{font-size:6pt}
+.etiquette .e-exp{font-size:6pt;margin-top:auto}
+.planche-a4{grid-template-columns:repeat(3,63.5mm);grid-auto-rows:33.9mm;column-gap:2.5mm;width:195.5mm}
+.planche-a4 .etiquette{width:63.5mm;height:33.9mm;padding:2mm 2.5mm}
+.planche-rouleau{grid-template-columns:55mm;grid-auto-rows:30mm;row-gap:3mm;width:55mm}
+.planche-rouleau .etiquette{width:55mm;height:30mm;padding:1.2mm 1.6mm;font-size:5.6pt;gap:0}
+.planche-rouleau .etiquette .e-nom{font-size:7pt}
+.planche-rouleau .etiquette .e-ing,.planche-rouleau .etiquette .e-exp{font-size:5pt}
+.etiquettes-trop{margin:0 0 12px}
+@page etiq-a4{size:A4;margin:12.9mm 7.2mm}
+@page etiq-rouleau{size:55mm 30mm;margin:0}
+@media print{
+ .page-etiquettes .tete,.page-etiquettes .ecran-seul,.page-etiquettes .bandeau-essai,.page-etiquettes .rappel-fr{display:none!important}
+ .planche-a4{page:etiq-a4;row-gap:0}
+ .planche-rouleau{page:etiq-rouleau;row-gap:0}
+ .planche-rouleau .etiquette{break-after:page}
+ .etiquette{border:0}
+ .page-etiquettes main,.page-etiquettes .page{padding:0!important;margin:0!important;max-width:none}
+ .page-etiquettes .planche{margin:0}
+ .etiquettes-bloquees .planche{display:none!important}
+}
+.etiquette .e-lot{white-space:nowrap}
+#brouillon-ddpp{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.92em}
+.etapes-probleme li>.aide,.etapes-probleme li>.petit{display:block}
+/* Obligations, lot 4 : volumes et documents */
+.liste-semaines,.liste-restaurants,.liste-poids,.liste-documents{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.semaine-volumes,.carte-document{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--ligne);border-left:5px solid var(--fort);border-radius:12px;background:var(--carte)}
+.semaine-volumes.n-retard{border-left-color:var(--p-action-t)}.semaine-volumes.n-bientot{border-left-color:var(--p-action)}
+.semaine-volumes.n-confirmer{border-left-color:var(--p-change)}.semaine-volumes.n-sans_date{border-left-color:var(--ligne);opacity:.8}
+.sv-tete,.doc-tete{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sv-chiffres{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px}
+.sv-chiffres>span{display:flex;flex-direction:column}
+@media (min-width:700px){.sv-chiffres{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.ligne-restaurant,.ligne-poids{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:flex-end;padding:8px 0;border-bottom:1px solid var(--ligne)}
+.ligne-poids>span{flex:1 1 100%}
+.form-km,.form-poids{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:0}
+.form-km .champ,.form-poids .champ{margin:0;max-width:220px}
+.ligne-poids.a-faire.vendu b{color:var(--p-action-t)}
+.carte-document .btn{align-self:flex-start}
+.carte-document details form{margin-top:8px}
+.doc-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.doc-actions form{margin:0}
+.etiquette .e-poids{font-size:6pt}
+.tableau td{overflow-wrap:anywhere}
+.case-bloquee{opacity:.75}

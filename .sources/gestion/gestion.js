@@ -544,9 +544,81 @@
   if (location.hash.length > 1 && /^#mail-|^#ecrire$/.test(location.hash)) ouvrir(location.hash.slice(1));
 })();
 
+/* Hygiène (spécification 004, lot 2) : la case « qu'avez-vous fait ? » quand la température sort de la plage,
+   la date limite d'une fournée reprise de la durée fixée, la photo d'étiquette réduite avant l'envoi. */
+(function () {
+  var d = document;
+  var lire = function (v) { v = (v || "").replace(",", ".").replace("−", "-").replace(/\s|°|C/g, ""); return /^-?\d{1,2}(\.\d)?$/.test(v) ? parseFloat(v) : null; };
+  var verifier = function (i) {
+    var bloc = d.getElementById(i.getAttribute("data-plage-action") + "-bloc"), z = d.getElementById(i.getAttribute("data-plage-action"));
+    if (!bloc) return;
+    var t = lire(i.value), mi = i.getAttribute("data-plage-min"), ma = i.getAttribute("data-plage-max");
+    var hors = t !== null && ((mi !== null && t < parseFloat(mi)) || (ma !== null && t > parseFloat(ma)));
+    bloc.hidden = !hors && !(z && z.value);
+    if (z) z.required = hors;
+  };
+  d.addEventListener("input", function (e) { if (e.target.matches && e.target.matches("[data-plage-action]")) verifier(e.target); });
+  Array.prototype.forEach.call(d.querySelectorAll("[data-plage-action]"), verifier);
+  var dlc = function () {
+    var s = d.getElementById("f-produit-fournee"), c = d.getElementById("f-dlc-fournee");
+    if (!s || !c) return;
+    var j; try { j = JSON.parse(s.getAttribute("data-durees") || "{}")[s.value]; } catch (x) { j = undefined; }
+    if (c.getAttribute("data-tape") === "1") return;
+    // Gâteau sans durée fixée : la date proposée pour le gâteau d'avant s'efface (jamais devinée)
+    if (j === undefined) { if (c.getAttribute("data-auto") === "1") { c.value = ""; c.removeAttribute("data-auto"); } return; }
+    var t = new Date((s.getAttribute("data-jour") || "") + "T12:00:00"); t.setDate(t.getDate() + j);
+    c.value = t.getFullYear() + "-" + ("0" + (t.getMonth() + 1)).slice(-2) + "-" + ("0" + t.getDate()).slice(-2);
+    c.setAttribute("data-auto", "1");
+  };
+  d.addEventListener("change", function (e) {
+    if (e.target.id === "f-produit-fournee") dlc();
+    if (e.target.id === "f-dlc-fournee") { e.target.setAttribute("data-tape", "1"); e.target.removeAttribute("data-auto"); }
+  });
+  // Une date déjà là (correction, formulaire refusé) n'est jamais remplacée à l'ouverture
+  var c0 = d.getElementById("f-dlc-fournee");
+  if (c0 && c0.value) c0.setAttribute("data-tape", "1"); else dlc();
+  // Une photo de téléphone (3 à 6 Mo) devient un JPEG d'environ 1600 px avant l'envoi ; sans ce geste, l'original part tel quel
+  d.addEventListener("change", function (e) {
+    var i = e.target;
+    if (!i.matches || !i.matches("input[type=file][data-reduire]") || !i.files || !i.files[0] || !window.DataTransfer || !window.createImageBitmap) return;
+    var max = parseInt(i.getAttribute("data-reduire"), 10) || 1600, f = i.files[0];
+    if (f.size < 900000 || !/^image\//.test(f.type)) return;
+    createImageBitmap(f).then(function (b) {
+      var r = Math.min(1, max / Math.max(b.width, b.height)), c = d.createElement("canvas");
+      c.width = Math.round(b.width * r); c.height = Math.round(b.height * r);
+      c.getContext("2d").drawImage(b, 0, 0, c.width, c.height);
+      c.toBlob(function (blob) {
+        if (!blob) return;
+        var t = new DataTransfer(); t.items.add(new File([blob], "etiquette.jpg", { type: "image/jpeg" })); i.files = t.files;
+      }, "image/jpeg", 0.82);
+    }).catch(function () {});
+  });
+})();
+
+/* Étiquettes (lot 3) : si le texte déborde d'une seule étiquette, l'impression est bloquée (rien n'est coupé ; audit n° 8, constat 14) */
+(function () {
+  var l = document.querySelectorAll(".planche .etiquette"), e = null;
+  for (var i = 0; i < l.length; i++) if (l[i].scrollHeight > l[i].clientHeight + 1 || l[i].scrollWidth > l[i].clientWidth + 1) { e = l[i]; break; }
+  if (!e) return;
+  document.body.classList.add("etiquettes-bloquees");
+  document.querySelectorAll("[data-imprimer]").forEach(function (b) { b.disabled = true; });
+  var p = document.createElement("p");
+  p.className = "erreur etiquettes-trop ecran-seul";
+  p.textContent = document.documentElement.getAttribute("lang") === "ko" ? "이 라벨에는 글이 너무 길어요. 재료 목록을 줄이거나 A4 시트를 고르세요." : "Texte trop long pour cette étiquette : raccourcissez la liste d'ingrédients ou choisissez la planche A4.";
+  e.parentNode.parentNode.insertBefore(p, e.parentNode);
+})();
+
 /* Pastilles (FR-041) : le nombre rouge sur l'icône de l'application, quand le téléphone ou l'ordinateur le permet */
 (function () {
   var n = parseInt(document.body.getAttribute("data-pastilles") || "", 10);
   if (isNaN(n) || !("setAppBadge" in navigator)) return;
   try { (n > 0 ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(function () {}); } catch (e) {}
+})();
+
+// Sous-onglets plus larges que l'écran : l'onglet ouvert reste visible (Obligations, lot 4)
+(function () {
+  document.querySelectorAll(".sous-onglets").forEach(function (n) {
+    var a = n.querySelector("a[aria-current]");
+    if (a && n.scrollWidth > n.clientWidth) n.scrollLeft += a.getBoundingClientRect().left - n.getBoundingClientRect().left - (n.clientWidth - a.offsetWidth) / 2;
+  });
 })();

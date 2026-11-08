@@ -109,8 +109,8 @@
 
 ## Phase 11 : Majuscules des noms et correction du nom (2026-11-08, demande d'Olivier, FR-042)
 
-- [X] T068 `nom_majuscules()` (gestion) et `nomMajuscules()` (formulaire du site), même règle ; `client_creer`, `client_modifier` ; reprise unique des fiches par la tâche de nuit (`noms_majuscules_reprise`, paramètre `noms_majuscules`) ; `autocapitalize="words"` ; « Corriger le nom ou les coordonnées » sur la fiche et la commande ; rappel avant d'émettre une facture ; coréen et manuel. Essais 45/45 et parcours 10/10 (hors dépôt, tests-gestion/noms)
-- [ ] T069 Feu vert d'Olivier sur la version exacte, publication (seule ou avec les factures, spécification 003), Journal des publications, Registre
+- [X] T068 `nom_majuscules()` (gestion) et `nomMajuscules()` (formulaire du site), même règle ; `client_creer`, `client_modifier` ; reprise unique des fiches par la tâche de nuit (`noms_majuscules_reprise`, paramètre `noms_majuscules`) ; `autocapitalize="words"` ; « Corriger le nom ou les coordonnées » sur la fiche et la commande ; rappel avant d'émettre une facture (avec la spécification 003) ; coréen, manuel et nouveauté « Les majuscules des noms » (pastille). Essais 45/45 et parcours 10/10 (hors dépôt, tests-gestion/noms)
+- [X] T069 Feu vert d'Olivier sur la version exacte, publication seule (b9d40d9, 08/11/2026 à 18:06, avant les factures de la spécification 003), Journal des publications l. 60, Registre
 
 ## Dependencies & Execution Order
 

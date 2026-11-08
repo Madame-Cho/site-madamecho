@@ -107,6 +107,12 @@ function assistant_outils_donnees(): array {
         ['name' => 'chiffres',
          'description' => 'Les chiffres d\'une période (par défaut les 7 derniers jours, aujourd\'hui compris) : ventes remises (nombre, chiffre d\'affaires HT et TTC, particuliers et professionnels séparés, panier moyen des particuliers, par canal, gâteaux les plus vendus), demandes reçues (par canal et par étape actuelle), annulations, et les visites du site madamecho.com (Matomo, mesurées depuis le 6 novembre 2026) : visites, pages vues, origine des visiteurs, demandes envoyées par le formulaire, scans du QR code.',
          'input_schema' => $objet(['du' => $date, 'au' => $date])],
+        ['name' => 'obligations',
+         'description' => 'Les démarches administratives et sanitaires de l\'écran Obligations (lecture seule) : celles à faire et en attente d\'une réponse, les plus urgentes d\'abord (en retard, bientôt, en attente, date à confirmer, plus tard), avec ce qu\'il faut faire, où le faire, pour qui, pour quand et leur état en toutes lettres. Avec fait : les dernières démarches faites ou sans objet. L\'assistant ne coche ni ne modifie jamais une démarche : Youngmi le fait dans Plus › Obligations.',
+         'input_schema' => $objet([
+             'fait' => ['type' => 'boolean', 'description' => 'true pour les démarches faites ou sans objet'],
+             'limite' => ['type' => 'integer', 'description' => 'Nombre de démarches (30 par défaut, 50 au plus)'],
+         ])],
     ];
 }
 
@@ -122,6 +128,7 @@ function assistant_outil_lire(string $nom, array $in): array {
             'agenda' => outil_agenda($in),
             'gateaux' => outil_gateaux($in),
             'chiffres' => outil_chiffres($in),
+            'obligations' => outil_obligations($in),
             default => ['erreur' => 'Outil inconnu : ' . $nom],
         };
     } catch (\Throwable $e) {
@@ -129,6 +136,20 @@ function assistant_outil_lire(string $nom, array $in): array {
         $r = ['erreur' => 'La lecture a échoué de notre côté : dis-le simplement à Youngmi, sans inventer.'];
     }
     return [ia_json($r), isset($r['erreur'])];
+}
+
+/** Les démarches de l'écran Obligations, en lecture seule (lot 1, T012). */
+function outil_obligations(array $in): array {
+    if (!function_exists(__NAMESPACE__ . '\\obligations_acces') || !obligations_acces()) return ['demarches' => 'non disponible pour ce compte (réservé à Youngmi et à Olivier)'];
+    $fait = ($in['fait'] ?? false) === true;
+    $l = array_slice(demarches_lister($fait ? 'fait' : 'a_faire', 'toutes', obligations_moi()), 0, ia_limite($in, 30));
+    $out = array_map(fn(array $d): array => array_filter([
+        'titre' => $d['titre'], 'etat' => $d['_etat']['texte'], 'quoi' => ia_txt($d['explication'], 600), 'ou' => $d['ou'],
+        'pour' => DEMARCHE_POUR[$d['pour_qui']] ?? $d['pour_qui'], 'pour_le' => $d['echeance'] !== '' ? ia_jour($d['echeance']) : '',
+        'priorite' => DEMARCHE_PRIORITES[(int)$d['priorite']] ?? '', 'importante' => (int)$d['importante'] === 1 ? 'oui : preuve obligatoire' : '',
+        'note' => $fait ? ia_txt($d['preuve_note'] !== '' ? $d['preuve_note'] : $d['raison'], 400) : '',
+    ], fn($v) => $v !== ''), $l);
+    return ['demarches' => $out ?: 'aucune', 'note' => 'Lecture seule : pour cocher, ajouter ou modifier, Youngmi va dans Plus › Obligations.'];
 }
 
 /** Une commande en une ligne de liste. */

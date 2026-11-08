@@ -352,6 +352,12 @@ function page_plus(): void {
     $s = '';
     // « Quoi de neuf » en tête, avec le point chocolat d'une nouveauté de l'outil (FR-041)
     $s = '<a class="ligne-menu" href="' . h(u('nouveautes')) . '">' . icone('cloche') . '<span><b>Quoi de neuf' . pastille_menu(0, pastilles()['outil'] ? 'outil' : '') . '</b><span class="petit">Ce qui est nouveau ou a changé, et les nouveautés de l\'outil</span></span></a>';
+    // Obligations (spécification 004), juste après « Quoi de neuf », avec son chiffre rouge ou son point ambre
+    if (function_exists(__NAMESPACE__ . '\\obligations_acces') && obligations_acces()) {
+        $nOb = obligations_urgentes();
+        $s .= '<a class="ligne-menu" href="' . h(u('obligations')) . '">' . icone('obligations') . '<span><b>Obligations' . pastille_menu($nOb, $nOb === 0 && (obligations_changees() || obligations_changees('echeance')) ? 'change' : '') . '</b><span class="petit">Démarches et échéances pour être en règle</span></span></a>';
+        if (function_exists(__NAMESPACE__ . '\\hygiene_pret') && hygiene_pret()) $s .= '<a class="ligne-menu" href="' . h(u('hygiene')) . '">' . icone('hygiene') . '<span><b>Hygiène</b><span class="petit">Froid, réceptions, fournées et livraisons du jour</span></span></a>';
+    }
     foreach ($l as [$href, $ic, $titre, $sous]) $s .= '<a class="ligne-menu" href="' . h($href) . '">' . icone($ic) . '<span><b>' . h($titre) . '</b><span class="petit">' . h($sous) . '</span></span></a>';
     $s .= '<a class="ligne-menu" href="' . h(u('deconnexion', ['j' => csrf()])) . '">' . icone('sortir') . '<span><b>Se déconnecter</b><span class="petit">' . h($u['email']) . '</span></span></a>';
     $c = titre_page('Plus', '') . '<nav class="menu" aria-label="Plus">' . $s . '</nav><p class="aide centre">Gestion Madame Cho · version du ' . h(date_fr(GESTION_VERSION, 'longue')) . '</p>';
@@ -562,6 +568,12 @@ function page_reglages(): void {
                 evenement('reglage', $on ? 'Enregistrement des demandes du site activé' : 'Enregistrement des demandes du site arrêté');
                 flash('ok', $on ? 'Les nouvelles demandes du site s\'ajouteront toutes seules ici (l\'email à contact@ continue d\'arriver).' : 'Les demandes du site ne s\'ajoutent plus ici ; elles arrivent toujours par email.');
                 break;
+            case 'obligations_mail':
+                if (!$admin || !function_exists(__NAMESPACE__ . '\\obligations_mail_relancer')) break;
+                $ancre = 'conservation';
+                $r = obligations_mail_relancer();
+                flash($r === 'envoye' ? 'ok' : 'erreur', ['envoye' => 'Le mail « Obligations de la semaine » est parti à contact@.', 'echec' => 'L\'envoi a encore échoué : prévenez Olivier (signature DKIM du site).', 'rien' => 'Rien à renvoyer.'][$r]);
+                break;
             case 'conservation':
                 if (!$admin) break;
                 $ancre = 'conservation';
@@ -754,6 +766,12 @@ function page_reglages(): void {
         $t = '<p>Chaque nuit : demandes sans suite effacées après 12 mois, clients inactifs après 3 ans, connexions après 6 mois.</p>'
            . definition(['Dernier passage de nuit' => h($nuit ? date_fr($nuit, 'heure') : 'pas encore'), 'Dernier effacement' => h(is_array($der) ? date_fr($der['le'], 'heure') . ' : ' . $der['demandes'] . ' demande(s), ' . $der['clients'] . ' client(s)' : 'aucun'),
                          'À effacer maintenant' => h(count($ap['demandes']) . ' demande(s), ' . count(array_unique(array_merge(array_column($ap['clients'], 'id'), array_column($ap['orphelins'], 'id')))) . ' client(s), ' . $ap['journal'] . ' ligne(s) de journal')]);
+        // Le mail du lundi de l'écran Obligations : son état, et un renvoi à la main s'il a échoué (audit n° 7, passe 3, P3-06)
+        if (function_exists(__NAMESPACE__ . '\\obligations_mail_etat') && obligations_pret() && ($me = obligations_mail_etat())) {
+            $echec = str_starts_with($me[1], 'échec');
+            $t .= '<p' . ($echec ? ' class="erreur"' : '') . '>' . h('Mail du lundi « Obligations de la semaine » (' . $me[0] . ') : ' . ($echec ? 'l\'envoi a échoué.' : (str_starts_with($me[1], 'envoyé') ? 'envoyé.' : 'en cours.'))) . '</p>';
+            if ($echec) $t .= formulaire('obligations_mail', bouton('Renvoyer le mail de la semaine', 'secondaire'), ['data-confirmer' => 'Renvoyer maintenant le mail interne « Obligations de la semaine » à contact@ ?']);
+        }
         if ($nuit && (time() - strtotime($nuit)) > 2 * 86400) $t .= '<p class="erreur">La tâche de nuit ne passe plus depuis le ' . h(date_fr($nuit)) . ' : prévenez Olivier (tâche planifiée OVH).</p>';
         if ($refs) $t .= '<p class="aide">Demandes du site sans suite depuis plus de 11 mois : supprimez aussi leurs emails dans contact@ (P-02, premier lundi du mois) :</p><p class="refs">' . h(implode(' · ', $refs)) . '</p>';
         $t .= formulaire('conservation', bouton('Lancer l\'effacement maintenant', 'discret'), ['data-confirmer' => 'Effacer maintenant ce qui a dépassé sa durée de conservation ?']);
