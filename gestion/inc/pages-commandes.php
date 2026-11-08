@@ -278,7 +278,7 @@ function page_commande(): void {
     // « Nouvelle réponse » : pour la personne qui regarde, depuis sa dernière visite (FR-041, chacun ses pastilles) ;
     // le repère partagé « lu » reste pour l'assistant
     $seuil = pastilles_seuil('commande', $id);
-    $nonLues = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND (le > ? OR lu = 0)", [$id, $seuil]);
+    $nonLues = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND id > ?", [$id, $seuil]);
     $nonLuesTous = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);
     $versEchanges = lien_bouton('#echanges', icone('assistant') . 'Échanges' . ($notes ? ' <span class="compte">' . $notes . '</span>' : '') . ($nonLues ? ' <span class="chip chip-nouveau">' . ($nonLues > 1 ? $nonLues . ' nouvelles réponses' : 'Nouvelle réponse') . '</span>' : ''), $nonLues ? 'secondaire' : 'discret');
     $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>',
@@ -333,11 +333,11 @@ function page_commande(): void {
     $types = ['commentaire', 'probleme', 'email_client', 'email_recu'];
     $echanges = array_values(array_filter($evs, fn($e) => in_array($e['type'], $types, true)));
     // « Nouveaux messages » : ce que la personne n'a pas encore vu (FR-041)
-    foreach ($echanges as &$e) if ($e['type'] === 'email_recu') $e['lu'] = (string)$e['le'] > $seuil || !(int)($e['lu'] ?? 1) ? 0 : 1;
+    foreach ($echanges as &$e) if ($e['type'] === 'email_recu') $e['lu'] = (int)$e['id'] > $seuil ? 0 : 1;
     unset($e);
     $suivi = array_values(array_filter($evs, fn($e) => !in_array($e['type'], $types, true)));
     if ($nonLuesTous) q("UPDATE evenements SET lu = 1 WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);   // repère partagé, pour l'assistant
-    pastilles_vu('commande', (string)$id);   // vue pour la personne : ses pastilles s'éteignent (FR-041)
+    pastilles_vu('commande', (string)$id, $evs ? max(array_map(fn($e) => (int)$e['id'], $evs)) : 0);   // vue pour la personne, jusqu'au dernier événement affiché (FR-041)
     // La conversation d'abord (façon messagerie), puis les deux gestes (retour d'Olivier en test, 07/11/2026), puis Gmail et l'appel en secours
     $c .= bloc('Échanges avec le client', fil_conversation($echanges)
         . '<div class="gestes-echange">' . bloc_ecrire_client($k)

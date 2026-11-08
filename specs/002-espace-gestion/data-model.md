@@ -60,13 +60,19 @@
 ## Pastilles « nouveau » et « a changé » (FR-041, schéma 10)
 
 - **vus** (nouvelle table) : `utilisateur_id`, `genre` (`commande`, `client` ou `outil`), `objet` (identifiant, en texte),
-  `le` ; clé (utilisateur, genre, objet). Une ligne est écrite quand la personne ouvre la commande, la fiche client
-  ou « Quoi de neuf ». Aucune donnée de client : rien à purger au-delà de la suppression du compte.
-- **utilisateurs.pastilles_depuis** (nouvelle colonne) : le point de départ des pastilles de la personne ; posé à la
-  migration (rien d'ancien ne s'allume d'un coup) et remis à maintenant par « Tout marquer comme vu ».
+  `le`, `jusqu_a` (numéro du dernier événement affiché) ; clé (utilisateur, genre, objet). Une ligne est écrite quand la
+  personne ouvre la commande, la fiche client ou « Quoi de neuf ». C'est une trace de consultation d'un compte
+  (donnée personnelle de l'utilisatrice, registre T8) : la purge de nuit efface les lignes de plus de 60 jours, celles
+  d'un compte désactivé et celles d'une commande ou d'une fiche disparue (audit n° 5, constat 8).
+- **utilisateurs.pastilles_id** et **pastilles_depuis** (nouvelles colonnes) : le point de départ des pastilles de la
+  personne (numéro d'événement, et date pour les nouveautés de l'outil) ; posé à la migration au dernier événement, ou
+  juste avant la plus ancienne réponse de client encore non lue de moins de 30 jours, et remis au dernier événement par
+  « Tout marquer comme vu ».
 - Les pastilles se calculent à partir des **événements** : un événement d'une commande ou d'une fiche est signalé à la
-  personne s'il est plus récent que `pastilles_depuis`, que sa dernière ouverture de l'objet et que 30 jours, et
-  s'il n'est pas d'elle (auteur différent de son nom, ni « système », ni « Gmail »).
+  personne si son numéro dépasse `pastilles_id` et `vus.jusqu_a`, s'il a moins de 30 jours, et s'il n'est pas d'elle
+  (auteur différent de son nom, ni « système », ni « Gmail ») ; une réponse de client compte toujours. Les numéros, et
+  non les heures, ordonnent les événements (audit n° 5, constats 1 à 4) ; chaque objet garde ses 10 derniers changements
+  et ses rouges, avec son total (constat 5).
 - Rouge (à agir) : `creation` par le site (nouvelle demande), `email_recu`, `probleme` signalé. Ambre (a changé) :
   `statut`, `paiement`, `rapprochement`, `modification`, `assistant`, `commentaire`, `email_client`, `avis`,
   `restauration`, `creation` à la main ; pour une fiche sans commande : `creation`, `modification`, `commentaire`,

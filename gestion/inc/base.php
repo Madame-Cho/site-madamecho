@@ -299,13 +299,22 @@ CREATE INDEX IF NOT EXISTS corbeille_le ON corbeille(le);
 ");
     // Version 10 (08/11/2026, demande d'Olivier : des pastilles sur ce qui est nouveau ou a changé, FR-041) : ce que chaque personne
     // a vu (commande, fiche, nouveauté de l'outil) et son point de départ ; posé maintenant pour que rien d'ancien ne s'allume d'un coup
+    // (jusqu_a : le numéro du dernier événement vu ; on compare des numéros, jamais des heures : audit n° 5, constat 4)
     $pdo->exec("CREATE TABLE IF NOT EXISTS vus (utilisateur_id INTEGER NOT NULL, genre TEXT NOT NULL, objet TEXT NOT NULL, le TEXT NOT NULL,
-  PRIMARY KEY (utilisateur_id, genre, objet))");
+  jusqu_a INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (utilisateur_id, genre, objet))");
     $colU = array_column($pdo->query("PRAGMA table_info(utilisateurs)")->fetchAll(PDO::FETCH_ASSOC), 'name');
-    if (!in_array('pastilles_depuis', $colU, true)) {
-        try { $pdo->exec("ALTER TABLE utilisateurs ADD COLUMN pastilles_depuis TEXT"); }
+    foreach (['pastilles_depuis' => 'TEXT', 'pastilles_id' => 'INTEGER'] as $col => $def) {
+        if (in_array($col, $colU, true)) continue;
+        try { $pdo->exec("ALTER TABLE utilisateurs ADD COLUMN $col $def"); }
         catch (\PDOException $e) { if (stripos($e->getMessage(), 'duplicate column') === false) throw $e; }
     }
+    // Point de départ : le dernier événement existant ; mais une réponse de client pas encore ouverte au moment de la mise en ligne
+    // reste signalée (on part juste avant la plus ancienne d'entre elles, si elle a moins de 30 jours)
+    $max = (int)$pdo->query("SELECT COALESCE(MAX(id), 0) FROM evenements")->fetchColumn();
+    $st = $pdo->prepare("SELECT MIN(id) FROM evenements WHERE type = 'email_recu' AND lu = 0 AND le > ?");
+    $st->execute([date('Y-m-d H:i:s', time() - 30 * 86400)]);
+    $nonLu = (int)$st->fetchColumn();
+    $pdo->prepare("UPDATE utilisateurs SET pastilles_id = ? WHERE pastilles_id IS NULL")->execute([$nonLu ? min($max, $nonLu - 1) : $max]);
     $pdo->prepare("UPDATE utilisateurs SET pastilles_depuis = ? WHERE pastilles_depuis IS NULL")->execute([date('Y-m-d H:i:s')]);
     $pdo->exec("CREATE INDEX IF NOT EXISTS evenements_le ON evenements(le)");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '10')");

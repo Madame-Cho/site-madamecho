@@ -1170,7 +1170,7 @@ La fiche a changé depuis que l'assistant a préparé cette modification : rien 
 La fiche a changé depuis que la modification a été préparée : rien n'a été fait. | 수정을 준비한 뒤에 내용이 바뀌었어요. 아무것도 하지 않았어요.
 # Pastilles « nouveau » et « a changé » (08/11/2026, FR-041)
 Depuis votre dernière visite | 마지막 방문 이후
-À vous d'agir | 직접 할 일
+À regarder en premier | 먼저 볼 것
 A changé | 바뀜
 Nouveau dans l'outil | 새 기능
 Tout marquer comme vu | 모두 확인함으로 표시
@@ -1204,7 +1204,7 @@ Nouveauté | 새 기능
 (nouveauté) | (새 기능)
 (a changé) | (바뀜)
 Les pastilles de couleur | 색깔 표시
-Rouge : à vous d'agir. Ambre : quelque chose a changé. Elles s'éteignent quand vous ouvrez la commande ou la fiche. | 빨간색은 직접 할 일, 주황색은 바뀐 것이에요. 주문이나 고객 정보를 열면 사라져요.
+Rouge : à regarder en premier. Ambre : quelque chose a changé. Elles s'éteignent quand vous ouvrez la commande ou la fiche. | 빨간색은 먼저 볼 것, 주황색은 바뀐 것이에요. 주문이나 고객 정보를 열면 사라져요.
 Le rappel de retrait | 픽업 알림
 La veille du retrait, Aujourd'hui liste les rappels à envoyer au client, par mail ou par SMS. | 픽업 전날, 오늘 화면에 고객에게 보낼 픽업 알림이 나와요. 메일이나 문자로 보내요.
 téléphone | 전화번호

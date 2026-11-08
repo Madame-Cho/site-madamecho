@@ -1105,6 +1105,11 @@ function conservation_executer(?string $auteur = null): array {
     q("DELETE FROM rapports WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_RAPPORTS_MOIS . ' months'))]);   // rapports de l'assistant : 12 mois
     reponses_purger();   // mails sans commande reconnue : 30 jours
     q("DELETE FROM corbeille WHERE le < ?", [date('Y-m-d H:i:s', time() - CORBEILLE_JOURS * 86400)]);   // corbeille : 30 jours
+    // Pastilles (audit n° 5, constat 8) : un « vu » de plus de 60 jours ne sert plus (les pastilles s'éteignent à 30 jours), ni celui
+    // d'un compte désactivé, ni celui d'une commande ou d'une fiche qui n'existe plus
+    q("DELETE FROM vus WHERE le < ? OR utilisateur_id NOT IN (SELECT id FROM utilisateurs WHERE actif = 1)
+         OR (genre = 'commande' AND CAST(objet AS INTEGER) NOT IN (SELECT id FROM commandes))
+         OR (genre = 'client' AND CAST(objet AS INTEGER) NOT IN (SELECT id FROM clients WHERE statut <> 'efface'))", [date('Y-m-d H:i:s', time() - 60 * 86400)]);
     $cr = ['demandes' => count($a['demandes']), 'clients' => count($vus), 'journal' => $a['journal'], 'le' => $now];
     parametre_ecrire('derniere_purge', json_encode($cr));
     if ($cr['demandes'] || $cr['clients'] || $cr['journal']) evenement('conservation', 'Purge : ' . $cr['demandes'] . ' demande(s) anonymisée(s), ' . $cr['clients'] . ' client(s) effacé(s), ' . $cr['journal'] . ' ligne(s) de journal', [], '', '', $auteur ?? 'système');

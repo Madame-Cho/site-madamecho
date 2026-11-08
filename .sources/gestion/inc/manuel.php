@@ -49,8 +49,8 @@ function manuel_sections(): array {
         ['id' => 'pastilles', 'titre' => ['Les pastilles : ce qui est nouveau', '색깔 표시: 새로 생긴 것'], 'textes' => [
             ['De petites pastilles de couleur montrent ce qui est arrivé ou a changé <b>depuis votre dernière visite</b>. Chaque personne a les siennes : ce qu\'Olivier a ouvert reste nouveau pour vous.',
              '작은 색깔 표시가 <b>마지막 방문 이후</b> 새로 오거나 바뀐 것을 알려 줘요. 사람마다 따로예요. Olivier가 연 것도 나에게는 계속 새것으로 보여요.'],
-            ['- <b>Rouge, avec un chiffre</b> : à vous d\'agir. Une nouvelle demande (site ou QR code), une réponse d\'un client, un problème signalé. Le chiffre est sur l\'onglet « Commandes », dans l\'onglet du navigateur et, si votre téléphone le permet, sur l\'icône de l\'application.',
-             '- <b>빨간색과 숫자</b>: 직접 할 일이에요. 새 문의(사이트나 QR 코드), 고객 답장, 신고된 문제. 숫자는 ‘주문’ 탭, 브라우저 탭, 그리고 휴대폰이 지원하면 앱 아이콘에 나와요.'],
+            ['- <b>Rouge, avec un chiffre</b> : à regarder en premier. Une nouvelle demande (site ou QR code), une réponse d\'un client, un problème signalé. Le chiffre est sur l\'onglet « Commandes », dans l\'onglet du navigateur et, si votre téléphone le permet, sur l\'icône de l\'application (mise à jour à la prochaine ouverture de la gestion). La pastille s\'éteint quand vous ouvrez la commande, même si vous n\'avez pas encore répondu : les listes « À répondre » d\'Aujourd\'hui restent votre liste de tâches.',
+             '- <b>빨간색과 숫자</b>: 먼저 볼 것이에요. 새 문의(사이트나 QR 코드), 고객 답장, 신고된 문제. 숫자는 ‘주문’ 탭, 브라우저 탭, 그리고 휴대폰이 지원하면 앱 아이콘에 나와요(관리 화면을 다시 열 때 바뀌어요). 아직 답장하지 않았어도 주문을 열면 표시가 사라져요. 할 일 목록은 오늘 화면의 ‘답장 필요’ 목록이에요.'],
             ['- <b>Ambre, un simple point</b> : quelque chose a changé, fait par quelqu\'un d\'autre : étape, paiement, Qonto, modification, note, mail envoyé, fiche client créée par le site ou modifiée.',
              '- <b>주황색 점</b>: 다른 사람이 무언가를 바꿨어요. 단계, 결제, Qonto, 수정, 메모, 보낸 메일, 사이트로 생긴 고객 정보나 고친 고객 정보.'],
             ['- <b>Chocolat ✦</b> : une nouveauté de l\'outil. Elle est expliquée dans Plus › « Quoi de neuf ».',

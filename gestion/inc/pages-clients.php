@@ -130,7 +130,7 @@ function page_client(): void {
             : lien_bouton(u('commande-edition', ['client' => $id]), icone('ajouter') . 'Nouvelle commande', 'principal')), u('clients'));
     // Ce qui a changé sur la fiche depuis la dernière visite de la personne (FR-041), puis la fiche est vue pour elle
     $c .= encadre_changements('client', $id);
-    pastilles_vu('client', (string)$id);
+    pastilles_vu('client', (string)$id, (int)(val("SELECT MAX(id) FROM evenements WHERE client_id = ? AND commande_id IS NULL", [$id]) ?? 0));
     $c .= '<div class="tuiles">' . tuile('Commandes remises', (string)$ch['remises'], $ch['commandes'] > $ch['remises'] ? ($ch['commandes'] - $ch['remises']) . ' autre(s) demande(s)' : '')
         . ($cl['type'] === 'professionnel'   // un professionnel en HT, comme ses factures ; un particulier en TTC (demande d'Olivier, 07/11/2026)
             ? tuile('Total', $ch['total_ht'] ? euros($ch['total_ht']) : '—', 'HT') . tuile('Livraison moyenne', $ch['panier_ht'] ? euros($ch['panier_ht']) : '—', 'HT')

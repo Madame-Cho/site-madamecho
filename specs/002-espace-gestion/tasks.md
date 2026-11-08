@@ -102,6 +102,9 @@
 - [X] T061 [US2] Étiquette et liseré des cartes de commande et de client ; encadré « Changé depuis votre dernière visite » sur la commande ; « Nouvelle réponse » propre à la personne
 - [X] T062 [P] [US8] Coréen (textes et motifs), manuel FR/KO (section « Les pastilles »), styles
 - [X] T063 Essais sur base fictive à deux comptes (Youngmi, Olivier) et captures FR/KO
+- [X] T065 Audit n° 5, constats 1 à 5 : « vu » par numéro d'événement (`vus.jusqu_a`, `utilisateurs.pastilles_id`), sans le repère partagé « lu », sans limite globale ; réponse d'un client homonyme comptée
+- [X] T066 Audit n° 5, constats 6, 8, 9, 10 : rouge « À regarder en premier », purge des « vus », ambre #A86C00 (contraste 3:1), manuel (icône à la prochaine ouverture, listes « À répondre ») ; essais 60/60
+- [ ] T067 Audit n° 5, constats 7, 11, 12 pendant le pilote (T-22) : compteur des tâches, essai sur le téléphone de Youngmi FR/KO, bruit de l'ambre
 - [ ] T064 Audit n° 5 du ChatGPT d'Olivier (P-26), puis feu vert d'Olivier sur la version exacte, publication, Journal des publications, Registre
 
 ## Dependencies & Execution Order

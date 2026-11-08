@@ -751,7 +751,7 @@ details.geste>form{padding:0 2px 6px}
 
 /* Pastilles « nouveau » et « a changé » (demande d'Olivier, 08/11/2026, FR-041) : rouge = à vous d'agir (un chiffre),
    ambre = a changé (un point), chocolat ✦ = nouveauté de l'outil ; toujours un mot à côté, rien ne clignote */
-:root{--p-action:#C8361E;--p-action-f:#FBE4DF;--p-action-t:#9C2410;--p-change:#D98E04;--p-change-f:#FBEFD6;--p-change-t:#7A4A00;--p-outil:var(--chocolat)}
+:root{--p-action:#C8361E;--p-action-f:#FBE4DF;--p-action-t:#9C2410;--p-change:#A86C00;--p-change-f:#FBEFD6;--p-change-t:#7A4A00;--p-outil:var(--chocolat)}
 .onglets a,.nav-haut a{position:relative}
 .pastille{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--p-action);color:#fff;font-size:11px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
 .point{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}

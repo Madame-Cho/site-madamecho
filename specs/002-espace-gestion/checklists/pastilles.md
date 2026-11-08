@@ -22,4 +22,5 @@
 - [x] CHK008 Commande supprimée (corbeille) : plus de pastille ; restaurée : signalée « Restaurée »
 - [x] CHK009 Réponse d'un client rattachée à la main : signalée comme une réponse
 - [x] CHK010 Au-delà de 30 jours, une pastille s'éteint seule
-- [ ] CHK011 Audit du ChatGPT d'Olivier (P-26) rendu et traité
+- [x] CHK011 Audit n° 5 du ChatGPT d'Olivier (P-26) rendu et traité : constats 1-6, 8-10 corrigés (60 vérifications), 7, 11, 12 au pilote
+- [ ] CHK012 Constats 7, 11, 12 revus pendant le pilote avec Youngmi (T067)

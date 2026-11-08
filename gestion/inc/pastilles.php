@@ -28,19 +28,20 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  */
 const NOUVEAUTES = [
     ['id' => '2026-11-08-pastilles', 'le' => '2026-11-08', 'titre' => 'Les pastilles de couleur',
-     'texte' => 'Rouge : à vous d\'agir. Ambre : quelque chose a changé. Elles s\'éteignent quand vous ouvrez la commande ou la fiche.',
+     'texte' => 'Rouge : à regarder en premier. Ambre : quelque chose a changé. Elles s\'éteignent quand vous ouvrez la commande ou la fiche.',
      'lien' => ['manuel', 'pastilles']],
     ['id' => '2026-11-08-rappel', 'le' => '2026-11-08', 'titre' => 'Le rappel de retrait',
      'texte' => 'La veille du retrait, Aujourd\'hui liste les rappels à envoyer au client, par mail ou par SMS.',
      'lien' => ['manuel', 'parcours']],
 ];
 
-/** Le point de départ des pastilles de la personne : posé à la migration, remis à maintenant par « Tout marquer comme vu ». */
-function pastilles_depuis(array $u): string {
-    $d = (string)($u['pastilles_depuis'] ?? '');
-    if ($d === '') $d = (string)(val("SELECT pastilles_depuis FROM utilisateurs WHERE id = ?", [(int)$u['id']]) ?: ($u['cree_le'] ?? maintenant()));
-    $min = date('Y-m-d H:i:s', time() - PASTILLES_JOURS * 86400);
-    return max($d, $min);
+/**
+ * Le point de départ des pastilles de la personne : le numéro du dernier événement qu'elle n'a pas à voir. Les événements sont
+ * numérotés dans l'ordre où ils arrivent (une réponse rattachée à la main plus tard reçoit un numéro neuf) : comparer les numéros,
+ * jamais les heures, évite d'oublier un changement fait dans la même seconde (audit n° 5, constat 4).
+ */
+function pastilles_base(array $u): int {
+    return (int)(val("SELECT pastilles_id FROM utilisateurs WHERE id = ?", [(int)$u['id']]) ?? 0);
 }
 
 /** Rouge (« action ») ou ambre (« change ») et le libellé d'un événement ; null s'il ne compte pas. */
@@ -85,23 +86,30 @@ function pastilles(): array {
     $u = utilisateur_courant();
     if (!$u) return $r;
     $uid = (int)$u['id'];
-    $depuis = pastilles_depuis($u);
     $typesK = "'" . implode("','", PASTILLES_TYPES_COMMANDE) . "'";
     $typesC = "'" . implode("','", PASTILLES_TYPES_CLIENT) . "'";
-    $evs = lignes("SELECT e.id, e.le, e.auteur, e.type, e.commande_id, e.client_id, e.texte, e.ancien, e.nouveau,
-            k.reference, k.statut AS k_statut, c.nom, c.prenom, c.societe, c.contact, c.type AS c_type, c.numero, c.statut AS c_statut
+    $agir = "(e.type = 'email_recu' OR (e.type = 'creation' AND e.auteur = 'site' AND e.commande_id IS NOT NULL) OR (e.type = 'probleme' AND e.nouveau = '1'))";
+    $objet = "(e.commande_id IS NULL), COALESCE(e.commande_id, e.client_id)";
+    // Une seule requête, sans limite globale : chaque commande ou fiche garde ses 10 derniers changements pour l'affichage, plus ses
+    // rouges, et son total (audit n° 5, constat 5). Le « vu » est propre à la personne et ne dépend jamais du repère partagé
+    // « lu » des mails, qui reste pour l'assistant (constats 1 et 2). Une réponse de client compte toujours, même si l'expéditeur
+    // porte le nom d'une utilisatrice ; pour le reste, ce que la personne a fait elle-même ne lui est pas signalé (constat 3).
+    $evs = lignes("SELECT * FROM (SELECT e.id, e.le, e.auteur, e.type, e.commande_id, e.client_id, e.texte, e.ancien, e.nouveau,
+            k.reference, c.nom, c.prenom, c.societe, c.type AS c_type, c.numero, c.statut AS c_statut,
+            CASE WHEN $agir THEN 1 ELSE 0 END AS a_agir,
+            ROW_NUMBER() OVER (PARTITION BY $objet ORDER BY e.id DESC) AS rang,
+            COUNT(*) OVER (PARTITION BY $objet) AS total
         FROM evenements e
         LEFT JOIN commandes k ON k.id = e.commande_id
         LEFT JOIN clients c ON c.id = e.client_id
         LEFT JOIN vus v ON v.utilisateur_id = :u AND ((e.commande_id IS NOT NULL AND v.genre = 'commande' AND v.objet = CAST(e.commande_id AS TEXT))
                                                    OR (e.commande_id IS NULL AND v.genre = 'client' AND v.objet = CAST(e.client_id AS TEXT)))
-        WHERE ((e.le > :d AND (v.le IS NULL OR e.le > v.le))
-               -- une réponse de client que personne n'a encore ouverte reste signalée, même datée d'avant (rattachée à la main plus tard)
-               OR (e.type = 'email_recu' AND e.lu = 0 AND e.le > :plancher))
-          AND e.auteur NOT IN (:nom, 'système', 'Gmail')
+        WHERE e.id > :base AND (v.jusqu_a IS NULL OR e.id > v.jusqu_a) AND e.le > :plancher
+          AND (e.type = 'email_recu' OR e.auteur NOT IN (:nom, 'système', 'Gmail'))
           AND ((e.commande_id IS NOT NULL AND k.id IS NOT NULL AND e.type IN ($typesK))
             OR (e.commande_id IS NULL AND e.client_id IS NOT NULL AND c.id IS NOT NULL AND c.statut != 'efface' AND e.type IN ($typesC)))
-        ORDER BY e.le DESC, e.id DESC LIMIT 500", ['u' => $uid, 'd' => $depuis, 'nom' => (string)$u['nom'], 'plancher' => date('Y-m-d H:i:s', time() - PASTILLES_JOURS * 86400)]);
+        ) WHERE rang <= 10 OR a_agir = 1 ORDER BY id DESC",
+        ['u' => $uid, 'base' => pastilles_base($u), 'nom' => (string)$u['nom'], 'plancher' => date('Y-m-d H:i:s', time() - PASTILLES_JOURS * 86400)]);
     foreach ($evs as $e) {
         $surK = $e['commande_id'] !== null;
         $p = pastille_de($e, $surK);
@@ -110,16 +118,15 @@ function pastilles(): array {
         $e['libelle'] = $p[1];
         $cle = $surK ? 'commandes' : 'clients';
         $id = (int)($surK ? $e['commande_id'] : $e['client_id']);
-        if (!isset($r[$cle][$id])) $r[$cle][$id] = ['niveau' => $p[0], 'evs' => [], 'le' => $e['le'], 'id' => $id, 'genre' => $surK ? 'commande' : 'client',
+        if (!isset($r[$cle][$id])) $r[$cle][$id] = ['niveau' => $p[0], 'evs' => [], 'le' => $e['le'], 'id' => $id, 'genre' => $surK ? 'commande' : 'client', 'n' => (int)$e['total'],
             'reference' => (string)($surK ? $e['reference'] : $e['numero']), 'nom' => $e['numero'] !== null ? client_nom(['nom' => (string)$e['nom'], 'prenom' => (string)$e['prenom'], 'societe' => (string)$e['societe'], 'type' => (string)$e['c_type'], 'statut' => (string)$e['c_statut'], 'numero' => (string)$e['numero']]) : ''];
         $r[$cle][$id]['evs'][] = $e;
         if ($p[0] === 'action') $r[$cle][$id]['niveau'] = 'action';
     }
     foreach ($r['commandes'] as $o) { if ($o['niveau'] === 'action') $r['action']++; else $r['change_commandes'] = true; }
     $r['change_clients'] = (bool)$r['clients'];
-    // Les nouveautés de l'outil : publiées depuis moins de 21 jours, après la création du compte, pas encore vues
+    // Les nouveautés de l'outil : publiées depuis moins de 21 jours, après la création du compte et le point de départ, pas encore vues
     $vues = array_column(lignes("SELECT objet FROM vus WHERE utilisateur_id = ? AND genre = 'outil'", [$uid]), 'objet');
-    // (une nouveauté publiée avant le point de départ de la personne n'est pas signalée : rien d'ancien ne s'allume d'un coup)
     $cree = substr((string)($u['cree_le'] ?? ''), 0, 10);
     $depart = substr((string)(val("SELECT pastilles_depuis FROM utilisateurs WHERE id = ?", [$uid]) ?? ''), 0, 10);
     $min = date('Y-m-d', time() - NOUVEAUTES_JOURS * 86400);
@@ -128,25 +135,29 @@ function pastilles(): array {
     }
     return $r;
 }
-/** Le dernier « vu » de la personne pour une commande ou une fiche (ou son point de départ), à lire AVANT pastilles_vu(). */
-function pastilles_seuil(string $genre, int $id): string {
+/** Le numéro du dernier événement déjà vu par la personne pour une commande ou une fiche, à lire AVANT pastilles_vu(). */
+function pastilles_seuil(string $genre, int $id): int {
     $u = utilisateur_courant();
-    if (!$u) return maintenant();
-    $v = (string)(val("SELECT le FROM vus WHERE utilisateur_id = ? AND genre = ? AND objet = ?", [(int)$u['id'], $genre, (string)$id]) ?? '');
-    return max(pastilles_depuis($u), $v);
+    if (!$u) return PHP_INT_MAX;
+    $v = (int)(val("SELECT jusqu_a FROM vus WHERE utilisateur_id = ? AND genre = ? AND objet = ?", [(int)$u['id'], $genre, (string)$id]) ?? 0);
+    return max(pastilles_base($u), $v);
 }
-/** La personne a ouvert la commande, la fiche ou « Quoi de neuf » : ses pastilles s'éteignent à la page suivante. */
-function pastilles_vu(string $genre, string $objet): void {
+/**
+ * La personne a ouvert la commande, la fiche ou « Quoi de neuf » : vu jusqu'au dernier événement affiché ($jusqua), pas au-delà ;
+ * un changement arrivé pendant l'affichage reste signalé.
+ */
+function pastilles_vu(string $genre, string $objet, int $jusqua = 0): void {
     $u = utilisateur_courant();
     if (!$u) return;
-    q("INSERT OR REPLACE INTO vus (utilisateur_id, genre, objet, le) VALUES (?, ?, ?, ?)", [(int)$u['id'], $genre, $objet, maintenant()]);
+    $avant = (int)(val("SELECT jusqu_a FROM vus WHERE utilisateur_id = ? AND genre = ? AND objet = ?", [(int)$u['id'], $genre, $objet]) ?? 0);
+    q("INSERT OR REPLACE INTO vus (utilisateur_id, genre, objet, le, jusqu_a) VALUES (?, ?, ?, ?, ?)", [(int)$u['id'], $genre, $objet, maintenant(), max($avant, $jusqua)]);
     // Le menu de cette page-ci ne compte déjà plus ce qui vient d'être ouvert
     if (isset($GLOBALS['mc_pastilles'])) {
         $r = &$GLOBALS['mc_pastilles'];
         if ($genre === 'outil') $r['outil'] = array_values(array_filter($r['outil'], fn($n) => $n['id'] !== $objet));
         else {
             $cle = $genre === 'commande' ? 'commandes' : 'clients';
-            if (isset($r[$cle][(int)$objet])) {
+            if (isset($r[$cle][(int)$objet]) && (int)$r[$cle][(int)$objet]['evs'][0]['id'] <= $jusqua) {
                 if ($cle === 'commandes' && $r[$cle][(int)$objet]['niveau'] === 'action') $r['action']--;
                 unset($r[$cle][(int)$objet]);
             }
@@ -155,12 +166,12 @@ function pastilles_vu(string $genre, string $objet): void {
         }
     }
 }
-/** « Tout marquer comme vu » : pour la personne seule. */
+/** « Tout marquer comme vu » : pour la personne seule, jusqu'au dernier événement existant. */
 function page_pastilles(): void {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') rediriger('accueil');
     csrf_verifier();
     $u = utilisateur_courant();
-    q("UPDATE utilisateurs SET pastilles_depuis = ? WHERE id = ?", [maintenant(), (int)$u['id']]);
+    q("UPDATE utilisateurs SET pastilles_id = ?, pastilles_depuis = ? WHERE id = ?", [(int)(val("SELECT MAX(id) FROM evenements") ?? 0), maintenant(), (int)$u['id']]);
     foreach (NOUVEAUTES as $n) pastilles_vu('outil', $n['id']);
     flash('ok', 'Tout est marqué comme vu.');
     rediriger(texte('retour', 20) === 'nouveautes' ? 'nouveautes' : 'accueil');
@@ -178,7 +189,7 @@ function pastille_menu(int $n, string $point = ''): string {
 function etiquette_pastille(array $o): string {
     $lib = $o['evs'][0]['libelle'];
     if ($o['niveau'] === 'action') foreach ($o['evs'] as $e) if ($e['niveau'] === 'action') { $lib = $e['libelle']; break; }
-    $n = count($o['evs']);
+    $n = (int)$o['n'];
     return '<span class="etiq etiq-' . $o['niveau'] . '">' . h($lib) . '</span>' . ($n > 1 ? '<span class="etiq-plus">+' . ($n - 1) . '</span>' : '');
 }
 /** Le prénom de l'auteur d'un changement (« Olivier »), jamais traduit. */
@@ -229,7 +240,7 @@ function ligne_pastille(array $o): string {
     if ($o['niveau'] === 'action') foreach ($o['evs'] as $x) if ($x['niveau'] === 'action') { $e = $x; break; }
     $qui = pastille_qui($e);
     $lien = $o['genre'] === 'commande' ? u('commande', ['id' => $o['id']]) : u('client', ['id' => $o['id']]);
-    $n = count($o['evs']);
+    $n = (int)$o['n'];
     $detail = pastille_detail($e);
     return '<li><a class="ligne-pastille" href="' . h($lien) . '"><span class="d d-' . $o['niveau'] . '" aria-hidden="true"></span>'
          . '<span class="quoi"><b>' . h($e['libelle']) . '</b>' . ($qui !== '' ? ' <span class="par" translate="no">' . h($qui) . '</span>' : '')
@@ -259,7 +270,7 @@ function bloc_depuis_visite(): string {
     $s = '';
     foreach (array_slice($l, 0, 6) as $o) $s .= ligne_pastille($o);
     if (count($l) < 6) foreach (array_slice($p['outil'], 0, 6 - count($l)) as $n) $s .= ligne_nouveaute($n, false);
-    $legende = '<p class="legende-pastilles"><span><span class="d d-action" aria-hidden="true"></span>À vous d\'agir</span><span><span class="d d-change" aria-hidden="true"></span>A changé</span><span><span class="d d-outil" aria-hidden="true">✦</span>Nouveau dans l\'outil</span></p>';
+    $legende = '<p class="legende-pastilles"><span><span class="d d-action" aria-hidden="true"></span>À regarder en premier</span><span><span class="d d-change" aria-hidden="true"></span>A changé</span><span><span class="d d-outil" aria-hidden="true">✦</span>Nouveau dans l\'outil</span></p>';
     return '<section class="bloc depuis-visite" id="depuis" aria-labelledby="depuis-titre"><h2 id="depuis-titre">' . icone('cloche') . '<span>Depuis votre dernière visite</span></h2>'
          . $legende . '<ul class="liste-pastilles">' . $s . '</ul>'
          . '<div class="depuis-bas">' . ($total > 6 || $p['outil'] ? '<a href="' . h(u('nouveautes')) . '">Tout voir (' . $total . ')</a>' : '<span></span>')

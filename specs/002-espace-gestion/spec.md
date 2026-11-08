@@ -97,6 +97,10 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
   (nouvelle demande, réponse d'un client, problème signalé), ambre en simple point pour ce qui a
   changé (étape, paiement, modification, note, mail envoyé par l'autre personne, fiche client),
   chocolat ✦ pour une nouveauté de l'outil ; toujours un mot à côté de la couleur.
+- Q: Audit n° 5 (ChatGPT d'Olivier) : que corrige-t-on avant le pilote ? → A : constats 1 à 6 et 8 à 10 ;
+  7 (compteur des tâches), 11 (essai sur le téléphone de Youngmi) et 12 (bruit de l'ambre) pendant le
+  pilote (choix d'Olivier du 2026-11-08, carte). Le rouge se dit « À regarder en premier » : il s'éteint
+  à l'ouverture ; les listes « À répondre » d'Aujourd'hui restent la liste des tâches.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -591,6 +595,12 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   au bout de 30 jours. La couleur MUST NOT être le seul signe (un mot l'accompagne), rien ne
   clignote, tout existe en coréen. Les mails reçus gardent aussi leur repère partagé « lu » pour
   l'assistant.
+  Audit n° 5 (2026-11-08) : le « vu » MUST se fonder sur le numéro des événements, propre à la
+  personne, jamais sur leur heure ni sur le repère partagé « lu » ; « Tout marquer comme vu » MUST
+  tout éteindre, mails non lus compris ; une réponse de client MUST compter même si l'expéditeur
+  porte le nom d'une utilisatrice ; aucune limite globale MUST NOT faire perdre une commande ; les
+  « vus » MUST être purgés (60 jours, compte désactivé, objet disparu) ; l'ambre MUST atteindre un
+  contraste de 3:1.
 
 ### Key Entities *(include if feature involves data)*
 
