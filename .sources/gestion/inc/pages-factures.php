@@ -81,22 +81,34 @@ function facture_sms(array $k, array $f): string {
 function bloc_facture(array $k): string {
     $e = facture_etat($k);
     $id = (int)$k['id'];
+    // Une facture seulement si le client la demande (décision d'Olivier du 09/11/2026) : sur le site, il coche « Je souhaite une facture » ;
+    // par téléphone ou ailleurs, Youngmi le lui demande et le note ici, avec son adresse
+    $sans = formulaire('facture_sans', '<div class="actions">' . bouton('Finalement, pas de facture', 'discret') . '</div>', ['class' => 'form-ligne']);
     switch ($e['etat']) {
         case 'pro': case 'aucune': return '';
+        case 'non_demandee':
+            return bloc('Facture', '<p class="aide">Le client n\'a pas demandé de facture. S\'il en veut une, notez-le avec son adresse postale : la facture se préparera quand la commande sera payée et remise.</p>'
+                . formulaire('facture_demander', champ('adresse', 'Adresse postale du client', (string)($k['client_adresse'] ?? ''), ['maxlength' => '200', 'autocomplete' => 'off', 'lang' => 'fr'],
+                                                     'Numéro, rue, code postal et ville. Vous pourrez aussi l\'écrire au moment d\'émettre.')
+                                                . '<div class="actions">' . bouton(icone('valider') . 'Le client veut une facture', 'secondaire') . '</div>', ['class' => 'form-facture']), '', 'facture');
         case 'pas_payee':
-            return bloc('Facture', '<p class="aide">La facture se prépare toute seule quand la commande est notée « Payé » et remise au client. Vous la relirez avant de l\'émettre.</p>', '', 'facture');
+            return bloc('Facture', '<p class="aide"><b>Facture demandée.</b> <span>La facture se prépare toute seule quand la commande est notée « Payé » et remise au client. Vous la relirez avant de l\'émettre.</span></p>' . $sans, '', 'facture');
         case 'pas_remise':
-            return bloc('Facture', '<p class="aide">Payée : la facture sera prête dès que la commande sera notée « Remise » (elle porte la date de la vente).</p>', '', 'facture');
+            return bloc('Facture', '<p class="aide"><b>Facture demandée.</b> <span>Payée : la facture sera prête dès que la commande sera notée « Remise » (elle porte la date de la vente).</span></p>' . $sans, '', 'facture');
         case 'a_emettre':
             $d = facture_donnees($k);
             $manque = $e['manque'] ? '<div class="erreur" role="alert"><b>Avant d\'émettre :</b><br>' . implode('<br>', array_map(fn($m) => h(FACTURE_MANQUES[$m]), $e['manque'])) . '</div>' : '';
             $qonto = $e['qonto'] !== '' ? '<p class="erreur"><span>Une facture Qonto est déjà notée sur cette commande :</span> <b translate="no">' . h($e['qonto']) . '</b>. <span>Si elle concerne cette vente, n\'émettez pas une deuxième facture.</span></p>' : '';
-            // Un nom écrit en coréen : la facture (en français, PDF aux polices standard) le demande en lettres latines
-            $nomLatin = Pdf::ecrivable(facture_nom_client($k, false));
-            $form = ($nomLatin ? '' : '<p class="erreur"><span>Le nom de ce client est écrit en coréen. La facture est en français : écrivez-le en lettres latines (par exemple « Kim Minji »), ou cochez « Client particulier ».</span></p>'
-                    . champ('nom_facture', 'Nom sur la facture, en lettres latines', '', ['maxlength' => '120', 'autocomplete' => 'off', 'lang' => 'fr']))
-                  . champ('adresse', 'Adresse du client (facultatif)', '', ['maxlength' => '200', 'autocomplete' => 'off', 'lang' => 'fr'], 'Seulement si le client la demande. Elle ne sert qu\'à cette facture.')
-                  . case_a_cocher('anonyme', 'Le client ne veut pas son nom sur la facture (« Client particulier »)')
+            // Prénom, nom et adresse : obligatoires (réponse de l'expert-comptable du 09/11/2026). Un nom écrit en coréen se met en lettres
+            // latines (facture en français, PDF aux polices standard) ; un nom incomplet sur la fiche se complète ici
+            $nomFiche = facture_nom_client($k);
+            $nomLatin = Pdf::ecrivable($nomFiche);
+            $form = ($nomLatin && facture_nom_complet($nomFiche) ? ''
+                    : '<p class="erreur"><span>' . ($nomLatin ? 'La fiche n\'a pas le prénom et le nom du client : écrivez-les ici, ou complétez sa fiche.'
+                                                             : 'Le nom de ce client est écrit en coréen. La facture est en français : écrivez-le en lettres latines (par exemple « Kim Minji »).') . '</span></p>'
+                    . champ('nom_facture', 'Prénom et nom sur la facture, en lettres latines', '', ['maxlength' => '120', 'autocomplete' => 'off', 'lang' => 'fr', 'required' => true]))
+                  . champ('adresse', 'Adresse postale du client', (string)($k['client_adresse'] ?? ''), ['maxlength' => '200', 'autocomplete' => 'off', 'lang' => 'fr', 'required' => true],
+                          'Obligatoire sur la facture : numéro, rue, code postal et ville. Elle est gardée sur sa fiche pour ses prochaines factures.')
                   . ($e['qonto'] !== '' ? case_a_cocher('doublon_ok', '<span>Je confirme : la facture Qonto notée est une autre facture, ce n\'est pas un doublon</span> (<b translate="no">' . h($e['qonto']) . '</b>)') : '')
                   . '<input type="hidden" name="empreinte" value="' . h(facture_empreinte_apercu($d)) . '">'
                   . '<div class="actions">' . bouton(icone('valider') . 'Émettre la facture', 'principal', $e['manque'] ? ['disabled' => true] : []) . '</div>';
@@ -111,7 +123,8 @@ function bloc_facture(array $k): string {
                 $avant . '<p class="aide">Relisez l\'aperçu. Une fois émise, la facture reçoit son numéro et ne se modifie plus : une erreur se corrige par un avoir.</p>'
                 . '<p class="aide"><span>Un nom mal écrit ?</span> <span>Avant d\'émettre,</span> <a href="' . h(u('client-edition', ['id' => (int)$k['client_id']])) . '">corrigez la fiche du client</a>.</p>'
                 . $manque . $qonto . facture_apercu_html($d)
-                . formulaire('facture_emettre', $form, ['class' => 'form-facture', 'data-confirmer' => 'Émettre la facture ? Elle recevra son numéro et ne pourra plus être modifiée.']), 'a-faire', 'facture');
+                . formulaire('facture_emettre', $form, ['class' => 'form-facture', 'data-confirmer' => 'Émettre la facture ? Elle recevra son numéro et ne pourra plus être modifiée.'])
+                . ($e['avoir'] ? '' : $sans), 'a-faire', 'facture');
     }
     // Émise
     $f = $e['facture'];
@@ -204,8 +217,13 @@ function bloc_document(array $k, array $f): string {
 function facture_post(array $k, string $a): void {
     $id = (int)$k['id'];
     foreach (['adresse', 'motif', 'nom_facture'] as $champ) if (preg_match(CORE_HANGUL, (string)($_POST[$champ] ?? ''))) { flash('erreur', 'La facture est toujours en français : écrivez le nom, l\'adresse et la raison en lettres latines.'); return; }
+    if ($a === 'facture_demander' || $a === 'facture_sans') {
+        $err = facture_demande_noter($id, $a === 'facture_demander', texte('adresse', 200));
+        flash($err !== '' ? 'erreur' : 'ok', $err !== '' ? $err : ($a === 'facture_demander' ? 'C\'est noté : le client veut une facture.' : 'C\'est noté : pas de facture pour cette commande.'));
+        return;
+    }
     if ($a === 'facture_emettre') {
-        $r = facture_emettre($id, ['adresse' => une_ligne(texte('adresse', 200)), 'nom' => une_ligne(texte('nom_facture', 120)), 'anonyme' => !empty($_POST['anonyme']), 'doublon_ok' => !empty($_POST['doublon_ok']),
+        $r = facture_emettre($id, ['adresse' => une_ligne(texte('adresse', 200)), 'nom' => une_ligne(texte('nom_facture', 120)), 'doublon_ok' => !empty($_POST['doublon_ok']),
                                    'empreinte' => (string)preg_replace('/[^0-9a-f]/', '', texte('empreinte', 64))]);
         flash(isset($r['erreur']) ? 'erreur' : 'ok', $r['erreur'] ?? ('Facture ' . $r['numero'] . ' émise. Vérifiez le PDF, puis remettez-la au client.'));
         return;
@@ -380,6 +398,15 @@ function page_factures(): void {
             . '<span class="l3">' . $etat . '</span><span class="l4" translate="no">' . h($d['commande']['reference'] ?? '') . '</span></a>';
     }
     $c .= bloc('Factures et avoirs', $filtre . ($l !== '' ? '<p class="aide"><span>' . h(count($tous) . ' document(s)') . '</span> · <span translate="no">' . h(montant_facture($total)) . '</span> <span>TTC, avoirs déduits</span></p><div class="liste">' . $l . '</div>' : '<p class="vide">Aucune facture' . ($mois !== '' ? ' ce mois-ci' : ' pour l\'instant') . '.</p>'));
+    // Pour l'expert-comptable (réponse du 09/11/2026, question 4) : tout reste dans la base, et se télécharge en tableur quand il le faut
+    // (choix d'Olivier) : les factures et avoirs du mois, et les espèces encaissées (le livre des recettes), factures demandées ou non
+    $t = '';
+    for ($i = 0; $i < 3; $i++) {
+        $m = date('Y-m', strtotime(date('Y-m-01') . ' -' . $i . ' month'));
+        $t .= '<li><b>' . h(ucfirst(mois_texte($m))) . '</b> : ' . '<a href="' . h(u('factures-export', ['mois' => $m])) . '">Factures et avoirs</a> · '
+            . '<a href="' . h(u('factures-export', ['mois' => $m, 'jeu' => 'especes'])) . '">Espèces encaissées</a></li>';
+    }
+    $c .= bloc('Tableurs pour l\'expert-comptable', '<p class="aide">Chaque tableur s\'ouvre dans Excel. Les espèces encaissées forment le livre des recettes : toutes les commandes réglées en espèces, avec ou sans facture.</p><ul class="remises">' . $t . '</ul>');
     // L'identité de Madame Cho (FR-002) : saisie une fois, vérifiée par Olivier ou Youngmi
     $v = vendeur();
     $vals = $v ?? VENDEUR_SUGGESTION;
@@ -388,11 +415,85 @@ function page_factures(): void {
     $fige = facture_prefixes_figes();
     $f .= '<div class="ligne-champs">' . champ('facture_prefixe', 'Début des numéros de facture', facture_prefixe('facture'), ['maxlength' => '7', 'disabled' => $fige])
         . champ('avoir_prefixe', 'Début des numéros d\'avoir', facture_prefixe('avoir'), ['maxlength' => '7', 'disabled' => $fige]) . '</div>'
-        . '<p class="aide"><span>Exemple</span> : <b translate="no">' . h(sprintf('%s%d-%04d', facture_prefixe('facture'), (int)date('Y'), 1)) . '</b>. ' . ($fige ? 'Des factures de cette année portent déjà ce début : il ne change plus avant le 1er janvier.' : 'À confirmer avec l\'expert-comptable avant la première facture.') . '</p>';
+        . '<p class="aide"><span>Exemple</span> : <b translate="no">' . h(sprintf('%s%d-%04d', facture_prefixe('facture'), (int)date('Y'), 1)) . '</b>. ' . ($fige ? 'Des factures de cette année portent déjà ce début : il ne change plus avant le 1er janvier.' : 'Une série à part pour les particuliers, validée par l\'expert-comptable : les numéros se suivent dans l\'ordre des dates.') . '</p>';
     $c .= est_admin() ? '<details class="replie bloc" id="identite"' . ($v ? '' : ' open') . '><summary>' . icone('reglages') . 'Identité de Madame Cho sur les factures' . ($v ? '' : ' <span class="chip s-demande">à enregistrer</span>') . '</summary>'
         . '<p class="aide">' . ($v ? 'Ces mentions figurent sur chaque facture.' : 'Repris des mentions légales du site : vérifiez, puis enregistrez. Aucune facture ne peut s\'émettre avant.') . '</p>'
         . formulaire('vendeur', $f . bouton('Enregistrer', 'principal')) . '</details>' : '';
     mise_en_page('Factures', $c, 'plus');
+}
+
+/**
+ * Le tableur d'un mois pour l'expert-comptable : chaque facture et chaque avoir, les montants par taux de TVA, la date et le moyen du
+ * règlement (les espèces s'y voient : réponse de l'expert-comptable du 09/11/2026, question 4). Lu dans les données figées.
+ */
+const FACTURES_EXPORT_ENTETES = ['Numéro', 'Document', 'Émis le', 'Date de la vente', 'Client', 'Adresse du client', 'HT 5,5 %', 'TVA 5,5 %', 'HT 20 %', 'TVA 20 %',
+                                 'HT autres taux', 'TVA autres taux', 'Total HT', 'Total TVA', 'Total TTC', 'Réglé le', 'Moyen', 'Acompte', 'Acompte versé le', 'Moyen de l\'acompte',
+                                 'Facture d\'origine (avoir)', 'Raison (avoir)', 'Commande'];
+/** Un texte saisi (nom, adresse, raison) ne doit jamais devenir une formule dans Excel : « = », « + », « - », « @ » en tête sont désamorcés. */
+function tableur_texte(string $s): string {
+    return preg_match('/^[=+\-@\t\r]/', $s) ? "'" . $s : $s;
+}
+function factures_export_lignes(string $mois): array {
+    $n = fn(int $c): string => number_format($c / 100, 2, ',', '');
+    $out = [];
+    foreach (lignes("SELECT " . FACTURE_COLONNES . " FROM factures WHERE substr(emise_le, 1, 7) = ? ORDER BY id", [$mois]) as $f) {
+        $d = json_decode((string)$f['donnees'], true) ?: [];
+        $t = [55 => [0, 0], 200 => [0, 0], 0 => [0, 0]];
+        foreach ($d['par_taux'] ?? [] as $x) { $k = isset($t[(int)$x['taux']]) && (int)$x['taux'] ? (int)$x['taux'] : 0; $t[$k][0] += (int)$x['ht']; $t[$k][1] += (int)$x['tva']; }
+        $avoir = $f['genre'] === 'avoir';
+        $pa = $avoir ? [] : ($d['paiement'] ?? []);
+        $out[] = [$f['numero'], $avoir ? 'Avoir' : 'Facture', substr((string)$f['emise_le'], 0, 10), (string)($d['date_vente'] ?? ''), tableur_texte((string)($d['client']['nom'] ?? '')),
+                  tableur_texte((string)($d['client']['adresse'] ?? '')), $n($t[55][0]), $n($t[55][1]), $n($t[200][0]), $n($t[200][1]), $n($t[0][0]), $n($t[0][1]),
+                  $n((int)$f['total_ht']), $n((int)$f['total_tva']), $n((int)$f['total_ttc']), (string)($pa['le'] ?? ''), (string)($pa['moyen'] ?? ''),
+                  (int)($pa['acompte'] ?? 0) ? $n((int)$pa['acompte']) : '', (string)($pa['acompte_le'] ?? ''), (string)($pa['acompte_moyen'] ?? ''),
+                  (string)($d['origine']['numero'] ?? ''), tableur_texte((string)($d['motif'] ?? '')), (string)($d['commande']['reference'] ?? '')];
+    }
+    return $out;
+}
+/**
+ * Le livre des recettes en espèces d'un mois (réponse de l'expert-comptable du 09/11/2026) : chaque somme reçue en espèces, particuliers et
+ * restaurants, avec ou sans facture, à la date où elle a été notée. Un acompte et le solde d'une même commande font deux lignes, chacun avec
+ * son moyen ; une commande annulée dont l'acompte est gardé y reste. Lu dans la base, jamais tenu à part (choix d'Olivier du 09/11/2026).
+ */
+const ESPECES_EXPORT_ENTETES = ['Encaissé le', 'Commande', 'Client', 'Particulier ou professionnel', 'Encaissé TTC', 'Nature', 'Facture', 'Retrait prévu le'];
+function especes_export_lignes(string $mois): array {
+    $out = [];
+    foreach (lignes("SELECT id FROM commandes WHERE paiement IN ('paye', 'acompte_recu') AND (moyen = 'especes' OR acompte > 0) ORDER BY id") as $x) {
+        $k = commande((int)$x['id']);
+        if (!$k) continue;
+        $le = substr((string)($k['paiement_le'] ?: ($k['remise_le'] ?: $k['maj_le'])), 0, 10);
+        $total = montant_commande($k);
+        $acompte = (int)$k['acompte'];
+        $especes = $k['moyen'] === 'especes';
+        $sommes = [];
+        if ($k['paiement'] === 'acompte_recu') {
+            if ($especes) $sommes[] = [$le, 'Acompte', $acompte > 0 ? $acompte : $total];
+        } else {
+            [$leA, $moyenA] = $acompte > 0 ? facture_acompte_info((int)$k['id']) : ['', ''];
+            if ($leA === '') { if ($especes) $sommes[] = [$le, 'Paiement', $total]; }   // payé en une fois (ou acompte jamais noté à part)
+            else {
+                if ($moyenA === MOYENS_FACTURE['especes']) $sommes[] = [$leA, 'Acompte', $acompte];
+                if ($especes) $sommes[] = [$le, 'Solde', $total - $acompte];
+            }
+        }
+        $f = facture_en_vigueur((int)$k['id']);
+        foreach ($sommes as [$quand, $nature, $montant]) if ($montant > 0 && substr($quand, 0, 7) === $mois)
+            $out[] = [$quand, $k['reference'], tableur_texte(commande_client_nom($k)), commande_est_pro($k) ? 'Professionnel' : 'Particulier',
+                      number_format($montant / 100, 2, ',', ''), $nature, $f ? (string)$f['numero'] : tableur_texte((string)$k['facture']), (string)$k['retrait_date']];
+    }
+    usort($out, fn(array $a, array $b): int => [$a[0], $a[1]] <=> [$b[0], $b[1]]);
+    return $out;
+}
+function page_factures_export(): void {
+    $mois = is_string($_GET['mois'] ?? null) && preg_match('/^\d{4}-\d{2}$/', $_GET['mois']) ? $_GET['mois'] : '';
+    if ($mois === '') rediriger('factures');
+    $especes = ($_GET['jeu'] ?? '') === 'especes';
+    evenement('export', ($especes ? 'Tableur des espèces de ' : 'Tableur des factures de ') . mois_texte($mois) . ' téléchargé');
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="madamecho-' . ($especes ? 'especes-' : 'factures-') . $mois . '.csv"');
+    header('Cache-Control: no-store, private');
+    echo $especes ? csv(especes_export_lignes($mois), ESPECES_EXPORT_ENTETES) : csv(factures_export_lignes($mois), FACTURES_EXPORT_ENTETES);
+    exit;
 }
 
 /* ---------- Accueil (FR-010) ---------- */

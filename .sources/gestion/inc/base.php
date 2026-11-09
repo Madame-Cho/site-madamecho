@@ -333,6 +333,14 @@ CREATE TABLE IF NOT EXISTS factures_remises (id INTEGER PRIMARY KEY, facture_id 
   canal TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '', mid TEXT NOT NULL DEFAULT '', ok INTEGER NOT NULL DEFAULT 1);
 CREATE INDEX IF NOT EXISTS factures_remises_facture ON factures_remises(facture_id);
 ");
+    // L'adresse postale du client particulier : obligatoire sur sa facture avec son prénom et son nom (réponse de l'expert-comptable du
+    // 09/11/2026) ; gardée sur la fiche pour les factures suivantes, effacée avec elle. Une facture seulement si le client la demande
+    // (case du formulaire du site, ou notée par Youngmi pour les autres canaux ; décision d'Olivier du 09/11/2026)
+    foreach (['clients' => ['adresse', "TEXT NOT NULL DEFAULT ''"], 'commandes' => ['facture_demandee', 'INTEGER NOT NULL DEFAULT 0']] as $table => [$col, $def]) {
+        if (in_array($col, array_column($pdo->query("PRAGMA table_info($table)")->fetchAll(PDO::FETCH_ASSOC), 'name'), true)) continue;
+        try { $pdo->exec("ALTER TABLE $table ADD COLUMN $col $def"); }
+        catch (\PDOException $e) { if (!str_contains($e->getMessage(), 'duplicate column')) throw $e; }
+    }
     // Les alertes « facture à faire » ne regardent que les commandes remises après l'arrivée des factures dans la gestion
     $pdo->exec("INSERT OR IGNORE INTO parametres (cle, valeur) VALUES ('factures_depuis', '" . date('Y-m-d H:i:s') . "')");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema', '11')");

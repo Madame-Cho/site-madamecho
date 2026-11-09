@@ -154,6 +154,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .deux-champs{display:grid;gap:0 16px}
 .case{display:flex;gap:10px;align-items:center;min-height:44px;margin-top:16px;font-size:15px;cursor:pointer}
 .case input{width:20px;height:20px;accent-color:var(--accent)}
+.case i{font-style:normal;color:var(--doux)}
 .piege{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .notice{font-size:13px;color:var(--doux);margin-top:24px}
 .erreurs{color:var(--erreur);margin-top:16px;font-size:15px;white-space:pre-line}

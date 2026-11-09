@@ -230,11 +230,20 @@
     var lienCarte = ($('.vide a', panier) || { getAttribute: function () { return '../#carte'; } }).getAttribute('href');
 
     if (/[?&]pro=1/.test(location.search)) { var c = $('[data-pro]'); if (c) c.checked = true; }
+    // Facture sur demande (09/11/2026) : la case ouvre l'adresse postale ; pas pour une entreprise, facturée à part
+    function majFacture() {
+      var pro = $('[data-pro]') && $('[data-pro]').checked, c = $('[data-facture]'), i = $('[data-facture-infos]');
+      if ($('[data-facture-case]')) $('[data-facture-case]').hidden = pro;
+      if (i) i.hidden = pro || !(c && c.checked);
+      if (c) c.setAttribute('aria-expanded', i && !i.hidden ? 'true' : 'false');
+    }
     function majPro() {
       var on = $('[data-pro]') && $('[data-pro]').checked;
       $('[data-societe]').hidden = !on; $('[data-message-pro]').hidden = !on;
+      majFacture();
     }
     if ($('[data-pro]')) $('[data-pro]').addEventListener('change', function () { majPro(); majDate(); });
+    if ($('[data-facture]')) $('[data-facture]').addEventListener('change', majFacture);
     majPro();
 
     function delaiMin(ls) {
@@ -369,6 +378,7 @@
       t.push('Nom\u00a0: ' + (f.prenom ? f.prenom.value.trim() + ' ' : '') + f.nom.value.trim());
       t.push('Email\u00a0: ' + f.email.value.trim() + (f.telephone.value.trim() ? ' · Téléphone\u00a0: ' + f.telephone.value.trim() : ''));
       if (f.pro && f.pro.checked) t.push('Entreprise\u00a0: ' + f.societe.value.trim() + (f.besoin.value.trim() ? ' · Besoin\u00a0: ' + f.besoin.value.trim() : ''));
+      else if (f.facture && f.facture.checked) t.push('Facture demandée, adresse\u00a0: ' + f.adresse_facture.value.trim());
       return t.join('\n');
     }
 
@@ -395,6 +405,7 @@
       if (!f.nom.value.trim()) err(f.nom, 'Indiquez votre nom.');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) err(f.email, 'Indiquez une adresse email valide, pour recevoir la réponse de Madame Cho.');
       if (f.pro.checked && !f.societe.value.trim()) err(f.societe, 'Indiquez le nom de l’entreprise.');
+      if (f.facture && f.facture.checked && !f.pro.checked && f.adresse_facture.value.trim().length < 8) err(f.adresse_facture, 'Indiquez votre adresse postale, pour la facture (numéro, rue, code postal et ville).');
       return out;
     }
 

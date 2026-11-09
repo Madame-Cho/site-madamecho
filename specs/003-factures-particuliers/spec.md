@@ -4,8 +4,8 @@
 
 **Created**: 2026-11-08
 
-**Status**: Brouillon, en attente des réponses de l'expert-comptable (mail programmé par Olivier
-pour le 2026-11-10) ; aucun code écrit
+**Status**: Lots 1 à 4 écrits sur la branche, pas publiés. Réponses de l'expert-comptable reçues le
+2026-11-09 (questions 2 à 5) ; la question 1 (logiciel de caisse, FR-013) reste ouverte
 
 **Input**: Demande d'Olivier du 2026-11-08 : « Youngmi crée ses factures manuellement dans Qonto
 (B2C et B2B) ; elle aimerait que les factures soient générées automatiquement en B2C par l'outil
@@ -22,6 +22,7 @@ Doc « Plan : factures des particuliers générées par la gestion »).
 
 - Q: Facture ou reçu ? → A : un seul document, la facture « acquittée », faite pour chaque commande
   de particulier payée ; pas de reçu en plus, jamais de ticket papier imposé (plan validé).
+  *Remplacé le 2026-11-09 : facture seulement si le client la demande, reçu à venir (voir plus bas).*
 - Q: Qui envoie ? → A : la gestion, au toucher de Youngmi sur « Envoyer » après l'aperçu ; au
   début, rien ne part sans elle (phase de contrôle). Un envoi sans toucher ne viendra qu'après,
   sur décision d'Olivier et exception écrite à R-01, comme pour le rappel de retrait.
@@ -32,11 +33,36 @@ Doc « Plan : factures des particuliers générées par la gestion »).
 - Q: Logiciel de caisse ? → A : non. La carte passe par Tap to Pay (le relevé Qonto fait foi), les
   espèces vont dans un livre des recettes tenu à part. La gestion fait les commandes et les
   factures sans devenir la caisse (choix d'Olivier ; portée à confirmer par l'expert-comptable).
+  *Précisé le 2026-11-09 : rien n'est tenu à part ; le livre des recettes des espèces est un
+  extrait tableur de la base (FR-021).*
 - Q: Comptabilité (export, copie au Drive, e-reporting de 2027) ? → A : hors de cette
   spécification, futur chantier ; les factures en gardent toutes les données.
 - Q: Liaison automatique avec Qonto ? → A : toujours impossible (portail développeurs fermé aux
   nouvelles inscriptions, essai d'Olivier du 2026-11-08) ; le rapprochement à la main de FR-030
-  (spécification 002) reste la voie.
+  (spécification 002) reste la voie. *2026-11-09 : Qonto annonce sur son site la migration du
+  compte développeurs, accessible sous quelques heures (information d'Olivier) ; à réessayer.*
+
+### Session 2026-11-09 (Florent, l'expert-comptable ; puis Olivier)
+
+- Q2: Série à part pour les particuliers ? → A (Florent) : oui, à condition que la numérotation
+  soit continue et que les dates suivent l'ordre des numéros. Retenu : `P-AAAA-NNNN` et
+  `AV-AAAA-NNNN` (FR-003).
+- Q3: Acompte ? → A (Florent) : une facture finale qui montre l'acompte et le solde (FR-012).
+- Q4: Livre des recettes des espèces ? → A (Florent) : lui dire quelles factures sont réglées en
+  espèces. Olivier : tout reste dans la base, des extraits tableur quand il faut (FR-021).
+- Q5: Facture sans nom (« Client particulier ») ? → A (Florent) : non ; prénom, nom et adresse du
+  client sont obligatoires (FR-002, FR-020).
+- Q1: Logiciel de caisse ? → pas de réponse : Florent parle de l'e-reporting des ventes aux
+  particuliers (totaux par jour, à partir du 2027-09-01 pour une PME, par une plateforme agréée).
+  Question reposée (FR-013).
+- Q: Faut-il une facture pour chaque particulier ? → A (Olivier, choix C) : non. **Facture
+  seulement si le client la demande** : sur le site, une case facultative « Je souhaite une
+  facture » ouvre un petit formulaire (adresse postale) que Youngmi retrouve dans la gestion ; par
+  téléphone ou un autre canal, Youngmi demande au client s'il en veut une et note elle-même les
+  informations. À revérifier avec Florent (FR-001, FR-019).
+- Q: Reçu ? → A (Olivier) : quand Qonto sera branché, un reçu sera systématique pour chaque
+  particulier, envoyé par Youngmi par mail ou un autre moyen ; la gestion l'aide à le produire.
+  Pas encore écrit : il attend la liaison Qonto et la réponse à FR-013 (FR-022).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -54,8 +80,8 @@ commande de particulier, émettre la facture, et vérifier le PDF (mentions, tot
 
 **Acceptance Scenarios**:
 
-1. **Given** une commande de particulier remise et notée « Payé », **When** Youngmi ouvre la
-   commande, **Then** un bloc « Facture » propose « Voir l'aperçu » avec les gâteaux, quantités,
+1. **Given** une commande de particulier remise et notée « Payé », dont le client a demandé une
+   facture, **When** Youngmi ouvre la commande, **Then** un bloc « Facture » propose « Voir l'aperçu » avec les gâteaux, quantités,
    prix TTC et HT, TVA par taux, acompte déjà versé et total, sans numéro encore.
 2. **Given** l'aperçu, **When** Youngmi touche « Émettre », **Then** la facture reçoit le numéro
    suivant de la série des particuliers, sa date d'émission, et son PDF est figé.
@@ -156,7 +182,8 @@ le dit sur l'accueil.
 
 1. **Given** un mail de facture qui ne part pas, **When** l'envoi échoue, **Then** la facture est
    marquée « Non remise » et l'accueil le signale avec « Renvoyer » et « Autre moyen ».
-2. **Given** une commande de particulier payée et remise depuis plus de 2 jours sans facture,
+2. **Given** une commande de particulier avec facture demandée, payée et remise depuis plus de
+   2 jours sans facture,
    **When** Youngmi ouvre l'accueil, **Then** elle la voit dans « Factures à faire ».
 3. **Given** une facture émise puis une commande modifiée, **When** Youngmi ouvre l'accueil,
    **Then** elle voit « Facture à corriger ».
@@ -168,13 +195,19 @@ le dit sur l'accueil.
 
 ### Edge Cases
 
-- Client qui refuse que son nom figure : facture à « Client particulier », sans adresse.
+- Client qui refuse de donner son nom ou son adresse : pas de facture (prénom, nom et adresse sont
+  obligatoires, réponse de l'expert-comptable du 2026-11-09) ; un reçu restera possible (FR-022).
+- Client qui ne demande pas de facture : rien à émettre ; s'il la demande après coup, Youngmi le
+  note sur la commande (« Le client veut une facture ») et la facture se prépare.
+- Client qui change d'avis avant l'émission : « Finalement, pas de facture » ; après l'émission,
+  seul un avoir l'annule.
+- Client professionnel sur le site : pas de case facture (les restaurants restent dans Qonto).
 - Panne de la gestion le jour du retrait : la facture s'émet après coup ; la date de vente reste
   celle du retrait, la date d'émission celle du jour.
 - Deux personnes qui touchent « Émettre » en même temps : un seul numéro est donné, jamais deux
   factures pour la même commande, jamais de trou dans la série.
-- Commande payée en plusieurs fois (acompte puis solde) : une seule facture à la remise, l'acompte
-  déduit (sous réserve de FR-012).
+- Commande payée en plusieurs fois (acompte puis solde) : une seule facture à la remise, qui montre
+  l'acompte (date, moyen, montant) et le solde (FR-012).
 - Remise ou geste commercial : ligne de réduction visible sur la facture.
 - Facture en coréen : non ; la facture est toujours en français (R-22), l'écran de Youngmi peut
   être en coréen.
@@ -189,18 +222,19 @@ le dit sur l'accueil.
 ### Functional Requirements
 
 - **FR-001**: La gestion MUST préparer une facture pour toute commande de client particulier
-  (B2C) notée « Payé » et remise, à partir des lignes, prix, TVA et acompte de la commande, sans
-  retaper.
+  (B2C) dont le client a demandé une facture (FR-019), notée « Payé » et remise, à partir des
+  lignes, prix, TVA et acompte de la commande, sans retaper. Sans demande, rien n'est préparé.
 - **FR-002**: Une facture MUST porter toutes les mentions obligatoires : date d'émission, numéro
   unique, date de la vente (date de remise), nom, adresse, SIREN et numéro de TVA de Madame Cho,
-  nom du client (sauf refus), désignation, quantité, prix unitaire HT, taux de TVA, totaux HT,
+  prénom, nom et adresse postale du client (obligatoires, en lettres latines ; pas de « Client
+  particulier », réponse de l'expert-comptable du 2026-11-09), désignation, quantité, prix unitaire HT, taux de TVA, totaux HT,
   TVA et TTC, réductions, date et moyen du règlement, mention « Acquittée ». Les données de Madame
   Cho viennent des Réglages, jamais écrites dans le code.
 - **FR-003**: Le numéro MUST être donné au moment de l'émission seulement, dans une série propre
   aux particuliers, chronologique, continue et sans trou, jamais réutilisé, y compris en cas
-  d'envois simultanés. Format : [NEEDS CLARIFICATION: préfixe et format de la série des
-  particuliers, à côté de F-AAAA-NNN de Qonto, à valider par l'expert-comptable (question 2 du
-  mail du 2026-11-10)].
+  d'envois simultanés. Format : `P-AAAA-NNNN` (avoirs `AV-AAAA-NNNN`), à côté de F-AAAA-NNN de
+  Qonto ; série à part validée par l'expert-comptable le 2026-11-09, à condition que les dates
+  suivent l'ordre des numéros (le numéro est donné à l'émission, dans l'ordre des émissions).
 - **FR-004**: Une facture émise MUST être figée : son contenu et son PDF ne changent plus ; seules
   les informations de remise (moyen, date) s'y ajoutent.
 - **FR-005**: Toute correction MUST passer par un avoir (total ou partiel), numéroté dans sa propre
@@ -219,14 +253,17 @@ le dit sur l'accueil.
   non remises, à corriger, doublon possible avec un numéro Qonto noté sur la commande.
 - **FR-011**: Plus › Factures MUST lister factures et avoirs (filtre par mois et par état), avec le
   compteur de la phase de contrôle.
-- **FR-012**: Un acompte reçu MUST apparaître comme déjà versé sur la facture finale : [NEEDS
-  CLARIFICATION: une seule facture à la remise avec l'acompte déduit, ou une facture d'acompte au
-  moment du versement ? question 3 du mail à l'expert-comptable].
+- **FR-012**: Un acompte reçu MUST apparaître sur la facture finale, avec sa date, son moyen et son
+  montant, puis le solde réglé (date, moyen, montant) : une seule facture à la remise, pas de
+  facture d'acompte (réponse de l'expert-comptable du 2026-11-09). Un acompte noté plus grand que
+  le total bloque l'émission.
 - **FR-013**: La gestion MUST rester un outil de commandes et de factures, pas un logiciel de
   caisse : elle n'encaisse rien, et le paiement qu'elle note sert à la facture et au suivi de la
-  commande. [NEEDS CLARIFICATION: le fait de noter « payé le … » et le moyen pour un particulier
-  la fait-il entrer dans l'obligation de logiciel sécurisé (article 286, I-3° bis du CGI) ? Si oui,
-  quoi changer ? question 1 du mail à l'expert-comptable].
+  commande. [NEEDS CLARIFICATION: le fait de noter « payé le … » et le moyen pour un particulier,
+  d'en tirer le livre des recettes des espèces (FR-021) et demain un reçu pour chaque particulier
+  (FR-022) la fait-il entrer dans l'obligation de logiciel ou système de caisse sécurisé
+  (article 286, I-3° bis du CGI) ? Si oui, quoi changer ? Question 1, sans réponse le 2026-11-09,
+  reposée à l'expert-comptable].
 - **FR-014**: Les factures et avoirs MUST être conservés 10 ans, même quand la fiche du client est
   effacée ; la tâche de nuit ne les efface jamais.
 - **FR-015**: Factures, avoirs et leurs remises MUST être inscrits dans un journal que personne ne
@@ -237,11 +274,33 @@ le dit sur l'accueil.
 - **FR-017**: Le manuel de la gestion MUST décrire la fonction dans la même version (FR et KO).
 - **FR-018**: Le registre des traitements (T2 facturation) et la page Confidentialité MUST être mis
   à jour dans la même version si un nouveau destinataire ou une nouvelle donnée apparaît (lien
-  privé, QR code).
+  privé, QR code, adresse postale du client, tableurs remis à l'expert-comptable).
+- **FR-019**: La facture MUST être demandée par le client (décision d'Olivier du 2026-11-09) : sur
+  le formulaire du site, une case facultative « Je souhaite une facture » (pas pour une
+  entreprise) ouvre le champ de l'adresse postale, exigée si la case est cochée ; la demande et
+  l'adresse arrivent dans le mail à contact@ et sur la commande (« Facture demandée »). Pour une
+  commande prise autrement, Youngmi le note dans le cadre Facture de la commande (« Le client veut
+  une facture », avec l'adresse) ; « Finalement, pas de facture » l'enlève tant qu'elle n'est pas
+  émise. La liste des commandes montre « Facture demandée » tant que la facture n'est pas faite.
+- **FR-020**: L'adresse postale du client MUST être gardée sur sa fiche (champ « Adresse
+  (factures) », modifiable, effacée avec la fiche, reprise par une fusion et dans l'export du
+  droit d'accès) ; une adresse écrite au moment d'émettre y est gardée. La facture garde l'adresse
+  qu'elle porte, 10 ans.
+- **FR-021**: Plus › Factures MUST offrir, pour chacun des trois derniers mois, deux tableurs pour
+  l'expert-comptable, tirés de la base (rien n'est tenu à part) : « Factures et avoirs » (montants
+  par taux de TVA, date et moyen de chaque règlement, acompte et solde) et « Espèces encaissées »
+  (le livre des recettes : chaque somme reçue en espèces, particuliers et restaurants, avec ou sans
+  facture, l'acompte et le solde chacun à sa date et avec son moyen). Chaque téléchargement est
+  noté dans l'historique.
+- **FR-022** *(à venir, pas dans cette version)*: Quand Qonto sera branché à la gestion, un reçu
+  MUST être fait pour chaque paiement d'un particulier, que Youngmi relit puis envoie par mail ou
+  un autre moyen (au toucher, R-01) ; la gestion le prépare. Il attend la liaison Qonto
+  (spécification à venir) et la réponse de l'expert-comptable à FR-013.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Facture** : numéro, commande, client (nom tel qu'émis ou « Client particulier »), dates
+- **Demande de facture** : sur la commande (`facture_demandee`), notée par le site ou par Youngmi.
+- **Facture** : numéro, commande, client (prénom, nom et adresse tels qu'émis), dates
   (vente, émission, règlement), moyen de règlement, lignes figées (désignation, quantité, prix
   unitaire HT, taux, montants), réductions, acompte déduit, totaux, état (à émettre, émise,
   remise, non remise, annulée par avoir), empreinte du PDF.
@@ -278,9 +337,12 @@ le dit sur l'accueil.
 - Le PDF est produit par la gestion elle-même, sans service extérieur ni bibliothèque chargée par
   les pages (principe V).
 - Pas de facture électronique structurée (Factur-X) : non exigée pour les particuliers.
-- Comptabilité (export, copie au Drive en 04/04, e-reporting à partir du 2027-09-01) : futur
-  chantier, hors de cette spécification.
+- Comptabilité (copie au Drive en 04/04, e-reporting à partir du 2027-09-01) : futur chantier,
+  hors de cette spécification. Les tableurs de FR-021 en sont le premier pas. L'e-reporting des
+  ventes aux particuliers (totaux par jour, par une plateforme agréée, à partir du 2027-09-01 pour
+  une PME) partira des données de la base ; la réception des factures électroniques des
+  fournisseurs (obligatoire depuis le 2026-09-01) relève de la comptabilité, pas de la gestion.
 - La facture des restaurants, l'envoi sans toucher et la liaison automatique avec Qonto sont hors
   de cette spécification.
-- Les réponses de l'expert-comptable aux questions 1 à 3 peuvent changer FR-003, FR-012 et FR-013 ;
-  le plan technique n'est pas commencé avant elles.
+- La réponse de l'expert-comptable à la question 1 peut encore changer FR-013, FR-021 et FR-022 ;
+  le choix « facture sur demande » est à revérifier avec lui.

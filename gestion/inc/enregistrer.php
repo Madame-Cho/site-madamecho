@@ -15,7 +15,8 @@ require_once __DIR__ . '/modele.php';
 
 /**
  * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
- * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code).
+ * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code),
+ * facture (bool, facultatif : le client veut une facture) et adresse (son adresse postale, gardée sur sa fiche pour la facture).
  * Renvoie le numéro interne de la commande (0 : rien d'enregistré).
  * Ne fait rien tant que l'espace n'est pas ouvert, ni avant que l'enregistrement soit activé dans Paramètres (mise en ligne en deux temps).
  */
@@ -45,6 +46,13 @@ function enregistrer_demande(array $d): int {
                               'retrait_date' => $d['date'], 'retrait_moment' => $d['moment'], 'lignes' => $lignes,
                               'perso' => (string)$d['perso'], 'besoin' => (string)$d['besoin'], 'recue_le' => $quand,
                               'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ''), 'auteur' => 'site']);
+        // Facture demandée (décision d'Olivier du 09/11/2026) : notée sur la commande, l'adresse sur la fiche du client
+        if (!empty($d['facture']) && !$d['pro']) {
+            q("UPDATE commandes SET facture_demandee = 1 WHERE id = ?", [$id]);
+            evenement('facture', 'Facture demandée par le client sur le site', ['commande' => $id, 'client' => $cid]);
+            $adresse = mb_substr(trim((string)($d['adresse'] ?? '')), 0, 200);
+            if ($adresse !== '') client_modifier($cid, ['adresse' => $adresse]);
+        }
         $pdo->commit();
         return $id;
     } catch (\Throwable $e) {

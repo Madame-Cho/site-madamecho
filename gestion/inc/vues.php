@@ -257,7 +257,9 @@ function carte_commande(array $k, bool $avecClient = true): string {
     $montant = montant_lu($k);
     return '<a class="carte-cmd' . ($pa ? ' est-' . $pa['niveau'] : '') . '" href="' . h(u('commande', ['id' => $k['id']])) . '">'
          . '<span class="l1">' . ($avecClient ? chip_type(commande_est_pro($k)) : '') . $nom . chip_statut($k['statut'], true, livraison_pro($k)) . '</span>'
-         . '<span class="l2">' . h(retrait_texte($k, true)) . ($montant !== '' ? ' · ' . h($montant) : '') . chip_paiement($k['paiement'], (int)$k['acompte']) . '</span>'
+         . '<span class="l2">' . h(retrait_texte($k, true)) . ($montant !== '' ? ' · ' . h($montant) : '') . chip_paiement($k['paiement'], (int)$k['acompte'])
+         // Le client a demandé une facture (09/11/2026) : à préparer au retrait, tant qu'elle n'est pas faite
+         . (!empty($k['facture_demandee']) && trim((string)($k['facture'] ?? '')) === '' && !in_array($k['statut'], ['annulee', 'sans_suite'], true) ? ' <span class="paiement p-facture-demandee">Facture demandée</span>' : '') . '</span>'
          . '<span class="l3">' . h(commande_contenu_texte($k, true)) . '</span>'
          . '<span class="l4">' . h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · reçue ' . h(date_fr($k['recue_le'], 'relative')) . '</span>'
          . ($alertes !== '' ? '<span class="l5">' . $alertes . '</span>' : '')

@@ -90,8 +90,8 @@ function facture_remises(int $factureId): array { return lignes("SELECT * FROM f
 function facture_concernee(array $k): bool { return !commande_est_pro($k); }
 
 /**
- * Où en est la facture d'une commande : pro, aucune (annulée, sans suite), pas_payee, pas_remise, a_emettre (avec ce qui manque),
- * emise (et a_corriger si le montant de la commande a changé depuis).
+ * Où en est la facture d'une commande : pro, aucune (annulée, sans suite), non_demandee (le client n'a pas demandé de facture),
+ * pas_payee, pas_remise, a_emettre (avec ce qui manque), emise (et a_corriger si le montant de la commande a changé depuis).
  */
 function facture_etat(array $k): array {
     if (!facture_concernee($k)) return ['etat' => 'pro'];
@@ -102,6 +102,8 @@ function facture_etat(array $k): array {
         return ['etat' => 'emise', 'facture' => $f, 'reste' => $reste, 'a_corriger' => $reste !== (in_array($k['statut'], ['annulee', 'sans_suite'], true) || $k['paiement'] === 'rembourse' ? 0 : montant_commande($k))];
     }
     if (in_array($k['statut'], ['annulee', 'sans_suite'], true)) return ['etat' => 'aucune'];
+    // Une facture seulement si le client la demande (décision d'Olivier du 09/11/2026, après la réponse de l'expert-comptable)
+    if (empty($k['facture_demandee'])) return ['etat' => 'non_demandee'];
     if ($k['paiement'] !== 'paye') return ['etat' => 'pas_payee'];
     if ($k['statut'] !== 'remise') return ['etat' => 'pas_remise'];
     $manque = [];
@@ -172,24 +174,76 @@ function facture_totaux(array $lignes): array {
     return ['par_taux' => $tva, 'totaux' => $t];
 }
 /**
- * Le nom du client sur la facture : prénom et nom, ou « Client particulier » s'il ne veut pas y figurer, ou le nom écrit à
- * l'émission (un nom en coréen s'écrit en lettres latines : la facture est en français et le PDF ne sait pas écrire le hangeul).
+ * Le nom du client sur la facture : prénom et nom de la fiche, ou le nom écrit à l'émission (un nom en coréen s'écrit en lettres
+ * latines : la facture est en français et le PDF ne sait pas écrire le hangeul). Prénom, nom et adresse sont obligatoires
+ * (réponse de l'expert-comptable du 09/11/2026 : plus de « Client particulier »).
  */
-function facture_nom_client(array $k, bool $anonyme, string $ecrit = ''): string {
-    if ($anonyme) return 'Client particulier';
-    $n = trim($ecrit) !== '' ? trim($ecrit) : trim(trim((string)$k['client_prenom']) . ' ' . trim((string)$k['client_nom']));
-    return $n !== '' ? $n : 'Client particulier';
+function facture_nom_client(array $k, string $ecrit = ''): string {
+    return trim($ecrit) !== '' ? trim($ecrit) : trim(trim((string)$k['client_prenom']) . ' ' . trim((string)$k['client_nom']));
 }
-/** Tout ce que la facture dira, figé au moment de l'émission (le JSON est gardé avec le PDF). $o : adresse, anonyme. */
+/** Prénom et nom : deux mots au moins (« Sophie Laurent », « Kim Minji »). */
+function facture_nom_complet(string $n): bool { return count(preg_split('/\s+/u', trim($n), -1, PREG_SPLIT_NO_EMPTY) ?: []) >= 2; }
+/**
+ * L'acompte d'une commande : quand il a été noté « reçu », et par quel moyen (lus dans l'historique de la commande). Vide quand il a
+ * été noté en même temps que le paiement complet : la facture dit alors « versé à la commande ».
+ */
+function facture_acompte_info(int $commandeId): array {
+    $e = ligne("SELECT le, texte FROM evenements WHERE commande_id = ? AND type = 'paiement' AND nouveau = 'acompte_recu' ORDER BY id DESC LIMIT 1", [$commandeId]);
+    if (!$e) return ['', ''];
+    $moyen = '';
+    foreach (MOYENS as $cle => $lib) if ($cle !== '' && str_contains((string)$e['texte'], ' · ' . $lib)) { $moyen = MOYENS_FACTURE[$cle] ?? ''; break; }
+    return [substr((string)$e['le'], 0, 10), $moyen];
+}
+/** Tout ce que la facture dira, figé au moment de l'émission (le JSON est gardé avec le PDF). $o : nom, adresse (sinon celle de la fiche). */
 function facture_donnees(array $k, array $o = []): array {
     $lignes = facture_lignes($k);
     $vente = $k['remise_le'] ? substr((string)$k['remise_le'], 0, 10) : ((string)$k['retrait_date'] !== '' ? (string)$k['retrait_date'] : aujourdhui());
     $paye = $k['paiement_le'] ? substr((string)$k['paiement_le'], 0, 10) : $vente;
+    $adresse = trim((string)($o['adresse'] ?? '')) !== '' ? trim((string)$o['adresse']) : trim((string)($k['client_adresse'] ?? ''));
+    $t = facture_totaux($lignes);
+    // L'acompte et le solde, chacun avec sa date (réponse de l'expert-comptable du 09/11/2026 : une facture finale qui montre les deux)
+    $pa = ['le' => $paye, 'moyen' => MOYENS_FACTURE[$k['moyen']] ?? '', 'acompte' => (int)$k['acompte']];
+    if ((int)$k['acompte'] > 0) {
+        [$pa['acompte_le'], $pa['acompte_moyen']] = facture_acompte_info((int)$k['id']);
+        $pa['solde'] = $t['totaux']['ttc'] - (int)$k['acompte'];
+    }
     return ['v' => 1, 'genre' => 'facture', 'vendeur' => vendeur() ?? VENDEUR_SUGGESTION,
-            'client' => ['nom' => facture_nom_client($k, !empty($o['anonyme']), mb_substr((string)($o['nom'] ?? ''), 0, 120)), 'adresse' => !empty($o['anonyme']) ? '' : mb_substr(trim((string)($o['adresse'] ?? '')), 0, 200)],
+            'client' => ['nom' => facture_nom_client($k, mb_substr((string)($o['nom'] ?? ''), 0, 120)), 'adresse' => mb_substr($adresse, 0, 200)],
             'commande' => ['id' => (int)$k['id'], 'reference' => (string)$k['reference']],
-            'date_vente' => $vente, 'lignes' => $lignes] + facture_totaux($lignes)
-         + ['paiement' => ['le' => $paye, 'moyen' => MOYENS_FACTURE[$k['moyen']] ?? '', 'acompte' => (int)$k['acompte']]];
+            'date_vente' => $vente, 'lignes' => $lignes] + $t + ['paiement' => $pa];
+}
+
+/**
+ * Le règlement écrit sur la facture. Sans acompte : « Facture acquittée : réglée le … par … ». Avec un acompte : l'acompte et le solde,
+ * chacun avec son montant, sa date et son moyen quand ils sont connus (réponse de l'expert-comptable du 09/11/2026).
+ */
+function facture_reglement_lignes(array $pa): array {
+    $par = fn(string $m): string => $m !== '' ? ' par ' . $m : '';
+    if ((int)($pa['acompte'] ?? 0) <= 0) return ['Facture acquittée : réglée le ' . date_facture($pa['le']) . $par((string)$pa['moyen']) . '.'];
+    $l = ['Facture acquittée.'];
+    $l[] = ((string)($pa['acompte_le'] ?? '') !== '' ? 'Acompte versé le ' . date_facture($pa['acompte_le']) . $par((string)($pa['acompte_moyen'] ?? '')) : 'Acompte versé à la commande')
+         . ' : ' . montant_facture((int)$pa['acompte']);
+    if (isset($pa['solde'])) $l[] = ((int)$pa['solde'] > 0 ? 'Solde réglé le ' . date_facture($pa['le']) . $par((string)$pa['moyen']) . ' : ' . montant_facture((int)$pa['solde'])
+                                                           : 'Solde : ' . montant_facture(0) . ' (l\'acompte règle toute la facture)');
+    return $l;
+}
+
+/**
+ * Le client veut une facture (ou n'en veut plus, tant qu'aucune n'est émise). L'adresse donnée en même temps va sur sa fiche.
+ * Renvoie '' ou un message d'erreur.
+ */
+function facture_demande_noter(int $commandeId, bool $oui, string $adresse = ''): string {
+    $k = commande($commandeId);
+    if (!$k || !facture_concernee($k)) return 'Commande introuvable.';
+    if (!$oui && facture_en_vigueur($commandeId)) return 'Une facture est déjà émise pour cette commande : pour l\'annuler, faites un avoir.';
+    $adresse = mb_substr(trim(une_ligne($adresse)), 0, 200);
+    if ($adresse !== '' && !Pdf::ecrivable($adresse)) return 'L\'adresse contient des caractères que la facture ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines.';
+    if ((int)$k['facture_demandee'] !== (int)$oui) {
+        q("UPDATE commandes SET facture_demandee = ?, maj_le = ? WHERE id = ?", [(int)$oui, maintenant(), $commandeId]);
+        evenement('facture', $oui ? 'Le client veut une facture' : 'Finalement pas de facture', ['commande' => $commandeId, 'client' => (int)$k['client_id']]);
+    }
+    if ($oui && $adresse !== '' && $adresse !== trim((string)($k['client_adresse'] ?? ''))) client_modifier((int)$k['client_id'], ['adresse' => $adresse]);
+    return '';
 }
 
 /* ---------- Émission ---------- */
@@ -247,7 +301,7 @@ function document_emettre(string $genre, callable $preparer, array $liens, strin
         throw $e;
     }
 }
-/** Les données de la facture d'une commande, ou ['erreur' => …] si elle ne peut pas encore s'émettre. $o : nom, adresse, anonyme, doublon_ok. */
+/** Les données de la facture d'une commande, ou ['erreur' => …] si elle ne peut pas encore s'émettre. $o : nom, adresse, doublon_ok. */
 function facture_preparer(array $k, array $o = []): array {
     $e = facture_etat($k);
     if ($e['etat'] === 'emise') return ['erreur' => 'Cette commande a déjà sa facture (' . $e['facture']['numero'] . ').'];
@@ -256,21 +310,26 @@ function facture_preparer(array $k, array $o = []): array {
     if ($e['qonto'] !== '' && empty($o['doublon_ok'])) return ['erreur' => 'Une facture Qonto (' . $e['qonto'] . ') est déjà notée sur la commande : cochez la case pour confirmer que ce n\'est pas un doublon.'];
     $d = facture_donnees($k, $o);
     // Ce que le PDF ne saurait pas écrire (hangeul, émoji) sortirait en « ? » : on le dit avant de donner un numéro
-    if (!Pdf::ecrivable($d['client']['nom'])) return ['erreur' => 'Le nom du client est écrit avec des lettres que la facture ne sait pas écrire (coréen, émoji…) : écrivez-le en lettres latines dans « Nom sur la facture », ou cochez « Client particulier ».'];
+    if (!Pdf::ecrivable($d['client']['nom'])) return ['erreur' => 'Le nom du client est écrit avec des lettres que la facture ne sait pas écrire (coréen, émoji…) : écrivez-le en lettres latines dans « Prénom et nom sur la facture ».'];
+    // Prénom, nom et adresse : obligatoires sur la facture (réponse de l'expert-comptable du 09/11/2026)
+    if (!facture_nom_complet($d['client']['nom'])) return ['erreur' => 'Le prénom et le nom du client sont obligatoires sur la facture : complétez sa fiche (« Corriger le nom ou les coordonnées »), ou écrivez-les dans « Prénom et nom sur la facture ».'];
+    if ($d['client']['adresse'] === '') return ['erreur' => 'L\'adresse postale du client est obligatoire sur la facture : écrivez-la (numéro, rue, code postal et ville).'];
     if (!Pdf::ecrivable($d['client']['adresse'])) return ['erreur' => 'L\'adresse contient des caractères que la facture ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines.'];
+    if ((int)$d['paiement']['acompte'] > (int)$d['totaux']['ttc']) return ['erreur' => 'L\'acompte noté (' . montant_facture((int)$d['paiement']['acompte']) . ') dépasse le total de la facture (' . montant_facture((int)$d['totaux']['ttc']) . ') : corrigez-le dans Montant et paiement.'];
     foreach ($d['lignes'] as $l) if (!Pdf::ecrivable($l['designation'])) return ['erreur' => 'Un produit de la commande a un nom que la facture ne sait pas écrire (' . $l['designation'] . ') : corrigez-le dans la commande.'];
     return $d;
 }
 /**
- * Émet la facture d'une commande de particulier, au toucher de Youngmi (FR-006). $o : adresse, nom, anonyme, doublon_ok, et
+ * Émet la facture d'une commande de particulier, au toucher de Youngmi (FR-006). $o : adresse, nom, doublon_ok, et
  * empreinte (celle de l'aperçu relu : si la commande a changé depuis, rien n'est émis et Youngmi relit la nouvelle version).
+ * Une adresse écrite à l'émission est gardée sur la fiche du client, pour ses factures suivantes.
  */
 function facture_emettre(int $commandeId, array $o = []): array {
     $k = commande($commandeId);
     if (!$k) return ['erreur' => 'Commande introuvable.'];
     $d = facture_preparer($k, $o);
     if (isset($d['erreur'])) return $d;
-    return document_emettre('facture', function () use ($commandeId, $o): array {
+    $r = document_emettre('facture', function () use ($commandeId, $o): array {
         if (facture_en_vigueur($commandeId)) return ['erreur' => 'Une facture vient d\'être émise pour cette commande (deux touchers en même temps ?) : rien n\'a été fait en double.'];
         $k = commande($commandeId);   // relue sous le verrou : prix, produits, paiement, remise
         if (!$k) return ['erreur' => 'Commande introuvable.'];
@@ -278,6 +337,9 @@ function facture_emettre(int $commandeId, array $o = []): array {
             return ['erreur' => 'La commande a changé depuis l\'aperçu (produits, prix, paiement ou identité) : relisez la nouvelle version, puis émettez.'];
         return facture_preparer($k, $o);
     }, ['commande' => $commandeId, 'client' => (int)$k['client_id']]);
+    $adresse = mb_substr(trim((string)($o['adresse'] ?? '')), 0, 200);
+    if (!isset($r['erreur']) && $adresse !== '' && $adresse !== trim((string)($k['client_adresse'] ?? ''))) client_modifier((int)$k['client_id'], ['adresse' => $adresse]);
+    return $r;
 }
 /**
  * Un avoir sur une facture (FR-005) : total (tout le reste de la facture) ou partiel (un montant TTC), avec son motif. Les lignes
@@ -423,9 +485,7 @@ function facture_pdf(array $d): string {
     // Règlement
     if (!$avoir) {
         $pa = $d['paiement'];
-        $t = 'Facture acquittée : réglée le ' . date_facture($pa['le']) . ($pa['moyen'] !== '' ? ' par ' . $pa['moyen'] : '') . '.';
-        $p->texte($M, $y, $t, 10, true); $y += 14;
-        if ((int)$pa['acompte'] > 0) { $p->texte($M, $y, 'Dont un acompte de ' . montant_facture((int)$pa['acompte']) . ' versé à la commande.', 9); $y += 13; }
+        foreach (facture_reglement_lignes($pa) as $i => $t) { $p->texte($M, $y, $t, $i ? 9.5 : 10, !$i); $y += $i ? 13 : 14; }
     } else {
         $p->texte($M, $y, 'Cet avoir annule ' . ($d['total'] ? 'la facture ' : 'une partie de la facture ') . $d['origine']['numero'] . '.', 10, true); $y += 14;
     }
@@ -458,8 +518,7 @@ function facture_apercu_html(array $d): string {
         . '<span>Vente du ' . h(date_facture($d['date_vente'])) . ' · ' . h($d['commande']['reference']) . '</span></div></div>'
         . '<p class="af-client"><span>Client</span><b>' . h($d['client']['nom']) . '</b>' . ($d['client']['adresse'] !== '' ? '<br>' . h($d['client']['adresse']) : '') . '</p>'
         . '<div class="table-defile"><table class="af-lignes"><thead><tr><th>Désignation</th><th>Qté</th><th>PU HT</th><th>TVA</th><th>Total HT</th><th>Total TTC</th></tr></thead><tbody>' . $l . '</tbody><tfoot>' . $t . '</tfoot></table></div>'
-        . ($pa && !$avoir ? '<p class="af-regle">Facture acquittée : réglée le ' . h(date_facture($pa['le'])) . ($pa['moyen'] !== '' ? ' par ' . h($pa['moyen']) : '') . '.'
-            . ((int)$pa['acompte'] > 0 ? ' Dont un acompte de ' . h(montant_facture((int)$pa['acompte'])) . ' versé à la commande.' : '') . '</p>' : '')
+        . ($pa && !$avoir ? '<p class="af-regle">' . implode('<br>', array_map('MadameCho\Gestion\h', facture_reglement_lignes($pa))) . '</p>' : '')
         . '<p class="af-pied">' . h($v['nom'] . ', ' . $v['forme'] . ' · SIREN ' . $v['siren'] . ' · RCS ' . $v['rcs'] . ' · TVA ' . $v['tva']) . '</p></div>';
 }
 
@@ -469,7 +528,7 @@ function factures_alertes(): array {
     $r = ['a_emettre' => [], 'pas_remises' => [], 'a_corriger' => [], 'echecs' => []];
     $limite = date('Y-m-d H:i:s', time() - FACTURE_A_FAIRE_JOURS * 86400);
     foreach (lignes("SELECT k.id FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.efface_le IS NULL AND k.statut = 'remise' AND k.paiement = 'paye'
-                     AND k.type <> 'pro' AND c.type <> 'professionnel' AND COALESCE(k.remise_le, k.maj_le) < ? AND k.remise_le >= ?
+                     AND k.facture_demandee = 1 AND k.type <> 'pro' AND c.type <> 'professionnel' AND COALESCE(k.remise_le, k.maj_le) < ? AND k.remise_le >= ?
                      AND NOT EXISTS (SELECT 1 FROM factures f WHERE f.commande_id = k.id AND f.genre = 'facture') ORDER BY k.remise_le",
                     [$limite, (string)parametre('factures_depuis', '9999')]) as $x) $r['a_emettre'][] = commande((int)$x['id']);
     foreach (lignes("SELECT f.id FROM factures f WHERE f.genre = 'facture' AND f.emise_le > ? AND NOT EXISTS (SELECT 1 FROM factures_remises x WHERE x.facture_id = f.id AND x.ok = 1)

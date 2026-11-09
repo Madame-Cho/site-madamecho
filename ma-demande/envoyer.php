@@ -125,6 +125,9 @@ $moment = champ('moment', 20);
 $pro = champ('pro', 1) === '1';
 $societe = $pro ? uneLigne(champ('societe', 100)) : '';
 $besoin = $pro ? champ('besoin', 1200) : '';
+// Facture sur demande (décision d'Olivier du 09/11/2026) : le prénom, le nom et l'adresse postale y sont obligatoires ; pas pour une entreprise
+$facture = !$pro && champ('facture', 1) === '1';
+$adresseFacture = $facture ? uneLigne(champ('adresse_facture', 200)) : '';
 // Provenance (07/11/2026) : la campagne Matomo de la visite, « qr-code packaging » après un scan du QR code d'un emballage ; vide sinon
 $via = uneLigne(champ('via', 90));
 if (!preg_match('/^[\w.-]{1,40}(?: [\w.-]{1,40})?$/', $via)) $via = '';
@@ -137,6 +140,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL) || preg_match('/[\r\n,;]/', $emai
 if ($tel !== '' && !preg_match('/^[0-9 +().\-]{6,30}$/', $tel)) $erreurs[] = 'Le numéro de téléphone n\'est pas valide.';
 if (!isset($CAT['moments'][$moment])) $erreurs[] = 'Choisissez un moment de retrait.';
 if ($pro && $societe === '') $erreurs[] = 'Indiquez le nom de l\'entreprise.';
+if ($facture && mb_strlen($adresseFacture) < 8) $erreurs[] = 'Indiquez votre adresse postale, pour la facture (numéro, rue, code postal et ville).';
 
 /* ---------- Les gâteaux : seulement ceux de la carte, prix recalculés ---------- */
 $brut = json_decode(champ('lignes', 6000) ?: '[]', true);
@@ -274,6 +278,7 @@ if ($deuxChamps) { $t[] = 'Prénom : ' . $prenom; $t[] = 'Nom : ' . $nom; } else
 $t[] = 'Email : ' . $email;
 if ($tel !== '') $t[] = 'Téléphone : ' . $tel;
 $t[] = '';
+if ($facture) { $t[] = 'FACTURE DEMANDÉE'; $t[] = 'Adresse : ' . $adresseFacture; $t[] = ''; }
 // Pas de « Répondre » : la réponse citerait cet email interne, avec un « Re: » que le client n'a jamais reçu, et risquerait ses indésirables (07/11/2026)
 $t[] = is_file(GESTION_ENREGISTRER)
     ? 'Pour répondre au client, ouvrez la demande dans la gestion (lien ci-dessous) puis « Préparer la proposition » : un nouveau message, envoyé depuis ' . DESTINATAIRE . '. Évitez « Répondre » ici : votre réponse citerait cet email et risquerait les indésirables du client.'
@@ -328,7 +333,7 @@ if (PHP_VERSION_ID >= 80000 && is_file(GESTION_ENREGISTRER)) {   // l'espace de 
     try {
         require_once GESTION_ENREGISTRER;
         \MadameCho\Gestion\enregistrer_demande(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
-            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin, 'via' => $via]);
+            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin, 'via' => $via, 'facture' => $facture, 'adresse' => $adresseFacture]);
     } catch (\Throwable $e) {
         error_log('madamecho formulaire : demande ' . $ref . ' non enregistrée dans la gestion (' . get_class($e) . ')');
     }

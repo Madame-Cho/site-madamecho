@@ -73,10 +73,15 @@
   <label class="case" data-pro-case ><input type="checkbox" name="pro" value="1" data-pro> Je fais cette demande pour une entreprise ou un restaurant</label>
   <label class="champ" data-societe hidden><span>Nom de l'entreprise</span><input type="text" name="societe" autocomplete="organization" maxlength="100"></label>
   <label class="champ" data-message-pro hidden><span>Votre besoin <i>(nombre de personnes, date, budget)</i></span><textarea name="besoin" rows="3" maxlength="1200"></textarea></label>
+  <label class="case" data-facture-case><input type="checkbox" name="facture" value="1" data-facture aria-controls="infos-facture"> <span>Je souhaite une facture <i>(facultatif)</i></span></label>
+  <div class="infos-facture" id="infos-facture" data-facture-infos hidden>
+   <label class="champ"><span>Adresse postale, pour la facture</span><input type="text" name="adresse_facture" autocomplete="street-address" maxlength="200" aria-describedby="aide-facture"></label>
+   <p class="aide" id="aide-facture">La facture porte vos prénom, nom et adresse. Madame Cho vous la remet après le retrait, par email ou sur papier.</p>
+  </div>
   <div class="piege" aria-hidden="true"><label>Ne pas remplir <input type="text" name="site_web" tabindex="-1" autocomplete="off"></label></div>
   <input type="hidden" name="via" value="">
 
-  <p class="notice">Vos coordonnées servent seulement à répondre à votre demande ; elles ne sont ni vendues ni utilisées pour de la publicité. <a href="../confidentialite/">Confidentialité</a> · <a href="../conditions-de-commande/">Conditions de commande</a></p>
+  <p class="notice">Vos coordonnées servent seulement à répondre à votre demande, et à votre facture si vous en voulez une ; elles ne sont ni vendues ni utilisées pour de la publicité. <a href="../confidentialite/">Confidentialité</a> · <a href="../conditions-de-commande/">Conditions de commande</a></p>
   <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
   <p class="aide" data-sans-stockage hidden>Votre navigateur ne garde pas la demande d'une page à l'autre. Si vous voulez d'autres gâteaux, ajoutez-les depuis leur page juste avant d'envoyer, ou écrivez-les dans « Votre envie ».</p>
   <button class="bouton plein envoyer" type="submit" data-envoyer>Envoyer ma demande, sans engagement</button>

@@ -156,11 +156,11 @@ function client_doublon_ecarter(int $a, int $b): void {
 function client_creer(array $d): int {
     $now = maintenant();
     $d = client_noms_propres($d);
-    $d += ['type' => 'particulier', 'nom' => '', 'prenom' => '', 'societe' => '', 'contact' => '', 'email' => '', 'telephone' => '', 'ville' => '',
+    $d += ['type' => 'particulier', 'nom' => '', 'prenom' => '', 'societe' => '', 'contact' => '', 'email' => '', 'telephone' => '', 'ville' => '', 'adresse' => '',
            'canal' => 'site', 'premier_contact' => $now, 'dernier_echange' => $now, 'qonto' => ''];
-    q("INSERT INTO clients (numero, type, nom, prenom, societe, contact, email, telephone, ville, canal, premier_contact, dernier_echange, qonto, cree_le, maj_le)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [client_numero_suivant(), $d['type'], $d['nom'], $d['prenom'], $d['societe'], $d['contact'], mb_strtolower($d['email']), $d['telephone'], $d['ville'],
+    q("INSERT INTO clients (numero, type, nom, prenom, societe, contact, email, telephone, ville, adresse, canal, premier_contact, dernier_echange, qonto, cree_le, maj_le)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [client_numero_suivant(), $d['type'], $d['nom'], $d['prenom'], $d['societe'], $d['contact'], mb_strtolower($d['email']), $d['telephone'], $d['ville'], $d['adresse'],
        $d['canal'], $d['premier_contact'], $d['dernier_echange'], $d['qonto'], $now, $now]);
     $id = (int)db()->lastInsertId();
     evenement('creation', 'Fiche client créée', ['client' => $id]);
@@ -170,7 +170,7 @@ function client_modifier(int $id, array $d): void {
     $c = client($id);
     if (!$c) return;
     $d = client_noms_propres($d);
-    $champs = ['type', 'nom', 'prenom', 'societe', 'contact', 'email', 'telephone', 'ville', 'canal', 'qonto', 'lettre_info'];
+    $champs = ['type', 'nom', 'prenom', 'societe', 'contact', 'email', 'telephone', 'ville', 'adresse', 'canal', 'qonto', 'lettre_info'];
     $diff = [];
     foreach ($champs as $k) if (array_key_exists($k, $d) && (string)$d[$k] !== (string)$c[$k]) $diff[$k] = (string)$d[$k];
     if (!$diff) return;
@@ -224,10 +224,10 @@ function client_fusionner(int $cible, int $source): bool {
     q("UPDATE commandes SET client_id = ? WHERE client_id = ?", [$cible, $source]);
     q("UPDATE evenements SET client_id = ? WHERE client_id = ?", [$cible, $source]);
     $maj = ['dernier_echange' => max($a['dernier_echange'], $b['dernier_echange']), 'premier_contact' => min($a['premier_contact'], $b['premier_contact']), 'maj_le' => maintenant()];
-    foreach (['telephone', 'ville', 'societe', 'contact', 'email'] as $k) if ($a[$k] === '' && $b[$k] !== '') $maj[$k] = $b[$k];
+    foreach (['telephone', 'ville', 'adresse', 'societe', 'contact', 'email'] as $k) if ($a[$k] === '' && $b[$k] !== '') $maj[$k] = $b[$k];
     $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($maj)));
     q("UPDATE clients SET $set WHERE id = :id", $maj + ['id' => $cible]);
-    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', email = '', telephone = '', ville = '', contact = '', efface_le = ?, maj_le = ? WHERE id = ?", [maintenant(), maintenant(), $source]);
+    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', email = '', telephone = '', ville = '', adresse = '', contact = '', efface_le = ?, maj_le = ? WHERE id = ?", [maintenant(), maintenant(), $source]);
     evenement('fusion', 'Doublon ' . $b['numero'] . ' fusionné dans cette fiche', ['client' => $cible]);
     return true;
 }
@@ -236,7 +236,7 @@ function client_effacer(int $id, string $motif, ?string $auteur = null): void {
     $c = client($id);
     if (!$c || $c['statut'] === 'efface') return;
     $now = maintenant();
-    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', contact = '', email = '', telephone = '', ville = '', qonto = '',
+    q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', contact = '', email = '', telephone = '', ville = '', adresse = '', qonto = '',
        lettre_info = '', lettre_info_le = NULL, avis_demande_le = NULL, avis_recu_le = NULL, efface_le = ?, maj_le = ? WHERE id = ?", [$now, $now, $id]);
     q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification', 'email_client', 'email_recu')", [$id]);
     q("DELETE FROM corbeille WHERE client_id = ?", [$id]);   // un effacement (RGPD) vide aussi la corbeille de ce client
@@ -294,7 +294,7 @@ function client_exporter(int $id): array {
                         'notes' => array_column(lignes("SELECT texte FROM evenements WHERE commande_id = ? AND type = 'commentaire' ORDER BY le", [$k['id']]), 'texte')];
     }
     return ['client' => ['numero' => $c['numero'], 'type' => TYPES_CLIENT[$c['type']] ?? $c['type'], 'nom' => $c['nom'], 'prenom' => $c['prenom'], 'societe' => $c['societe'],
-                         'contact' => $c['contact'], 'email' => $c['email'], 'telephone' => $c['telephone'], 'ville' => $c['ville'], 'canal' => CANAUX[$c['canal']] ?? $c['canal'],
+                         'contact' => $c['contact'], 'email' => $c['email'], 'telephone' => $c['telephone'], 'ville' => $c['ville'], 'adresse' => (string)($c['adresse'] ?? ''), 'canal' => CANAUX[$c['canal']] ?? $c['canal'],
                          'premier_contact' => $c['premier_contact'], 'dernier_echange' => $c['dernier_echange'],
                          'notes' => array_column(lignes("SELECT texte FROM evenements WHERE client_id = ? AND commande_id IS NULL AND type = 'commentaire' ORDER BY le", [$id]), 'texte')],
             'commandes' => $commandes, 'exporte_le' => maintenant()];
@@ -310,7 +310,8 @@ function reference_nouvelle(): string {
 }
 function commande(int $id): ?array {
     $k = ligne("SELECT k.*, c.numero AS client_numero, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type,
-                       c.email AS client_email, c.telephone AS client_tel, c.statut AS client_statut, c.ville AS client_ville, c.contact AS client_contact
+                       c.email AS client_email, c.telephone AS client_tel, c.statut AS client_statut, c.ville AS client_ville, c.contact AS client_contact,
+                       c.adresse AS client_adresse
                 FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.id = ?", [$id]);
     if ($k) $k['lignes_tab'] = json_decode($k['lignes'], true) ?: [];
     return $k;

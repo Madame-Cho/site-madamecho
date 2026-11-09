@@ -5,6 +5,8 @@
 declare(strict_types=1);
 namespace MadameCho\Gestion;
 
+require_once __DIR__ . '/pdf.php';   // Pdf::ecrivable() : l'adresse doit pouvoir s'imprimer sur la facture
+
 function carte_client(array $c): string {
     $estPro = $c['type'] === 'professionnel';
     $etat = $c['statut'] === 'efface' ? '<span class="statut s-efface">Effacé</span>' : ($c['statut'] === 'inactif' ? '<span class="statut s-inactif">Inactif</span>' : '');
@@ -160,6 +162,7 @@ function page_client(): void {
         $mail = $cl['email'] !== '' ? '<a href="mailto:' . h($cl['email']) . '">' . icone('email') . h($cl['email']) . '</a>' : '';
         $tel_quel = fn(string $t): string => $t !== '' ? '<span translate="no">' . h($t) . '</span>' : '';   // noms et ville : jamais traduits
         $c .= bloc('Coordonnées', definition(['Type' => h(TYPES_CLIENT_LONGS[$cl['type']] ?? $cl['type']) . ' · ' . ($cl['type'] === 'professionnel' ? 'montants HT' : 'montants TTC'), 'Entreprise' => $tel_quel($cl['societe']), 'Contact' => $tel_quel($cl['contact']), 'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $tel_quel($cl['ville']),
+                                               'Adresse (factures)' => $tel_quel((string)($cl['adresse'] ?? '')),
                                                'Premier contact' => h(CANAUX[$cl['canal']] ?? $cl['canal']) . ', le ' . h(date_fr($cl['premier_contact'], 'longue')),
                                                'Dernier échange' => h(date_fr($cl['dernier_echange'], 'heure')), 'Dans Qonto' => $cl['qonto'] !== '' ? 'Oui' : ''])
              . '<p>' . lien_bouton(u('client-edition', ['id' => $id]), icone('crayon') . 'Corriger le nom ou les coordonnées', 'discret') . '</p>');
@@ -217,7 +220,7 @@ function page_client(): void {
            . '<details class="replie"><summary>Demande d\'accès à ses données</summary><p class="aide">Tout ce que la gestion garde sur lui, à lui envoyer depuis contact@ sous un mois.</p>'
            . '<p>' . lien_bouton(u('client', ['id' => $id, 'export' => 'json']), 'Télécharger ses données', 'discret') . '</p></details>'
            . '<details class="replie"><summary>Demande d\'effacement</summary>'
-           . '<p class="aide">Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures Qonto ne changent pas (gardées 10 ans).</p>'
+           . '<p class="aide">Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures (Qonto et gestion) ne changent pas : gardées 10 ans, avec le nom et l\'adresse qu\'elles portent.</p>'
            . formulaire('effacer', champ('motif', 'Motif', 'demande du client', ['maxlength' => '200']) . champ('confirmation', 'Tapez EFFACER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'EFFACER']) . bouton('Effacer ses données', 'danger')) . '</details>'
            . (client_supprimable($id) ? '<details class="replie"><summary>' . icone('supprimer') . 'Supprimer la fiche (essai, erreur de saisie)</summary>'
                . '<p class="aide">Possible seulement pour une fiche sans aucune commande. Elle va à la corbeille (Plus › Corbeille) : 30 jours pour la restaurer.</p>'
@@ -300,13 +303,15 @@ function page_client_edition(): void {
     $cl = $id ? client($id) : null;
     if ($id && (!$cl || $cl['statut'] === 'efface')) rediriger('clients');
     $erreurs = [];
-    $d = $cl ?? ['type' => 'particulier', 'prenom' => '', 'nom' => '', 'societe' => '', 'contact' => '', 'email' => '', 'telephone' => '', 'ville' => '', 'canal' => 'instagram', 'qonto' => ''];
+    $d = $cl ?? ['type' => 'particulier', 'prenom' => '', 'nom' => '', 'societe' => '', 'contact' => '', 'email' => '', 'telephone' => '', 'ville' => '', 'adresse' => '', 'canal' => 'instagram', 'qonto' => ''];
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         csrf_verifier();
         $d = ['type' => choix('type', TYPES_CLIENT, 'particulier'), 'prenom' => une_ligne(texte('prenom', 60)), 'nom' => une_ligne(texte('nom', 80)),
               'societe' => une_ligne(texte('societe', 100)), 'contact' => une_ligne(texte('contact', 100)), 'email' => mb_strtolower(une_ligne(texte('email', 120))),
-              'telephone' => une_ligne(texte('telephone', 30)), 'ville' => une_ligne(texte('ville', 60)), 'canal' => choix('canal', CANAUX, 'autre'), 'qonto' => une_ligne(texte('qonto', 100))];
+              'telephone' => une_ligne(texte('telephone', 30)), 'ville' => une_ligne(texte('ville', 60)), 'adresse' => une_ligne(texte('adresse', 200)),
+              'canal' => choix('canal', CANAUX, 'autre'), 'qonto' => une_ligne(texte('qonto', 100))];
         if ($d['nom'] === '' && $d['societe'] === '') $erreurs[] = 'Indiquez au moins un nom ou une entreprise.';
+        if ($d['adresse'] !== '' && !Pdf::ecrivable($d['adresse'])) $erreurs[] = 'L\'adresse contient des caractères que la facture ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines.';
         if ($d['email'] !== '' && !email_valide($d['email'])) $erreurs[] = 'L\'email n\'est pas valide.';
         if ($d['email'] !== '' && ($e = ligne("SELECT id, numero FROM clients WHERE email = ? AND statut <> 'efface' AND id <> ?", [$d['email'], $id]))) {
             $lienDoublon = '<a href="' . h(u('client', ['id' => $e['id']])) . '">' . h($e['numero']) . '</a>';
@@ -328,8 +333,10 @@ function page_client_edition(): void {
        . champ('contact', 'Personne à contacter (professionnels)', $d['contact'], ['autocomplete' => 'off'])
        . '<div class="ligne-champs">' . champ('email', 'Email', $d['email'], ['type' => 'email', 'autocomplete' => 'off']) . champ('telephone', 'Téléphone', $d['telephone'], ['type' => 'tel', 'autocomplete' => 'off']) . '</div>'
        . '<div class="ligne-champs">' . champ('ville', 'Ville', $d['ville'], ['autocomplete' => 'off']) . liste_choix('canal', 'Premier contact par', CANAUX, $d['canal']) . '</div>'
+       . champ('adresse', 'Adresse postale (pour les factures des particuliers)', (string)($d['adresse'] ?? ''), ['maxlength' => '200', 'autocomplete' => 'off', 'lang' => 'fr'],
+               'Numéro, rue, code postal et ville, en lettres latines : elle est imprimée sur ses factures.')
        . champ('qonto', 'Nom du client dans Qonto (s\'il a une facture)', $d['qonto'], ['autocomplete' => 'off'])
-       . '<p class="aide">Ni date de naissance, ni adresse inutile, ni info de santé.</p>'
+       . '<p class="aide">Ni date de naissance, ni info de santé. L\'adresse sert seulement aux factures.</p>'
        . '<div class="barre-enregistrer">' . bouton($cl ? 'Enregistrer' : 'Créer le client', 'principal large') . '</div>';
     $c .= formulaire('enregistrer', bloc('', $f));
     mise_en_page($titre, $c, 'clients');

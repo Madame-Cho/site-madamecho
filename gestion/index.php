@@ -37,7 +37,7 @@ $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'command
           'nouveautes' => 'page_nouveautes', 'pastilles' => 'page_pastilles', 'obligations' => 'page_obligations', 'demarche' => 'page_demarche', 'echeance' => 'page_echeance',
           'hygiene' => 'page_hygiene', 'hygiene-fiche' => 'page_hygiene_fiche', 'hygiene-appareil' => 'page_hygiene_appareil', 'hygiene-photo' => 'page_hygiene_photo', 'hygiene-export' => 'page_hygiene_export',
           'hygiene-etiquettes' => 'page_hygiene_etiquettes', 'hygiene-probleme' => 'page_hygiene_probleme',
-          'factures' => 'page_factures', 'facture-pdf' => 'page_facture_pdf', 'facture-apercu' => 'page_facture_apercu'];
+          'factures' => 'page_factures', 'facture-pdf' => 'page_facture_pdf', 'facture-apercu' => 'page_facture_apercu', 'factures-export' => 'page_factures_export'];
 
 $p = is_string($_GET['p'] ?? null) ? $_GET['p'] : 'accueil';
 try {

@@ -20,7 +20,7 @@ const PASTILLES_TYPES_CLIENT = ['creation', 'modification', 'commentaire', 'fusi
 
 /** Les champs d'une fiche client, en clair (l'historique garde leur nom technique). */
 const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 'prenom' => 'prénom', 'societe' => 'société', 'contact' => 'contact', 'email' => 'email',
-                      'telephone' => 'téléphone', 'ville' => 'ville', 'canal' => 'canal', 'qonto' => 'nom dans Qonto', 'lettre_info' => 'lettre d\'information'];
+                      'telephone' => 'téléphone', 'ville' => 'ville', 'adresse' => 'adresse', 'canal' => 'canal', 'qonto' => 'nom dans Qonto', 'lettre_info' => 'lettre d\'information'];
 
 /**
  * Les nouveautés de l'outil, la plus récente d'abord : identifiant fixe, date de publication, titre, texte, lien (page et ancre).
@@ -28,7 +28,7 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  */
 const NOUVEAUTES = [
     ['id' => '2026-11-factures', 'le' => '2026-11-08', 'titre' => 'Les factures des particuliers',
-     'texte' => 'La gestion fait la facture d\'une commande payée et remise : vous la relisez, l\'émettez, puis la remettez par mail, SMS, QR code ou papier.',
+     'texte' => 'Quand le client demande une facture (case sur le site, ou notée par vous), la gestion la prépare à la remise : vous la relisez, l\'émettez, puis la remettez par mail, SMS, QR code ou papier.',
      'lien' => ['manuel', 'factures']],
     ['id' => '2026-11-hygiene', 'le' => '2026-11-08', 'titre' => 'L\'écran Hygiène',
      'texte' => 'Plus › Hygiène : la température des frigos, les réceptions, les fournées avec leur numéro de lot et les livraisons aux restaurants, notées en quelques touches sur le téléphone.',

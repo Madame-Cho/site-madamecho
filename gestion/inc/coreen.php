@@ -17,7 +17,7 @@ const KO_JOURS_COURTS = ['dim.' => '일', 'lun.' => '월', 'mar.' => '화', 'mer
 const KO_MOMENTS = ['matin' => '오전', 'midi' => '점심', 'après-midi' => '오후', 'soir' => '저녁'];
 /** Les champs nommés dans l'historique (« Fiche modifiée : nom, ville »). */
 const KO_CHAMPS = ['type' => '종류', 'prenom' => '이름', 'nom' => '성', 'societe' => '회사', 'contact' => '담당자', 'email' => '이메일', 'telephone' => '전화',
-                   'ville' => '도시', 'canal' => '경로', 'qonto' => 'Qonto', 'lettre_info' => '뉴스레터', 'retrait_date' => '픽업 날짜', 'retrait_moment' => '시간대',
+                   'ville' => '도시', 'adresse' => '주소', 'canal' => '경로', 'qonto' => 'Qonto', 'lettre_info' => '뉴스레터', 'retrait_date' => '픽업 날짜', 'retrait_moment' => '시간대',
                    'retrait_heure' => '시간', 'mode' => '방식', 'perso' => '맞춤 내용', 'besoin' => '업체 요청', 'lignes' => '케이크', 'prix_final' => '최종 가격',
                    'acompte' => '선금', 'facture' => '청구서', 'moyen' => '결제 수단', 'statut' => '상태', 'fiche_lien' => '시트 링크', 'valide_le' => '확인 날짜',
                    'valide_par' => '확인한 사람', 'emballage' => '포장비', 'tva' => '부가세', 'notes' => '메모', 'recette' => '만드는 법'];
@@ -580,7 +580,7 @@ Demande d'accès à ses données | 개인정보 열람 요청
 Tout ce que la gestion garde sur lui, à lui envoyer depuis contact@ sous un mois. | 관리 화면에 있는 이 고객의 정보 전부예요. 한 달 안에 contact@에서 보내세요.
 Télécharger ses données | 고객 정보 다운로드
 Demande d'effacement | 삭제 요청
-Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures Qonto ne changent pas (gardées 10 ans). | 이름, 연락처, 메모, 문의 내용은 바로 삭제돼요. 금액과 날짜는 익명으로 남아요. Qonto 청구서는 그대로예요 (10년 보관).
+Nom, coordonnées, notes et demandes sont effacés tout de suite. Montants et dates restent, anonymes. Les factures (Qonto et gestion) ne changent pas : gardées 10 ans, avec le nom et l'adresse qu'elles portent. | 이름, 연락처, 메모, 문의 내용은 바로 삭제돼요. 금액과 날짜는 익명으로 남아요. 청구서(Qonto와 관리 시스템)는 그대로예요. 적힌 이름과 주소와 함께 10년 동안 보관해요.
 Motif | 이유
 Tapez EFFACER pour confirmer | 확인하려면 EFFACER를 입력하세요
 Effacer ses données | 고객 정보 삭제
@@ -592,7 +592,7 @@ Entreprise ou restaurant (professionnels) | 회사 또는 레스토랑 (업체)
 Personne à contacter (professionnels) | 담당자 (업체)
 Premier contact par | 첫 연락 경로
 Nom du client dans Qonto (s'il a une facture) | Qonto의 고객 이름 (청구서가 있으면)
-Ni date de naissance, ni adresse inutile, ni info de santé. | 생년월일, 필요 없는 주소, 건강 정보는 적지 마세요.
+Ni date de naissance, ni info de santé. L'adresse sert seulement aux factures. | 생년월일, 건강 정보는 적지 마세요. 주소는 청구서에만 쓰여요.
 Créer le client | 고객 만들기
 Indiquez au moins un nom ou une entreprise. | 이름이나 회사 이름을 적어 주세요.
 L'email n'est pas valide. | 이메일 주소가 올바르지 않아요.
@@ -1284,9 +1284,8 @@ Le prix final n'est pas fixé (Montant et paiement). | 최종 가격이 정해�
 Le moyen de paiement n'est pas noté (Montant et paiement › Modifier le paiement). | 결제 수단이 적혀 있지 않아요 (금액과 결제 › 결제 수정).
 Une facture Qonto est déjà notée sur cette commande : | 이 주문에는 이미 Qonto 청구서 번호가 적혀 있어요:
 Si elle concerne cette vente, n'émettez pas une deuxième facture. | 이 판매에 대한 청구서라면 두 번째 청구서를 발행하지 마세요.
-Adresse du client (facultatif) | 고객 주소 (선택)
-Seulement si le client la demande. Elle ne sert qu'à cette facture. | 고객이 원할 때만 적어요. 이 청구서에만 쓰여요.
-Le client ne veut pas son nom sur la facture (« Client particulier ») | 고객이 청구서에 이름을 넣고 싶지 않아요 (« Client particulier »로 표시)
+Adresse postale du client | 고객 우편 주소
+Obligatoire sur la facture : numéro, rue, code postal et ville. Elle est gardée sur sa fiche pour ses prochaines factures. | 청구서에 꼭 들어가요: 번지, 거리, 우편번호, 도시. 다음 청구서를 위해 고객 정보에 저장돼요.
 Je confirme : la facture Qonto notée est une autre facture, ce n'est pas un doublon | 확인했어요: 적혀 있는 Qonto 청구서는 다른 청구서예요. 중복이 아니에요
 Émettre la facture | 청구서 발행
 Émettre la facture ? Elle recevra son numéro et ne pourra plus être modifiée. | 청구서를 발행할까요? 번호가 붙고 더 이상 고칠 수 없어요.
@@ -1365,9 +1364,12 @@ Prix de la commande mis au montant de la facture. | 주문 가격을 청구서 �
 Facture introuvable. | 청구서를 찾을 수 없어요.
 Facture introuvable | 청구서를 찾을 수 없어요
 La facture est toujours en français : écrivez le nom, l'adresse et la raison en lettres latines. | 청구서는 항상 프랑스어예요. 이름, 주소, 이유를 로마자로 적으세요.
-Le nom de ce client est écrit en coréen. La facture est en français : écrivez-le en lettres latines (par exemple « Kim Minji »), ou cochez « Client particulier ». | 이 고객의 이름이 한글로 적혀 있어요. 청구서는 프랑스어라서 이름을 로마자로 적어야 해요 (예: « Kim Minji »). 아니면 « Client particulier »에 체크하세요.
-Nom sur la facture, en lettres latines | 청구서에 들어갈 이름 (로마자)
-Le nom du client est écrit avec des lettres que la facture ne sait pas écrire (coréen, émoji…) : écrivez-le en lettres latines dans « Nom sur la facture », ou cochez « Client particulier ». | 고객 이름에 청구서에 쓸 수 없는 글자(한글, 이모지 등)가 있어요. « 청구서에 들어갈 이름 »에 로마자로 적거나 « Client particulier »에 체크하세요.
+Le nom de ce client est écrit en coréen. La facture est en français : écrivez-le en lettres latines (par exemple « Kim Minji »). | 이 고객의 이름이 한글로 적혀 있어요. 청구서는 프랑스어라서 이름을 로마자로 적어야 해요 (예: « Kim Minji »).
+La fiche n'a pas le prénom et le nom du client : écrivez-les ici, ou complétez sa fiche. | 고객 정보에 이름과 성이 다 있지 않아요. 여기에 적거나 고객 정보를 채우세요.
+Prénom et nom sur la facture, en lettres latines | 청구서에 들어갈 이름과 성 (로마자)
+Le nom du client est écrit avec des lettres que la facture ne sait pas écrire (coréen, émoji…) : écrivez-le en lettres latines dans « Prénom et nom sur la facture ». | 고객 이름에 청구서에 쓸 수 없는 글자(한글, 이모지 등)가 있어요. « 청구서에 들어갈 이름과 성 »에 로마자로 적으세요.
+Le prénom et le nom du client sont obligatoires sur la facture : complétez sa fiche (« Corriger le nom ou les coordonnées »), ou écrivez-les dans « Prénom et nom sur la facture ». | 청구서에는 고객의 이름과 성이 꼭 들어가야 해요. 고객 정보를 채우거나(‘이름이나 연락처 고치기’) « 청구서에 들어갈 이름과 성 »에 적으세요.
+L'adresse postale du client est obligatoire sur la facture : écrivez-la (numéro, rue, code postal et ville). | 청구서에는 고객의 우편 주소가 꼭 들어가야 해요. 번지, 거리, 우편번호, 도시를 적으세요.
 L'adresse contient des caractères que la facture ne sait pas écrire (coréen, émoji…) : écrivez-la en lettres latines. | 주소에 청구서에 쓸 수 없는 글자(한글, 이모지 등)가 있어요. 로마자로 적으세요.
 La facture se fait quand la commande est payée et remise. | 청구서는 주문이 결제되고 전달된 뒤에 만들어요.
 Une facture vient d'être émise pour cette commande (deux touchers en même temps ?) : rien n'a été fait en double. | 이 주문의 청구서가 방금 발행됐어요 (두 번 눌렀나요?). 중복으로 만들어진 건 없어요.
@@ -1400,7 +1402,24 @@ Début des numéros de facture | 청구서 번호 앞부분
 Début des numéros d'avoir | 정정 청구서 번호 앞부분
 Exemple | 예
 Des factures de cette année portent déjà ce début : il ne change plus avant le 1er janvier. | 올해 청구서에 이미 이 앞부분이 쓰였어요. 1월 1일 전에는 바꿀 수 없어요.
-À confirmer avec l'expert-comptable avant la première facture. | 첫 청구서 전에 회계사와 확인해요.
+Une série à part pour les particuliers, validée par l'expert-comptable : les numéros se suivent dans l'ordre des dates. | 개인 고객용 번호는 따로 이어져요. 회계사가 확인했어요. 번호는 날짜 순서대로 이어져요.
+Tableurs pour l'expert-comptable | 회계사에게 줄 표
+Chaque tableur s'ouvre dans Excel. Les espèces encaissées forment le livre des recettes : toutes les commandes réglées en espèces, avec ou sans facture. | 표는 Excel에서 열려요. ‘받은 현금’ 표가 수입 장부예요: 현금으로 결제한 모든 주문이 들어가요(청구서가 있든 없든).
+Espèces encaissées | 받은 현금
+Le client n'a pas demandé de facture. S'il en veut une, notez-le avec son adresse postale : la facture se préparera quand la commande sera payée et remise. | 고객이 청구서를 요청하지 않았어요. 청구서를 원하면 우편 주소와 함께 기록하세요. 주문이 결제되고 전달되면 청구서가 준비돼요.
+Numéro, rue, code postal et ville. Vous pourrez aussi l'écrire au moment d'émettre. | 번지, 거리, 우편번호, 도시. 발행할 때 적어도 돼요.
+Le client veut une facture | 고객이 청구서를 원해요
+Facture demandée. | 청구서 요청됨.
+Facture demandée | 청구서 요청됨
+Finalement, pas de facture | 청구서 필요 없음
+Finalement pas de facture | 청구서 필요 없음
+Facture demandée par le client sur le site | 고객이 사이트에서 청구서를 요청했어요
+Une facture est déjà émise pour cette commande : pour l'annuler, faites un avoir. | 이 주문에는 이미 청구서가 발행됐어요. 취소하려면 정정 청구서를 만드세요.
+C'est noté : le client veut une facture. | 기록했어요: 고객이 청구서를 원해요.
+C'est noté : pas de facture pour cette commande. | 기록했어요: 이 주문에는 청구서가 필요 없어요.
+Adresse (factures) | 주소 (청구서용)
+Adresse postale (pour les factures des particuliers) | 우편 주소 (개인 고객 청구서용)
+Numéro, rue, code postal et ville, en lettres latines : elle est imprimée sur ses factures. | 번지, 거리, 우편번호, 도시를 로마자로 적어요. 청구서에 인쇄돼요.
 Enregistré : les prochaines factures porteront ces mentions. | 저장했어요. 다음 청구서부터 이 정보가 들어가요.
 Les mentions de la facture sont en français. | 청구서 정보는 프랑스어로 적어요.
 Déjà émis pour cette commande : | 이 주문에 이미 발행된 문서:
@@ -1427,7 +1446,7 @@ Mail non parti : renvoyer ou remettre autrement | 이메일 안 감: 다시 보�
 Facture émise, pas encore remise au client | 청구서 발행됨, 아직 고객에게 전달 안 함
 Facture à corriger (avoir) | 고칠 청구서 (정정 청구서)
 Les factures des particuliers | 개인 고객 청구서
-La gestion fait la facture d'une commande payée et remise : vous la relisez, l'émettez, puis la remettez par mail, SMS, QR code ou papier. | 결제되고 전달된 주문의 청구서를 관리 시스템이 만들어요. 확인하고 발행한 뒤 이메일, SMS, QR 코드나 종이로 전달해요.
+Quand le client demande une facture (case sur le site, ou notée par vous), la gestion la prépare à la remise : vous la relisez, l'émettez, puis la remettez par mail, SMS, QR code ou papier. | 고객이 청구서를 요청하면(사이트의 체크 칸, 또는 직접 기록) 전달할 때 관리 시스템이 준비해요. 확인하고 발행한 뒤 이메일, SMS, QR 코드나 종이로 전달해요.
 # Écran Obligations (spécification 004, lot 1, 08/11/2026)
 Obligations | 의무
 Démarche | 할 일
@@ -2411,6 +2430,8 @@ function coreen_motifs(): array {
         ['/^La correction dépasse ce qui reste de la facture à ce taux de TVA \((' . $E . ')\)\.$/u', fn($m) => '정정 금액이 이 세율로 남은 청구서 금액(' . $m[1] . ')보다 커요.'],
         ['/^(Facture|Avoir) ([A-Z]{1,6}-?\d{4}-\d{4}) envoyée? par mail : (.+?)(?: \((.+)\))?$/u', fn($m) => ($m[1] === 'Avoir' ? '정정 청구서 ' : '청구서 ') . $m[2] . ' 이메일로 보냄: ' . (coreen_texte($m[3]) ?? $m[3]) . (isset($m[4]) ? ' (' . $m[4] . ')' : '')],
         ['/^(\d+) document\(s\)$/u', fn($m) => '문서 ' . $m[1] . '건'],
+        ['/^L\'acompte noté \((' . $E . ')\) dépasse le total de la facture \((' . $E . ')\) : corrigez-le dans Montant et paiement\.$/u', fn($m) => '적힌 선금(' . $m[1] . ')이 청구서 합계(' . $m[2] . ')보다 커요. 금액과 결제에서 고치세요.'],
+        ['/^Tableur des (factures|espèces) de (.+) téléchargé$/u', fn($m) => ($m[1] === 'factures' ? '청구서' : '현금') . ' 표 내려받음: ' . (coreen_texte($m[2]) ?? $m[2])],
         ['/^Annule toute la facture \((' . $E . ')\)$/u', fn($m) => '청구서 전체 취소 (' . $m[1] . ')'],
         ['/^Envoyer (la facture|l\'avoir) à (.+) maintenant \?$/u', fn($m) => ($m[1] === 'la facture' ? '청구서를 ' : '정정 청구서를 ') . $m[2] . '에게 지금 보낼까요?'],
         ['/^([A-Z]{1,6}-?\d{4}-\d{4}) : le PDF a été modifié\.$/u', fn($m) => $m[1] . ': PDF가 바뀌었어요.'],

@@ -34,6 +34,13 @@
 
 `commandes.facture` reçoit le numéro à l'émission (comme aujourd'hui pour un numéro Qonto). Une
 commande a au plus une facture non annulée ; un avoir total la rend « à refaire ».
+`commandes.facture_demandee` (0 ou 1, ajoutée dans l'étape 11, 2026-11-09) : le client veut une
+facture (case du site, ou notée par Youngmi) ; sans elle, rien n'est préparé.
+
+## Clients
+
+`clients.adresse` (texte, ajoutée dans l'étape 11, 2026-11-09) : l'adresse postale imprimée sur
+ses factures ; effacée avec la fiche, reprise par une fusion, dans l'export du droit d'accès.
 
 ## Paramètres
 
@@ -42,5 +49,5 @@ phase de contrôle dure).
 
 ## États d'une commande de particulier, côté facture
 
-`pas encore payée` → `à émettre` → `émise, pas remise` → `remise` ; `corrigée par un avoir` →
+`non demandée` → `demandée, pas encore payée` → `à émettre` → `émise, pas remise` → `remise` ; `corrigée par un avoir` →
 de nouveau `à émettre` si l'avoir est total.

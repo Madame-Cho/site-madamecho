@@ -204,7 +204,9 @@ Confidentialité, une nouvelle visite n'apparaît plus ; aucun cookie n'est dép
 - **FR-006**: La page Ma demande MUST demander le prénom, le nom, l'email, le téléphone
   (facultatif), le jour et le moment du retrait souhaités, la personnalisation (message de la
   plaque compris), et, pour un professionnel, le nom de l'entreprise et le besoin ; elle
-  prévient de ne pas écrire d'information de santé.
+  prévient de ne pas écrire d'information de santé. Un particulier peut cocher « Je souhaite une
+  facture » (facultatif, 2026-11-09) : l'adresse postale est alors demandée et exigée, et la
+  demande de facture arrive dans l'email et dans la gestion (spécification 003, FR-019).
 - **FR-007**: Le serveur MUST n'accepter que les gâteaux, tailles et parfums de la carte,
   recalculer les prix, le total et le délai lui-même, borner les longueurs et les quantités,
   refuser un retour à la ligne dans un en-tête et ne jamais accepter de pièce jointe.

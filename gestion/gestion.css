@@ -138,6 +138,7 @@ a.tuile .t-detail{color:var(--chocolat)}
 .p-paye{border-color:#B9D9C1;color:var(--vert)}
 .p-acompte-demande{border-color:#EBD3A5;color:var(--ambre)}
 .p-acompte-recu{border-color:#B9D9C1;color:var(--vert)}
+.p-facture-demandee{border-color:#EBD3A5;color:var(--ambre)}
 .drapeau{background:var(--rouge-f);color:var(--erreur)}
 .drapeau .ic,.statut .ic{width:15px;height:15px;vertical-align:-3px}
 /* Particulier ou Pro, au premier coup d'œil : devant le nom sur chaque carte, dans l'en-tête de chaque fiche (demande d'Olivier, 07/11/2026) */
