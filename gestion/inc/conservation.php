@@ -16,6 +16,8 @@ require_once __DIR__ . '/obligations.php';  // démarches des échéances, conse
 function tache_de_nuit(): array {
     if (!gestion_base_existante()) return [];
     $cr = conservation_executer('tâche de nuit');
+    // Accusés de réception (09/11/2026) : l'empreinte d'une adresse ne sert que 24 heures (politique de confidentialité)
+    q("DELETE FROM parametres WHERE cle LIKE 'accuse:%' AND CAST(valeur AS INTEGER) < ?", [time() - 86400]);
     noms_majuscules_reprise();   // une seule fois : majuscules oubliées dans les noms déjà enregistrés (demande d'Olivier du 08/11/2026)
     // Écran Obligations : une erreur ici ne doit pas arrêter la tâche de nuit (leçon du 08/11/2026)
     try { $cr['obligations'] = obligations_nuit(); }

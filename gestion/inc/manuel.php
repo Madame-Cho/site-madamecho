@@ -277,6 +277,8 @@ function manuel_sections(): array {
                    '- <b>사이트 문의</b>: 켜져 있어요. 사이트 양식으로 온 문의가 자동으로 여기에 추가돼요.']
                 : ['- <b>Demandes du site</b> : pas encore activé (Olivier l\'active dans Paramètres quand le pilote est fait). En attendant, les demandes du site arrivent seulement par email à contact@madamecho.com : saisissez-les avec « Nouvelle commande ».',
                    '- <b>사이트 문의</b>: 아직 꺼져 있어요(시범 운영이 끝나면 Olivier가 설정에서 켜요). 그동안 사이트 문의는 contact@madamecho.com 이메일로만 와요. ‘새 주문’으로 직접 입력해 주세요.'],
+            ['- <b>Accusé de réception</b> (dans « Demandes du site ») : le client qui envoie une demande par le site reçoit tout de suite un mail court qui dit que sa demande est bien arrivée et qu\'on le recontacte très rapidement. C\'est le seul mail qui part sans votre toucher ; il est rangé dans les Échanges de la commande. Un bouton l\'arrête.',
+             '- <b>접수 확인 메일</b> (« 사이트 문의» 안): 사이트로 문의한 고객은 바로 짧은 메일을 받아요. 문의를 잘 받았고 곧 연락드린다는 내용이에요. 직접 누르지 않아도 나가는 유일한 메일이고, 주문의 대화 기록에 들어가요. 버튼으로 끌 수 있어요.'],
             ['- <b>Statistiques du site (Matomo)</b> et <b>Assistant</b> : les clés d\'accès, collées une fois par Olivier ; elles ne sont jamais réaffichées.',
              '- <b>사이트 통계 (Matomo)</b>와 <b>어시스턴트</b>: Olivier가 한 번 붙여 넣는 접근 키예요. 다시 보이지 않아요.'],
             ['- <b>Conservation des données (RGPD)</b> : chaque nuit, la gestion efface ce qui a dépassé sa durée (demandes sans suite après 12 mois, clients sans commande depuis 3 ans, journal des connexions après 6 mois).',

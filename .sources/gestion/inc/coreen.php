@@ -1024,6 +1024,10 @@ Recette copiée : vérifiez les quantités (les œufs, les fruits entiers…). |
 L'email d'invitation n'a pas pu partir. | 초대 이메일을 보내지 못했어요.
 Les nouvelles demandes du site s'ajouteront toutes seules ici (l'email à contact@ continue d'arriver). | 이제 새 사이트 문의가 여기에 자동으로 추가돼요 (contact@로 오는 이메일도 계속 와요).
 Les demandes du site ne s'ajoutent plus ici ; elles arrivent toujours par email. | 사이트 문의가 더 이상 여기에 추가되지 않아요. 이메일로는 계속 와요.
+Chaque client qui envoie une demande par le site reçoit de nouveau un accusé de réception. | 사이트로 문의한 고객이 다시 접수 확인 메일을 받아요.
+Les clients ne reçoivent plus d'accusé de réception automatique. | 이제 고객에게 자동 접수 확인 메일이 가지 않아요.
+Arrêter l'accusé de réception | 접수 확인 메일 끄기
+Activer l'accusé de réception | 접수 확인 메일 켜기
 
 # Historique (textes écrits par la gestion)
 Fiche client créée | 고객 정보 생성
@@ -1035,6 +1039,8 @@ Mot de passe changé | 비밀번호 변경
 Signature des emails ou lien d'avis modifié | 이메일 서명 또는 리뷰 링크 수정
 Enregistrement des demandes du site activé | 사이트 문의 자동 저장 켬
 Enregistrement des demandes du site arrêté | 사이트 문의 자동 저장 끔
+Accusé de réception automatique des demandes du site activé | 사이트 문의 자동 접수 확인 메일 켬
+Accusé de réception automatique des demandes du site arrêté | 사이트 문의 자동 접수 확인 메일 끔
 Miroir pour le Drive arrêté | Drive용 사본 중지
 Nouvelle clé du miroir pour le Drive | Drive용 사본 새 키
 Clé de Matomo retirée (statistiques du site) | Matomo 키 삭제 (사이트 통계)

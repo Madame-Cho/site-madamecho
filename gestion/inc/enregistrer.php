@@ -12,6 +12,8 @@ namespace MadameCho\Gestion;
 if (!defined('GESTION_CONTEXTE_SITE')) define('GESTION_CONTEXTE_SITE', true);
 require_once __DIR__ . '/base.php';
 require_once __DIR__ . '/modele.php';
+require_once __DIR__ . '/vues.php';    // le mail d'accusé de réception (mail_commande), au même dessin que les mails de la gestion
+require_once __DIR__ . '/email.php';
 
 /**
  * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
@@ -51,6 +53,44 @@ function enregistrer_demande(array $d): int {
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
     }
+}
+
+/**
+ * Accusé de réception au client (demande d'Olivier du 09/11/2026) : dès qu'une demande du formulaire est partie à contact@, un mail court
+ * dit au client qu'elle est bien arrivée et qu'il sera recontacté très rapidement. Seul mail qui part sans le toucher de Youngmi
+ * (exception à R-01 décidée par Olivier) : un texte fixe, sans prix ni décision, écrit à l'avance et jamais par une IA.
+ * Garde-fous contre l'envoi à l'adresse de quelqu'un d'autre : rien de ce que le visiteur a écrit n'y figure sauf un prénom fait de lettres,
+ * un seul accusé par adresse et par 24 heures (empreinte de l'adresse avec le sel du serveur, effacée après 24 heures), et la limite de
+ * 5 demandes par heure du formulaire. Arrêtable dans Paramètres › Demandes du site. Pas de copie à contact@, qui a déjà la demande.
+ * $d : ref, prenom, nom, email (comme enregistrer_demande) ; $commande : son numéro interne (0 si la demande n'est pas enregistrée).
+ * Renvoie 'envoye', 'arrete', 'deja' (même adresse il y a moins de 24 heures) ou 'echec'.
+ */
+function accuser_reception(array $d, int $commande = 0): string {
+    if (!gestion_base_existante() || parametre('accuse_reception', '1') !== '1') return 'arrete';
+    $email = mb_strtolower(trim((string)($d['email'] ?? '')));
+    $ref = (string)($d['ref'] ?? '');
+    if (!email_valide($email) || !preg_match('/^MC-\d{6}-[0-9A-F]{4}$/', $ref)) return 'echec';
+    // Une fois par adresse et par 24 heures : la ligne est prise avant l'envoi (deux demandes à la fois n'en envoient qu'un)
+    q("DELETE FROM parametres WHERE cle LIKE 'accuse:%' AND CAST(valeur AS INTEGER) < ?", [time() - 86400]);
+    $cle = 'accuse:' . substr(hash_hmac('sha256', $email, sel()), 0, 32);
+    $st = db()->prepare("INSERT OR IGNORE INTO parametres (cle, valeur) VALUES (?, ?)");
+    $st->execute([$cle, (string)time()]);
+    if ($st->rowCount() === 0) return 'deja';
+    // Le prénom, seulement s'il est fait de lettres (pas de lien ni de chiffres glissés dans « Bonjour … ») ; sinon « Bonjour, »
+    [$prenom, $nom] = isset($d['prenom']) ? [(string)$d['prenom'], (string)$d['nom']] : prenom_nom((string)($d['nom'] ?? ''));
+    $prenom = trim($prenom);
+    if (!preg_match("/^\p{L}[\p{L}\p{M}'’ -]{0,29}$/u", $prenom)) $prenom = '';
+    $k = ['reference' => $ref, 'client_prenom' => $prenom, 'client_nom' => '', 'client_type' => 'particulier', 'client_contact' => ''];
+    $m = mail_commande($k, 'recu');
+    $mid = envoyer_email_client($email, $m['sujet'], $m['corps'], $m['html'], [], false);
+    if ($mid === '') { q("DELETE FROM parametres WHERE cle = ?", [$cle]); return 'echec'; }
+    // Rangé dans les Échanges de la commande (et son Message-ID gardé : la proposition suivra dans la même conversation chez le client).
+    // Ni « dernier échange » ni pastille de réponse : la demande reste « à répondre » pour Youngmi.
+    if ($commande > 0 && ($cid = val("SELECT client_id FROM commandes WHERE id = ?", [$commande]))) {
+        evenement('email_client', 'Accusé de réception envoyé automatiquement à ' . $email . ' : « ' . $m['sujet'] . ' »', ['commande' => $commande, 'client' => (int)$cid],
+                  'type:recu mid:' . $mid, $m['corps'], 'site');
+    }
+    return 'envoye';
 }
 
 /**

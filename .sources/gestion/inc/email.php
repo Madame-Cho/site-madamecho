@@ -63,11 +63,12 @@ function email_lien_mot_de_passe(array $u, string $jeton, bool $invitation): boo
  * Les réponses vont à contact@ ; une copie cachée arrive dans contact@ (le mail n'est pas dans « Envoyés » de Gmail). */
 /** Un mail au client (R-01 : au toucher de Youngmi). $refs : les Message-ID déjà échangés sur la commande, pour que le client voie une seule
  *  conversation (In-Reply-To, References). Renvoie le Message-ID du mail, ou '' s'il n'est pas parti. */
-function envoyer_email_client(string $a, string $sujet, string $texte, string $html, array $refs = []): string {
+function envoyer_email_client(string $a, string $sujet, string $texte, string $html, array $refs = [], bool $copie = true): string {
     if (!email_valide($a)) return '';
     $mid = '<commande.' . bin2hex(random_bytes(8)) . '@' . GESTION_DOMAINE . '>';
     $refs = array_slice(array_values(array_unique(array_filter($refs, fn($r) => preg_match('/^<[^<>\s]{3,200}>$/', $r)))), -10);
     if (GESTION_ESSAI) {
+        if (session_status() === PHP_SESSION_NONE && contexte_site()) { $GLOBALS['mc_essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid, 'refs' => $refs, 'copie' => $copie]; return $mid; }   // le formulaire du site : pas de session
         session_ouvrir();
         $_SESSION['essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid, 'refs' => $refs];
         return $mid;
@@ -96,7 +97,7 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
     if (!$signature) { error_log('madamecho gestion : signature DKIM impossible, email client non envoyé'); return ''; }
     $l = [$signature];
     foreach ($signes as $n => $v) if ($n !== 'To' && $n !== 'Subject') $l[] = $n . ': ' . $v;
-    $l[] = 'Bcc: ' . GESTION_COMPTE_INITIAL;
+    if ($copie) $l[] = 'Bcc: ' . GESTION_COMPTE_INITIAL;   // pas pour l'accusé de réception : contact@ a déjà la demande
     $l[] = 'X-Mailer: madamecho.com';
     $entetes = implode("\r\n", $l);
     $ok = @mail($a, $sujetEnc, $corps, $entetes, '-f' . GESTION_EXPEDITEUR);

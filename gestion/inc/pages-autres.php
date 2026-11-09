@@ -567,6 +567,14 @@ function page_reglages(): void {
                 evenement('reglage', $on ? 'Enregistrement des demandes du site activé' : 'Enregistrement des demandes du site arrêté');
                 flash('ok', $on ? 'Les nouvelles demandes du site s\'ajouteront toutes seules ici (l\'email à contact@ continue d\'arriver).' : 'Les demandes du site ne s\'ajoutent plus ici ; elles arrivent toujours par email.');
                 break;
+            case 'accuse_reception':
+                if (!$admin) break;
+                $ancre = 'demandes-site';
+                $on = parametre('accuse_reception', '1') !== '1';
+                parametre_ecrire('accuse_reception', $on ? '1' : '0');
+                evenement('reglage', $on ? 'Accusé de réception automatique des demandes du site activé' : 'Accusé de réception automatique des demandes du site arrêté');
+                flash('ok', $on ? 'Chaque client qui envoie une demande par le site reçoit de nouveau un accusé de réception.' : 'Les clients ne reçoivent plus d\'accusé de réception automatique.');
+                break;
             case 'obligations_mail':
                 if (!$admin || !function_exists(__NAMESPACE__ . '\\obligations_mail_relancer')) break;
                 $ancre = 'conservation';
@@ -709,7 +717,13 @@ function page_reglages(): void {
                                                                                            ': 사이트 문의가 여기에 자동으로 들어와요.')
                 : '<span class="dormant">' . fr_ko('Pas encore activé', '아직 꺼져 있음') . '</span> ' . fr_ko(': les demandes du site arrivent par email, avec un lien pour les créer ici.',
                                                                                            ': 사이트 문의는 이메일로 오고, 이메일의 링크로 여기에 만들 수 있어요.')) . '</p>'
-            . formulaire('demandes_site', bouton($on ? 'Arrêter l\'enregistrement' : 'Activer l\'enregistrement des demandes du site', $on ? 'discret' : 'secondaire')), '', 'demandes-site');
+            . formulaire('demandes_site', bouton($on ? 'Arrêter l\'enregistrement' : 'Activer l\'enregistrement des demandes du site', $on ? 'discret' : 'secondaire'))
+            // Accusé de réception au client (demande d'Olivier du 09/11/2026) : le seul mail qui part sans votre toucher
+            . (($ar = parametre('accuse_reception', '1') === '1') ? '<p>' . '<span class="ok">' . fr_ko('Accusé de réception activé', '접수 확인 메일 켜짐') . '</span> '
+                    . fr_ko(': le client qui envoie une demande par le site reçoit tout de suite un mail court (« demande bien reçue, je vous recontacte très rapidement »), une fois par jour au plus. Il est rangé dans les Échanges de la commande.',
+                            ': 사이트로 문의한 고객은 바로 짧은 메일(« 문의를 잘 받았어요, 곧 연락드릴게요 »)을 받아요. 하루에 한 번까지예요. 주문의 대화 기록에 들어가요.') . '</p>'
+                : '<p><span class="dormant">' . fr_ko('Accusé de réception arrêté', '접수 확인 메일 꺼짐') . '</span> ' . fr_ko(': le client ne reçoit rien avant votre réponse.', ': 답장하기 전까지 고객은 아무 메일도 받지 않아요.') . '</p>')
+            . formulaire('accuse_reception', bouton($ar ? 'Arrêter l\'accusé de réception' : 'Activer l\'accusé de réception', $ar ? 'discret' : 'secondaire')), '', 'demandes-site');
     }
     // Statistiques du site (Matomo)
     if ($admin) {
