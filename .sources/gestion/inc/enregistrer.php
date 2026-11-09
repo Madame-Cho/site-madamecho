@@ -44,7 +44,7 @@ function enregistrer_demande(array $d): int {
         $id = commande_creer(['reference' => $d['ref'], 'client_id' => $cid, 'canal' => $canal, 'type' => $type,
                               'retrait_date' => $d['date'], 'retrait_moment' => $d['moment'], 'lignes' => $lignes,
                               'perso' => (string)$d['perso'], 'besoin' => (string)$d['besoin'], 'recue_le' => $quand,
-                              'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ''), 'auteur' => 'site']);
+                              'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : (str_starts_with($via, 'noel') ? ' depuis la section Bûches de Noël de l\'accueil' : '')), 'auteur' => 'site']);
         $pdo->commit();
         return $id;
     } catch (\Throwable $e) {

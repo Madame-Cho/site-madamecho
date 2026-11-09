@@ -252,7 +252,7 @@ $dateTexte = $jours[(int)$jour->format('w')] . ' ' . (int)$jour->format('j') . '
 $euros = fn(int $c) => ($c % 100) ? intdiv($c, 100) . ',' . sprintf('%02d', $c % 100) . ' €' : intdiv($c, 100) . ' €';
 
 $t = [];
-$t[] = 'Nouvelle demande sans engagement reçue par le site madamecho.com' . (strncmp($via, 'qr-code', 7) === 0 ? ', après un scan du QR code d\'un emballage.' : '.');
+$t[] = 'Nouvelle demande sans engagement reçue par le site madamecho.com' . (strncmp($via, 'qr-code', 7) === 0 ? ', après un scan du QR code d\'un emballage.' : (strncmp($via, 'noel', 4) === 0 ? ', depuis la section Bûches de Noël de l\'accueil.' : '.'));
 $t[] = 'Référence : ' . $ref . ' (envoyée le ' . date('d/m/Y à H:i') . ')';
 $t[] = '';
 $t[] = 'RETRAIT SOUHAITÉ';

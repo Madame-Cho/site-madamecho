@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-08-boutons"
+VERSION = "2026-11-09-noel"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -207,6 +207,16 @@ def accueil(prof=0):
  {offre}</div>
  <div>{img("professionnels-desserts", prof, "Assortiment de desserts : tarte aux fruits à coque, pâtisseries individuelles et gâteau aux carottes", "(min-width: 860px) 45vw, 100vw", grand="professionnels-final-grand.webp", petit="professionnels-final-600.webp")}</div>
 </div></section>'''
+    noel = ""
+    if NOEL["actif"]:
+        nt = "".join(f"<p>{E(x)}</p>" for x in NOEL["textes"])
+        # ?demande=buche-noel : « Ma demande » commence « Votre envie » et note la provenance (gestion, email, Matomo)
+        noel = f'''<section class="bloc" id="noel" aria-labelledby="t-noel"><div class="large">
+ <h2 class="titre" id="t-noel"><span class="etiquette">{E(NOEL['etiquette'])}</span> {E(NOEL['titre'])}</h2>
+ {nt}
+ <p class="petit">{E(NOEL['petit'])}</p>
+ <a class="bouton" href="{a}?demande=buche-noel#perso" data-evenement="Noël|Accueil|Demander ma bûche">{E(NOEL['bouton'])}</a>
+</div></section>'''
     corps = f'''<section class="ouverture" aria-labelledby="t-accueil">
  {img("ouverture", prof, "Quatre choux craquelin posés sur une pierre claire, dans la lumière du matin", "(min-width: 860px) calc(100vw - 96px), 100vw", lazy=False, grand="ouverture-1600.webp", petit="ouverture-800.webp")}
  <div class="texte"><h1 id="t-accueil">{E(H1)}</h1><p>{E(SOUS)}</p><a class="lien" href="#carte">Voir la carte</a></div>
@@ -216,6 +226,7 @@ def accueil(prof=0):
  <div class="grille">{carte_items(prof)}</div>
  <p class="petit centre">{E(TRACES)}</p>
 </section>
+{noel}
 <section class="bloc" id="anniversaires" aria-labelledby="t-anniv"><div class="deux">
  <div>{img("anniversaire", prof, "Tiramisu cerclé de chocolat, saupoudré de cacao et de feuilles d'or", "(min-width: 860px) 45vw, 100vw")}</div>
  <div><h2 class="titre" id="t-anniv"><span class="etiquette">Anniversaires</span> Un gâteau à votre nom</h2>{anniv}
@@ -349,7 +360,7 @@ def demande():
   <div class="panier" data-panier aria-live="polite"><p class="vide">Votre demande est vide pour l'instant. <a href="{lien('', prof)}#carte">Voir la carte</a></p></div>
 
   <h2 class="sous-titre" id="perso">Un gâteau personnalisé ?</h2>
-  <p class="aide">Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
+  <p class="aide" data-perso-aide>Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
   <label class="champ"><span>Votre envie <i>(facultatif)</i></span>
    <textarea name="perso" rows="4" maxlength="1200" data-perso aria-describedby="aide-sante"></textarea></label>
   <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a>.</p>
@@ -614,7 +625,8 @@ def catalogue():
             d["parfums"] = {c: {"libelle": l} for c, l, _ in p["parfums"]}
             d.update(unite=p["unite"], minimum=p["minimum"], pas=p["pas"])
         prods[p["id"]] = d
-    return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO}
+    return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO,
+            "noel": {"envie": NOEL["envie"], "aide": NOEL["aide"]}}
 
 def catalogue_gestion():
     """Carte pour l'espace de gestion : la même, plus les textes publics des fiches (comparaison des allergènes, R-39)."""

@@ -33,6 +33,15 @@
     if (via) via.value = camp[1] + (mot ? ' ' + mot[1] : '');
   })();
 
+  /* ---------- Clics comptés (09/11/2026) ----------
+     Un lien avec data-evenement="Catégorie|Action|Nom" envoie un événement à Matomo s'il mesure la visite (sinon rien). */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('[data-evenement]');
+    if (!a || !window._paq) return;
+    var t = a.getAttribute('data-evenement').split('|');
+    window._paq.push(['trackEvent', t[0], t[1] || '', t[2] || '']);
+  });
+
   /* ---------- Panier ----------
      Une seule source : le stockage du navigateur quand il marche ; sinon, la mémoire de la page, et la demande passe
      dans l'adresse vers « Ma demande » (#d=…). Mêmes plafonds que le serveur : 10 par taille, 200 par parfum (audit C05). */
@@ -230,6 +239,14 @@
     var lienCarte = ($('.vide a', panier) || { getAttribute: function () { return '../#carte'; } }).getAttribute('href');
 
     if (/[?&]pro=1/.test(location.search)) { var c = $('[data-pro]'); if (c) c.checked = true; }
+    /* Bûches de Noël (09/11/2026) : le bouton de l'accueil ouvre « Ma demande » avec ?demande=buche-noel. « Votre envie » commence
+       par « Bûche de Noël sur mesure : », l’aide (à la place de celle des anniversaires) dit quoi préciser, et la demande part avec la provenance « noel accueil »
+       (sauf si la visite vient déjà du QR code, qui reste la provenance). Le client peut tout effacer. */
+    if (/[?&]demande=buche-noel(?:&|$)/.test(location.search) && CAT.noel) {
+      if (!perso.value.trim()) perso.value = CAT.noel.envie;
+      var aideP = $('[data-perso-aide]'); if (aideP) aideP.textContent = CAT.noel.aide;
+      var viaN = $('input[name="via"]'); if (viaN && !viaN.value) viaN.value = 'noel accueil';
+    }
     function majPro() {
       var on = $('[data-pro]') && $('[data-pro]').checked;
       $('[data-societe]').hidden = !on; $('[data-message-pro]').hidden = !on;
@@ -385,6 +402,8 @@
       }
       if (!ls.length && !f.perso.value.trim() && !(f.pro.checked && f.besoin.value.trim()))
         err(f.perso, 'Ajoutez au moins un gâteau de la carte, ou décrivez votre gâteau personnalisé.');
+      else if (CAT.noel && f.perso.value.trim() === CAT.noel.envie.trim())
+        err(f.perso, 'Décrivez votre bûche\u00a0: nombre de personnes, parfums, décoration.');
       manques(ls).forEach(function (m) { out.push(m); });
       if (!f.date.value) err(f.date, 'Choisissez une date de retrait.');
       else if (f.date.value < dateIn.min) err(f.date, 'La date de retrait doit être au plus tôt le ' + dateFr(dateIn.min) + '.');

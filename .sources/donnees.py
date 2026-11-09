@@ -100,6 +100,26 @@ ANNIV = [
  "Une plaque en chocolat avec le prénom et le message de votre choix est comprise dans le prix.",
  "Commandez au moins 2 jours à l'avance.",
 ]
+# Section saisonnière « Bûches de Noël sur mesure » de l'accueil (proposition du 09/11/2026, demande d'Olivier).
+# actif=False la retire de l'accueil (à faire après les fêtes). Rien d'inventé : aucun parfum, prix ni date limite
+# tant que Youngmi ne les a pas donnés. Repères à faire valider par Youngmi avant publication :
+#   - parfums proposés (ou « à votre goût » seulement) ; tailles ou nombre de personnes ; prix indicatif (« à partir de … ») ;
+#   - date limite de commande ; acompte de 30 % (règle de la personnalisation) ; retrait le 24 décembre (fermé aujourd'hui) ;
+#   - une photo de bûche de Madame Cho : aucune pour l'instant, la section est donc en texte seul (comme « Comment ça marche »).
+NOEL = dict(
+ actif=True,
+ etiquette="Bûches de Noël sur mesure",
+ titre="Une bûche à votre goût, pour les fêtes",
+ textes=[
+  "Madame Cho prépare votre bûche de Noël sur commande. Parfums, taille, décoration : faites-lui part de vos envies pour imaginer ensemble la bûche de votre table.",
+  "Indiquez le nombre de personnes et le jour du retrait : Madame Cho vous répond sous 24 heures par une proposition écrite, sans engagement.",
+ ],
+ petit="Retrait sur rendez-vous à Meudon. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre.",
+ bouton="Demander ma bûche",
+ # Texte mis au début de « Votre envie » quand on arrive par le bouton ; le client le complète
+ envie="Bûche de Noël sur mesure : ",
+ aide="Pour votre bûche : nombre de personnes, parfums, décoration, et un message si vous le souhaitez.",
+)
 PARCOURS = "Diplômée de l'Université nationale de Séoul, Youngmi arrive en France en 2015 et se forme à l'École Ducasse. Elle passe six ans dans de grandes maisons de la gastronomie française, dont le George V et La Réserve. Aujourd'hui, à Meudon, elle prépare chaque gâteau à la commande et partage aussi les saveurs de la Corée."
 REPERES = ["Université nationale de Séoul", "École Ducasse", "George V et La Réserve", "Saveurs coréennes"]
 PROS_REF = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés."
