@@ -908,3 +908,14 @@ html:lang(ko) .par::after{content:" 님"}
 .etiquette .e-poids{font-size:6pt}
 .tableau td{overflow-wrap:anywhere}
 .case-bloquee{opacity:.75}
+/* Barre du haut : tout tient toujours sur une ligne (09/11/2026 : depuis Obligations et Hygiène, les liens directs poussaient
+   « Paramètres », la langue, « + » et le compte hors de l'écran). gestion.js essaie dans l'ordre : sans le mot « Gestion »,
+   puis « Plus » au lieu des liens directs, puis sans les icônes, puis plus serré, jusqu'à ce que tout tienne. */
+.barre.b-sans-mot .marque span{display:none}
+.barre.b-sans-pages .nav-haut a.secondaire{display:none}
+.barre.b-sans-pages .nav-haut a.plus{display:inline-flex}
+.barre.b-sans-icones .nav-haut a .ic{display:none}
+.barre.b-serre{gap:8px}
+.barre.b-serre .nav-haut a{padding:0 7px}
+.barre.b-serre .langue .drap-langue{margin-right:0}
+.barre.b-serre .langue{font-size:0;padding:0 8px}

@@ -622,3 +622,22 @@
     if (a && n.scrollWidth > n.clientWidth) n.scrollLeft += a.getBoundingClientRect().left - n.getBoundingClientRect().left - (n.clientWidth - a.offsetWidth) / 2;
   });
 })();
+
+/* Barre du haut (ordinateur, tablette, téléphone en largeur) : tout doit tenir sur une ligne, sinon « + » et le compte
+   sortent de l'écran (09/11/2026). On retire, dans l'ordre et seulement ce qu'il faut : le mot « Gestion », les liens
+   directs (remplacés par « Plus »), les icônes du menu, puis on serre. */
+(function () {
+  var barre = document.querySelector(".barre"), nav = document.querySelector(".nav-haut");
+  if (!barre || !nav) return;
+  var etapes = ["b-sans-mot", "b-sans-pages", "b-sans-icones", "b-serre"];
+  var deborde = function () { return barre.scrollWidth > barre.clientWidth + 1; };
+  var ajuster = function () {
+    etapes.forEach(function (c) { barre.classList.remove(c); });
+    if (getComputedStyle(nav).display === "none") return;   // téléphone : le menu est en bas
+    for (var i = 0; i < etapes.length && deborde(); i++) barre.classList.add(etapes[i]);
+  };
+  var minuteur = null;
+  ajuster();
+  window.addEventListener("resize", function () { clearTimeout(minuteur); minuteur = setTimeout(ajuster, 80); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajuster);
+})();
