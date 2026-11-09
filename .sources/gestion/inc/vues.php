@@ -479,7 +479,7 @@ function retrait_email(array $k): string {
  * Un seul objet par commande (« Votre commande MC-… · Madame Cho ») et les en-têtes de réponse : chez le client, une seule conversation.
  * Aperçu dans la gestion ($apercu) : sa politique de sécurité refuse les styles en ligne, chaque style devient une classe « m-… »
  * dont les règles sont dans gestion.css (bloc « Aperçu du mail », généré par apercu_mail_css() : à refaire si un style change). */
-const MAIL_TYPES = ['proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'rappel' => 'Rappel', 'message' => 'Message', 'avis' => 'Merci'];
+const MAIL_TYPES = ['recu' => 'Demande reçue', 'proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'rappel' => 'Rappel', 'message' => 'Message', 'avis' => 'Merci'];
 const MAIL_F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
 function sujet_commande(array $k): string { return 'Votre commande ' . $k['reference'] . ' · Madame Cho'; }
 /** L'objet d'un message libre : celui de la commande par défaut ; la référence MC-… y reste toujours (pour retrouver la conversation). */
@@ -493,6 +493,7 @@ function sujet_libre(array $k, string $sujet): string {
 function accueil_mail(array $k, string $type): string {
     $b = salutation($k) . "\n\n";
     return match ($type) {
+        'recu' => $b . 'Merci pour votre demande : elle est bien arrivée chez Madame Cho.',
         'proposition' => $b . 'Merci pour votre demande. Voici ma proposition :',
         'confirmation' => $b . 'Votre commande ' . $k['reference'] . ' est confirmée. Je vous attends :',
         'rappel' => $b . 'Petit rappel : votre commande vous attend ' . rappel_quand($k) . '.',
@@ -602,12 +603,12 @@ function mail_recap(array $k, string $type, \Closure $S): string {
         . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' . $l . '</table></td></tr></table>';
 }
 /** Le cadre commun : logo, filet chocolat, étiquette du type, contenu, pied (qui écrit, pourquoi, ajouter contact@ aux contacts). */
-function mail_cadre(string $titre, string $etiquette, string $contenu, \Closure $S, bool $apercu): string {
+function mail_cadre(string $titre, string $etiquette, string $contenu, \Closure $S, bool $apercu, string $raison = ''): string {
     $DX = '#736A64'; $site = 'https://' . GESTION_DOMAINE;
     $petit = MAIL_F . 'font-size:12px;line-height:18px;color:' . $DX . ';margin:0';
     $pied = '<p' . $S($petit) . '>Madame Cho · pâtisserie sur commande · 4 avenue du Château, 92190 Meudon<br>'
           . '06 61 31 17 79 · <a href="' . $site . '"' . $S('color:' . $DX . ';text-decoration:underline') . '>madamecho.com</a></p>'
-          . '<p' . $S($petit . ';margin-top:10px') . '>Vous recevez ce message parce que vous avez commandé chez Madame Cho. '
+          . '<p' . $S($petit . ';margin-top:10px') . '>' . ($raison !== '' ? h($raison) . ' ' : 'Vous recevez ce message parce que vous avez commandé chez Madame Cho. ')
           . 'Pour que nos messages arrivent bien, <a href="' . $site . '/madame-cho.vcf"' . $S('color:' . $DX . ';text-decoration:underline') . '>ajoutez Madame Cho à vos contacts</a> (contact@madamecho.com).</p>';
     $corps = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#ffffff') . '><tr><td align="center"' . $S('padding:32px 16px') . '>'
         . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('max-width:560px') . '>'
@@ -636,6 +637,20 @@ function mail_commande(array $k, string $type, array $o = []): array {
     $texte = trim($accueil) . "\n\n";
     $fin = 'À bientôt,';
     switch ($type) {
+        case 'recu':
+            // Accusé de réception, parti tout seul à l'envoi du formulaire du site (demande d'Olivier du 09/11/2026, exception à R-01) :
+            // un texte fixe, sans prix ni décision, et sans rien de ce que le visiteur a écrit à part son prénom
+            $recontact = 'Je vous recontacte très rapidement pour en parler avec vous.';
+            $pasEncore = 'Votre demande n\'est pas encore une commande : rien n\'est réservé avant votre accord sur ma proposition.';
+            $ajout = 'Un détail à ajouter ? Répondez simplement à ce mail.';
+            $html .= $p(h($recontact), 'margin-bottom:14px')
+                   . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#F3EDE4;border-radius:6px;margin-top:6px') . '><tr><td' . $S('padding:18px 20px') . '>'
+                   . '<p' . $S(MAIL_F . 'font-size:14px;line-height:21px;color:#2B2623;margin:0') . '>Référence de votre demande</p>'
+                   . '<p' . $S(MAIL_F . 'font-size:17px;line-height:24px;color:#3B1D0E;font-weight:bold;margin:0') . '>' . h($k['reference']) . '</p></td></tr></table>'
+                   . $p(h($pasEncore), 'margin-top:20px') . $p(h($ajout), 'margin-top:14px');
+            $texte .= $recontact . "\n\nRéférence de votre demande : " . $k['reference'] . "\n\n" . $pasEncore . "\n\n" . $ajout . "\n\n";
+            $fin = 'À très bientôt,';
+            break;
         case 'proposition':
             $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '')
                    . $p('<b>Pour confirmer, il suffit de répondre à ce mail.</b> Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:20px');
@@ -673,7 +688,8 @@ function mail_commande(array $k, string $type, array $o = []): array {
     }
     $html .= $p(h($fin) . '<br>' . mail_signature_nom(), 'margin-top:22px');
     $texte .= $fin . "\n" . signature();
-    return ['sujet' => $sujet, 'corps' => $texte, 'html' => mail_cadre($sujet, $etiquette, $html, $S, $apercu), 'type' => $type];
+    $raison = $type === 'recu' ? 'Vous recevez ce message parce qu\'une demande a été envoyée avec votre adresse sur madamecho.com. Si ce n\'est pas vous, ignorez-le simplement.' : '';
+    return ['sujet' => $sujet, 'corps' => $texte, 'html' => mail_cadre($sujet, $etiquette, $html, $S, $apercu, $raison), 'type' => $type];
 }
 /** Les Message-ID déjà échangés sur une commande (mails envoyés et reçus), du plus ancien au plus récent. */
 function mail_refs(int $commande): array {

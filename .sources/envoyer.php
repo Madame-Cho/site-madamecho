@@ -8,6 +8,7 @@
  *   (« verifier », date et moment seulement), et l'envoi est refusé ; le motif n'est jamais dit.
  * - Si une protection ne marche pas (dossier des limites, verrou, signature DKIM), aucun email ne part :
  *   la page le dit et propose le téléphone ou l'email (audit du site du 03/11/2026, C04).
+ * - Une fois la demande partie, la gestion envoie au client un accusé de réception (demande d'Olivier du 09/11/2026, inc/enregistrer.php).
  * - Aucun secret dans ce fichier (dépôt public, R-08). Signature DKIM : dkim.php (clé créée sur le serveur).
  */
 declare(strict_types=1);
@@ -327,10 +328,19 @@ if (!$envoye) {
 if (PHP_VERSION_ID >= 80000 && is_file(GESTION_ENREGISTRER)) {   // l'espace de gestion demande PHP 8
     try {
         require_once GESTION_ENREGISTRER;
-        \MadameCho\Gestion\enregistrer_demande(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
+        $commande = \MadameCho\Gestion\enregistrer_demande(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
             'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin, 'via' => $via]);
     } catch (\Throwable $e) {
+        $commande = 0;
         error_log('madamecho formulaire : demande ' . $ref . ' non enregistrée dans la gestion (' . get_class($e) . ')');
+    }
+    // Accusé de réception au client (demande d'Olivier du 09/11/2026) : un mail fixe « demande bien reçue, recontacté très rapidement »,
+    // rangé dans les Échanges de la commande ; s'il ne part pas, le visiteur ne voit aucune différence (sa demande est arrivée)
+    try {
+        $accuse = \MadameCho\Gestion\accuser_reception(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email], (int)$commande);
+        if ($accuse === 'echec') error_log('madamecho formulaire : accusé de réception de ' . $ref . ' non envoyé');
+    } catch (\Throwable $e) {
+        error_log('madamecho formulaire : accusé de réception de ' . $ref . ' non envoyé (' . get_class($e) . ')');
     }
 }
 repondre(true, ['ref' => $ref], $enJson);
