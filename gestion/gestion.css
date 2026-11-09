@@ -570,6 +570,15 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .composer.occupe .composer-envoyer{background:var(--chocolat);cursor:progress}
 .composer.occupe .composer-envoyer .ic{display:none}
 .composer.occupe .composer-envoyer::after{content:"";width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:mc-tourne .8s linear infinite}
+/* La flèche « retour en bas » (09/11/2026) : un rond posé au-dessus de la zone de saisie, au milieu, quand on a remonté la conversation */
+.vers-le-bas{position:absolute;left:50%;top:-50px;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;margin-left:-20px;padding:0;border:1px solid var(--fort);border-radius:50%;background:var(--carte);color:var(--chocolat);box-shadow:0 4px 14px rgba(43,38,35,.14);cursor:pointer;opacity:0;transform:translateY(6px);transition:opacity .18s,transform .18s;pointer-events:none}
+.vers-le-bas.visible{opacity:1;transform:none;pointer-events:auto}
+.vers-le-bas[hidden]{display:none}
+.vers-le-bas .ic{width:20px;height:20px;stroke-width:2.2;vertical-align:0}
+.vers-le-bas:hover{background:var(--ivoire)}
+.vers-le-bas:focus-visible{outline:2px solid var(--chocolat);outline-offset:2px}
+@media (pointer:coarse){.vers-le-bas{width:44px;height:44px;margin-left:-22px;top:-54px}}
+@media (prefers-reduced-motion:reduce){.vers-le-bas{transition:none}}
 .composer-note{margin-top:6px;text-align:center;font-size:12px;line-height:1.4;color:var(--doux)}
 .composer-note a{color:inherit}
 .page-assistant .flash{margin:16px 0 0}

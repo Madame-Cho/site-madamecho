@@ -52,6 +52,8 @@ function icone(string $n): string {
         'ia' => '<path d="M10 3.5l1.6 4.4 4.4 1.6-4.4 1.6L10 15.5l-1.6-4.4L4 9.5l4.4-1.6z"/><path d="M18 13.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/><path d="M17.5 3v3M16 4.5h3"/>',
         // La flèche d'envoi et la nouvelle conversation, comme dans ChatGPT et Claude
         'envoyer' => '<path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/>',
+        // Retour en bas de la conversation, comme dans Claude (demande d'Olivier, 09/11/2026)
+        'vers-le-bas' => '<path d="M12 5v14M5.5 12.5L12 19l6.5-6.5"/>',
         'nouveau' => '<path d="M11 4H5v15h15v-6"/><path d="M18.5 3.5l2 2L12 14l-3 1 1-3z"/>',
         // Particulier (une personne) et professionnel (une boutique), sur les étiquettes de type
         'particulier' => '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/>',

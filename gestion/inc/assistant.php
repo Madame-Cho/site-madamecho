@@ -498,6 +498,8 @@ function assistant_barre_vocale(): string {
  *  sans JavaScript, le formulaire s'envoie comme les autres. */
 function assistant_saisie(string $brouillon): string {
     return '<form method="post" action="' . h(u('assistant')) . '" class="composer" id="composer">' . csrf_champ() . '<input type="hidden" name="_action" value="message">'
+         // La flèche « retour en bas » (demande d'Olivier, 09/11/2026, comme dans Claude) : gestion.js la montre quand on remonte dans la conversation
+         . '<button type="button" class="vers-le-bas" id="vers-le-bas" hidden aria-label="' . h(fr_ko('Revenir en bas de la conversation', '대화 맨 아래로 가기')) . '" title="' . h(fr_ko('Revenir en bas', '맨 아래로')) . '">' . icone('vers-le-bas') . '</button>'
          . '<div class="composer-boite"><label class="sr" for="f-message">Votre message</label>'
          . '<textarea name="message" id="f-message" rows="1" maxlength="' . GESTION_ASSISTANT_MAX_CAR . '" required data-langue-libre placeholder="' . h(fr_ko('Écrivez votre message…', '메시지를 입력하세요…')) . '">' . h($brouillon) . '</textarea>'
          . '<button type="button" class="composer-micro" id="micro" hidden aria-pressed="false" aria-label="' . h(fr_ko('Parler à l\'assistant (mode vocal)', '어시스턴트에게 말하기 (음성 모드)')) . '" title="' . h(fr_ko('Parler', '말하기')) . '">' . icone('micro') . '</button>'

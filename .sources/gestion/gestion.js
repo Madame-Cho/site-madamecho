@@ -137,7 +137,33 @@
     ajuster(f.querySelector("textarea"));
     etatEnvoi();
     interfaceVocale();
+    flecheBas();
   }
+  // La flèche « retour en bas » (demande d'Olivier, 09/11/2026, comme dans Claude) : elle apparaît dès qu'on a remonté la conversation
+  // d'un peu plus d'un écran à moitié, et ramène d'un toucher aux derniers messages et à la zone de saisie (téléphone, tablette, ordinateur)
+  function flecheBas() {
+    var b = d.getElementById("vers-le-bas"); if (!b) return;
+    var reste = d.documentElement.scrollHeight - (window.scrollY || window.pageYOffset || 0) - window.innerHeight;
+    var montrer = !!d.getElementById("chat") && reste > Math.max(160, window.innerHeight * 0.4);
+    if (montrer) { b.hidden = false; b.classList.add("visible"); }
+    else { b.classList.remove("visible"); }
+  }
+  var flecheEnAttente = false;
+  function flecheBasBientot() {
+    if (flecheEnAttente) return; flecheEnAttente = true;
+    (window.requestAnimationFrame || setTimeout)(function () { flecheEnAttente = false; flecheBas(); });
+  }
+  window.addEventListener("scroll", flecheBasBientot, { passive: true });
+  window.addEventListener("resize", flecheBasBientot);
+  d.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("#vers-le-bas"); if (!b) return;
+    e.preventDefault();
+    enBas(true);
+    b.classList.remove("visible");
+    // Sur ordinateur, le curseur se met dans la zone de saisie ; sur téléphone et tablette, non : le clavier cacherait la conversation
+    var t = composer() && composer().querySelector("textarea");
+    if (t && !tactile) t.focus({ preventScroll: true });
+  });
   function enBas(doux) { window.scrollTo({ top: d.documentElement.scrollHeight, behavior: doux && !calme ? "smooth" : "auto" }); }
   // La page de l'assistant renvoyée par le serveur remplace la conversation affichée ; null si ce n'est pas elle (session finie, erreur)
   function remplacer(html) {
