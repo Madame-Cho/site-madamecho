@@ -396,7 +396,8 @@ function page_rapprochement(): void {
         csrf_verifier();
         if (texte('_action', 40) === 'rapprocher') {
             $ids = array_values(array_unique(array_filter(array_map('intval', is_array($_POST['ids'] ?? null) ? $_POST['ids'] : []))));
-            $ref = une_ligne(texte('qonto_ref', 120));
+            $op = encaissement_qonto_choisi();   // un encaissement lu dans Qonto, choisi d'un toucher : sa référence remplace la saisie
+            $ref = $op ? $op['id'] : une_ligne(texte('qonto_ref', 120));
             $erreur = !$ids ? 'Cochez au moins un paiement.' : '';
             foreach ($ids as $i) {   // tout ou rien : on vérifie chaque commande avant d'écrire
                 if ($erreur !== '') break;
@@ -425,7 +426,8 @@ function page_rapprochement(): void {
                    . h(date_fr($k['paiement_le'] ?: ($k['remise_le'] ?: $k['maj_le']), 'heure')) . '</span></span></label>';
         }
         $c .= bloc('Paiements pas encore retrouvés dans Qonto', formulaire('rapprocher', '<div class="liste-cases">' . $rows . '</div>'
-            . champ('qonto_ref', 'Référence de l\'opération dans Qonto', '', ['maxlength' => '120', 'autocomplete' => 'off', 'required' => true],
+            . choix_encaissements_qonto()
+            . champ('qonto_ref', qonto_relie() ? 'Ou référence de l\'opération, collée à la main' : 'Référence de l\'opération dans Qonto', '', ['maxlength' => '120', 'autocomplete' => 'off', 'required' => !qonto_relie()],
                 'Cochez le ou les paiements que cette opération Qonto regroupe (un versement Tap to Pay peut en réunir plusieurs), puis collez la référence de l\'opération. Un nom ou un montant seuls ne suffisent pas.')
             . bouton('Noter rapprochés', 'principal')));
     }
@@ -654,6 +656,10 @@ function page_reglages(): void {
                 evenement('reglage', 'Plafond du mois de l\'assistant : ' . ($p ? $p . ' $' : 'aucun'));
                 flash('ok', $p ? 'Plafond enregistré : ' . $p . ' $ par mois.' : 'Plafond enregistré : aucun.');
                 break;
+            case 'qonto_application': case 'qonto_retirer': case 'qonto_essai':   // Qonto en lecture seule (qonto.php)
+                if (!$admin) break;
+                $ancre = reglages_qonto_action($a);
+                break;
             case 'importer':
                 if (!$admin) break;
                 $ancre = 'reprise';
@@ -772,6 +778,8 @@ function page_reglages(): void {
                 . bouton('Enregistrer le plafond', 'secondaire'));
         $c .= bloc('Assistant', $t, '', 'assistant');
     }
+    // Qonto, en lecture seule (R-24)
+    if ($admin) $c .= bloc_reglages_qonto();
     // Conservation et RGPD
     if ($admin) {
         $ap = conservation_apercu();
