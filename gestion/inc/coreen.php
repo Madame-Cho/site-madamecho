@@ -1223,6 +1223,16 @@ nom dans Qonto | Qonto 이름
 lettre d'information | 뉴스레터
 # Rapprochement avec Qonto (audit n° 2, C14, 07/11/2026)
 Rapprochement Qonto | Qonto 대조
+Qonto (lecture seule) | Qonto (읽기 전용)
+Essayer la lecture | 읽기 테스트
+Relier un espace Qonto | Qonto 공간 연결
+Relier un autre espace Qonto | 다른 Qonto 공간 연결
+Enregistrer l'application Qonto | Qonto 앱 저장
+Remplacer l'application Qonto | Qonto 앱 바꾸기
+Aucun compte bancaire (facturation seulement) | 은행 계좌 없음 (청구서만)
+Ou référence de l'opération, collée à la main | 또는 거래 참조번호를 직접 붙여넣기
+Versement Tap to Pay | Tap to Pay 입금
+Virement reçu | 받은 이체
 Paiements à retrouver dans Qonto | Qonto에서 찾을 결제
 Payé (constaté par vous) et retrouvé dans Qonto sont deux choses séparées | ‘결제 완료’(직접 확인)와 ‘Qonto에서 확인’은 서로 달라요
 À rapprocher | 대조 필요

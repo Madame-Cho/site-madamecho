@@ -18,6 +18,7 @@ require_once __DIR__ . '/inc/manuel.php';
 require_once __DIR__ . '/inc/pastilles.php';
 require_once __DIR__ . '/inc/assistant.php';
 require_once __DIR__ . '/inc/assistant-donnees.php';
+require_once __DIR__ . '/inc/qonto.php';
 require_once __DIR__ . '/inc/pages-connexion.php';
 require_once __DIR__ . '/inc/pages-commandes.php';
 require_once __DIR__ . '/inc/pages-agenda.php';
@@ -32,7 +33,7 @@ $pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'm
 $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition', 'apercu-mail' => 'page_apercu_mail', 'corriger' => 'page_corriger',
           'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition', 'releve' => 'page_releve',
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',
-          'statistiques' => 'page_statistiques', 'taxe' => 'page_taxe', 'plus' => 'page_plus', 'rapprochement' => 'page_rapprochement', 'corbeille' => 'page_corbeille', 'manuel' => 'page_manuel', 'aide' => 'page_manuel', 'assistant' => 'page_assistant', 'olivier' => 'page_olivier', 'reglages' => 'page_reglages', 'export' => 'page_export',
+          'statistiques' => 'page_statistiques', 'taxe' => 'page_taxe', 'plus' => 'page_plus', 'rapprochement' => 'page_rapprochement', 'qonto-retour' => 'page_qonto_retour', 'qonto-relier' => 'page_qonto_relier', 'corbeille' => 'page_corbeille', 'manuel' => 'page_manuel', 'aide' => 'page_manuel', 'assistant' => 'page_assistant', 'olivier' => 'page_olivier', 'reglages' => 'page_reglages', 'export' => 'page_export',
           'nouveautes' => 'page_nouveautes', 'pastilles' => 'page_pastilles', 'obligations' => 'page_obligations', 'demarche' => 'page_demarche', 'echeance' => 'page_echeance',
           'hygiene' => 'page_hygiene', 'hygiene-fiche' => 'page_hygiene_fiche', 'hygiene-appareil' => 'page_hygiene_appareil', 'hygiene-photo' => 'page_hygiene_photo', 'hygiene-export' => 'page_hygiene_export',
           'hygiene-etiquettes' => 'page_hygiene_etiquettes', 'hygiene-probleme' => 'page_hygiene_probleme'];
