@@ -14,11 +14,26 @@ function carte_client(array $c): string {
     $pa = pastilles()['clients'][(int)$c['id']] ?? null;   // la pastille de la personne (FR-041)
     if ($pa) $avis = etiquette_pastille($pa) . $avis;
     return '<a class="carte-cmd carte-client' . ($pa ? ' est-' . $pa['niveau'] : '') . '" href="' . h(u('client', ['id' => $c['id']])) . '">'
-         . '<span class="l1">' . chip_type($estPro) . '<b translate="no">' . h(client_nom($c)) . '</b>' . $etat . $enCours . '</span>'
+         . '<span class="l1">' . chip_type($estPro) . avatar_client((int)$c['id']) . '<b translate="no">' . h(client_nom($c)) . '</b>' . $etat . $enCours . '</span>'
          . '<span class="l2">' . h($chiffres) . '</span>'
          . '<span class="l4">' . h($c['numero']) . ($c['ville'] !== '' ? ' · <span translate="no">' . h($c['ville']) . '</span>' : '') . ' · ' . h(CANAUX[$c['canal']] ?? $c['canal']) . ' · dernier échange ' . h(date_fr($c['dernier_echange'], 'relative')) . '</span>'
          . ($avis !== '' ? '<span class="l5">' . $avis . '</span>' : '')
          . '</a>';
+}
+
+/** Sur la fiche : d'où vient la photo, et « Masquer la photo » (ou l'autoriser de nouveau). */
+function bloc_photo_client(array $cl): string {
+    $etat = photo_etat($cl);
+    $txt = ['photo' => 'La photo vient du compte Google du client, telle que Gmail la montre dans contact@ (photo qu\'il a rendue publique, ou fiche contact de contact@). Elle est revue chaque mois.',
+            'sans' => 'Pas de photo trouvée : le client n\'a pas de photo publique sur son compte Google, ou il n\'utilise pas Google. On cherche de nouveau chaque semaine.',
+            'jamais' => 'Pas encore cherchée : le script de contact@ passe une fois par jour.',
+            'masquee' => 'Photo masquée : elle n\'est plus affichée ni cherchée pour ce client.'][$etat];
+    $bouton = $etat === 'masquee'
+        ? formulaire('photo', '<input type="hidden" name="quoi" value="afficher">' . bouton('Afficher de nouveau sa photo', 'discret'))
+        : formulaire('photo', '<input type="hidden" name="quoi" value="masquer">' . bouton('Masquer la photo', 'discret'),
+                     ['data-confirmer' => 'Masquer la photo de ce client ? Elle est effacée tout de suite et ne sera plus cherchée.']);
+    return '<details class="replie" id="photo"><summary>Photo du client</summary>' . ($etat === 'photo' ? '<p>' . avatar_client((int)$cl['id'], 'grande') . '</p>' : '')
+         . '<p class="aide">' . h($txt) . ' Si le client ne veut pas qu\'elle apparaisse, « Masquer la photo ».</p>' . $bouton . '</details>';
 }
 
 function page_clients(): void {
@@ -81,6 +96,11 @@ function page_client(): void {
                 evenement('avis', 'Avis Google reçu', ['client' => $id]);
                 flash('ok', 'Avis reçu noté. Merci !');
                 break;
+            case 'photo':   // « Masquer la photo » (opposition du client, photo qui ne convient pas) ou l'autoriser de nouveau
+                $masquer = texte('quoi', 12) !== 'afficher';
+                photo_masquer($id, $masquer);
+                flash('ok', $masquer ? 'Photo masquée : elle est effacée et ne sera plus cherchée pour ce client.' : 'C\'est noté : la photo sera cherchée au prochain passage du script (une fois par jour).');
+                break;
             case 'inactif':
                 q("UPDATE clients SET statut = CASE statut WHEN 'actif' THEN 'inactif' WHEN 'inactif' THEN 'actif' ELSE statut END, maj_le = ? WHERE id = ?", [maintenant(), $id]);
                 evenement('modification', $cl['statut'] === 'actif' ? 'Client passé inactif' : 'Client réactivé', ['client' => $id]);
@@ -124,7 +144,7 @@ function page_client(): void {
     $ch = client_chiffres($id);
     $efface = $cl['statut'] === 'efface';
     $chips = chip_type($cl['type'] === 'professionnel') . ($efface ? '<span class="statut s-efface">Effacé</span>' : ($cl['statut'] === 'inactif' ? '<span class="statut s-inactif">Inactif</span>' : ''));
-    $c = titre_page('<span translate="no">' . h(client_nom($cl)) . '</span>', h($cl['numero']) . ' · client depuis le ' . h(date_fr($cl['premier_contact'], 'longue')) . '<span class="chips">' . $chips . '</span>',
+    $c = titre_page(avatar_client($id, 'grande') . '<span translate="no">' . h(client_nom($cl)) . '</span>', h($cl['numero']) . ' · client depuis le ' . h(date_fr($cl['premier_contact'], 'longue')) . '<span class="chips">' . $chips . '</span>',
         $efface ? '' : ($cl['type'] === 'professionnel'
             ? lien_bouton(u('commande-edition', ['client' => $id, 'livraison' => 1]), icone('ajouter') . 'Nouvelle livraison', 'principal') . lien_bouton(u('commande-edition', ['client' => $id]), 'Autre commande', 'discret')
             : lien_bouton(u('commande-edition', ['client' => $id]), icone('ajouter') . 'Nouvelle commande', 'principal')), u('clients'));
@@ -223,6 +243,7 @@ function page_client(): void {
                . '<p class="aide">Possible seulement pour une fiche sans aucune commande. Elle va à la corbeille (Plus › Corbeille) : 30 jours pour la restaurer.</p>'
                . formulaire('supprimer', champ('motif', 'Motif', 'essai', ['maxlength' => '200']) . champ('confirmation', 'Tapez SUPPRIMER pour confirmer', '', ['required' => true, 'autocomplete' => 'off', 'pattern' => 'SUPPRIMER'])
                    . bouton(icone('supprimer') . 'Supprimer la fiche', 'danger'), ['data-confirmer' => 'Supprimer définitivement cette fiche client ?']) . '</details>' : '')
+           . bloc_photo_client($cl)
            . formulaire('inactif', bouton($cl['statut'] === 'actif' ? 'Marquer inactif (ne commande plus)' : 'Réactiver', 'discret'))
            . '</div>';
         $c .= bloc('Fiche et droits du client', $d);

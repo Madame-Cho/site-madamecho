@@ -917,3 +917,10 @@ html:lang(ko) .par::after{content:" 님"}
 .etiquette .e-poids{font-size:6pt}
 .tableau td{overflow-wrap:anywhere}
 .case-bloquee{opacity:.75}
+/* Photos des clients (10/11/2026) : la photo Google du client, ronde, à côté de son nom ; rien sans photo */
+.avatar-client{display:inline-block;flex:none;border-radius:50%;object-fit:cover;background:var(--ivoire);box-shadow:0 0 0 1px var(--ligne)}
+.avatar-petite{width:32px;height:32px}
+.avatar-grande{width:56px;height:56px}
+.tete h1 .avatar-client{vertical-align:middle;margin:-4px 12px 0 0}
+#photo .avatar-client{display:block}
+.carte-cmd .l1 .avatar-client{order:-2}

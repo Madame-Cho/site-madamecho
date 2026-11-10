@@ -8,6 +8,8 @@ namespace MadameCho\Gestion;
 
 use RuntimeException;
 
+require_once __DIR__ . '/photos.php';   // photos des clients : effacées avec la fiche (client_effacer, client_supprimer, fusion)
+
 /* ---------- Clients ---------- */
 function client_numero_suivant(): string {
     $n = (int)val("SELECT MAX(CAST(SUBSTR(numero, 4) AS INTEGER)) FROM clients");
@@ -228,6 +230,7 @@ function client_fusionner(int $cible, int $source): bool {
     $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($maj)));
     q("UPDATE clients SET $set WHERE id = :id", $maj + ['id' => $cible]);
     q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', email = '', telephone = '', ville = '', contact = '', efface_le = ?, maj_le = ? WHERE id = ?", [maintenant(), maintenant(), $source]);
+    photo_oublier($source);
     evenement('fusion', 'Doublon ' . $b['numero'] . ' fusionné dans cette fiche', ['client' => $cible]);
     return true;
 }
@@ -240,6 +243,7 @@ function client_effacer(int $id, string $motif, ?string $auteur = null): void {
        lettre_info = '', lettre_info_le = NULL, avis_demande_le = NULL, avis_recu_le = NULL, efface_le = ?, maj_le = ? WHERE id = ?", [$now, $now, $id]);
     q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification', 'email_client', 'email_recu')", [$id]);
     q("DELETE FROM corbeille WHERE client_id = ?", [$id]);   // un effacement (RGPD) vide aussi la corbeille de ce client
+    photo_oublier($id);   // sa photo aussi
     foreach (lignes("SELECT id FROM commandes WHERE client_id = ?", [$id]) as $k) commande_anonymiser((int)$k['id'], $now);
     assistant_oublier_client($c);
     evenement('effacement', 'Données personnelles effacées : ' . $motif, ['client' => $id], '', '', $auteur);
@@ -296,6 +300,7 @@ function client_exporter(int $id): array {
     return ['client' => ['numero' => $c['numero'], 'type' => TYPES_CLIENT[$c['type']] ?? $c['type'], 'nom' => $c['nom'], 'prenom' => $c['prenom'], 'societe' => $c['societe'],
                          'contact' => $c['contact'], 'email' => $c['email'], 'telephone' => $c['telephone'], 'ville' => $c['ville'], 'canal' => CANAUX[$c['canal']] ?? $c['canal'],
                          'premier_contact' => $c['premier_contact'], 'dernier_echange' => $c['dernier_echange'],
+                         'photo' => isset(photos_index()[$id]) ? 'photo de profil Google affichée dans la gestion (lue dans les contacts de contact@madamecho.com)' : 'aucune',
                          'notes' => array_column(lignes("SELECT texte FROM evenements WHERE client_id = ? AND commande_id IS NULL AND type = 'commentaire' ORDER BY le", [$id]), 'texte')],
             'commandes' => $commandes, 'exporte_le' => maintenant()];
 }
@@ -1158,6 +1163,7 @@ function conservation_executer(?string $auteur = null): array {
     q("DELETE FROM assistant_actions WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_ASSISTANT_MOIS . ' months'))]);    // modifications qu'il a préparées : 6 mois aussi
     q("DELETE FROM rapports WHERE le < ?", [date('Y-m-d H:i:s', strtotime('-' . GESTION_RAPPORTS_MOIS . ' months'))]);   // rapports de l'assistant : 12 mois
     reponses_purger();   // mails sans commande reconnue : 30 jours
+    photos_purger();   // photos des fiches disparues ou effacées
     q("DELETE FROM corbeille WHERE le < ?", [date('Y-m-d H:i:s', time() - CORBEILLE_JOURS * 86400)]);   // corbeille : 30 jours
     // Pastilles (audit n° 5, constat 8) : un « vu » de plus de 60 jours ne sert plus (les pastilles s'éteignent à 30 jours), ni celui
     // d'un compte désactivé, ni celui d'une commande ou d'une fiche qui n'existe plus
@@ -1369,6 +1375,7 @@ function client_supprimer(int $id, string $motif): void {
     q("INSERT INTO corbeille (le, par, genre, reference, libelle, motif, client_id, donnees) VALUES (?, ?, 'client', ?, ?, ?, ?, ?)",
       [maintenant(), auteur(), $c['numero'], client_nom($c), $motif, $id, json_encode($donnees, JSON_UNESCAPED_UNICODE)]);
     q("DELETE FROM evenements WHERE client_id = ?", [$id]);
+    photo_oublier($id);
     q("DELETE FROM clients WHERE id = ?", [$id]);
     evenement('suppression', 'Fiche client ' . $c['numero'] . ' mise à la corbeille (' . $motif . ')');
 }

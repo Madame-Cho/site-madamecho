@@ -287,7 +287,7 @@ function page_commande(): void {
     $nonLues = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND id > ?", [$id, $seuil]);
     $nonLuesTous = (int)val("SELECT COUNT(*) FROM evenements WHERE commande_id = ? AND type = 'email_recu' AND lu = 0", [$id]);
     $versEchanges = lien_bouton('#echanges', icone('assistant') . 'Échanges' . ($notes ? ' <span class="compte">' . $notes . '</span>' : '') . ($nonLues ? ' <span class="chip chip-nouveau">' . ($nonLues > 1 ? $nonLues . ' nouvelles réponses' : 'Nouvelle réponse') . '</span>' : ''), $nonLues ? 'secondaire' : 'discret');
-    $c = titre_page('<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>',
+    $c = titre_page(avatar_client((int)$k['client_id'], 'grande') . '<span translate="no">' . h($nom) . '</span>', h($k['reference']) . ' · ' . h(CANAUX[$k['canal']] ?? $k['canal']) . ' · ' . h(TYPES_COMMANDE[$k['type']] ?? '') . ' · reçue le ' . h(date_fr($k['recue_le'], 'heure')) . '<span class="chips">' . $chips . '</span>',
         // « Modifier la commande » en haut, bien visible (retour d'Olivier en test, 07/11/2026 : il ne le trouvait pas)
         lien_bouton(u('commande-edition', ['id' => $id]), icone('crayon') . 'Modifier la commande', 'secondaire') . $versEchanges, u('commandes'));
     $c .= encadre_changements('commande', $id);   // ce qui a changé depuis la dernière visite de la personne (FR-041)

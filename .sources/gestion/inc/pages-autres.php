@@ -793,6 +793,10 @@ function page_reglages(): void {
            . definition(['État' => h($actif ? 'actif' : 'arrêté'), 'Dernier passage' => h(($d = parametre('reponses_dernier')) ? date_fr($d, 'heure') : 'jamais'),
                          'Dernière réponse rangée' => h(($d = parametre('reponses_dernier_mail')) ? date_fr($d, 'heure') : 'aucune'), 'Adresse' => '<code>' . h(gestion_adresse() . '?p=reponses') . '</code>']);
         if (reponses_silence()) $m .= '<p class="erreur">Rien reçu depuis plus de 24 h : vérifiez le script dans contact@ (script.google.com › Exécutions).</p>';
+        // Photos des clients (10/11/2026) : le même script, une fois par jour, avec la même clé
+        $ph = photos_resume();
+        $m .= '<h3 class="sous-titre-graphique">Photos des clients</h3><p class="aide">Une fois par jour, le même script lit dans les contacts de contact@ la photo Google des clients de la gestion (seulement eux), comme Gmail la montre. Elle s\'affiche à côté de leur nom. Sur la fiche d\'un client, « Photo du client » › « Masquer la photo » si elle ne doit pas apparaître.</p>'
+            . definition(['Clients avec une photo' => (string)$ph['avec'], 'Photos masquées' => (string)$ph['masquees'], 'Dernier passage' => h($ph['dernier'] ? date_fr($ph['dernier'], 'heure') : 'jamais')]);
         if ($cle !== '') $m .= '<div class="cle-miroir"><p><b>Clé à coller dans le script Google</b> (Paramètres du projet › Propriétés du script › CLE ; elle ne sera plus jamais affichée) :</p><pre id="cle-reponses">' . h($cle) . '</pre><button type="button" class="btn" data-copier="cle-reponses">' . icone('copier') . 'Copier</button></div>';
         $m .= formulaire('reponses', bouton($actif ? 'Créer une nouvelle clé (l\'ancienne cesse de marcher)' : 'Créer la clé du script', 'discret')) . ($actif ? formulaire('reponses', '<input type="hidden" name="arreter" value="1">' . bouton('Arrêter', 'discret')) : '');
         $orph = reponses_orphelins();

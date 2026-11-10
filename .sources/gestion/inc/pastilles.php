@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-photos', 'le' => '2026-11-10', 'titre' => 'Les photos des clients',
+     'texte' => 'À côté du nom des clients, la photo de leur compte Google, comme dans Gmail. Un client ne veut pas de la sienne : sur sa fiche, « Photo du client » › « Masquer la photo ».',
+     'lien' => ['manuel', 'clients']],
     ['id' => '2026-11-hygiene', 'le' => '2026-11-08', 'titre' => 'L\'écran Hygiène',
      'texte' => 'Plus › Hygiène : la température des frigos, les réceptions, les fournées avec leur numéro de lot et les livraisons aux restaurants, notées en quelques touches sur le téléphone.',
      'lien' => ['manuel', 'hygiene']],

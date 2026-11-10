@@ -611,6 +611,21 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   d'une commande (« Corriger le nom ou les coordonnées ») ; les champs de nom demandent la
   majuscule au clavier du téléphone (autocapitalize).
 
+- **FR-043**: (demande d'Olivier, 2026-11-10, choix « Oui, photos Google seulement ») La gestion
+  MUST afficher, à côté du nom d'un client (listes, fiche, commande), la photo que Gmail montre pour
+  lui dans contact@ : photo publique de son compte Google ou d'une fiche contact de contact@, lue
+  en lecture seule par le script Google « Réponses des clients » (People API, une fois par jour),
+  pour les seules adresses que la gestion lui donne (ses clients non effacés). Aucune autre source
+  (ni Gravatar, ni adresse non officielle, ni autre boîte : R-41, R-05). Les photos par défaut
+  (lettre de couleur) MUST être ignorées ; sans photo, l'écran MUST rester comme avant. L'image
+  MUST être refaite en 160 px JPEG sans métadonnées, gardée dans la base (jamais dans le dossier
+  servi), servie seulement après connexion, jamais transmise à l'assistant IA ni au miroir du
+  Drive ; elle MUST n'être affichée que si l'adresse du client n'a pas changé, être revue chaque
+  mois (client sans photo : chaque semaine) et partir avec la fiche (effacement, suppression,
+  fusion). « Masquer la photo » sur la fiche MUST l'effacer et ne plus jamais la chercher
+  (opposition du client) ; « Afficher de nouveau sa photo » l'annule. La page Confidentialité du
+  site MUST le dire (RGPD, article 14 ; intérêt légitime).
+
 ### Key Entities *(include if feature involves data)*
 
 - **Client** : numéro CL-…, particulier ou professionnel, prénom et nom ou société et contact,
@@ -623,6 +638,8 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   produit (changement, commentaire avec son canal, mail envoyé, mail reçu et « vu », effacement,
   suppression d'un essai).
 - **Mail reçu** : identifiant Gmail, date, commande rattachée ou orphelin (30 jours).
+- **Photo du client** : client, adresse au moment de la lecture, image 160 px, dates de
+  vérification et de changement, masquée ou non.
 - **Produit** et **variante** : gâteau de la carte ou de la gamme pro, statut, fiche validée,
   TVA, emballage, recette par variante.
 - **Ingrédient** : nom, unité, prix d'achat, allergènes, fournisseur.

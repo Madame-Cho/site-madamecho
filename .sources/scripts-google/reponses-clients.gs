@@ -10,6 +10,11 @@
  * Ce qu'il fait, chaque minute : il cherche les mails des deux derniers jours dont l'objet porte une référence de commande (MC-…),
  * et envoie à la gestion ceux qu'il n'a pas encore envoyés : expéditeur, date, objet, texte, noms des pièces jointes (pas leur contenu).
  * La gestion les range dans la commande. Aucune clé ni donnée de client n'est écrite dans ce fichier : le dépôt du site est public.
+ *
+ * Photos des clients (demande d'Olivier du 10/11/2026), une fois par jour vers 5 h : la gestion donne la liste des adresses de
+ * SES clients ; le script cherche, dans les contacts et les « autres contacts » de contact@ (service avancé « People API », en
+ * lecture seule), la photo que Gmail montre pour chacune (photo publique du compte Google ou de la fiche contact), et renvoie une
+ * petite image, ou rien. Les photos par défaut (rond de couleur avec une lettre) sont ignorées. Aucun autre contact ne part.
  */
 var ADRESSE = 'https://madamecho.com/gestion/index.php?p=reponses';
 var RECHERCHE = 'subject:MC newer_than:2d -in:spam -in:trash';
@@ -17,10 +22,85 @@ var REFERENCE = /\bMC-\d{6}-[0-9A-F]{4}\b/;   // seuls les mails dont l'objet po
 var MAX_PAR_PASSAGE = 30;
 var BATTEMENT_MS = 60 * 60 * 1000;   // même sans mail, un signe de vie chaque heure (la gestion alerte si rien depuis 24 h)
 
+var ADRESSE_PHOTOS = 'https://madamecho.com/gestion/index.php?p=photos';
+var PHOTOS_TAILLE = 160;      // pixels demandés à Google
+var PHOTOS_PAR_ENVOI = 20;
+
 function installer() {
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('transmettre').timeBased().everyMinutes(1).create();
+  ScriptApp.newTrigger('photos').timeBased().everyDays(1).atHour(5).create();
   transmettre();
+  try { photos(); } catch (e) { console.warn('Photos : ' + e); }   // une erreur ici n'empêche pas les réponses
+}
+
+/** Les photos des clients : une fois par jour (voir l'en-tête). */
+function photos() {
+  var cle = PropertiesService.getScriptProperties().getProperty('CLE');
+  if (!cle) throw new Error('Propriété CLE manquante (Paramètres du projet › Propriétés du script)');
+  var r = UrlFetchApp.fetch(ADRESSE_PHOTOS, { method: 'post', payload: { cle: cle, etape: 'liste' }, muteHttpExceptions: true, followRedirects: false });
+  if (r.getResponseCode() !== 200) throw new Error('La gestion a répondu ' + r.getResponseCode());
+  var voulues = JSON.parse(r.getContentText()).emails || [];
+  if (!voulues.length) return;
+  var cherchees = {};
+  voulues.forEach(function (e) { cherchees[String(e).toLowerCase()] = true; });
+  var trouvees = photosDesContacts(cherchees);
+  var lot = [], envoyees = 0;
+  voulues.forEach(function (e) {
+    var url = trouvees[String(e).toLowerCase()];
+    lot.push({ email: e, image: url ? image(url) : null });
+    if (lot.length >= PHOTOS_PAR_ENVOI) { envoyer(cle, lot); envoyees += lot.length; lot = []; }
+  });
+  if (lot.length) { envoyer(cle, lot); envoyees += lot.length; }
+  console.log('Photos : ' + voulues.length + ' adresses, ' + Object.keys(trouvees).length + ' photos trouvées, ' + envoyees + ' réponses envoyées');
+}
+
+/** Adresse → adresse de la photo, pour les seules adresses cherchées ; contacts d'abord, puis « autres contacts ». */
+function photosDesContacts(cherchees) {
+  var trouvees = {};
+  function garder(personnes) {
+    (personnes || []).forEach(function (p) {
+      var photo = (p.photos || []).filter(function (x) { return x.url && !x.default; })[0];
+      if (!photo) return;
+      (p.emailAddresses || []).forEach(function (a) {
+        var e = String(a.value || '').toLowerCase().trim();
+        if (cherchees[e] && !trouvees[e]) trouvees[e] = photo.url;
+      });
+    });
+  }
+  var jeton = null, pages = 0;
+  do {
+    var c = People.People.Connections.list('people/me', { personFields: 'emailAddresses,photos', pageSize: 1000, pageToken: jeton });
+    garder(c.connections);
+    jeton = c.nextPageToken;
+  } while (jeton && ++pages < 20);
+  jeton = null; pages = 0;
+  do {
+    var o = People.OtherContacts.list({ readMask: 'emailAddresses,photos', sources: ['READ_SOURCE_TYPE_CONTACT', 'READ_SOURCE_TYPE_PROFILE'], pageSize: 1000, pageToken: jeton });
+    garder(o.otherContacts);
+    jeton = o.nextPageToken;
+  } while (jeton && ++pages < 20);
+  return trouvees;
+}
+
+/** L'image en carré de 160 px (base64), ou null si Google ne la donne pas. */
+function image(url) {
+  var u = /=[swh]\d+[^\/]*$/.test(url) ? url.replace(/=[swh]\d+[^\/]*$/, '=s' + PHOTOS_TAILLE + '-c') : url + '=s' + PHOTOS_TAILLE + '-c';
+  if (!/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com\//.test(u)) return null;   // seulement les images de Google
+  try {
+    var r = UrlFetchApp.fetch(u, { muteHttpExceptions: true, followRedirects: true });
+    if (r.getResponseCode() !== 200) return null;
+    var b = r.getBlob();
+    if (!/^image\//.test(b.getContentType()) || b.getBytes().length > 300000) return null;
+    return Utilities.base64Encode(b.getBytes());
+  } catch (e) {
+    return null;
+  }
+}
+
+function envoyer(cle, lot) {
+  var r = UrlFetchApp.fetch(ADRESSE_PHOTOS, { method: 'post', payload: { cle: cle, etape: 'photos', photos: JSON.stringify(lot) }, muteHttpExceptions: true, followRedirects: false });
+  if (r.getResponseCode() !== 200) throw new Error('La gestion a répondu ' + r.getResponseCode());
 }
 
 function transmettre() {

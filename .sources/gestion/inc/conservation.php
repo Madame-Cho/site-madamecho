@@ -8,7 +8,8 @@ namespace MadameCho\Gestion;
 
 require_once __DIR__ . '/base.php';
 require_once __DIR__ . '/modele.php';
-require_once __DIR__ . '/reponses.php';   // reponses_purger() : sans lui, la tâche de nuit s'arrêtait en chemin (trouvé le 08/11/2026)
+require_once __DIR__ . '/reponses.php';
+require_once __DIR__ . '/photos.php';     // photos_purger() : photos des fiches disparues ou dont l'adresse a changé   // reponses_purger() : sans lui, la tâche de nuit s'arrêtait en chemin (trouvé le 08/11/2026)
 require_once __DIR__ . '/email.php';        // le mail interne du lundi (écran Obligations)
 require_once __DIR__ . '/obligations.php';  // démarches des échéances, conservation 10 ans, mail du lundi (spécification 004)
 

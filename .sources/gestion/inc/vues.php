@@ -184,7 +184,7 @@ function titre_page(string $titre, string $sous = '', string $actions = '', stri
     $r = $retour !== '' ? '<a class="retour" href="' . h($retour) . '">' . icone('retour') . '<span>Retour</span></a>' : '';
     // Chaque titre de page porte l'icône de sa rubrique, la même que dans le menu (retour d'Olivier, 07/11/2026)
     $p = is_string($_GET['p'] ?? null) ? $_GET['p'] : 'accueil';
-    if (isset(ICONES_PAGES[$p]) && !str_contains($titre, '<svg')) $titre = icone(ICONES_PAGES[$p]) . $titre;
+    if (isset(ICONES_PAGES[$p]) && !str_contains($titre, '<svg') && !str_contains($titre, 'avatar-client')) $titre = icone(ICONES_PAGES[$p]) . $titre;
     return '<div class="tete">' . $r . '<div class="tete-texte"><h1>' . $titre . '</h1>' . ($sous !== '' ? '<p class="sous">' . $sous . '</p>' : '') . '</div>'
          . ($actions !== '' ? '<div class="tete-actions">' . $actions . '</div>' : '') . '</div>';
 }
@@ -255,7 +255,7 @@ function carte_commande(array $k, bool $avecClient = true): string {
     if ($pa) $alertes = etiquette_pastille($pa) . $alertes;
     if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . heures_depuis($k['recue_le']) . ' h</span>';
     elseif (commande_dormante($k)) $alertes .= '<span class="dormant">Rien depuis ' . jours_depuis($k['dernier_echange']) . ' j</span>';
-    $nom = $avecClient ? '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(livraison_pro($k) ? 'Livraison' : (TYPES_COMMANDE[$k['type']] ?? 'Commande')) . '</b>';
+    $nom = $avecClient ? avatar_client((int)$k['client_id']) . '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(livraison_pro($k) ? 'Livraison' : (TYPES_COMMANDE[$k['type']] ?? 'Commande')) . '</b>';
     $montant = montant_lu($k);
     return '<a class="carte-cmd' . ($pa ? ' est-' . $pa['niveau'] : '') . '" href="' . h(u('commande', ['id' => $k['id']])) . '">'
          . '<span class="l1">' . ($avecClient ? chip_type(commande_est_pro($k)) : '') . $nom . chip_statut($k['statut'], true, livraison_pro($k)) . '</span>'

@@ -187,6 +187,7 @@ function gestion_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS parametres (cle TEXT PRIMARY KEY, valeur TEXT NOT NULL)");
     obligations_schema($pdo);   // écran Obligations (spécification 004) : hors de la numérotation, pour ne pas gêner l'étape 11 des factures
     hygiene_schema($pdo);       // relevés d'hygiène (spécification 004, lot 2), même principe : marqueur à part
+    photos_schema($pdo);        // photos des clients (10/11/2026), même principe : marqueur à part
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
     if ($v >= 10) return;
     if ($v < 1) $pdo->exec("
@@ -356,6 +357,13 @@ CREATE TABLE IF NOT EXISTS demarches_historique (id INTEGER PRIMARY KEY, le TEXT
 CREATE INDEX IF NOT EXISTS demarches_historique_d ON demarches_historique(demarche_id);
 ");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '2')");
+}
+/** Les photos des clients (demande d'Olivier du 10/11/2026, inc/photos.php) : une table à part, marqueur schema_photos. */
+function photos_schema(PDO $pdo): void {
+    if ($pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_photos'")->fetchColumn() === '1') return;
+    $pdo->exec("CREATE TABLE IF NOT EXISTS photos_clients (client_id INTEGER PRIMARY KEY, email TEXT NOT NULL DEFAULT '', image BLOB,
+  verifie_le TEXT, maj_le TEXT NOT NULL, masquee INTEGER NOT NULL DEFAULT 0)");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_photos', '1')");
 }
 /** Les relevés d'hygiène (spécification 004, lot 2) : tables à part, marqueur schema_hygiene. */
 function hygiene_schema(PDO $pdo): void {

@@ -1797,6 +1797,26 @@ Le nom et l'adresse imprimés sur chaque étiquette (l'adresse de production dé
 inconnus (ni site, ni recette) | 알 수 없음 (사이트도 레시피도 없음)
 À faire | 할 일
 Texte trop long pour cette étiquette : raccourcissez la liste d'ingrédients ou choisissez la planche A4. | 이 라벨에는 글이 너무 길어요. 재료 목록을 줄이거나 A4 시트를 고르세요.
+# Photos des clients (10/11/2026)
+Photo du client | 고객 사진
+Masquer la photo | 사진 숨기기
+Afficher de nouveau sa photo | 사진 다시 보이기
+Masquer la photo de ce client ? Elle est effacée tout de suite et ne sera plus cherchée. | 이 고객의 사진을 숨길까요? 사진은 바로 지워지고 더 이상 찾지 않아요.
+Photo masquée : elle est effacée et ne sera plus cherchée pour ce client. | 사진을 숨겼어요. 사진은 지워졌고 이 고객의 사진은 더 이상 찾지 않아요.
+C'est noté : la photo sera cherchée au prochain passage du script (une fois par jour). | 알겠어요. 다음 스크립트 실행 때(하루에 한 번) 사진을 찾아볼게요.
+Photos des clients | 고객 사진
+Une fois par jour, le même script lit dans les contacts de contact@ la photo Google des clients de la gestion (seulement eux), comme Gmail la montre. Elle s'affiche à côté de leur nom. Sur la fiche d'un client, « Photo du client » › « Masquer la photo » si elle ne doit pas apparaître. | 같은 스크립트가 하루에 한 번 contact@의 연락처에서 관리 시스템 고객(그 고객들만)의 구글 사진을 Gmail에 보이는 그대로 읽어요. 사진은 이름 옆에 보여요. 사진이 보이면 안 되는 고객은 고객 정보에서 « 고객 사진 » › « 사진 숨기기 »를 누르세요.
+Clients avec une photo | 사진이 있는 고객
+Photos masquées | 숨긴 사진
+Dernier passage | 마지막 실행
+Photo du client masquée (elle ne sera plus cherchée) | 고객 사진 숨김 (더 이상 찾지 않음)
+Photo du client : de nouveau autorisée (cherchée au prochain passage du script) | 고객 사진: 다시 허용함 (다음 스크립트 실행 때 찾음)
+Les photos des clients | 고객 사진
+À côté du nom des clients, la photo de leur compte Google, comme dans Gmail. Un client ne veut pas de la sienne : sur sa fiche, « Photo du client » › « Masquer la photo ». | 고객 이름 옆에 Gmail처럼 고객의 구글 계정 사진이 보여요. 사진을 원하지 않는 고객은 고객 정보에서 « 고객 사진 » › « 사진 숨기기 »를 누르세요.
+La photo vient du compte Google du client, telle que Gmail la montre dans contact@ (photo qu'il a rendue publique, ou fiche contact de contact@). Elle est revue chaque mois. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 사진은 고객의 구글 계정에서 와요. contact@의 Gmail에 보이는 그대로예요(고객이 공개한 사진, 또는 contact@의 연락처 사진). 매달 다시 확인해요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
+Pas de photo trouvée : le client n'a pas de photo publique sur son compte Google, ou il n'utilise pas Google. On cherche de nouveau chaque semaine. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 사진을 찾지 못했어요. 고객의 구글 계정에 공개 사진이 없거나, 고객이 구글을 쓰지 않아요. 매주 다시 찾아봐요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
+Pas encore cherchée : le script de contact@ passe une fois par jour. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 아직 찾아보지 않았어요. contact@의 스크립트는 하루에 한 번 실행돼요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
+Photo masquée : elle n'est plus affichée ni cherchée pour ce client. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 사진을 숨겼어요. 이 고객의 사진은 더 이상 보이지 않고 찾지도 않아요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
 TXT;
 }
 
