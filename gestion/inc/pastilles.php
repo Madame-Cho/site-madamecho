@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-accuse', 'le' => '2026-11-11', 'titre' => 'L\'accusé de réception automatique',
+     'texte' => 'Chaque nouvelle commande, arrivée par le site ou saisie ici après un appel, envoie toute seule au client un mail court : Madame Cho a bien reçu sa commande et revient très vite vers lui. Vous n\'avez rien à toucher ; le mail est rangé dans les Échanges de la commande. Pour l\'arrêter : Paramètres › Demandes du site.',
+     'lien' => ['reglages', 'demandes-site']],
     ['id' => '2026-11-photos', 'le' => '2026-11-10', 'titre' => 'Les photos des clients',
      'texte' => 'À côté du nom des clients, la photo de leur compte Google, comme dans Gmail. Un client ne veut pas de la sienne : sur sa fiche, « Photo du client » › « Masquer la photo ».',
      'lien' => ['manuel', 'clients']],

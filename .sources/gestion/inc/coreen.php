@@ -1820,6 +1820,8 @@ Photos masquées | 숨긴 사진
 Dernier passage | 마지막 실행
 Photo du client masquée (elle ne sera plus cherchée) | 고객 사진 숨김 (더 이상 찾지 않음)
 Photo du client : de nouveau autorisée (cherchée au prochain passage du script) | 고객 사진: 다시 허용함 (다음 스크립트 실행 때 찾음)
+L'accusé de réception automatique | 자동 접수 확인 메일
+Chaque nouvelle commande, arrivée par le site ou saisie ici après un appel, envoie toute seule au client un mail court : Madame Cho a bien reçu sa commande et revient très vite vers lui. Vous n'avez rien à toucher ; le mail est rangé dans les Échanges de la commande. Pour l'arrêter : Paramètres › Demandes du site. | 사이트로 왔든 전화 후 여기서 입력했든, 새 주문마다 고객에게 짧은 메일이 자동으로 가요. Madame Cho가 주문을 잘 받았고 곧 연락드린다는 내용이에요. 아무것도 누르지 않아도 되고, 메일은 주문의 대화 기록에 들어가요. 끄려면: 설정 › 사이트 문의.
 Les photos des clients | 고객 사진
 À côté du nom des clients, la photo de leur compte Google, comme dans Gmail. Un client ne veut pas de la sienne : sur sa fiche, « Photo du client » › « Masquer la photo ». | 고객 이름 옆에 Gmail처럼 고객의 구글 계정 사진이 보여요. 사진을 원하지 않는 고객은 고객 정보에서 « 고객 사진 » › « 사진 숨기기 »를 누르세요.
 La photo vient du compte Google du client, telle que Gmail la montre dans contact@ (photo qu'il a rendue publique, ou fiche contact de contact@). Elle est revue chaque mois. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 사진은 고객의 구글 계정에서 와요. contact@의 Gmail에 보이는 그대로예요(고객이 공개한 사진, 또는 contact@의 연락처 사진). 매달 다시 확인해요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
