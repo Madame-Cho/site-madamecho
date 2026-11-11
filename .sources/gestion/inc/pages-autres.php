@@ -573,7 +573,7 @@ function page_reglages(): void {
                 $on = parametre('accuse_reception', '1') !== '1';
                 parametre_ecrire('accuse_reception', $on ? '1' : '0');
                 evenement('reglage', $on ? 'Accusé de réception automatique des demandes du site activé' : 'Accusé de réception automatique des demandes du site arrêté');
-                flash('ok', $on ? 'Chaque client qui envoie une demande par le site reçoit de nouveau un accusé de réception.' : 'Les clients ne reçoivent plus d\'accusé de réception automatique.');
+                flash('ok', $on ? 'Chaque nouvelle commande, du site ou saisie ici, envoie de nouveau un accusé de réception au client.' : 'Les clients ne reçoivent plus d\'accusé de réception automatique.');
                 break;
             case 'obligations_mail':
                 if (!$admin || !function_exists(__NAMESPACE__ . '\\obligations_mail_relancer')) break;
@@ -720,8 +720,8 @@ function page_reglages(): void {
             . formulaire('demandes_site', bouton($on ? 'Arrêter l\'enregistrement' : 'Activer l\'enregistrement des demandes du site', $on ? 'discret' : 'secondaire'))
             // Accusé de réception au client (demande d'Olivier du 09/11/2026) : le seul mail qui part sans votre toucher
             . (($ar = parametre('accuse_reception', '1') === '1') ? '<p>' . '<span class="ok">' . fr_ko('Accusé de réception activé', '접수 확인 메일 켜짐') . '</span> '
-                    . fr_ko(': le client qui envoie une demande par le site reçoit tout de suite un mail court (« demande bien reçue, je vous recontacte très rapidement »), une fois par jour au plus. Il est rangé dans les Échanges de la commande.',
-                            ': 사이트로 문의한 고객은 바로 짧은 메일(« 문의를 잘 받았어요, 곧 연락드릴게요 »)을 받아요. 하루에 한 번까지예요. 주문의 대화 기록에 들어가요.') . '</p>'
+                    . fr_ko(': à chaque nouvelle commande, du site ou saisie ici après un appel, le client reçoit tout de suite un mail court (« Madame Cho a bien reçu votre commande, je la traite dans les plus brefs délais »), sans que vous ayez à toucher Envoyer. Pas pour une vente déjà faite ni une livraison de la gamme pro ; par le site, une fois par jour au plus pour une même adresse. Il est rangé dans les Échanges de la commande.',
+                            ': 사이트 주문이든 전화 후 여기서 입력한 주문이든, 새 주문마다 고객은 바로 짧은 메일(« 주문을 잘 받았어요, 최대한 빨리 처리할게요 »)을 받아요. 보내기를 누르지 않아도 돼요. 이미 끝난 판매나 프로 납품에는 가지 않고, 사이트에서는 같은 주소로 하루에 한 번까지예요. 주문의 대화 기록에 들어가요.') . '</p>'
                 : '<p><span class="dormant">' . fr_ko('Accusé de réception arrêté', '접수 확인 메일 꺼짐') . '</span> ' . fr_ko(': le client ne reçoit rien avant votre réponse.', ': 답장하기 전까지 고객은 아무 메일도 받지 않아요.') . '</p>')
             . formulaire('accuse_reception', bouton($ar ? 'Arrêter l\'accusé de réception' : 'Activer l\'accusé de réception', $ar ? 'discret' : 'secondaire')), '', 'demandes-site');
     }

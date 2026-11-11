@@ -12,6 +12,7 @@ require_once __DIR__ . '/inc/modele.php';
 require_once __DIR__ . '/inc/vues.php';
 require_once __DIR__ . '/inc/langue.php';
 require_once __DIR__ . '/inc/email.php';
+require_once __DIR__ . '/inc/accuse.php';   // accusé de réception automatique (11/11/2026)
 require_once __DIR__ . '/inc/reponses.php';
 require_once __DIR__ . '/inc/photos.php';
 require_once __DIR__ . '/inc/matomo.php';

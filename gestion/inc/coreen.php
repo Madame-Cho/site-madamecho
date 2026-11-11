@@ -125,6 +125,7 @@ Voir les statistiques | 통계 보기
 
 # Étapes, paiements, canaux, types
 Demande reçue | 문의 접수
+Commande reçue | 주문 접수
 Proposition envoyée | 견적 발송
 Proposition | 견적
 Confirmée | 확정
@@ -990,6 +991,8 @@ Collez la clé telle que Matomo l'affiche : une suite de lettres et de chiffres,
 Commande annulée. | 주문을 취소했어요.
 Commande confirmée : envoyez la confirmation au client et ajoutez le retrait à votre agenda. | 주문을 확정했어요. 고객에게 확정 이메일을 보내고 픽업을 캘린더에 추가하세요.
 Commande créée. | 주문을 만들었어요.
+Commande créée. Le client a reçu l'accusé de réception par email. | 주문을 만들었어요. 고객이 이메일로 접수 확인을 받았어요.
+Commande créée. L'accusé de réception n'a pas pu partir : prévenez Olivier. | 주문을 만들었어요. 접수 확인 메일을 보내지 못했어요. Olivier에게 알려 주세요.
 Commande modifiée. | 주문을 수정했어요.
 Rien n'a changé dans la commande. | 주문에서 바뀐 것이 없어요.
 Commande remise. Pensez à proposer un avis Google au client. | 전달 완료로 기록했어요. 고객에게 구글 리뷰를 부탁해 보세요.
@@ -1024,7 +1027,7 @@ Recette copiée : vérifiez les quantités (les œufs, les fruits entiers…). |
 L'email d'invitation n'a pas pu partir. | 초대 이메일을 보내지 못했어요.
 Les nouvelles demandes du site s'ajouteront toutes seules ici (l'email à contact@ continue d'arriver). | 이제 새 사이트 문의가 여기에 자동으로 추가돼요 (contact@로 오는 이메일도 계속 와요).
 Les demandes du site ne s'ajoutent plus ici ; elles arrivent toujours par email. | 사이트 문의가 더 이상 여기에 추가되지 않아요. 이메일로는 계속 와요.
-Chaque client qui envoie une demande par le site reçoit de nouveau un accusé de réception. | 사이트로 문의한 고객이 다시 접수 확인 메일을 받아요.
+Chaque nouvelle commande, du site ou saisie ici, envoie de nouveau un accusé de réception au client. | 사이트 주문이든 여기서 입력한 주문이든, 새 주문마다 다시 고객에게 접수 확인 메일이 가요.
 Les clients ne reçoivent plus d'accusé de réception automatique. | 이제 고객에게 자동 접수 확인 메일이 가지 않아요.
 Arrêter l'accusé de réception | 접수 확인 메일 끄기
 Activer l'accusé de réception | 접수 확인 메일 켜기

@@ -691,8 +691,11 @@ function page_commande_edition(): void {
                 if ($statut === 'remise') commande_paiement($id, choix('paiement', PAIEMENTS, $d['type'] === 'pro' && $d['mode'] === 'livraison' ? 'aucun' : 'paye'), choix('moyen', MOYENS, ''), null, '');
                 $note = texte('note', 2000);
                 if ($note !== '') commentaire($note, $id, $cid);
+                // Accusé de réception au client, tout seul (demande d'Olivier du 11/11/2026, exception à R-01) : pas pour une livraison de la gamme pro
+                $accuse = $livraison ? 'sans' : accuser_reception_commande($id);
+                $accuseTexte = ['envoye' => ' Le client a reçu l\'accusé de réception par email.', 'echec' => ' L\'accusé de réception n\'a pas pu partir : prévenez Olivier.'][$accuse] ?? '';
                 if ($livraison && empty($repris)) flash('ok', 'Livraison enregistrée.');
-                else flash('ok', !empty($repris) ? 'Commande créée, sur la fiche de ' . client_nom($repris) . ' (' . $repris['numero'] . '), retrouvée par son ' . ($repris['par'] === 'email' ? 'email' : 'téléphone') . '.' : 'Commande créée.');
+                else flash('ok', (!empty($repris) ? 'Commande créée, sur la fiche de ' . client_nom($repris) . ' (' . $repris['numero'] . '), retrouvée par son ' . ($repris['par'] === 'email' ? 'email' : 'téléphone') . '.' : 'Commande créée.') . $accuseTexte);
             }
             rediriger('commande', ['id' => $id]);
         }
