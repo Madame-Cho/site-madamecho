@@ -640,8 +640,8 @@ function mail_commande(array $k, string $type, array $o = []): array {
         case 'recu':
             // Accusé de réception, parti tout seul (demandes d'Olivier du 09/11 et du 11/11/2026, exception à R-01, inc/accuse.php) :
             // un texte fixe, sans prix ni décision, sans rien de ce que le client a écrit à part son prénom
-            $traite = 'Je la traite dans les plus brefs délais et je reviens très vite vers vous.';
-            $suite = in_array($k['statut'] ?? 'demande', ['demande', 'proposition'], true) ? 'Je vous confirmerai par écrit le prix, le jour et l\'heure du retrait.' : '';
+            $traite = 'Nous la traitons dans les plus brefs délais et nous revenons très vite vers vous.';
+            $suite = in_array($k['statut'] ?? 'demande', ['demande', 'proposition'], true) ? 'Nous vous confirmerons par écrit le prix, le jour et l\'heure du retrait.' : '';
             $ajout = 'Un détail à ajouter ? Répondez simplement à ce mail.';
             $html .= $p(h($traite), 'margin-bottom:14px')
                    . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#F3EDE4;border-radius:6px;margin-top:6px') . '><tr><td' . $S('padding:18px 20px') . '>'
