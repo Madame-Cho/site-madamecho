@@ -322,10 +322,10 @@ def fiche(p):
     photo_html = f'<div class="fiche-photo">{img(p["photo"], prof, p["alt"], "(min-width: 860px) 50vw, 100vw", lazy=False)}</div>'
     if p['id'] == 'charlotte-chocolat-framboise':
         photo_html = f'''<div class="fiche-photo charlotte-galerie">
- {img("charlotte-profil", prof, "Charlotte chocolat-framboise vue de trois quarts, garnie de fruits rouges", "(min-width: 860px) 50vw, 100vw", lazy=False, cls="charlotte-principale")}
+ {img("charlotte-dessus", prof, "Charlotte chocolat-framboise vue du dessus", "(min-width: 860px) 50vw, 100vw", lazy=False, cls="charlotte-principale")}
  <div class="charlotte-miniatures" role="group" aria-label="Photos de la charlotte">
- <button type="button" aria-label="Vue du dessus" aria-pressed="false">{img("charlotte-dessus", prof, "Charlotte chocolat-framboise vue du dessus", "72px")}</button>
- <button type="button" aria-label="Vue de trois quarts" aria-pressed="true">{img("charlotte-profil", prof, "Charlotte chocolat-framboise vue de trois quarts", "72px")}</button>
+ <button type="button" aria-label="Vue du dessus" aria-pressed="true">{img("charlotte-dessus", prof, "Charlotte chocolat-framboise vue du dessus", "72px")}</button>
+ <button type="button" aria-label="Vue de trois quarts" aria-pressed="false">{img("charlotte-profil", prof, "Charlotte chocolat-framboise vue de trois quarts", "72px")}</button>
  </div></div>'''
     corps = f'''<nav class="fil" aria-label="Fil d'Ariane"><a href="{lien('carte/', prof)}">← La carte</a></nav>
 <article class="fiche" data-produit="{p['id']}">
