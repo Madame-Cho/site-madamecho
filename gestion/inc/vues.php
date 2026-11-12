@@ -22,6 +22,7 @@ function icone(string $n): string {
         'commandes' => '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
         'clients' => '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.6 2.9-5.5 5.5-5.5s4.9 1.9 5.5 5.5"/><path d="M15.5 5.2a3 3 0 0 1 0 5.6M17.5 14.8c1.6.6 2.7 2.3 3 5.2"/>',
         'produits' => '<path d="M4 12h16l-1.5 8h-13z"/><path d="M7 12c0-3 2.2-5 5-5s5 2 5 5"/><path d="M12 4v3"/>',
+        'son' => '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
         'plus' => '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
         'ajouter' => '<path d="M12 5v14M5 12h14"/>',
         'retour' => '<path d="M15 5l-7 7 7 7"/>',
@@ -138,6 +139,8 @@ function mise_en_page(string $titre, string $corps, string $actif = '', string $
        . '<link rel="stylesheet" href="' . h(fichier_versionne('gestion.css')) . '">'
        . '</head><body class="' . h(trim(($u ? 'connecte ' : 'deconnecte ') . $classe)) . '"'
        . ($u ? ' data-pastilles="' . (int)pastilles()['action'] . '"' : '')   // l'icône de l'application sur le téléphone (gestion.js)
+       // Le son des nouvelles commandes (inc/son.php) : la dernière commande du site connue à l'affichage, et où redemander
+       . ($u ? ' data-son-dernier="' . son_dernier_id() . '" data-son-url="' . h(u('nouvelles')) . '" data-son-intervalle="' . SON_INTERVALLE . '"' : '')
        // « Corriger mon français » sous les zones de saisie (gestion.js) : seulement si l'assistant est relié
        . ($u && assistant_relie() ? ' data-corriger="' . h(u('corriger')) . '" data-jeton="' . h(csrf()) . '"' : '') . '>' . $essai
        // Les drapeaux des boutons de dictée (gestion.js les recopie)
@@ -325,6 +328,7 @@ function lien_bouton(string $href, string $label, string $classe = '', array $a 
  *  commande = commandes, client = clients, gâteau/produit = produits, échanges = bulle (assistant), paiement = carte, retrait du jour = jour,
  *  agenda = mois, avis = avis, mail = email, statistiques = stats, paramètres = reglages, assistant IA = ia. Les titres des cadres la prennent ici. */
 const ICONES_TITRES = [
+    'Son des nouvelles commandes' => 'son', '새 주문 알림음' => 'son',
     'Client' => 'clients', 'Coordonnées' => 'clients', 'Fiche et droits du client' => 'clients', 'Qui a accès' => 'clients',
     'Contenu' => 'produits', 'À préparer en tout' => 'produits', 'Ventes par gâteau' => 'produits',
     'Échanges' => 'assistant', 'Tous les échanges' => 'assistant', 'Notes et historique' => 'crayon',

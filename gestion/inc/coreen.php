@@ -1820,6 +1820,8 @@ Photos masquées | 숨긴 사진
 Dernier passage | 마지막 실행
 Photo du client masquée (elle ne sera plus cherchée) | 고객 사진 숨김 (더 이상 찾지 않음)
 Photo du client : de nouveau autorisée (cherchée au prochain passage du script) | 고객 사진: 다시 허용함 (다음 스크립트 실행 때 찾음)
+Un son pour chaque nouvelle commande | 새 주문마다 알림음
+Quand une commande arrive par le site pendant que la gestion est ouverte, un petit carillon joyeux sonne et un bandeau l'annonce en bas de l'écran ; « Voir » ouvre la commande. Sur le téléphone, touchez une fois la page pour que le son soit permis. Pour le couper sur un appareil : Paramètres › Son des nouvelles commandes. | 관리 화면이 열려 있을 때 사이트로 주문이 들어오면 짧고 기분 좋은 소리가 나고, 화면 아래 알림 띠가 알려 줘요. « 보기 »를 누르면 주문이 열려요. 휴대폰에서는 소리가 나도록 페이지를 한 번 눌러 주세요. 기기별로 끄려면: 설정 › 새 주문 알림음.
 L'accusé de réception automatique | 자동 접수 확인 메일
 Chaque nouvelle commande, arrivée par le site ou saisie ici après un appel, envoie toute seule au client un mail court : Madame Cho a bien reçu sa commande et revient très vite vers lui. Vous n'avez rien à toucher ; le mail est rangé dans les Échanges de la commande. Pour l'arrêter : Paramètres › Demandes du site. | 사이트로 왔든 전화 후 여기서 입력했든, 새 주문마다 고객에게 짧은 메일이 자동으로 가요. Madame Cho가 주문을 잘 받았고 곧 연락드린다는 내용이에요. 아무것도 누르지 않아도 되고, 메일은 주문의 대화 기록에 들어가요. 끄려면: 설정 › 사이트 문의.
 Les photos des clients | 고객 사진

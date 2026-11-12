@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-son', 'le' => '2026-11-12', 'titre' => 'Un son pour chaque nouvelle commande',
+     'texte' => 'Quand une commande arrive par le site pendant que la gestion est ouverte, un petit carillon joyeux sonne et un bandeau l\'annonce en bas de l\'écran ; « Voir » ouvre la commande. Sur le téléphone, touchez une fois la page pour que le son soit permis. Pour le couper sur un appareil : Paramètres › Son des nouvelles commandes.',
+     'lien' => ['reglages', 'son']],
     ['id' => '2026-11-accuse', 'le' => '2026-11-11', 'titre' => 'L\'accusé de réception automatique',
      'texte' => 'Chaque nouvelle commande, arrivée par le site ou saisie ici après un appel, envoie toute seule au client un mail court : Madame Cho a bien reçu sa commande et revient très vite vers lui. Vous n\'avez rien à toucher ; le mail est rangé dans les Échanges de la commande. Pour l\'arrêter : Paramètres › Demandes du site.',
      'lien' => ['reglages', 'demandes-site']],

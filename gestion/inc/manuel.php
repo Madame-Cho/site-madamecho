@@ -265,6 +265,8 @@ function manuel_sections(): array {
              '<b>더보기 › 설정</b>(톱니바퀴 아이콘): 한 번 정해 두는 것들이에요.'],
             ['- <b>Langue de l\'écran</b> : coréen ou français, gardé sur cet appareil (le bouton en haut de l\'écran fait la même chose).',
              '- <b>화면 언어</b>: 한국어나 프랑스어, 이 기기에 저장돼요(화면 위쪽 버튼도 같은 일을 해요).'],
+            ['- <b>Son des nouvelles commandes</b> : gardé sur cet appareil. Quand une commande arrive par le site pendant que la gestion est ouverte, un petit carillon sonne et un bandeau l\'annonce ; « Voir » ouvre la commande. Le téléphone ne joue le son qu\'après un premier toucher sur la page, et seulement si la gestion est à l\'écran (sinon, en revenant dessus). « Écouter le son » pour l\'essayer ; décochez pour le couper sur cet appareil seulement.',
+             '- <b>새 주문 알림음</b>: 이 기기에 저장돼요. 관리 화면이 열려 있을 때 사이트로 주문이 들어오면 짧은 소리가 나고 알림 띠가 나와요. « 보기 »를 누르면 주문이 열려요. 휴대폰은 페이지를 한 번 누른 뒤에만, 그리고 관리 화면이 보일 때만 소리가 나요(아니면 다시 열 때). « 소리 들어 보기 »로 들어 보고, 체크를 풀면 이 기기에서만 꺼져요.'],
             ['- <b>Mon mot de passe</b> : le changer. Au moins 12 caractères ; une petite phrase est facile à retenir. Gardez-le dans Bitwarden.',
              '- <b>내 비밀번호</b>: 바꾸기. 최소 12자. 짧은 문장이 기억하기 쉬워요. Bitwarden에 저장해 두세요.'],
             ['- <b>Emails préparés et avis Google</b> : la signature mise au bas des emails préparés, et le lien pour laisser un avis Google.',

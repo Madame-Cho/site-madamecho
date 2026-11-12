@@ -648,3 +648,130 @@
     if (a && n.scrollWidth > n.clientWidth) n.scrollLeft += a.getBoundingClientRect().left - n.getBoundingClientRect().left - (n.clientWidth - a.offsetWidth) / 2;
   });
 })();
+
+/* Son des nouvelles commandes (demande d'Olivier du 12/11/2026 : « chaque commande est une bonne nouvelle pour Youngmi »).
+ * Toutes les 30 s, la page demande la dernière commande du site (?p=nouvelles). Une nouvelle : un petit carillon joyeux et un bandeau.
+ * Les navigateurs ne jouent un son qu'après un premier toucher sur la page : sans lui, le bandeau s'affiche tout de suite et le son
+ * attend le toucher suivant. Plusieurs onglets ouverts : un seul joue le son. Le réglage est gardé sur l'appareil (Paramètres). */
+(function () {
+  var d = document, b = d.body, url = b.getAttribute("data-son-url");
+  var ko = d.documentElement.getAttribute("lang") === "ko";
+  var CLE = "mc-son", CLE_DERNIER = "mc-son-dernier";
+  function lire(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function ecrire(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function actif() { return lire(CLE) !== "0"; }
+
+  // Le carillon : quatre notes montantes (do, mi, sol, do), douces comme une clochette, sans fichier à charger
+  var ctx = null, enAttente = false;
+  function contexte() {
+    var A = window.AudioContext || window.webkitAudioContext;
+    if (!A) return null;
+    if (!ctx) { try { ctx = new A(); } catch (e) { return null; } }
+    return ctx;
+  }
+  function carillon() {
+    var c = contexte();
+    if (!c || c.state !== "running") return false;
+    var t0 = c.currentTime + 0.03, sortie = c.createGain();
+    sortie.gain.value = 0.9; sortie.connect(c.destination);
+    [1046.5, 1318.5, 1568, 2093].forEach(function (f, i) {
+      var t = t0 + i * 0.09, duree = i === 3 ? 1.1 : 0.55;
+      [[1, 0.32, "sine"], [2.01, 0.06, "sine"], [3, 0.03, "triangle"]].forEach(function (h) {   // la note et deux harmoniques légères
+        var o = c.createOscillator(), g = c.createGain();
+        o.type = h[2]; o.frequency.value = f * h[0];
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(h[1], t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+        o.connect(g); g.connect(sortie); o.start(t); o.stop(t + duree + 0.05);
+      });
+    });
+    return true;
+  }
+  // Le premier toucher (ou une touche) débloque le son ; un son en attente se joue alors
+  function debloquer() {
+    var c = contexte();
+    if (!c) return;
+    var suite = function () { if (enAttente && c.state === "running") { enAttente = false; carillon(); } };
+    if (c.state !== "running" && c.resume) c.resume().then(suite).catch(function () {}); else suite();
+  }
+  ["pointerdown", "keydown", "touchend"].forEach(function (e) { d.addEventListener(e, debloquer, { capture: true, passive: true }); });
+  function sonner() {
+    if (!actif()) return;
+    if (!carillon()) { enAttente = true; var c = contexte(); if (c && c.resume) c.resume().then(function () { if (enAttente && carillon()) enAttente = false; }).catch(function () {}); }
+  }
+
+  // Paramètres › Son des nouvelles commandes
+  var caseSon = d.querySelector("[data-son-reglage]");
+  if (caseSon) {
+    caseSon.checked = actif();
+    caseSon.addEventListener("change", function () { ecrire(CLE, caseSon.checked ? "1" : "0"); if (caseSon.checked) { debloquer(); carillon(); } });
+  }
+  var tester = d.querySelector("[data-son-tester]");
+  if (tester) tester.addEventListener("click", function () {
+    var c = contexte();
+    if (!c) return;
+    if (c.state === "running") carillon(); else c.resume().then(carillon).catch(function () {});
+  });
+
+  if (!url) return;   // pas connecté
+  // Le bandeau, en bas de l'écran, au-dessus des onglets
+  var bandeau = null, minuterie = 0, titre = d.title;
+  function montrer(r) {
+    if (!bandeau) {
+      bandeau = d.createElement("div");
+      bandeau.className = "son-bandeau"; bandeau.setAttribute("role", "status");
+      d.body.appendChild(bandeau);
+    }
+    bandeau.textContent = "";
+    var a = d.createElement("a"); a.href = r.url || "?p=commandes";
+    var fete = d.createElement("span"); fete.className = "son-fete"; fete.setAttribute("aria-hidden", "true"); fete.textContent = "🎉";
+    var txt = d.createElement("span"); txt.className = "son-texte";
+    var l1 = d.createElement("b");
+    l1.textContent = r.n > 1 ? (ko ? "새 주문 " + r.n + "건!" : r.n + " nouvelles commandes !") : (ko ? "새 주문이 들어왔어요!" : "Nouvelle commande !");
+    txt.appendChild(l1);
+    if (r.n === 1 && r.ref) {
+      var l2 = d.createElement("span"); l2.setAttribute("translate", "no");
+      l2.textContent = r.ref + (r.qui ? " · " + r.qui : "");
+      txt.appendChild(l2);
+    }
+    var voir = d.createElement("span"); voir.className = "son-voir"; voir.textContent = ko ? "보기" : "Voir";
+    a.appendChild(fete); a.appendChild(txt); a.appendChild(voir);
+    var x = d.createElement("button"); x.type = "button"; x.className = "son-fermer"; x.setAttribute("aria-label", ko ? "닫기" : "Fermer"); x.textContent = "×";
+    x.addEventListener("click", cacher);
+    bandeau.appendChild(a); bandeau.appendChild(x);
+    bandeau.classList.remove("son-sortie"); void bandeau.offsetWidth; bandeau.classList.add("son-entree");
+    d.title = (ko ? "🎉 새 주문 · " : "🎉 Nouvelle commande · ") + titre;
+    clearTimeout(minuterie); minuterie = setTimeout(cacher, 120000);   // deux minutes, puis il s'efface
+  }
+  function cacher() { if (bandeau) { bandeau.classList.remove("son-entree"); bandeau.classList.add("son-sortie"); } d.title = titre; }
+
+  // La dernière commande connue : celle de la page affichée, ou celle déjà fêtée sur cet appareil si elle est plus ancienne
+  // (une commande arrivée pendant que la gestion était fermée est fêtée à l'ouverture suivante)
+  var page = parseInt(b.getAttribute("data-son-dernier") || "0", 10) || 0;
+  var memo = parseInt(lire(CLE_DERNIER) || "", 10);
+  var connu = isNaN(memo) ? page : Math.min(memo, page);
+  if (isNaN(memo)) ecrire(CLE_DERNIER, String(page));
+  var pas = (parseInt(b.getAttribute("data-son-intervalle") || "30", 10) || 30) * 1000, arret = false, enCours = false;
+
+  function demander() {
+    if (arret || enCours) return;
+    enCours = true;
+    fetch(url + "&depuis=" + connu, { credentials: "same-origin", cache: "no-store", headers: { "Accept": "application/json" } })
+      .then(function (r) { if (r.status === 401) { arret = true; return null; } return r.ok ? r.json() : null; })
+      .then(function (r) {
+        enCours = false;
+        if (!r || typeof r.dernier !== "number") return;
+        if (r.n > 0 && r.dernier > connu) {
+          var deja = parseInt(lire(CLE_DERNIER) || "0", 10) || 0;
+          ecrire(CLE_DERNIER, String(r.dernier));
+          montrer(r);
+          if (r.dernier > deja) sonner();   // un autre onglet l'a déjà fait sonner : le bandeau seulement
+        } else if (r.dernier > parseInt(lire(CLE_DERNIER) || "0", 10)) ecrire(CLE_DERNIER, String(r.dernier));
+        connu = Math.max(connu, r.dernier);
+      })
+      .catch(function () { enCours = false; });
+  }
+  if (connu < page) demander();
+  setInterval(function () { if (!d.hidden || !("ontouchstart" in window)) demander(); }, pas);
+  d.addEventListener("visibilitychange", function () { if (!d.hidden) demander(); });
+})();

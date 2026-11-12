@@ -684,6 +684,8 @@ function page_reglages(): void {
     $c .= bloc('Langue de l\'écran', '<p class="aide">Gardé sur cet appareil. Notes, fiches et emails préparés restent en français.</p>'
         . '<div class="actions">' . lien_bouton(lien_langue('ko'), '한국어', $ko ? 'principal' : 'discret', ['lang' => 'ko', 'translate' => 'no', 'aria-current' => $ko ? 'true' : null])
         . lien_bouton(lien_langue('fr'), 'Français', $ko ? 'discret' : 'principal', ['lang' => 'fr', 'translate' => 'no', 'aria-current' => $ko ? null : 'true']) . '</div>', '', 'langue');
+    // Son des nouvelles commandes (demande d'Olivier du 12/11/2026), gardé sur cet appareil
+    $c .= son_bloc_reglages();
     // Mon compte
     $c .= bloc('Mon mot de passe', formulaire('mdp', '<input type="text" name="username" value="' . h($u['email']) . '" autocomplete="username" hidden>'
         . champ('ancien', 'Mot de passe actuel', '', ['type' => 'password', 'autocomplete' => 'current-password', 'required' => true])
