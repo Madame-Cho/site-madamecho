@@ -21,9 +21,9 @@
 <link rel="icon" href="../favicon.ico" sizes="48x48">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<link rel="manifest" href="../assets/site.webmanifest?v=2026-11-08-boutons">
+<link rel="manifest" href="../assets/site.webmanifest?v=2026-11-12-merci">
 <link rel="preload" href="../assets/polices/jost-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../assets/site.css?v=2026-11-08-boutons">
+<link rel="stylesheet" href="../assets/site.css?v=2026-11-12-merci">
 </head>
 <body class="page-demande">
 <a class="aller" href="#contenu">Aller au contenu</a>
@@ -84,9 +84,15 @@
  </form>
 
  <div class="recu" data-recu hidden tabindex="-1">
-  <div class="etiquette">Demande envoyée</div>
-  <h2 class="titre">Merci, Madame Cho vous répond sous 24 heures</h2>
-  <p>Votre demande n'est pas encore une commande : Madame Cho vous envoie une proposition écrite (prix, jour et heure du retrait), que vous acceptez par écrit.</p>
+  <div class="recu-merci" role="status">
+   <svg class="recu-coche" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>
+   <div>
+    <div class="etiquette">Demande bien reçue</div>
+    <h2 class="titre">Merci<span data-merci-prenom></span>, votre demande est bien arrivée chez Madame Cho</h2>
+    <p>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et l'heure du retrait.</p>
+   </div>
+  </div>
+  <p>Rien n'est encore réservé ni à payer : votre commande est confirmée quand vous acceptez cette proposition par écrit.</p>
   <p>Sa réponse viendra de <b>contact@madamecho.com</b> : <a href="../madame-cho.vcf">ajoutez Madame Cho à vos contacts</a>, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>
@@ -110,9 +116,9 @@
   <a href="../confidentialite/">Confidentialité</a>
  </nav>
 </footer>
-<script src="../assets/catalogue.js?v=2026-11-08-boutons"></script>
-<script src="../assets/site.js?v=2026-11-08-boutons"></script>
-<script src="../assets/mesure.js?v=2026-11-08-boutons" data-matomo="https://stats.madamecho.com/" data-site="1"></script>
+<script src="../assets/catalogue.js?v=2026-11-12-merci"></script>
+<script src="../assets/site.js?v=2026-11-12-merci"></script>
+<script src="../assets/mesure.js?v=2026-11-12-merci" data-matomo="https://stats.madamecho.com/" data-site="1"></script>
 <!-- test -->
 </body>
 </html>

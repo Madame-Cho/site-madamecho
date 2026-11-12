@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-08-boutons"
+VERSION = "2026-11-12-merci"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -419,9 +419,15 @@ def demande():
  </form>
 
  <div class="recu" data-recu hidden tabindex="-1">
-  <div class="etiquette">Demande envoyée</div>
-  <h2 class="titre">Merci, Madame Cho vous répond sous 24 heures</h2>
-  <p>Votre demande n'est pas encore une commande : Madame Cho vous envoie une proposition écrite (prix, jour et heure du retrait), que vous acceptez par écrit.</p>
+  <div class="recu-merci" role="status">
+   <svg class="recu-coche" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>
+   <div>
+    <div class="etiquette">Demande bien reçue</div>
+    <h2 class="titre">Merci<span data-merci-prenom></span>, votre demande est bien arrivée chez Madame Cho</h2>
+    <p>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et l'heure du retrait.</p>
+   </div>
+  </div>
+  <p>Rien n'est encore réservé ni à payer : votre commande est confirmée quand vous acceptez cette proposition par écrit.</p>
   <p>Sa réponse viendra de <b>{EMAIL}</b> : <a href="{lien('madame-cho.vcf', prof)}">ajoutez Madame Cho à vos contacts</a>, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>

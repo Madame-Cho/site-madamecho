@@ -419,6 +419,7 @@
       function fini(ref) {
         var r = $('[data-recu]'), texte = recap(ref);
         $('[data-ref]').textContent = ref; $('[data-recap]').textContent = texte;
+        var pr = form.elements.prenom, prenom = pr ? pr.value.trim() : ''; if (/^[A-Za-z\u00C0-\u024F\u3131-\uD79D'’ -]{1,40}$/.test(prenom)) $('[data-merci-prenom]').textContent = ' ' + prenom;
         form.hidden = true; var ch = $('.demande .chapo'); if (ch) ch.hidden = true;
         r.hidden = false; r.focus(); window.scrollTo(0, 0);
         $('[data-copier]').addEventListener('click', function () {

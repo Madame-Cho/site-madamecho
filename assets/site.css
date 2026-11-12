@@ -159,6 +159,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .erreurs{color:var(--erreur);margin-top:16px;font-size:15px;white-space:pre-line}
 .envoyer{width:100%;letter-spacing:.14em}
 .recu{margin-top:32px}
+.recu-merci{display:flex;gap:16px;align-items:flex-start;background:#EEF4EC;border:1px solid #CFE0CB;border-left:4px solid #3F6B4A;padding:20px 20px 22px;margin-bottom:24px}
+.recu-merci .etiquette{color:#3F6B4A;margin-bottom:8px}
+.recu-merci .titre{margin-bottom:10px}
+.recu-coche{flex:none;width:36px;height:36px;margin-top:2px}
+.recu-coche circle{fill:#3F6B4A}
+.recu-coche path{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){.recu:not([hidden]) .recu-merci{animation:merci .5s ease-out both}@keyframes merci{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
 .recu p+p{margin-top:12px}
 .recu .ref{margin-top:16px}
 .recap{white-space:pre-wrap;font:400 14px/1.6 var(--police);background:var(--ivoire);padding:16px;margin:12px 0 0}
