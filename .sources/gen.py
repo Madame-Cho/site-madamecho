@@ -181,7 +181,7 @@ def carte_items(prof, h="h3"):
     out = []
     for p in PRODUITS:
         out.append(f'''<a class="gateau" href="{lien('carte/' + p['id'] + '/', prof)}">
- <div class="cadre">{img(p['photo'], prof, p['alt'], "(min-width: 860px) 31vw, (min-width: 700px) 46vw, 100vw")}</div>
+ <div class="cadre">{img('charlotte-dessus' if p['id'] == 'charlotte-chocolat-framboise' else p['photo'], prof, p['alt'], "(min-width: 860px) 31vw, (min-width: 700px) 46vw, 100vw")}</div>
  <div class="legende"><{h}>{E(p['nom'])}</{h}><p>{E(p['court'])}</p>
  <div class="meta"><span>{E(p['carte_pour'])}</span><b>{E(p['carte_prix'])}</b></div></div>
 </a>''')
@@ -319,9 +319,17 @@ def fiche(p):
     autres_html = "".join(
         f'<a class="autre" href="{lien("carte/" + q["id"] + "/", prof)}">{img(q["photo"], prof, q["alt"], "(min-width: 860px) 18vw, 45vw")}<span>{E(q["nom"])}</span></a>'
         for q in autres)
+    photo_html = f'<div class="fiche-photo">{img(p["photo"], prof, p["alt"], "(min-width: 860px) 50vw, 100vw", lazy=False)}</div>'
+    if p['id'] == 'charlotte-chocolat-framboise':
+        photo_html = f'''<div class="fiche-photo charlotte-galerie">
+ {img("charlotte-profil", prof, "Charlotte chocolat-framboise vue de trois quarts, garnie de fruits rouges", "(min-width: 860px) 50vw, 100vw", lazy=False, cls="charlotte-principale")}
+ <div class="charlotte-miniatures" role="group" aria-label="Photos de la charlotte">
+ <button type="button" aria-label="Vue du dessus" aria-pressed="false">{img("charlotte-dessus", prof, "Charlotte chocolat-framboise vue du dessus", "72px")}</button>
+ <button type="button" aria-label="Vue de trois quarts" aria-pressed="true">{img("charlotte-profil", prof, "Charlotte chocolat-framboise vue de trois quarts", "72px")}</button>
+ </div></div>'''
     corps = f'''<nav class="fil" aria-label="Fil d'Ariane"><a href="{lien('carte/', prof)}">← La carte</a></nav>
 <article class="fiche" data-produit="{p['id']}">
- <div class="fiche-photo">{img(p['photo'], prof, p['alt'], "(min-width: 860px) 50vw, 100vw", lazy=False)}</div>
+ {photo_html}
  <div class="fiche-texte">
   <div class="etiquette">La carte</div>
   <h1 class="titre">{E(p['nom'])}</h1>
@@ -355,8 +363,12 @@ def fiche(p):
             {"@type": "ListItem", "position": 2, "name": "La carte", "item": SITE + "carte/"},
             {"@type": "ListItem", "position": 3, "name": p["nom"], "item": url}]}]}
     titre_seo, desc = SEO_PRODUITS[p["id"]]
-    return page(f"carte/{p['id']}/index.html", f"{titre_seo} · Madame Cho", desc, corps, prof, jsonld=ld, classe="page-fiche",
+    result = page(f"carte/{p['id']}/index.html", f"{titre_seo} · Madame Cho", desc, corps, prof, jsonld=ld, classe="page-fiche",
                 image="partage-" + p["id"] + ".jpg", image_alt=p["alt"], titre_partage=f"{p['nom']} · Madame Cho")
+    if p['id'] == 'charlotte-chocolat-framboise':
+        result = result.replace('</head>', f'<link rel="stylesheet" href="{R(prof)}assets/charlotte-galerie.css?v=2026-11-12">\n</head>')
+        result = result.replace('</body>', f'<script src="{R(prof)}assets/charlotte-galerie.js?v=2026-11-12"></script>\n</body>')
+    return result
 
 # ---------- Ma demande ----------
 def demande():
@@ -697,7 +709,7 @@ ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Co
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
 ecrire("ma-demande/catalogue.php", "<?php\n// Carte de Madame Cho, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(cat) + ";\n")
-for f in ("site.css", "site.js", "number-cake.css", "number-cake.js") + (("mesure.js",) if MESURE else ()):
+for f in ("site.css", "site.js", "number-cake.css", "number-cake.js", "charlotte-galerie.css", "charlotte-galerie.js") + (("mesure.js",) if MESURE else ()):
     shutil.copy(os.path.join(ICI, f), os.path.join(OUT, "assets", f))
 for f in ("envoyer.php", "dkim.php", "menage.php", "cle-dkim.php"):
     shutil.copy(os.path.join(ICI, f), os.path.join(OUT, "ma-demande", f))

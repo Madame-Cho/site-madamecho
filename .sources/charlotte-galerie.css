@@ -1,0 +1,6 @@
+.fiche-photo.charlotte-galerie{aspect-ratio:auto;background:transparent}
+.charlotte-galerie .charlotte-principale{width:100%;height:auto;aspect-ratio:1;object-fit:cover}
+.charlotte-miniatures{display:flex;gap:12px;margin-top:14px}
+.charlotte-miniatures button{width:78px;padding:5px;border:1px solid transparent;background:transparent;cursor:pointer}
+.charlotte-miniatures button[aria-pressed="true"]{border-color:var(--chocolat)}
+.charlotte-miniatures button img{width:100%;height:auto;aspect-ratio:1;object-fit:cover}
