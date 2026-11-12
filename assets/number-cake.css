@@ -1,0 +1,17 @@
+/* Number Cake : galerie et tarifs, sous la présentation des anniversaires. */
+#number-cake{border-top:0;padding-top:0}
+.number-galerie{margin:0}
+.number-photo{width:100%;aspect-ratio:1;object-fit:cover}
+.number-miniatures{display:flex;gap:12px;margin:14px 0 20px}
+.number-miniatures button{width:78px;padding:5px;border:1px solid transparent;background:transparent;cursor:pointer}
+.number-miniatures button[aria-pressed="true"]{border-color:var(--chocolat,#3b1d0e)}
+.number-miniatures img{width:100%;aspect-ratio:1;object-fit:cover}
+.number-miniatures button:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.number-galerie figcaption{font-size:14px;line-height:1.6;color:var(--doux)}
+.number-tarifs{margin:28px 0}
+.number-tarifs>div{display:flex;flex-direction:column;gap:3px;line-height:1.4}
+.number-tarifs>div+div{margin-top:28px}
+.number-tarifs span{font-weight:500}
+.number-tarifs strong{font-size:28px;font-weight:500}
+.number-tarifs small{font-size:14px;font-weight:400;white-space:nowrap}
+

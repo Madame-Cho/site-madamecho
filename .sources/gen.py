@@ -221,6 +221,27 @@ def accueil(prof=0):
  <div><h2 class="titre" id="t-anniv"><span class="etiquette">Anniversaires</span> Un gâteau à votre nom</h2>{anniv}
  <a class="bouton" href="{a}#perso">Faire ma demande</a></div>
 </div></section>
+<section class="bloc" id="number-cake" aria-labelledby="t-number-cake"><div class="deux">
+ <figure class="number-galerie">
+  {img("number-cake-dessus", prof, "Number Cake façon Saint-Honoré en deux chiffres, vu du dessus", "(min-width: 860px) 45vw, 100vw", cls="number-photo")}
+  <div class="number-miniatures" role="group" aria-label="Photos du Number Cake">
+   <button type="button" data-number-photo="number-cake-detail" data-alt="Détail des choux caramélisés et du feuilletage" aria-label="Détail des choux et du feuilletage" aria-pressed="false">{img("number-cake-detail", prof, "", "72px")}</button>
+   <button type="button" data-number-photo="number-cake-dessus" data-alt="Number Cake façon Saint-Honoré en deux chiffres, vu du dessus" aria-label="Vue du dessus" aria-pressed="true">{img("number-cake-dessus", prof, "", "72px")}</button>
+   <button type="button" data-number-photo="number-cake-perspective" data-alt="Number Cake façon Saint-Honoré, vu de trois quarts" aria-label="Vue de trois quarts" aria-pressed="false">{img("number-cake-perspective", prof, "", "72px")}</button>
+  </div>
+  <figcaption>Le modèle présenté est composé de deux chiffres pour 8 personnes,<br>disposés sur un support de 25 × 25 cm.</figcaption>
+ </figure>
+ <div><h2 class="titre" id="t-number-cake"><span class="etiquette">Anniversaires</span> Number Cake façon Saint-Honoré</h2>
+  <p>Le Saint-Honoré revisité en gâteau chiffre pour les anniversaires !</p>
+  <p>Une pâte feuilletée croustillante, une crème à la vanille, du caramel, une chantilly à la vanille et de petits choux caramélisés.</p>
+  <div class="number-tarifs">
+   <div><span>1 chiffre · à partir de 4 personnes</span><strong>38 € <small>(pour 4 personnes)</small></strong></div>
+   <div><span>2 chiffres · à partir de 8 personnes</span><strong>68 € <small>(pour 8 personnes)</small></strong></div>
+  </div>
+  <p class="petit">Pour plus de parts, contactez-nous pour un devis.<br>Prix TTC · Création sur commande.</p>
+  <a class="bouton" href="{a}#perso">Faire ma demande</a>
+ </div>
+</div></section>
 <section class="bloc" id="evenements" aria-labelledby="t-evenements"><div class="large">
  <h2 class="titre" id="t-evenements"><span class="etiquette">Événements &amp; créations sur commande</span> Un thème, une occasion, une touche gourmande.</h2>
  <p>Anniversaire d’enfant, baptême, mariage ou toute autre occasion : Madame Cho imagine des créations gourmandes sur commande, adaptées au thème et à l’ambiance que vous souhaitez. Halloween n’est ici qu’un exemple parmi tant d’autres !</p>
@@ -247,8 +268,10 @@ def accueil(prof=0):
         {"@type": "WebSite", "@id": SITE + "#site", "url": SITE, "name": "Madame Cho", "inLanguage": "fr-FR",
          "publisher": {"@id": SITE + "#maison"}},
         MAISON_LD]}
-    return page("index.html", SEO_ACCUEIL[0], SEO_ACCUEIL[1], corps, prof, jsonld=ld, classe="accueil",
+    result = page("index.html", SEO_ACCUEIL[0], SEO_ACCUEIL[1], corps, prof, jsonld=ld, classe="accueil",
                 image_alt="Quatre choux craquelin de Madame Cho posés sur une pierre claire")
+    result = result.replace('</head>', f'<link rel="stylesheet" href="{R(prof)}assets/number-cake.css?v=2026-11-12">\n</head>')
+    return result.replace('</body>', f'<script src="{R(prof)}assets/number-cake.js?v=2026-11-12"></script>\n</body>')
 
 # ---------- La carte (page seule, pour le QR code et Instagram) ----------
 def carte():
@@ -674,7 +697,7 @@ ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Co
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
 ecrire("ma-demande/catalogue.php", "<?php\n// Carte de Madame Cho, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(cat) + ";\n")
-for f in ("site.css", "site.js") + (("mesure.js",) if MESURE else ()):
+for f in ("site.css", "site.js", "number-cake.css", "number-cake.js") + (("mesure.js",) if MESURE else ()):
     shutil.copy(os.path.join(ICI, f), os.path.join(OUT, "assets", f))
 for f in ("envoyer.php", "dkim.php", "menage.php", "cle-dkim.php"):
     shutil.copy(os.path.join(ICI, f), os.path.join(OUT, "ma-demande", f))
