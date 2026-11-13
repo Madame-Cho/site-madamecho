@@ -1275,6 +1275,102 @@ Les espèces n'ont pas de rapprochement Qonto. | 현금은 Qonto 대조가 없�
 Cette commande n'a pas de paiement à retrouver dans Qonto. | 이 주문에는 Qonto에서 찾을 결제가 없어요.
 Rapprochement Qonto retiré | Qonto 대조 취소
 Rapprochement Qonto à refaire : le paiement a changé | Qonto 대조 다시 필요: 결제 내용이 바뀌었어요
+# Rapprochement automatique avec Qonto (demande d'Olivier du 13/11/2026)
+Ouvrir le Rapprochement Qonto | Qonto 대조 열기
+Paiements retrouvés tout seuls dans Qonto | Qonto에서 알아서 찾은 결제
+La gestion retrouve toute seule les paiements dans Qonto : ici, seulement ce qui est à vérifier. | 관리 화면이 Qonto에서 결제를 알아서 찾아요. 여기에는 확인할 것만 나와요.
+À vérifier | 확인 필요
+Paiements à vérifier | 확인할 결제
+Rien à vérifier : tous les paiements suivis sont retrouvés dans Qonto. | 확인할 것이 없어요. 확인 대상 결제를 모두 Qonto에서 찾았어요.
+La gestion retrouve toute seule les paiements dans Qonto. Ceux-ci demandent votre œil, un toucher suffit : | 관리 화면이 Qonto에서 결제를 알아서 찾아요. 아래 결제만 직접 봐 주세요. 한 번 누르면 돼요.
+Carte pas retrouvée | 카드 결제를 찾지 못함
+Virement pas arrivé | 이체가 들어오지 않음
+Paiement pas retrouvé | 결제를 찾지 못함
+Moyen de paiement pas noté | 결제 수단이 적혀 있지 않음
+Chèques à confirmer | 수표 확인 필요
+Virement à confirmer | 이체 확인 필요
+Vente par carte pas notée | 적히지 않은 카드 판매
+Virement sans paiement noté | 결제가 적히지 않은 이체
+Aucun versement Tap to Pay de Qonto ne contient ce paiement par carte. | Qonto의 Tap to Pay 입금 중에 이 카드 결제가 들어 있는 것이 없어요.
+C'était en espèces | 현금이었어요
+Il est dans un versement Tap to Pay | Tap to Pay 입금에 들어 있어요
+Noté payé par virement il y a plus de 7 jours, mais aucun virement reçu dans Qonto ne correspond. | 7일도 더 전에 계좌 이체로 결제했다고 적었는데, Qonto에 맞는 이체가 없어요.
+Noté payé (moyen « Autre ») il y a plus de 7 jours, mais rien dans Qonto ne correspond. | 7일도 더 전에 결제했다고(수단 ‘기타’) 적었는데, Qonto에 맞는 것이 없어요.
+Il est dans Qonto | Qonto에 있어요
+Comment a-t-elle été payée ? La gestion la retrouvera ensuite toute seule dans Qonto. | 어떻게 결제했나요? 알려 주면 관리 화면이 Qonto에서 알아서 찾아요.
+Ces commandes payées font exactement ce montant. Est-ce que ce sont leurs chèques ? | 이 결제된 주문들을 더하면 딱 이 금액이에요. 이 주문들의 수표인가요?
+Oui, ce sont leurs chèques | 네, 이 주문들의 수표예요
+Même montant qu'une commande payée. Est-ce son paiement ? | 결제된 주문과 금액이 같아요. 그 주문의 결제인가요?
+Oui, c'est son paiement | 네, 그 주문의 결제예요
+Non, aucune | 아니요, 해당 없어요
+Ce versement contient une vente par carte qui n'est pas notée payée dans la gestion (les ventes de la veille ; le lundi, celles du vendredi au dimanche). | 이 입금에는 관리 화면에 결제로 적히지 않은 카드 판매가 들어 있어요 (전날 판매분, 월요일에는 금요일부터 일요일까지의 판매분).
+Noter payée par carte | 카드 결제로 표시
+C'est cette commande | 이 주문이에요
+Vente sans commande | 주문 없는 판매
+Par exemple une vente au marché, jamais saisie dans la gestion. | 예를 들어 관리 화면에 입력하지 않은 장터 판매예요.
+Des commandes de ce montant ne sont pas notées payées : | 이 금액의 주문이 아직 결제로 적히지 않았어요:
+Noter payée et rapprochée | 결제 완료와 대조 완료로 표시
+Noter payées et rapprochées | 결제 완료와 대조 완료로 표시
+Aucune commande en attente de paiement n'a ce montant. | 결제를 기다리는 주문 중에 이 금액인 것은 없어요.
+Ce n'est pas une vente | 판매가 아니에요
+Pas une vente | 판매 아님
+Vérifiée autrement | 다른 방법으로 확인함
+Comment le paiement a-t-il été vérifié ? | 결제를 어떻게 확인했나요?
+Par exemple : payé sur l'ancien terminal, chèque encaissé au Crédit Mutuel avant la liaison. | 예: 예전 단말기로 결제함, 연결 전에 Crédit Mutuel에 수표를 입금함.
+Noter vérifiée hors Qonto | Qonto 밖에서 확인함으로 표시
+Vérifiée hors Qonto | Qonto 밖에서 확인함
+Le rapprochement automatique n'a pas pu se faire : réessayez dans un moment. | 자동 대조를 하지 못했어요. 잠시 뒤에 다시 해 보세요.
+Qonto n'a pas pu être lu en entier : | Qonto를 다 읽지 못했어요:
+Qonto n'a pas pu être lu en entier. | Qonto를 다 읽지 못했어요.
+Qonto n'a pas pu être lu en entier depuis plus de 3 jours : les paiements pas retrouvés ne sont plus signalés. Reliez Qonto à nouveau dans Paramètres › Qonto. | 3일 넘게 Qonto를 다 읽지 못했어요. 찾지 못한 결제를 더 이상 알려 주지 않아요. 설정 › Qonto에서 Qonto를 다시 연결하세요.
+Qonto n'a pas pu être lu en entier depuis plus de 3 jours : les paiements ne sont plus retrouvés. | 3일 넘게 Qonto를 다 읽지 못했어요. 결제를 더 이상 찾지 못해요.
+Paramètres › Qonto | 설정 › Qonto
+Prévenez Olivier. | Olivier에게 알려 주세요.
+Dernière lecture de Qonto : | 마지막으로 Qonto를 읽은 때:
+Qonto pas encore lu. | 아직 Qonto를 읽지 않았어요.
+Relire Qonto | Qonto 다시 읽기
+Qonto relu. | Qonto를 다시 읽었어요.
+Encaissement Qonto | Qonto 입금
+Encaissement Qonto remis à vérifier | Qonto 입금을 다시 확인 대상으로 돌림
+Remettre à vérifier | 다시 확인 대상으로
+Remis à vérifier. | 다시 확인 대상으로 돌렸어요.
+Rapprocher à la main | 직접 대조하기
+Rarement utile : la gestion le fait toute seule. Pour un cas qu'elle ne sait pas trouver. | 거의 필요 없어요. 관리 화면이 알아서 해요. 관리 화면이 찾지 못하는 경우에만 써요.
+Notés payés avant le 7 novembre 2026 : la gestion les cherche dans Qonto et note ceux qu'elle retrouve, sans jamais signaler les autres. Rien à faire. | 2026년 11월 7일 전에 결제로 적은 주문이에요. 관리 화면이 Qonto에서 찾아서 찾은 것만 적고, 나머지는 알리지 않아요. 할 일은 없어요.
+Les espèces ne passent pas par Qonto : elles ne sont jamais cherchées. Si un paiement change, la gestion le recherche toute seule. Rien n'est jamais écrit dans Qonto. | 현금은 Qonto를 거치지 않아서 찾지 않아요. 결제 내용이 바뀌면 관리 화면이 다시 알아서 찾아요. Qonto에는 아무것도 쓰지 않아요.
+Annuler | 취소
+Annuler ce rapprochement ? La gestion ne le refera pas toute seule. | 이 대조를 취소할까요? 관리 화면이 다시 알아서 대조하지 않아요.
+Rapprochement annulé : la gestion ne le refera pas toute seule. | 대조를 취소했어요. 관리 화면이 다시 알아서 대조하지 않아요.
+retrouvé tout seul | 알아서 찾음
+La gestion le cherche toute seule dans Qonto | 관리 화면이 Qonto에서 알아서 찾는 중
+Payé avant le suivi automatique : jamais signalé | 자동 확인 전에 결제됨: 알리지 않음
+Si la gestion s'est trompée, retirez-le : elle ne le refera pas toute seule. | 관리 화면이 잘못 대조했으면 취소하세요. 다시 알아서 대조하지 않아요.
+Moyen de paiement noté. | 결제 수단을 적었어요.
+Retrouvée tout de suite dans Qonto. | Qonto에서 바로 찾았어요.
+Noté : vérifiée hors Qonto. | Qonto 밖에서 확인함으로 적었어요.
+Cet encaissement n'est plus dans la dernière lecture de Qonto : rechargez la page. | 이 입금은 마지막으로 읽은 Qonto 내용에 더 이상 없어요. 페이지를 새로 고침하세요.
+Choisissez une commande. | 주문을 고르세요.
+Noté : la gestion ne les rapprochera pas de cet encaissement. | 적었어요. 관리 화면이 이 주문들을 이 입금과 대조하지 않을 거예요.
+Cette commande n'est plus en attente de paiement : rechargez la page. | 이 주문은 더 이상 결제를 기다리지 않아요. 페이지를 새로 고침하세요.
+Une de ces commandes n'est plus en attente de paiement : rechargez la page. | 이 주문 중 하나는 더 이상 결제를 기다리지 않아요. 페이지를 새로 고침하세요.
+Commande notée payée par carte et rapprochée avec Qonto. | 주문을 카드 결제로 표시하고 Qonto와 대조했어요.
+Commande notée payée par virement et rapprochée avec Qonto. | 주문을 계좌 이체 결제로 표시하고 Qonto와 대조했어요.
+Mis de côté : il ne sera plus montré. Pour revenir en arrière : « Mis de côté », en bas de l'écran. | 제외했어요. 더 이상 보이지 않아요. 되돌리려면 화면 아래 ‘제외한 입금’을 여세요.
+Cette commande est déjà rapprochée : rechargez la page. | 이 주문은 이미 대조했어요. 페이지를 새로 고침하세요.
+Encaissement Qonto introuvable : rechargez la page. | Qonto 입금을 찾을 수 없어요. 페이지를 새로 고침하세요.
+Ce paiement a changé entre-temps : rechargez la page. | 그사이에 결제 내용이 바뀌었어요. 페이지를 새로 고침하세요.
+Cette commande n'a plus de paiement à retrouver dans Qonto. | 이 주문에는 Qonto에서 찾을 결제가 더 이상 없어요.
+Dites en quelques mots comment le paiement a été vérifié. | 결제를 어떻게 확인했는지 짧게 적어 주세요.
+impossible de joindre Qonto | Qonto에 연결할 수 없어요
+cURL manque sur ce serveur | 이 서버에 cURL이 없어요
+espace Qonto pas relié | Qonto 공간이 연결되어 있지 않아요
+réponse inattendue de Qonto (organisation) | Qonto에서 뜻밖의 응답이 왔어요 (조직)
+identifiant ou secret de l'application refusé par Qonto | Qonto가 앱 ID나 비밀 키를 거부했어요
+autorisation expirée ou déjà utilisée : reliez l'espace à nouveau | 권한이 만료되었거나 이미 사용되었어요. 공간을 다시 연결하세요
+accès refusé par Qonto : reliez l'espace à nouveau | Qonto가 접근을 거부했어요. 공간을 다시 연결하세요
+Qonto refuse cette lecture (droit manquant sur l'application) | Qonto가 이 읽기를 거부했어요 (앱 권한 부족)
+trop de demandes à Qonto, réessayez dans une minute | Qonto에 요청이 너무 많아요. 1분 뒤에 다시 해 보세요
+Qonto a un souci de son côté, réessayez plus tard | Qonto 쪽에 문제가 있어요. 나중에 다시 해 보세요
 # Écran Obligations (spécification 004, lot 1, 08/11/2026)
 Obligations | 의무
 Démarche | 할 일
@@ -1830,6 +1926,8 @@ Photos masquées | 숨긴 사진
 Dernier passage | 마지막 실행
 Photo du client masquée (elle ne sera plus cherchée) | 고객 사진 숨김 (더 이상 찾지 않음)
 Photo du client : de nouveau autorisée (cherchée au prochain passage du script) | 고객 사진: 다시 허용함 (다음 스크립트 실행 때 찾음)
+Les paiements retrouvés tout seuls dans Qonto | Qonto에서 알아서 찾는 결제
+La gestion retrouve maintenant toute seule les paiements dans Qonto : versements Tap to Pay, virements avec le numéro de la facture ou le nom du client, sur le compte Qonto et sur celui du Crédit Mutuel. Plus rien à cocher. Seuls les cas à vérifier apparaissent, dans Aujourd'hui et au Rapprochement, avec un bouton pour chacun. | 이제 관리 화면이 Qonto에서 결제를 알아서 찾아요. Tap to Pay 입금, 청구서 번호나 고객 이름이 적힌 이체를 Qonto 계좌와 Crédit Mutuel 계좌에서 찾아요. 더 이상 체크할 것이 없어요. 확인할 경우만 오늘 화면과 대조 화면에 버튼과 함께 나와요.
 Un son pour chaque nouvelle commande | 새 주문마다 알림음
 Quand une commande arrive par le site pendant que la gestion est ouverte, un petit carillon joyeux sonne et un bandeau l'annonce en bas de l'écran ; « Voir » ouvre la commande. Sur le téléphone, touchez une fois la page pour que le son soit permis. Pour le couper sur un appareil : Paramètres › Son des nouvelles commandes. | 관리 화면이 열려 있을 때 사이트로 주문이 들어오면 짧고 기분 좋은 소리가 나고, 화면 아래 알림 띠가 알려 줘요. « 보기 »를 누르면 주문이 열려요. 휴대폰에서는 소리가 나도록 페이지를 한 번 눌러 주세요. 기기별로 끄려면: 설정 › 새 주문 알림음.
 L'accusé de réception automatique | 자동 접수 확인 메일
@@ -1862,6 +1960,24 @@ function coreen_date(string $s): ?string {
         }
         return (($m[4] ?? '') !== '' ? $m[4] . '년 ' : '') . $mo . '월 ' . (int)$m[2] . '일' . $jour;
     }
+    return null;
+}
+/** Un ou plusieurs encaissements Qonto (« Tap to Pay du 11/11/2026 (20 €) + virement du 12/11/2026 (80 €, VIR …) ») → coréen ; le libellé
+ *  de la banque reste tel quel ; null si un morceau est inconnu. */
+function coreen_encaissements(string $s): ?string {
+    $l = [];
+    foreach (explode(' + ', $s) as $x) {
+        if (!preg_match('~^(Tap to Pay|[Rr]emise de chèques|[Vv]irement) du (\d{2}/\d{2}/\d{4}) \((.+)\)$~u', trim($x), $m) || ($d = coreen_date($m[2])) === null) return null;
+        $l[] = match (mb_strtolower($m[1])) { 'tap to pay' => $d . ' Tap to Pay 입금', 'remise de chèques' => $d . ' 수표 입금', default => $d . ' 이체' } . ' (' . $m[3] . ')';
+    }
+    return implode(' + ', $l);
+}
+/** Un morceau du message « Lecture Qonto : … » (Paramètres › Qonto) → coréen ; null s'il est inconnu. */
+function coreen_lecture_qonto(string $s): ?string {
+    if (preg_match('/^(.+) : (\d+) facture\(s\) impayée\(s\), (.+)$/u', $s, $m)) return $m[1] . ': 미결제 청구서 ' . $m[2] . '건, ' . $m[3];
+    if (preg_match('/^(\d+) encaissement\(s\) sur (\d+) jours$/u', $s, $m)) return $m[2] . '일 동안 입금 ' . $m[1] . '건';
+    if (preg_match('/^(\d+) paiement\(s\) retrouvé\(s\) tout seul\(s\), (\d+) à vérifier$/u', $s, $m)) return '알아서 찾은 결제 ' . $m[1] . '건, 확인 필요 ' . $m[2] . '건';
+    if (preg_match('/^(.+) \((.+)\) : (.+)$/u', $s, $m) && ($e = coreen_texte($m[3])) !== null) return $m[1] . ' (' . $m[2] . '): ' . $e;
     return null;
 }
 /** « il y a 3 h », « il y a 12 j », « le 02/09/2026 » → « 3시간 전 », « 12일 전 », « 2026. 9. 2. ». */
@@ -2232,7 +2348,26 @@ function coreen_motifs(): array {
         ['/^Rapport envoyé à Olivier : (.+)$/u', fn($m) => 'Olivier에게 보고서 보냄: ' . $m[1]],
         ['/^(\d+) paiement\(s\) rapproché\(s\) avec Qonto\.$/u', fn($m) => '결제 ' . $m[1] . '건을 Qonto와 대조했어요.'],
         ['/^Montant à retrouver : ([\d  .,]+ ?€)\.$/u', fn($m) => '찾을 금액: ' . $m[1] . '.'],
-        ['/^Rapprochée avec Qonto : (.+)$/u', fn($m) => 'Qonto와 대조 완료: ' . $m[1]],
+        ['/^Rapprochée avec Qonto : (.+)$/u', fn($m) => 'Qonto와 대조 완료: ' . (coreen_encaissements($m[1]) ?? $m[1])],
+        // Rapprochement automatique (13/11/2026)
+        ['/^Rapprochée automatiquement avec Qonto : (.+)$/u', fn($m) => 'Qonto와 자동 대조: ' . (coreen_encaissements($m[1]) ?? $m[1])],
+        ['/^((?:Tap to Pay|[Rr]emise de chèques|[Vv]irement) du \d{2}\/\d{2}\/\d{4} \(.+\))$/u', fn($m) => coreen_encaissements($m[1])],
+        ['/^Payée le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 결제' : null],
+        ['/^Retrouvé : ([\d .,]+ ?€)$/u', fn($m) => '찾음: ' . $m[1]],
+        ['/^[Pp]as expliqué : ([\d .,]+ ?€)$/u', fn($m) => '설명되지 않음: ' . $m[1]],
+        ['/^Retrouvés tout seuls ces 30 derniers jours \((\d+)\)$/u', fn($m) => '최근 30일 동안 알아서 찾은 결제 (' . $m[1] . ')'],
+        ['/^Payés avant le suivi automatique \((\d+)\)$/u', fn($m) => '자동 확인 전에 결제된 주문 (' . $m[1] . ')'],
+        ['/^Mis de côté \((\d+)\)$/u', fn($m) => '제외한 입금 (' . $m[1] . ')'],
+        ['/^Et (\d+) autre\(s\) au Rapprochement\.$/u', fn($m) => '대조 화면에 ' . $m[1] . '건 더 있어요.'],
+        ['/^Qonto relu\. (\d+) paiement\(s\) retrouvé\(s\) tout seul\(s\)\.$/u', fn($m) => 'Qonto를 다시 읽었어요. 결제 ' . $m[1] . '건을 알아서 찾았어요.'],
+        ['/^Qonto n\'a pas pu être lu : (.+)\.$/u', fn($m) => 'Qonto를 읽지 못했어요: ' . $t($m[1]) . '.'],
+        ['/^(\d+) paiements rapprochés avec Qonto\.$/u', fn($m) => '결제 ' . $m[1] . '건을 Qonto와 대조했어요.'],
+        ['/^(\d+) commandes notées payées par virement et rapprochées avec Qonto\.$/u', fn($m) => '주문 ' . $m[1] . '건을 계좌 이체 결제로 표시하고 Qonto와 대조했어요.'],
+        ['/^Moyen de paiement noté : (.+)$/u', fn($m) => '결제 수단 기록: ' . $t($m[1])],
+        ['/^Moyen de paiement corrigé : (.+) → (.+)$/u', fn($m) => '결제 수단 수정: ' . $t($m[1]) . ' → ' . $t($m[2])],
+        ['/^Encaissement Qonto mis de côté : (.+) \(([\d .,]+ ?€)\)$/u', fn($m) => 'Qonto 입금 제외: ' . $t($m[1]) . ' (' . $m[2] . ')'],
+        ['/^Vérifiée hors Qonto : (.+)$/u', fn($m) => 'Qonto 밖에서 확인: ' . $m[1]],
+        ['/^Lecture Qonto : (.+)\.$/u', fn($m) => 'Qonto 읽기: ' . implode(' · ', array_map(fn($x) => coreen_lecture_qonto($x) ?? $t($x), explode(' · ', $m[1]))) . '.'],
         // Historique
         ['/^Fiche modifiée : (.+)$/u', fn($m) => '고객 정보 수정: ' . coreen_champs($m[1])],
         ['/^Majuscules ajoutées au nom : (.+)$/u', fn($m) => '이름에 대문자 추가: ' . $m[1]],

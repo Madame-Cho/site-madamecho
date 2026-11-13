@@ -57,6 +57,8 @@ function page_accueil(): void {
             . '<span class="l2">' . h($k['reference']) . ' · ' . h(retrait_texte($k, true)) . '</span></a>';
         $c .= bloc(icone('email') . ' Rappels à envoyer', '<p class="aide">Retraits de demain (et ceux d\'aujourd\'hui sans rappel) : touchez une commande, vérifiez l\'aperçu, puis « Envoyer ». Rien ne part tout seul.</p><div class="liste">' . $l . '</div>', '', 'rappels');
     }
+    // Les paiements que la gestion n'a pas su retrouver tout seuls dans Qonto, seulement s'il y en a (demande d'Olivier du 13/11/2026)
+    $c .= bloc_rapprochement_accueil();
     $c .= bloc('Demandes à répondre', liste_commandes($t['a_repondre'], 'Aucune demande en attente.'), '', 'demandes');
     // Retraits groupés par jour
     $jours = [];
@@ -907,14 +909,18 @@ function page_production(): void {
 
 /* ---------- Rapprochement avec Qonto, sur la fiche de la commande (FR-030) ---------- */
 function rapprochement_texte(array $k): string {
-    if ((string)$k['qonto_ref'] !== '') return '<span class="paiement p-paye">Rapproché</span> <span translate="no">' . h($k['qonto_ref']) . '</span> · <span translate="no">' . h($k['qonto_par']) . '</span> · ' . h(date_fr($k['qonto_le'], 'heure'));
-    if (in_array($k['paiement'], ['paye', 'acompte_recu'], true) && $k['moyen'] === 'especes') return 'Espèces : pas de rapprochement';
-    if (rapprochement_attendu($k)) return '<span class="paiement p-acompte-demande">À rapprocher</span>' . ($k['moyen'] === '' ? ' · ' . h('Moyen non noté') : '');
-    return '';
+    $ref = (string)$k['qonto_ref'];
+    if ($ref === RAPPROCHEMENT_HORS) return '<span class="paiement p-paye">Vérifiée hors Qonto</span> · <span translate="no">' . h($k['qonto_par']) . '</span> · ' . h(date_fr($k['qonto_le'], 'heure'));
+    if ($ref !== '') return '<span class="paiement p-paye">Rapproché</span> ' . rapprochement_ref_texte($ref) . ' · '
+        . ((string)$k['qonto_par'] === RAPPROCHEMENT_PAR ? '<span>' . h('retrouvé tout seul') . '</span>' : '<span translate="no">' . h($k['qonto_par']) . '</span>') . ' · ' . h(date_fr($k['qonto_le'], 'heure'));
+    if (!rapprochement_attendu($k)) return in_array($k['paiement'], ['paye', 'acompte_recu'], true) && $k['moyen'] === 'especes' ? 'Espèces : pas de rapprochement' : '';
+    $suivi = rapprochement_suivi($k);
+    return '<span class="paiement p-acompte-demande">À rapprocher</span>' . ($k['moyen'] === '' ? ' · ' . h('Moyen non noté') : '')
+        . (qonto_relie() ? ' · <span>' . h($suivi ? 'La gestion le cherche toute seule dans Qonto' : 'Payé avant le suivi automatique : jamais signalé') . '</span>' : '');
 }
 function rapprochement_formulaire(array $k): string {
     if ((string)$k['qonto_ref'] !== '') return '<details class="replie"><summary>Retirer le rapprochement</summary>'
-        . formulaire('derapprocher', '<p class="aide">Si la référence est fausse, retirez-la : le paiement revient dans la liste « À rapprocher ».</p>' . bouton('Retirer le rapprochement', 'discret')) . '</details>';
+        . formulaire('derapprocher', '<p class="aide">' . h((string)$k['qonto_par'] === RAPPROCHEMENT_PAR ? 'Si la gestion s\'est trompée, retirez-le : elle ne le refera pas toute seule.' : 'Si la référence est fausse, retirez-la : le paiement revient dans la liste « À rapprocher ».') . '</p>' . bouton('Retirer le rapprochement', 'discret')) . '</details>';
     if (!rapprochement_attendu($k)) return '';
     return '<details class="replie"><summary>Rapprocher avec Qonto</summary>'
         . formulaire('rapprocher', champ('qonto_ref', 'Référence de l\'opération dans Qonto', '', ['maxlength' => '120', 'autocomplete' => 'off', 'required' => true],

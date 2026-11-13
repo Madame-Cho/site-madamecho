@@ -26,6 +26,7 @@ function icone(string $n): string {
         'plus' => '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
         'ajouter' => '<path d="M12 5v14M5 12h14"/>',
         'retour' => '<path d="M15 5l-7 7 7 7"/>',
+        'relire' => '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>',
         'suivant' => '<path d="M9 5l7 7-7 7"/>',
         // L'agenda : un calendrier et ses jours
         'mois' => '<path d="M4 5h16v15H4z"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M8 13.5h.01M12 13.5h.01M16 13.5h.01M8 17h.01M12 17h.01"/>',
@@ -333,6 +334,7 @@ const ICONES_TITRES = [
     'Contenu' => 'produits', 'À préparer en tout' => 'produits', 'Ventes par gâteau' => 'produits',
     'Échanges' => 'assistant', 'Tous les échanges' => 'assistant', 'Notes et historique' => 'crayon',
     'Montant et paiement' => 'paiement', 'Facture et paiement' => 'paiement', 'Acomptes attendus' => 'paiement', 'Paiements pas encore' => 'paiement',
+    'Paiements à vérifier' => 'paiement', 'À vérifier' => 'paiement',
     'Relevés' => 'paiement', 'À recopier dans la facture' => 'paiement', 'Chiffre d' => 'paiement',
     'Commandes' => 'commandes', 'Demandes' => 'commandes', 'Propositions sans réponse' => 'commandes', 'Les livraisons' => 'commandes', 'Où en sont les demandes' => 'commandes',
     'Retraits' => 'jour', 'Les 7 derniers jours' => 'jour',
