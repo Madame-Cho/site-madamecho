@@ -18,7 +18,7 @@ if (!defined('GESTION')) define('GESTION', '1');
 mb_internal_encoding('UTF-8');
 date_default_timezone_set('Europe/Paris');
 
-const GESTION_VERSION = '2026-11-08';
+const GESTION_VERSION = '2026-11-13';
 const GESTION_NOM = 'Gestion';
 const GESTION_EXPEDITEUR = 'site@madamecho.com';
 const GESTION_DOMAINE = 'madamecho.com';

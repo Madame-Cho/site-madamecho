@@ -102,6 +102,24 @@ d'Olivier du 07/11). Le Drive fait foi pour les décisions ; ce texte n'en garde
   pilote (choix d'Olivier du 2026-11-08, carte). Le rouge se dit « À regarder en premier » : il s'éteint
   à l'ouverture ; les listes « À répondre » d'Aujourd'hui restent la liste des tâches.
 
+### Session 2026-11-13 (rapprochement automatique avec Qonto, demande d'Olivier)
+
+- Q: Que demande Olivier ? → A : « que Youngmi ait le moins à faire possible et que les rapprochements
+  soient automatiques, que ça ne lui affiche que les problèmes potentiels » (2026-11-13, FR-030).
+- Q: Qu'est-ce qui se note tout seul ? → A : seulement ce qui n'a qu'une explication : un versement Tap to
+  Pay égal aux ventes par carte notées le jour ouvré d'avant (jours ouvrés des banques : le lundi, du
+  vendredi au dimanche), ou la seule combinaison des ventes de la semaine qui fait le montant ; un virement
+  qui porte le numéro de la facture ; un virement qui nomme un seul client, avec exactement le montant (à
+  2 centimes près pour une facture pro). Jamais au seul montant, jamais pour un nom de famille partagé.
+- Q: Que voit Youngmi ? → A : seulement les cas à vérifier, chacun avec son bouton, dans Aujourd'hui (s'il
+  y en a) et au Rapprochement : carte pas versée (2 jours ouvrés après le versement attendu), virement pas
+  arrivé (7 jours), moyen de paiement pas noté (2 jours), versement plus gros que les ventes notées,
+  virement d'un client sans commande notée payée, virement ou remise de chèques du même montant qu'une
+  commande (à confirmer). Ce qui a été payé avant le 7 novembre 2026 n'est jamais signalé.
+- Q: Le paiement peut-il changer tout seul ? → A : non : le passage note seulement « rapproché » ; noter une
+  commande payée, changer le moyen ou mettre un encaissement de côté demande un toucher. Un rapprochement
+  retiré par une personne n'est jamais refait tout seul. Qonto reste en lecture seule (R-24).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Savoir ce qu'il y a à faire aujourd'hui (Priority: P1)
@@ -519,9 +537,12 @@ commandes remises ; la fiche de production ne contient ni email ni téléphone.
   « Confirmer », même en mode vocal.
 - **FR-030**: Un paiement MUST garder qui l'a constaté et quand ; un état « rapproché Qonto »,
   séparé du paiement, MUST se noter avec la référence de la transaction Qonto, jamais par le nom
-  ou le montant seuls ; les espèces MUST en être dispensées ; une liste MUST montrer les paiements
-  par carte ou virement pas encore rapprochés ; un versement Qonto MUST NOT créer de vente ni de
-  paiement ; Qonto reste en lecture seule (R-24).
+  ou le montant seuls ; les espèces MUST en être dispensées ; la gestion MUST le noter toute seule
+  quand une seule explication tient (versement Tap to Pay et ventes par carte du jour ouvré d'avant,
+  numéro de facture, nom d'un seul client avec le montant exact) et MUST ne montrer que les cas à
+  vérifier, chacun avec un bouton (2026-11-13) ; un rapprochement retiré par une personne MUST NOT
+  être refait tout seul ; un versement Qonto MUST NOT créer de vente ni de paiement ; Qonto reste en
+  lecture seule (R-24).
 - **FR-029**: Un gâteau déjà dans une commande MUST garder le prix et la TVA enregistrés à la
   commande quand on change la date, l'heure, le mode ou la quantité, à la main comme par
   l'assistant ; seul un gâteau ajouté prend le prix actuel de la carte.

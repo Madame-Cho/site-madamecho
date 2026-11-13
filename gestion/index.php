@@ -22,6 +22,7 @@ require_once __DIR__ . '/inc/son.php';       // le son des nouvelles commandes (
 require_once __DIR__ . '/inc/assistant.php';
 require_once __DIR__ . '/inc/assistant-donnees.php';
 require_once __DIR__ . '/inc/qonto.php';
+require_once __DIR__ . '/inc/rapprochement.php';   // le rapprochement automatique avec Qonto (13/11/2026)
 require_once __DIR__ . '/inc/pages-connexion.php';
 require_once __DIR__ . '/inc/pages-commandes.php';
 require_once __DIR__ . '/inc/pages-agenda.php';

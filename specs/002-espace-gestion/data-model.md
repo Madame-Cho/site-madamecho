@@ -28,6 +28,23 @@
   paiement ou le moyen efface le rapprochement (événement « Rapprochement Qonto à refaire ») ; une référence
   est refusée si elle n'est qu'un montant ou que le nom du client. Aucune vente ni aucun paiement ne naît d'un
   rapprochement ; Qonto n'est jamais écrit (R-24).
+
+## Rapprochement automatique avec Qonto (2026-11-13, demande d'Olivier, FR-030)
+
+- **Commande** : `qonto_ref` peut réunir plusieurs opérations (« id + id » : l'acompte puis le solde, dans
+  l'ordre des montants attendus) ou valoir « Hors Qonto » (vérifiée autrement, avec le motif dans
+  l'historique) ; `qonto_par` vaut « Qonto (automatique) » quand la gestion l'a noté toute seule.
+- **Paramètres** : `qonto_cache` (version 2 : encaissements lus, erreurs, lecture des comptes Qonto complète
+  ou non), `qonto_lu_ok` et `qonto_lu_ok_tap` (dernière lecture complète de tous les comptes, ou des seuls
+  comptes Qonto), `qonto_refus` (paires « commande|opération » retirées ou refusées par une personne, jamais
+  reprises toutes seules, 2 000 au plus), `qonto_ecartes` (encaissements mis de côté : « Vente sans
+  commande », « Pas une vente », avec le montant, la personne et l'heure, 1 000 au plus).
+- Montants attendus d'une commande : l'acompte reçu à part (jour et moyen de son événement « Acompte
+  reçu ») puis le solde, ou le prix ; les espèces ne se cherchent pas (un acompte par carte d'une commande
+  soldée en espèces, si). Jour : `paiement_le`, sinon la remise, le retrait ou la demande.
+- Suivi : seuls les paiements notés depuis le 2026-11-07 et les encaissements depuis cette date peuvent être
+  signalés ; l'absence d'un paiement ne se signale qu'après une lecture complète de moins de 3 jours.
+- Les événements notés tout seuls ont pour auteur « système » (aucune pastille) et ne changent pas `maj_le`.
 - Événements : type `rapprochement` (rapprochée, retiré, à refaire).
 
 ## Échanges avec les clients (FR-005, FR-031 à FR-033, schéma 8)

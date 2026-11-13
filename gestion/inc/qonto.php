@@ -12,8 +12,10 @@
  * jamais dans ce dépôt public (R-08), jamais réaffichés, jamais dans l'export ni lus par l'assistant.
  * Le jeton d'accès dure 1 heure ; le jeton de renouvellement dure 90 jours et ne sert qu'une fois (chaque renouvellement en
  * donne un nouveau, enregistré tout de suite, sous verrou pour que deux pages ne renouvellent pas en même temps).
- * Ce que la gestion fait des données : proposer les encaissements lus dans Qonto au Rapprochement (Plus › Rapprochement Qonto).
- * Un encaissement ne crée jamais de vente ni de paiement : Youngmi choisit, d'un toucher, l'opération qui correspond.
+ * Ce que la gestion fait des données : retrouver tout seul le paiement des commandes dans les encaissements (inc/rapprochement.php,
+ * demande d'Olivier du 13/11/2026), sur les comptes Qonto et sur le compte du Crédit Mutuel relié à Qonto (« compte externe »).
+ * Un encaissement ne crée jamais de vente ni de paiement. Ne sont gardés que les encaissements qui peuvent être une vente : ni les
+ * virements de Madame Cho à elle-même, ni les apports de Youngmi, ni les dépôts d'espèces, ni les remboursements d'achats par carte.
  */
 declare(strict_types=1);
 namespace MadameCho\Gestion;
@@ -24,7 +26,8 @@ define('GESTION_QONTO_API', GESTION_ESSAI && getenv('MC_QONTO') ? rtrim((string)
 const GESTION_QONTO_PORTEES = 'organization.read client_invoices.read offline_access';
 // L'adresse de retour déclarée dans le portail de Qonto : elle doit y être recopiée exactement
 const GESTION_QONTO_RETOUR = 'https://madamecho.com/gestion/?p=qonto-retour';
-const GESTION_QONTO_JOURS = 45;          // encaissements proposés au rapprochement : les 45 derniers jours
+const GESTION_QONTO_JOURS = 400;         // encaissements lus : 400 jours, pour retrouver aussi les paiements anciens (Qonto garde l'historique du Crédit Mutuel relié)
+const GESTION_QONTO_PAGES = 10;          // au plus 10 pages de 100 opérations par compte et par lecture
 const GESTION_QONTO_CACHE = 600;         // opérations gardées 10 minutes (moins d'appels à Qonto)
 const GESTION_QONTO_RENOUVELER = 80;     // jours : au-delà, on prévient qu'il faudra bientôt relier à nouveau (le jeton en dure 90 sans usage)
 
@@ -115,7 +118,7 @@ function page_qonto_retour(): void {
             $e = qonto_espaces();
             $e[$org['id']] = $org + ['access' => (string)$j['access_token'], 'expire' => time() + (int)($j['expires_in'] ?? 3600) - 60,
                                      'refresh' => (string)($j['refresh_token'] ?? ''), 'portees' => (string)($j['scope'] ?? ''),
-                                     'relie_le' => maintenant(), 'relie_par' => auteur(), 'renouvele_le' => maintenant(), 'erreur' => ''];
+                                     'relie_le' => maintenant(), 'relie_par' => auteur(), 'renouvele_le' => maintenant(), 'erreur' => '', 'comptes_le' => time()];
             qonto_espaces_ecrire($e);
             parametre_ecrire('qonto_cache', '');
             evenement('reglage', 'Qonto relié en lecture seule : espace « ' . $org['nom'] . ' »');
@@ -127,11 +130,28 @@ function page_qonto_retour(): void {
     }
     rediriger('reglages', [], 'qonto');
 }
-/** L'organisation vue par ce jeton : nom et comptes (sans IBAN complet ni solde). */
+/** L'organisation vue par ce jeton : nom et comptes, comptes externes reliés à Qonto compris (sans IBAN complet ni solde). */
 function qonto_organisation_lire(string $jeton): array {
-    [$code, $j] = qonto_http('GET', GESTION_QONTO_API . 'v2/organization', ['authorization: Bearer ' . $jeton]);
-    $o = is_array($j) ? ($j['organization'] ?? null) : null;
-    if ($code !== 200 || !is_array($o) || empty($o['id'])) throw new \RuntimeException(qonto_erreur($code, $j));
+    [$code, $j] = qonto_http('GET', GESTION_QONTO_API . 'v2/organization?include_external_accounts=true', ['authorization: Bearer ' . $jeton]);
+    if ($code !== 200 || !is_array($j)) throw new \RuntimeException(qonto_erreur($code, $j));
+    return qonto_organisation_depuis($j);
+}
+/** Relit chaque jour la liste des comptes de chaque espace relié (un compte externe relié ou fermé depuis). Sans effet si Qonto ne répond pas. */
+function qonto_comptes_actualiser(): void {
+    foreach (qonto_espaces() as $org => $e) {
+        if (($e['refresh'] ?? '') === '' || (int)($e['comptes_le'] ?? 0) > time() - 86400) continue;
+        try {
+            $o = qonto_organisation_depuis(qonto_lire((string)$org, 'v2/organization', ['include_external_accounts' => 'true']));
+            $tous = qonto_espaces();
+            if (isset($tous[$org]) && $o['id'] === (string)$org) { $tous[$org]['comptes'] = $o['comptes']; $tous[$org]['comptes_le'] = time(); qonto_espaces_ecrire($tous); }
+        } catch (\Throwable $ex) {
+            error_log('madamecho gestion qonto comptes : ' . $ex->getMessage());
+        }
+    }
+}
+function qonto_organisation_depuis(array $j): array {
+    $o = $j['organization'] ?? null;
+    if (!is_array($o) || empty($o['id'])) throw new \RuntimeException('réponse inattendue de Qonto (organisation)');
     $comptes = [];
     foreach (is_array($o['bank_accounts'] ?? null) ? $o['bank_accounts'] : [] as $b) {
         if (!is_array($b) || empty($b['id'])) continue;
@@ -192,35 +212,87 @@ function qonto_lire(string $org, string $chemin, array $parametres = []): array 
     if (isset($tous[$org])) { $tous[$org]['lu_le'] = maintenant(); $tous[$org]['erreur'] = ''; qonto_espaces_ecrire($tous); }
     return $j;
 }
-/** Les encaissements des 45 derniers jours, sur les comptes Qonto (pas les comptes externes), du plus récent au plus ancien.
- *  Renvoie [opérations, erreurs]. Gardés 10 minutes. */
-function qonto_encaissements(bool $frais = false): array {
+/**
+ * Les encaissements des 400 derniers jours qui peuvent être une vente, sur les comptes Qonto et les comptes externes reliés à Qonto,
+ * du plus récent au plus ancien. Renvoie [opérations, erreurs, heure de la lecture (0 : jamais lu)]. Gardés 10 minutes ;
+ * $lire = false : seulement la dernière lecture gardée, sans appeler Qonto (Aujourd'hui).
+ */
+function qonto_encaissements(bool $frais = false, bool $lire = true): array {
     $cache = json_decode((string)parametre('qonto_cache', ''), true);
-    if (!$frais && is_array($cache) && ($cache['le'] ?? 0) > time() - GESTION_QONTO_CACHE) return [$cache['ops'] ?? [], $cache['erreurs'] ?? []];
-    $ops = []; $erreurs = [];
+    $valide = is_array($cache) && (int)($cache['v'] ?? 0) === 2;
+    if ($valide && (!$lire || (!$frais && (int)($cache['le'] ?? 0) > time() - GESTION_QONTO_CACHE))) return [$cache['ops'] ?? [], $cache['erreurs'] ?? [], (int)($cache['le'] ?? 0), (bool)($cache['ok_tap'] ?? empty($cache['erreurs']))];
+    if (!$lire) return [[], [], 0];
+    qonto_comptes_actualiser();
+    $ops = []; $erreurs = []; $vus = []; $okTap = true;
     $depuis = gmdate('Y-m-d\TH:i:s\Z', time() - GESTION_QONTO_JOURS * 86400);
+    $propres = array_values(array_filter(array_map(fn($e) => trim(qonto_normaliser((string)($e['nom'] ?? ''))), qonto_espaces())));
     foreach (qonto_espaces() as $org => $e) {
         foreach ($e['comptes'] ?? [] as $c) {
-            if (!empty($c['externe']) || ($c['statut'] ?? '') === 'closed') continue;
+            if (($c['statut'] ?? '') === 'closed') continue;
             try {
-                $j = qonto_lire((string)$org, 'v2/transactions', ['bank_account_id' => $c['id'], 'side' => 'credit', 'settled_at_from' => $depuis,
-                                                                  'sort_by' => 'settled_at:desc', 'per_page' => 100]);
-                foreach (is_array($j['transactions'] ?? null) ? $j['transactions'] : [] as $t) {
-                    if (!is_array($t) || empty($t['id'])) continue;
-                    $ops[] = ['id' => (string)$t['id'], 'numero' => (string)($t['transaction_id'] ?? ''),
-                              'centimes' => (int)($t['amount_cents'] ?? round((float)($t['amount'] ?? 0) * 100)),
-                              'libelle' => mb_substr(une_ligne((string)($t['label'] ?? '')), 0, 80), 'reference' => mb_substr(une_ligne((string)($t['reference'] ?? '')), 0, 120),
-                              'type' => (string)($t['operation_type'] ?? ''), 'le' => (string)($t['settled_at'] ?? ($t['emitted_at'] ?? '')),
-                              'compte' => (string)$c['nom'], 'espace' => (string)$e['nom']];
+                for ($page = 1; $page <= GESTION_QONTO_PAGES; $page++) {
+                    $j = qonto_lire((string)$org, 'v2/transactions', ['bank_account_id' => $c['id'], 'side' => 'credit', 'settled_at_from' => $depuis,
+                                                                      'sort_by' => 'settled_at:desc', 'per_page' => 100, 'page' => $page]);
+                    foreach (is_array($j['transactions'] ?? null) ? $j['transactions'] : [] as $t) {
+                        $o = is_array($t) ? qonto_operation($t, $c, (string)$e['nom'], $propres) : null;
+                        if ($o === null || isset($vus[$o['id']])) continue;
+                        $vus[$o['id']] = true;
+                        $ops[] = $o;
+                    }
+                    if (empty($j['meta']['next_page'])) break;
                 }
             } catch (\Throwable $ex) {
-                $erreurs[] = $e['nom'] . ' : ' . $ex->getMessage();
+                $erreurs[] = $e['nom'] . ' (' . $c['nom'] . ') : ' . $ex->getMessage();
+                if (empty($c['externe'])) $okTap = false;   // un compte Qonto : les versements Tap to Pay n'ont pas pu être lus
+                // Ce compte n'a pas répondu : ses encaissements de la lecture d'avant restent (rien ne disparaît de l'écran)
+                foreach ($valide ? $cache['ops'] ?? [] : [] as $o)
+                    if (is_array($o) && ($o['espace'] ?? '') === (string)$e['nom'] && ($o['compte'] ?? '') === (string)($c['nom'] ?? '') && !isset($vus[$o['id'] ?? ''])) { $vus[$o['id']] = true; $ops[] = $o; }
             }
         }
     }
     usort($ops, fn($a, $b) => strcmp($b['le'], $a['le']));
-    parametre_ecrire('qonto_cache', json_encode(['le' => time(), 'ops' => $ops, 'erreurs' => $erreurs], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    return [$ops, $erreurs];
+    $le = time();
+    parametre_ecrire('qonto_cache', json_encode(['v' => 2, 'le' => $le, 'ops' => $ops, 'erreurs' => $erreurs, 'ok_tap' => $okTap], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    if (!$erreurs) parametre_ecrire('qonto_lu_ok', (string)$le);       // dernière lecture complète : au-delà de 3 jours sans, Aujourd'hui prévient
+    if ($okTap) parametre_ecrire('qonto_lu_ok_tap', (string)$le);      // les comptes Qonto seuls (Tap to Pay), même si le Crédit Mutuel n'a pas répondu
+    return [$ops, $erreurs, $le, $okTap];
+}
+/** Texte comparable : majuscules sans accents, lettres et chiffres séparés par une espace, entouré d'espaces (« Café-Lune » → « CAFE LUNE »). */
+function qonto_normaliser(string $s): string {
+    $s = strtr(mb_strtoupper($s), ['À' => 'A', 'Â' => 'A', 'Ä' => 'A', 'Á' => 'A', 'Ã' => 'A', 'Å' => 'A', 'Ç' => 'C', 'É' => 'E', 'È' => 'E', 'Ê' => 'E', 'Ë' => 'E',
+                                   'Î' => 'I', 'Ï' => 'I', 'Í' => 'I', 'Ì' => 'I', 'Ô' => 'O', 'Ö' => 'O', 'Ó' => 'O', 'Ò' => 'O', 'Õ' => 'O', 'Û' => 'U', 'Ü' => 'U',
+                                   'Ú' => 'U', 'Ù' => 'U', 'Ÿ' => 'Y', 'Ñ' => 'N', 'Œ' => 'OE', 'Æ' => 'AE']);
+    return ' ' . trim(preg_replace('/[^A-Z0-9]+/', ' ', $s) ?? '') . ' ';
+}
+/**
+ * Un encaissement lu dans Qonto, réduit à ce qui sert au rapprochement ; null pour ce qui ne peut pas être une vente : frais, intérêts,
+ * remboursement d'un achat par carte, virement de Madame Cho à elle-même (du Crédit Mutuel vers Qonto ou l'inverse), apport de Youngmi,
+ * dépôt d'espèces à la banque (les espèces ne se rapprochent pas). Genre : « tap » (versement Tap to Pay), « cheque » ou « virement ».
+ */
+function qonto_operation(array $t, array $compte, string $espace, array $propres): ?array {
+    if (empty($t['id']) || ($t['side'] ?? 'credit') !== 'credit' || !in_array((string)($t['status'] ?? 'completed'), ['completed', ''], true)) return null;
+    $type = (string)($t['operation_type'] ?? '');
+    if (in_array($type, ['qonto_fee', 'card', 'account_remuneration', 'financing_installment', 'investment', 'pay_later', 'direct_debit', 'direct_debit_hold', 'recall', 'f24', 'pagopa_payment', 'nrc_payment', 'riba_payment'], true)) return null;
+    $libelle = mb_substr(une_ligne((string)($t['label'] ?? '')), 0, 80);
+    $reference = mb_substr(une_ligne((string)($t['reference'] ?? '')), 0, 120);
+    $nl = qonto_normaliser($libelle);
+    $tout = qonto_normaliser($libelle . ' ' . $reference);
+    if ($type === 'card_acquirer_payout') $genre = 'tap';
+    else {
+        foreach ($propres as $p) if ($p !== '' && str_contains($nl, ' ' . $p . ' ')) return null;   // « MADAME CHO » : un virement entre ses propres comptes
+        if (str_contains($tout, ' APPORT ')) return null;                                           // apport en compte courant
+        if (preg_match('/^ (VRST|VERSEMENT ESP|DEPOT ESP|VERSEMENT D ESPECES)/', $nl)) return null;  // dépôt d'espèces au guichet
+        if (preg_match('/ (SIE|DGFIP|DRFIP|URSSAF|TRESOR PUBLIC|IMPOTS GOUV) /', $nl)) return null;   // impôts, Urssaf : un remboursement, jamais une vente
+        $genre = $type === 'cheque' || preg_match('/^ (REM CHQ|REMISE CHQ|REMISE CHEQUE|REMISE DE CHEQUE)/', $nl) ? 'cheque' : 'virement';
+    }
+    $le = (string)($t['settled_at'] ?? '') !== '' ? (string)$t['settled_at'] : (string)($t['emitted_at'] ?? '');
+    $ts = strtotime($le);
+    if ($ts === false) return null;
+    $centimes = isset($t['amount_cents']) ? (int)$t['amount_cents'] : (int)round((float)($t['amount'] ?? 0) * 100);
+    if ($centimes <= 0) return null;
+    return ['id' => strtolower((string)$t['id']), 'centimes' => $centimes, 'libelle' => $libelle, 'reference' => $reference, 'type' => $type, 'genre' => $genre,
+            'le' => date('Y-m-d H:i:s', $ts), 'jour' => date('Y-m-d', $ts), 'compte' => (string)($compte['nom'] ?? ''), 'externe' => !empty($compte['externe']) || !empty($t['is_external_transaction']),
+            'espace' => $espace];
 }
 /** Les factures clients impayées, par espace (pour l'essai de lecture dans Paramètres). */
 function qonto_factures_impayees(string $org): array {
@@ -243,8 +315,8 @@ function qonto_type(string $t): string {
 function bloc_reglages_qonto(): string {
     $prete = qonto_application_prete();
     $espaces = qonto_espaces();
-    $t = '<p>' . fr_ko('La gestion lit Qonto en lecture seule, pour retrouver les paiements des commandes. Elle ne peut faire aucun virement ni rien changer dans Qonto.',
-                       '관리 화면은 주문 결제를 찾기 위해 Qonto를 읽기만 해요. 이체나 Qonto 안의 변경은 전혀 할 수 없어요.') . '</p>';
+    $t = '<p>' . fr_ko('La gestion lit Qonto en lecture seule et y retrouve toute seule les paiements des commandes (Plus › Rapprochement Qonto). Elle ne peut faire aucun virement ni rien changer dans Qonto.',
+                       '관리 화면은 Qonto를 읽기만 하고, 주문 결제를 알아서 찾아요(더보기 › Qonto 대조). 이체나 Qonto 안의 변경은 전혀 할 수 없어요.') . '</p>';
     if ($espaces) {
         $rows = '';
         foreach ($espaces as $org => $e) {
@@ -307,35 +379,33 @@ function reglages_qonto_action(string $a): string {
                     $l[] = $e['nom'] . ' : ' . $n . ' facture(s) impayée(s), ' . euros($total);
                 } catch (\Throwable $ex) { $l[] = $e['nom'] . ' : ' . $ex->getMessage(); }
             }
-            [$ops, $err] = qonto_encaissements(true);
-            $l[] = count($ops) . ' encaissement(s) sur ' . GESTION_QONTO_JOURS . ' jours';
-            foreach ($err as $x) $l[] = $x;
-            flash($err ? 'erreur' : 'ok', 'Lecture Qonto : ' . implode(' · ', $l) . '.');
+            $r = rapprochement_passe(true, true, true);
+            $l[] = count($r['ops']) . ' encaissement(s) sur ' . GESTION_QONTO_JOURS . ' jours';
+            $l[] = count($r['faits']) . ' paiement(s) retrouvé(s) tout seul(s), ' . count($r['problemes']) . ' à vérifier';
+            foreach ($r['erreurs'] as $x) $l[] = $x;
+            flash($r['erreurs'] ? 'erreur' : 'ok', 'Lecture Qonto : ' . implode(' · ', $l) . '.');
             break;
     }
     return 'qonto';
 }
-/** Au Rapprochement : les encaissements lus dans Qonto, pas encore utilisés, à choisir d'un toucher. */
+/** Au Rapprochement, à la main : les encaissements de la dernière lecture pas encore expliqués, à choisir d'un toucher. */
 function choix_encaissements_qonto(): string {
     if (!qonto_relie()) return '';
-    try { [$ops, $err] = qonto_encaissements(); }
+    try { $r = rapprochement_passe(); }
     catch (\Throwable $ex) { return '<p class="erreur">' . h('Qonto n\'a pas pu être lu : ' . $ex->getMessage() . '.') . '</p>'; }
-    $deja = array_flip(array_map('strval', q("SELECT DISTINCT qonto_ref FROM commandes WHERE qonto_ref <> ''")->fetchAll(\PDO::FETCH_COLUMN)));
     $s = '';
-    foreach ($ops as $o) {
-        if (isset($deja[$o['id']])) continue;
-        $s .= '<label class="case ligne-rapprochement"><input type="radio" name="qonto_op" value="' . h($o['id']) . '"><span><b>' . h(euros($o['centimes'])) . '</b> · ' . h(qonto_type($o['type']))
-            . '<br><span class="petit"><span translate="no">' . h($o['libelle']) . ($o['reference'] !== '' ? ' · ' . $o['reference'] : '') . '</span> · ' . h(date_fr(date('Y-m-d H:i:s', strtotime($o['le']) ?: time()), 'heure')) . '</span></span></label>';
+    foreach ($r['ops'] as $o) {
+        if ($o['reste'] <= 0) continue;
+        $s .= '<label class="case ligne-rapprochement"><input type="radio" name="qonto_op" value="' . h($o['id']) . '"><span><b>' . h(euros((int)$o['reste'])) . '</b> · ' . h(qonto_type($o['type']))
+            . '<br><span class="petit"><span translate="no">' . h($o['libelle']) . ($o['reference'] !== '' ? ' · ' . $o['reference'] : '') . '</span> · ' . h(date_fr($o['le'], 'heure')) . '</span></span></label>';
     }
-    $e = $err ? '<p class="erreur">' . h('Lecture incomplète : ' . implode(' · ', $err)) . '</p>' : '';
+    $e = $r['erreurs'] ? '<p class="erreur">' . h('Lecture incomplète : ' . implode(' · ', $r['erreurs'])) . '</p>' : '';
     if ($s === '') return $e . '<p class="aide">' . h('Aucun encaissement Qonto non rapproché sur les ' . GESTION_QONTO_JOURS . ' derniers jours.') . '</p>';
     return $e . '<fieldset class="liste-cases"><legend>' . h('Encaissements lus dans Qonto (' . GESTION_QONTO_JOURS . ' derniers jours)') . '</legend>' . $s . '</fieldset>';
 }
 /** L'encaissement choisi au Rapprochement, s'il est bien dans la dernière lecture de Qonto. */
 function encaissement_qonto_choisi(): ?array {
-    $id = is_string($_POST['qonto_op'] ?? null) ? $_POST['qonto_op'] : '';
-    if ($id === '' || !preg_match('/^[0-9a-f\-]{36}$/i', $id)) return null;
-    $cache = json_decode((string)parametre('qonto_cache', ''), true);
-    foreach (is_array($cache['ops'] ?? null) ? $cache['ops'] : [] as $o) if ($o['id'] === $id) return $o;
-    return null;
+    $id = is_string($_POST['qonto_op'] ?? null) ? strtolower($_POST['qonto_op']) : '';
+    if ($id === '' || !preg_match('/^[0-9a-f\-]{36}$/', $id)) return null;
+    return rapprochement_ops_gardees()[$id] ?? null;
 }

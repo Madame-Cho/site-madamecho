@@ -241,7 +241,7 @@ function client_effacer(int $id, string $motif, ?string $auteur = null): void {
     $now = maintenant();
     q("UPDATE clients SET statut = 'efface', nom = '', prenom = '', societe = '', contact = '', email = '', telephone = '', ville = '', qonto = '',
        lettre_info = '', lettre_info_le = NULL, avis_demande_le = NULL, avis_recu_le = NULL, efface_le = ?, maj_le = ? WHERE id = ?", [$now, $now, $id]);
-    q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification', 'email_client', 'email_recu')", [$id]);
+    q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE client_id = ? AND type IN ('commentaire', 'modification', 'email_client', 'email_recu', 'rapprochement')", [$id]);   // « Vérifiée hors Qonto : … » est écrit à la main
     q("DELETE FROM corbeille WHERE client_id = ?", [$id]);   // un effacement (RGPD) vide aussi la corbeille de ce client
     photo_oublier($id);   // sa photo aussi
     foreach (lignes("SELECT id FROM commandes WHERE client_id = ?", [$id]) as $k) commande_anonymiser((int)$k['id'], $now);
@@ -479,12 +479,16 @@ function commande_paiement(int $id, string $paiement, string $moyen, ?int $acomp
 /* ---------- Rapprochement avec Qonto (audit n° 2, C14, FR-030) ----------
  * « Payé » = constaté par Youngmi (Tap to Pay, virement…) ; « rapproché » = retrouvé dans Qonto, avec la référence de l'opération.
  * Deux états séparés : un versement Qonto ne crée jamais de vente ni de paiement. Qonto reste en lecture seule (R-24). */
-/** Le paiement de cette commande doit-il se retrouver dans Qonto ? Les espèces en sont dispensées. */
+/** Le paiement de cette commande doit-il se retrouver dans Qonto ? Les espèces en sont dispensées (soldée en espèces : seul un acompte
+ *  reçu à part par carte ou virement se cherche, inc/rapprochement.php). */
 function rapprochement_attendu(array $k): bool {
-    return in_array($k['paiement'], ['paye', 'acompte_recu'], true) && $k['moyen'] !== 'especes' && $k['statut'] !== 'annulee' && empty($k['efface_le']);
+    if (!in_array($k['paiement'], ['paye', 'acompte_recu'], true) || $k['statut'] === 'annulee' || !empty($k['efface_le'])) return false;
+    if ($k['moyen'] !== 'especes') return true;
+    return $k['paiement'] === 'paye' && (int)$k['acompte'] > 0 && function_exists(__NAMESPACE__ . '\\rapprochement_pieces_a_chercher') && rapprochement_pieces_a_chercher($k) !== [];
 }
-/** Montant à retrouver dans Qonto : l'acompte reçu, ou le prix de la commande une fois payée. */
+/** Montant à retrouver dans Qonto : l'acompte reçu, ou le prix de la commande une fois payée (sans ce qui a été payé en espèces). */
 function rapprochement_montant(array $k): int {
+    if (function_exists(__NAMESPACE__ . '\\rapprochement_pieces_a_chercher')) return array_sum(array_column(rapprochement_pieces_a_chercher($k), 'montant'));
     return $k['paiement'] === 'acompte_recu' ? (int)$k['acompte'] : montant_commande($k);
 }
 /** Une référence d'opération Qonto, jamais un nom ou un montant seuls ; null si elle convient, sinon le message à afficher. */
@@ -512,7 +516,72 @@ function commande_derapprocher(int $id): void {
     if (!$k || (string)$k['qonto_ref'] === '') return;
     $now = maintenant();
     q("UPDATE commandes SET qonto_ref = '', qonto_le = NULL, qonto_par = '', maj_le = ? WHERE id = ?", [$now, $id]);
+    rapprochement_refuser($id, explode(' + ', (string)$k['qonto_ref']));   // retiré par une personne : la gestion ne le refait jamais toute seule
     evenement('rapprochement', 'Rapprochement Qonto retiré', ['commande' => $id, 'client' => (int)$k['client_id']], (string)$k['qonto_ref'], '');
+}
+
+/* ---------- Rapprochement automatique (demande d'Olivier du 13/11/2026, inc/rapprochement.php) ----------
+ * La gestion note seule « rapproché » quand une seule opération Qonto correspond ; le paiement lui-même ne change jamais. */
+/** Qui note un rapprochement trouvé par la gestion ; et la marque d'un paiement vérifié hors de Qonto (sur un autre compte, par exemple). */
+const RAPPROCHEMENT_PAR = 'Qonto (automatique)';
+const RAPPROCHEMENT_HORS = 'Hors Qonto';
+/** Note le rapprochement trouvé tout seul ($refs : l'opération de chaque montant attendu, l'acompte d'abord) ; jamais par-dessus un
+ *  rapprochement déjà noté. L'historique le dit, sans pastille (auteur « système ») ; la date de modification de la commande ne bouge pas. */
+function commande_rapprocher_auto(int $id, array $refs, string $detail): bool {
+    $ref = implode(' + ', $refs);
+    if ($ref === '') return false;
+    $n = q("UPDATE commandes SET qonto_ref = ?, qonto_le = ?, qonto_par = ? WHERE id = ? AND qonto_ref = '' AND paiement IN ('paye', 'acompte_recu') AND statut <> 'annulee' AND efface_le IS NULL",
+           [$ref, maintenant(), RAPPROCHEMENT_PAR, $id])->rowCount();
+    if ($n) evenement('rapprochement', 'Rapprochée automatiquement avec Qonto : ' . $detail, ['commande' => $id, 'client' => (int)val("SELECT client_id FROM commandes WHERE id = ?", [$id])], '', $ref, 'système');
+    return $n > 0;
+}
+/** Le rapprochement choisi ou confirmé par une personne au Rapprochement ($ref : l'encaissement, ou l'acompte et le solde « a + b »). */
+function commande_rapprocher_choisie(int $id, string $ref, string $detail): string {
+    $k = commande($id);
+    if (!$k || !rapprochement_attendu($k)) return 'Cette commande n\'a pas de paiement à retrouver dans Qonto.';
+    if ((string)$k['qonto_ref'] !== '') return 'Cette commande est déjà rapprochée : rechargez la page.';
+    if (!preg_match('/^[0-9a-f\-]{36}( \+ [0-9a-f\-]{36})*$/', $ref)) return 'Encaissement Qonto introuvable : rechargez la page.';
+    $now = maintenant();
+    q("UPDATE commandes SET qonto_ref = ?, qonto_le = ?, qonto_par = ?, maj_le = ? WHERE id = ?", [$ref, $now, auteur(), $now, $id]);
+    evenement('rapprochement', 'Rapprochée avec Qonto : ' . $detail, ['commande' => $id, 'client' => (int)$k['client_id']], '', $ref);
+    return '';
+}
+/** Le moyen de paiement noté après coup (Rapprochement : « Comment a-t-elle été payée ? », « C'était en espèces ») : le jour et la personne
+ *  qui a constaté le paiement ne changent pas (le jour sert à retrouver le versement Tap to Pay). Renvoie '' si c'est noté. */
+function commande_moyen_noter(int $id, string $moyen): string {
+    $k = commande($id);
+    if (!$k || !in_array($k['paiement'], ['paye', 'acompte_recu'], true) || $moyen === '' || !isset(MOYENS[$moyen])) return 'Ce paiement a changé entre-temps : rechargez la page.';
+    if ($k['moyen'] === $moyen) return '';
+    $now = maintenant();
+    q("UPDATE commandes SET moyen = ?, maj_le = ? WHERE id = ?", [$moyen, $now, $id]);
+    evenement('paiement', ($k['moyen'] === '' ? 'Moyen de paiement noté : ' : 'Moyen de paiement corrigé : ' . MOYENS[$k['moyen']] . ' → ') . MOYENS[$moyen],
+              ['commande' => $id, 'client' => (int)$k['client_id']], (string)$k['moyen'], $moyen);
+    if ((string)$k['qonto_ref'] !== '') {
+        q("UPDATE commandes SET qonto_ref = '', qonto_le = NULL, qonto_par = '' WHERE id = ?", [$id]);
+        evenement('rapprochement', 'Rapprochement Qonto à refaire : le paiement a changé', ['commande' => $id, 'client' => (int)$k['client_id']], (string)$k['qonto_ref'], '');
+    }
+    return '';
+}
+/** Un paiement vérifié autrement que dans Qonto : il n'y est plus cherché. Renvoie '' si c'est noté, sinon le message d'erreur. */
+function commande_hors_qonto(int $id, string $motif): string {
+    $k = commande($id);
+    if (!$k || !rapprochement_attendu($k) || (string)$k['qonto_ref'] !== '') return 'Cette commande n\'a plus de paiement à retrouver dans Qonto.';
+    $motif = une_ligne(mb_substr($motif, 0, 200));
+    if (mb_strlen($motif) < 3) return 'Dites en quelques mots comment le paiement a été vérifié.';
+    $now = maintenant();
+    q("UPDATE commandes SET qonto_ref = ?, qonto_le = ?, qonto_par = ?, maj_le = ? WHERE id = ?", [RAPPROCHEMENT_HORS, $now, auteur(), $now, $id]);
+    evenement('rapprochement', 'Vérifiée hors Qonto : ' . $motif, ['commande' => $id, 'client' => (int)$k['client_id']], '', RAPPROCHEMENT_HORS);
+    return '';
+}
+/** Les paires « commande|opération » qu'une personne a retirées ou refusées : la gestion ne les propose ni ne les note plus jamais seule. */
+function rapprochement_refus(): array {
+    $l = json_decode((string)parametre('qonto_refus', ''), true);
+    return is_array($l) ? array_flip(array_map('strval', $l)) : [];
+}
+function rapprochement_refuser(int $commande, array $ops): void {
+    $l = array_keys(rapprochement_refus());
+    foreach ($ops as $o) if (is_string($o) && preg_match('/^[0-9a-f\-]{36}$/i', trim($o))) $l[] = $commande . '|' . strtolower(trim($o));
+    parametre_ecrire('qonto_refus', json_encode(array_slice(array_values(array_unique(array_map('strval', $l))), -2000)));
 }
 /** Les paiements par carte, virement ou autre (ou moyen non noté) pas encore retrouvés dans Qonto, les plus anciens d'abord. */
 function a_rapprocher(): array {

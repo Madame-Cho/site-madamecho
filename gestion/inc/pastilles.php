@@ -27,6 +27,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-rapprochement-auto', 'le' => '2026-11-13', 'titre' => 'Les paiements retrouvés tout seuls dans Qonto',
+     'texte' => 'La gestion retrouve maintenant toute seule les paiements dans Qonto : versements Tap to Pay, virements avec le numéro de la facture ou le nom du client, sur le compte Qonto et sur celui du Crédit Mutuel. Plus rien à cocher. Seuls les cas à vérifier apparaissent, dans Aujourd\'hui et au Rapprochement, avec un bouton pour chacun.',
+     'lien' => ['rapprochement', 'a-verifier']],
     ['id' => '2026-11-son', 'le' => '2026-11-12', 'titre' => 'Un son pour chaque nouvelle commande',
      'texte' => 'Quand une commande arrive par le site pendant que la gestion est ouverte, un petit carillon joyeux sonne et un bandeau l\'annonce en bas de l\'écran ; « Voir » ouvre la commande. Sur le téléphone, touchez une fois la page pour que le son soit permis. Pour le couper sur un appareil : Paramètres › Son des nouvelles commandes.',
      'lien' => ['reglages', 'son']],

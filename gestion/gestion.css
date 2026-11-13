@@ -942,3 +942,24 @@ html:lang(ko) .par::after{content:" 님"}
  .son-bandeau.son-entree .son-fete{animation:son-fete .9s ease 1}
 }
 @keyframes son-fete{0%{transform:scale(.6) rotate(-12deg)}45%{transform:scale(1.25) rotate(8deg)}100%{transform:none}}
+/* Rapprochement automatique avec Qonto (13/11/2026) : seulement ce qui est à vérifier, un toucher par cas */
+.rappro-etat{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;margin-bottom:14px}
+.rappro-etat .aide,.rappro-etat form{margin:0}
+.liste-rappro{display:grid;gap:10px}
+.rappro-pb{display:grid;gap:6px;padding:12px 14px;background:var(--fond);border:1px solid var(--ligne);border-left:4px solid var(--ambre);border-radius:var(--r);scroll-margin-top:72px;min-width:0}
+.rappro-pb:target{box-shadow:0 0 0 3px var(--ambre-f)}
+.rappro-pb p{margin:0}
+.rappro-pb .l1 b{font-weight:500;font-size:16px}
+.rappro-pb .l2{font-size:15px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-variant-numeric:tabular-nums}
+.rappro-actions{display:grid;gap:8px;margin-top:4px}
+.rappro-actions form{margin:0}
+.rappro-actions details.replie>form{margin-bottom:6px}
+.rappro-choix{display:grid;gap:8px;padding:10px 12px;background:var(--carte);border:1px solid var(--ligne);border-radius:10px}
+.rappro-choix>span{display:block;font-size:15px}
+.rappro-choix .btn{justify-self:start}
+.boutons-moyen{display:flex;flex-wrap:wrap;gap:8px}
+.l-cmd,.l-op{display:inline;font-variant-numeric:tabular-nums}
+.liste-rappro-faits{list-style:none;margin:8px 0;padding:0}
+.rappro-fait{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--ligne);font-size:15px}
+.rappro-fait:last-child{border-bottom:0}
+.rappro-fait form{margin:0}

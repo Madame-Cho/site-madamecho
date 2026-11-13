@@ -112,6 +112,14 @@
 - [X] T068 `nom_majuscules()` (gestion) et `nomMajuscules()` (formulaire du site), même règle ; `client_creer`, `client_modifier` ; reprise unique des fiches par la tâche de nuit (`noms_majuscules_reprise`, paramètre `noms_majuscules`) ; `autocapitalize="words"` ; « Corriger le nom ou les coordonnées » sur la fiche et la commande (le rappel avant d'émettre une facture vient avec la spécification 003) ; coréen, manuel et nouveauté « Les majuscules des noms » (pastille). Essais 45/45 et parcours 10/10 (hors dépôt, tests-gestion/noms)
 - [ ] T069 Feu vert d'Olivier sur la version exacte, publication (seule ou avec les factures, spécification 003), Journal des publications, Registre
 
+## Phase 12 : Rapprochement automatique avec Qonto (2026-11-13, demande d'Olivier, FR-030)
+
+- [X] T070 Lecture des encaissements des comptes Qonto et du compte du Crédit Mutuel relié (400 jours, gardés 10 minutes, lecture fraîche chaque nuit) ; frais, virements entre les comptes de Madame Cho, apports, dépôts d'espèces et administrations écartés
+- [X] T071 Moteur `inc/rapprochement.php` : versements Tap to Pay (jours ouvrés des banques), numéros de facture, noms des clients (homonymes exclus), combinaison unique ; note « rapproché » tout seul (auteur « système », sans pastille), jamais le paiement
+- [X] T072 Écran « À vérifier » (Plus › Rapprochement Qonto) et bloc « Paiements à vérifier » d'Aujourd'hui, un bouton par cas ; retrouvés tout seuls (annulables), payés avant le suivi, mis de côté, à la main ; fiche de la commande et assistant
+- [X] T073 Coréen, manuel, Quoi de neuf, Confidentialité ; essai hors ligne du moteur et essai local FR/KO sur téléphone et ordinateur
+- [ ] T074 Feu vert d'Olivier sur la version exacte (avec 273833d et 2a72abf), publication, Journal des publications, Registre, registre des traitements (lecture des opérations Qonto et du Crédit Mutuel)
+
 ## Dependencies & Execution Order
 
 - Phase 2 dépend de la phase 1 ; T011 clôt le lot.
