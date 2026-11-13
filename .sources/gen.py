@@ -235,8 +235,8 @@ def accueil(prof=0):
   <p>Le Saint-Honoré revisité en gâteau chiffre pour les anniversaires !</p>
   <p>Une pâte feuilletée croustillante, une crème à la vanille, du caramel, une chantilly à la vanille et de petits choux caramélisés.</p>
   <div class="number-tarifs">
-   <div><span>1 chiffre · à partir de 4 personnes</span><strong>38 € <small>(pour 4 personnes)</small></strong></div>
-   <div><span>2 chiffres · à partir de 8 personnes</span><strong>68 € <small>(pour 8 personnes)</small></strong></div>
+   <div><span>1 chiffre · à partir de 4 personnes</span><strong>40 € <small>(pour 4 personnes)</small></strong></div>
+   <div><span>2 chiffres · à partir de 8 personnes</span><strong>70 € <small>(pour 8 personnes)</small></strong></div>
   </div>
   <p class="petit">Pour plus de parts, contactez-nous pour un devis.<br>Prix TTC · Création sur commande.</p>
   <a class="bouton" href="{a}#perso">Faire ma demande</a>
