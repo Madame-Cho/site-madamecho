@@ -118,7 +118,7 @@
 - [X] T071 Moteur `inc/rapprochement.php` : versements Tap to Pay (jours ouvrés des banques), numéros de facture, noms des clients (homonymes exclus), combinaison unique ; note « rapproché » tout seul (auteur « système », sans pastille), jamais le paiement
 - [X] T072 Écran « À vérifier » (Plus › Rapprochement Qonto) et bloc « Paiements à vérifier » d'Aujourd'hui, un bouton par cas ; retrouvés tout seuls (annulables), payés avant le suivi, mis de côté, à la main ; fiche de la commande et assistant
 - [X] T073 Coréen, manuel, Quoi de neuf, Confidentialité ; essai hors ligne du moteur et essai local FR/KO sur téléphone et ordinateur
-- [ ] T074 Feu vert d'Olivier sur la version exacte (avec 273833d et 2a72abf), publication, Journal des publications, Registre, registre des traitements (lecture des opérations Qonto et du Crédit Mutuel)
+- [X] T074 Feu vert d'Olivier sur la version exacte (avec 273833d et 2a72abf), publication (797e758, 13/11/2026 22:08, main = production), Journal des publications, Registre, registre des traitements (lecture des opérations Qonto et du Crédit Mutuel) : faits (Journal l. 75, Registre l. 807-808, traitement T11)
 
 ## Dependencies & Execution Order
 
