@@ -250,10 +250,10 @@ function bloc_reglages_qonto(): string {
         foreach ($espaces as $org => $e) {
             $comptes = implode(', ', array_map(fn($c) => $c['nom'] . ($c['iban_fin'] !== '' ? ' (…' . $c['iban_fin'] . ')' : '') . (!empty($c['externe']) ? ' · externe' : ''), $e['comptes'] ?? []));
             $vieux = jours_depuis((string)($e['relie_le'] ?? '')) >= GESTION_QONTO_RENOUVELER;
-            $rows .= '<li><b translate="no">' . h($e['nom']) . '</b><span class="petit">' . h($comptes !== '' ? $comptes : 'Aucun compte bancaire (facturation seulement)') . '</span>'
-                   . '<span class="petit">' . h('Relié le ' . date_fr((string)$e['relie_le'], 'heure') . ' par ' . $e['relie_par'] . (($e['lu_le'] ?? '') !== '' ? ' · dernière lecture ' . date_fr((string)$e['lu_le'], 'heure') : '')) . '</span>'
-                   . (($e['erreur'] ?? '') !== '' ? '<span class="erreur">' . h('Dernière erreur : ' . $e['erreur']) . '</span>' : '')
-                   . ($vieux ? '<span class="aide">' . h('Reliez cet espace à nouveau bientôt : Qonto demande de redonner l\'accord tous les 90 jours.') . '</span>' : '')
+            $rows .= '<li><p><b translate="no">' . h($e['nom']) . '</b></p><p class="petit">' . h($comptes !== '' ? $comptes : 'Aucun compte bancaire (facturation seulement)') . '</p>'
+                   . '<p class="petit">' . h('Relié le ' . date_fr((string)$e['relie_le'], 'heure') . ' par ' . $e['relie_par'] . (($e['lu_le'] ?? '') !== '' ? ' · dernière lecture ' . date_fr((string)$e['lu_le'], 'heure') : '')) . '</p>'
+                   . (($e['erreur'] ?? '') !== '' ? '<p class="erreur">' . h('Dernière erreur : ' . $e['erreur']) . '</p>' : '')
+                   . ($vieux ? '<p class="aide">' . h('Reliez cet espace à nouveau bientôt : Qonto demande de redonner l\'accord tous les 90 jours.') . '</p>' : '')
                    . formulaire('qonto_retirer', '<input type="hidden" name="org" value="' . h((string)$org) . '">' . bouton('Retirer', 'discret'),
                                 ['data-confirmer' => 'Retirer l\'espace Qonto « ' . $e['nom'] . ' » ? La gestion ne le lira plus.']) . '</li>';
         }
@@ -263,8 +263,8 @@ function bloc_reglages_qonto(): string {
     if ($prete) {
         // Un lien et pas un formulaire : la règle form-action 'self' du site bloquerait la redirection d'un formulaire vers Qonto
         $t .= '<p>' . lien_bouton(u('qonto-relier', ['j' => csrf()]), $espaces ? 'Relier un autre espace Qonto' : 'Relier un espace Qonto', $espaces ? 'secondaire' : 'principal') . '</p>'
-            . '<p class="aide">' . fr_ko('Faites-le une fois pour chaque espace : « MADAME CHO » (factures) et « Madame CHO » (compte pro et Tap to Pay). Qonto demande de choisir l\'espace, puis la validation sur le téléphone de Youngmi.',
-                                         '공간마다 한 번씩 하세요: « MADAME CHO » (청구서), « Madame CHO » (사업자 계좌와 Tap to Pay). Qonto가 공간을 고르게 한 뒤 Youngmi 휴대폰으로 확인을 요청해요.') . '</p>';
+            . '<p class="aide">' . fr_ko('Une fois par espace Qonto : « Madame CHO » (compte pro et Tap to Pay) d\'abord ; « MADAME CHO » (factures) quand Qonto aura fini de le vérifier. Qonto demande de choisir l\'espace, puis la validation sur le téléphone de Youngmi.',
+                                         'Qonto 공간마다 한 번씩: 먼저 « Madame CHO » (사업자 계좌와 Tap to Pay), « MADAME CHO » (청구서)는 Qonto 확인이 끝나면 연결해요. Qonto가 공간을 고르게 한 뒤 Youngmi 휴대폰으로 확인을 요청해요.') . '</p>';
     }
     $t .= '<details class="replie"' . ($prete ? '' : ' open') . '><summary>' . ($prete ? 'Remplacer l\'application Qonto' : 'Enregistrer l\'application Qonto') . '</summary>'
         . '<ol class="aide marche">'
