@@ -258,7 +258,8 @@ function bloc_reglages_qonto(): string {
                                 ['data-confirmer' => 'Retirer l\'espace Qonto « ' . $e['nom'] . ' » ? La gestion ne le lira plus.']) . '</li>';
         }
         $t .= '<ul class="liste-simple">' . $rows . '</ul>';
-        $t .= formulaire('qonto_essai', bouton('Essayer la lecture', 'secondaire'));
+        $t .= formulaire('qonto_essai', bouton('Essayer la lecture', 'secondaire'))
+            . '<p>' . lien_bouton(u('rapprochement'), 'Ouvrir le Rapprochement Qonto', 'discret') . '</p>';   // sur ordinateur, le menu du haut n'a pas « Plus »
     }
     if ($prete) {
         // Un lien et pas un formulaire : la règle form-action 'self' du site bloquerait la redirection d'un formulaire vers Qonto
