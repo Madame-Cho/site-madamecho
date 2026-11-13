@@ -301,11 +301,42 @@ function hygiene_photo_garder(?array $f): array {
     $info = @getimagesize((string)$f['tmp_name']);
     $ext = $info ? (HYGIENE_PHOTO_TYPES[$info['mime']] ?? null) : null;
     if (!$ext) return ['', 'Ce fichier n\'est pas une photo (JPEG, PNG ou WebP).'];
+    // Audit global du 13/11/2026, A-04 : la photo est refaite en JPEG, sans ses métadonnées (lieu, appareil, date), redressée et réduite ;
+    // si le serveur ne sait pas la refaire, l'original est gardé tel quel, comme avant
+    $refaite = hygiene_photo_refaire((string)$f['tmp_name'], (string)$info['mime']);
+    if ($refaite !== null) $ext = 'jpg';
     $nom = bin2hex(random_bytes(12)) . '.' . $ext;
     $cible = hygiene_dossier_photos() . '/' . $nom;
-    if (!(is_uploaded_file((string)$f['tmp_name']) ? move_uploaded_file((string)$f['tmp_name'], $cible) : @rename((string)$f['tmp_name'], $cible))) return ['', 'La photo n\'a pas pu être gardée : réessayez.'];
+    if ($refaite !== null) {
+        if (@file_put_contents($cible, $refaite) === false) return ['', 'La photo n\'a pas pu être gardée : réessayez.'];
+        if (is_uploaded_file((string)$f['tmp_name'])) @unlink((string)$f['tmp_name']);
+    } elseif (!(is_uploaded_file((string)$f['tmp_name']) ? move_uploaded_file((string)$f['tmp_name'], $cible) : @rename((string)$f['tmp_name'], $cible))) return ['', 'La photo n\'a pas pu être gardée : réessayez.'];
     @chmod($cible, 0600);
     return [$nom, null];
+}
+/** Refait une photo en JPEG sans métadonnées, redressée d'après l'EXIF et réduite à HYGIENE_PHOTO_COTE px au plus ; null si GD ne sait pas. */
+const HYGIENE_PHOTO_COTE = 2000;
+function hygiene_photo_refaire(string $chemin, string $mime): ?string {
+    if (!function_exists('imagecreatefromstring') || !is_file($chemin)) return null;
+    $info = @getimagesize($chemin);
+    if (!$info || (int)$info[0] * (int)$info[1] > 40_000_000) return null;   // plus de 40 millions de pixels : trop lourd à refaire, gardée telle quelle
+    $src = @imagecreatefromstring((string)file_get_contents($chemin));
+    if (!$src) return null;
+    if ($mime === 'image/jpeg' && function_exists('exif_read_data')) {
+        $o = (int)(@exif_read_data($chemin)['Orientation'] ?? 1);
+        $angle = [3 => 180, 6 => -90, 8 => 90][$o] ?? 0;
+        if ($angle && ($r = imagerotate($src, $angle, 0))) $src = $r;
+    }
+    [$l, $h] = [imagesx($src), imagesy($src)];
+    $k = min(1, HYGIENE_PHOTO_COTE / max($l, $h));
+    $L = max(1, (int)round($l * $k)); $H = max(1, (int)round($h * $k));
+    $dst = imagecreatetruecolor($L, $H);
+    imagefill($dst, 0, 0, imagecolorallocate($dst, 255, 255, 255));   // une image transparente sur fond blanc
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $L, $H, $l, $h);
+    ob_start();
+    imagejpeg($dst, null, 85);
+    $jpeg = (string)ob_get_clean();
+    return $jpeg !== '' ? $jpeg : null;
 }
 function hygiene_photo_chemin(string $nom): ?string {
     if (!preg_match('/^[a-f0-9]{24}\.(jpg|png|webp)$/', $nom)) return null;

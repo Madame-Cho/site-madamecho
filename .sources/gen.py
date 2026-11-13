@@ -620,6 +620,8 @@ def htaccess():
           '  Header always set X-Content-Type-Options "nosniff"',
           '  Header always set Referrer-Policy "strict-origin-when-cross-origin"',
           '  Header always set X-Frame-Options "SAMEORIGIN"',
+          '  # HTTPS imposé aux navigateurs pendant 30 jours, sans les sous-domaines (audit global du 13/11/2026, E-02 ; à allonger après un mois sans souci)',
+          '  Header always set Strict-Transport-Security "max-age=2592000"',
           '  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"',
           f'  Header always set Content-Security-Policy "{CSP}"',
           "</IfModule>", ""]

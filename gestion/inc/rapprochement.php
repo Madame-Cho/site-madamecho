@@ -301,7 +301,8 @@ function rapprochement_calculer(array $ops, array $recent): array {
         $forts = array_keys(array_filter($noms, fn($l) => rapprochement_nomme($texte, $l[0])));
         $faibles = $forts ? [] : array_keys(array_filter($noms, fn($l) => rapprochement_nomme($texte, $l[1])));
         $nommes[$op] = $forts ?: $faibles;
-        $ambigu[$op] = !$forts && count($faibles) > 1;   // le même nom de famille pour plusieurs clients : jamais noté tout seul
+        // Plusieurs clients nommés (le même nom de famille, ou deux clients au même prénom et nom) : jamais noté tout seul (audit global du 13/11/2026, B-01)
+        $ambigu[$op] = count($nommes[$op]) > 1;
     }
     $cand = fn(string $op): array => array_filter($libres, fn($p) => $p['moyen'] !== 'carte' && $libre($p, $op)
         && $p['jour'] >= date_decalee((string)$O[$op]['jour'], -180) && $p['jour'] <= date_decalee((string)$O[$op]['jour'], 45));
@@ -320,7 +321,8 @@ function rapprochement_calculer(array $ops, array $recent): array {
         $une = array_filter($fact, fn($g) => abs($somme($g) - $c) <= $tol($g));
         if (count($une) === 1) $lier(array_keys(reset($une)), $op);
     }
-    // b) Le nom du client, la plus ancienne commande d'abord
+    // b) Le nom du client, seulement quand une seule explication tient : une seule commande entière du montant, sinon un seul acompte ou
+    //    solde du montant, sinon la seule combinaison de montants ; deux commandes du même montant restent à vérifier (audit global du 13/11/2026, B-01)
     foreach ($virs as $op => $o) {
         if (!$nommes[$op] || $ambigu[$op] || ($c = $O[$op]['reste']) <= 0) continue;
         $pc = array_filter($cand($op), fn($p) => in_array($p['client'], $nommes[$op], true));
@@ -328,18 +330,11 @@ function rapprochement_calculer(array $ops, array $recent): array {
         uasort($pc, fn($a, $b) => strcmp($a['jour'], $b['jour']) ?: $a['commande'] <=> $b['commande'] ?: $a['n'] <=> $b['n']);
         $parK = [];
         foreach ($pc as $cle => $p) $parK[$p['commande']][$cle] = $p;
-        $fait = false;
-        foreach ($parK as $l) if (abs($somme($l) - $c) <= $tol($l)) { $lier(array_keys($l), $op); $fait = true; break; }                     // une commande entière
-        if (!$fait) foreach ($pc as $cle => $p) if (abs($p['montant'] - $c) <= $tol([$p])) { $lier([$cle], $op); $fait = true; break; }   // l'acompte, ou le solde
-        if (!$fait) {   // plusieurs commandes réglées d'un coup, les plus anciennes d'abord
-            $s = 0; $l = [];
-            foreach ($pc as $cle => $p) {
-                $s += $p['montant']; $l[$cle] = $p;
-                if (count($l) > 1 && abs($s - $c) <= $tol($l)) { $lier(array_keys($l), $op); $fait = true; break; }
-                if ($s > $c + 20) break;
-            }
-        }
-        if (!$fait && ($sub = sous_ensemble_unique($montants($pc), $c, $tol($pc) ? 2 : 0)) !== null) $lier($sub, $op);
+        $entieres = array_values(array_filter($parK, fn($l) => abs($somme($l) - $c) <= $tol($l)));                 // une commande entière
+        if ($entieres) { if (count($entieres) === 1) $lier(array_keys($entieres[0]), $op); continue; }
+        $parts = array_filter($pc, fn($p) => abs($p['montant'] - $c) <= $tol([$p]));                                // l'acompte, ou le solde
+        if ($parts) { if (count($parts) === 1) $lier(array_keys($parts), $op); continue; }
+        if (($sub = sous_ensemble_unique($montants($pc), $c, $tol($pc) ? 2 : 0)) !== null) $lier($sub, $op);      // plusieurs commandes réglées d'un coup
     }
     // Ce qui reste à expliquer de chaque encaissement, une fois déduit ce qui a été mis de côté
     foreach ($O as $op => $o) $O[$op]['net'] = max(0, $o['reste'] - ($o['genre'] === 'tap' ? $o['ecarte'] : 0));
