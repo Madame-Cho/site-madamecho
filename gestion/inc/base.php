@@ -53,6 +53,10 @@ const PAIEMENTS = ['aucun' => 'Pas encore payé', 'acompte_demande' => 'Acompte 
 const MOYENS = ['' => 'Moyen non noté', 'carte' => 'Carte (Tap to Pay)', 'virement' => 'Virement', 'especes' => 'Espèces', 'autre' => 'Autre'];
 const CANAUX = ['site' => 'Site', 'qr' => 'QR code', 'email' => 'Email', 'instagram' => 'Instagram', 'telephone' => 'Téléphone',
                 'marche' => 'Marché', 'sur_place' => 'Sur place', 'restaurant' => 'Restaurant', 'autre' => 'Autre'];
+// Comment le client a connu Madame Cho (14/11/2026) : sa réponse à la question facultative du formulaire du site (mêmes codes que CONNU
+// dans .sources/donnees.py), ou ce que Youngmi note dans la commande ; le QR code et le lien d'Instagram se savent sans rien demander
+const CONNU_PAR = ['proche' => 'Bouche-à-oreille', 'google' => 'Google', 'instagram' => 'Instagram', 'restaurant' => 'Restaurant ou café',
+                   'qr' => 'QR code', 'client' => 'Déjà client', 'autre' => 'Autre'];
 // Comment un échange noté à la main a eu lieu (demande d'Olivier du 07/11/2026 : ce qui ne passe pas par les mails)
 const CANAUX_ECHANGE = ['telephone' => 'Téléphone', 'sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'oral' => 'De vive voix', 'instagram' => 'Instagram', 'autre' => 'Autre'];
 const TYPES_COMMANDE = ['carte' => 'Carte', 'perso' => 'Personnalisée', 'pro' => 'Professionnel'];
@@ -125,6 +129,8 @@ function date_relative(int $t): string {
 }
 function jours_depuis(?string $d): int { return $d ? intdiv(time() - (strtotime($d) ?: time()), 86400) : 0; }
 function heures_depuis(?string $d): int { return $d ? intdiv(time() - (strtotime($d) ?: time()), 3600) : 0; }
+/** Depuis combien de temps, pour une alerte : « 26 h » jusqu'à deux jours, puis « 7 jours » (14/11/2026 : « depuis 182 h » ne se lisait pas). */
+function attente_lisible(?string $d): string { $h = heures_depuis($d); return $h < 48 ? $h . ' h' : intdiv($h, 24) . ' jours'; }
 function texte(string $nom, int $max, ?array $src = null): string {
     $src ??= $_POST;
     $v = isset($src[$nom]) && is_string($src[$nom]) ? $src[$nom] : '';
@@ -181,6 +187,7 @@ function db(): PDO {
     $pdo->exec('PRAGMA foreign_keys=ON');
     $pdo->exec('PRAGMA busy_timeout=5000');
     gestion_schema($pdo);
+    connu_schema($pdo);   // après les tables principales : la colonne s'ajoute à « commandes »
     return $pdo;
 }
 function gestion_schema(PDO $pdo): void {
@@ -357,6 +364,17 @@ CREATE TABLE IF NOT EXISTS demarches_historique (id INTEGER PRIMARY KEY, le TEXT
 CREATE INDEX IF NOT EXISTS demarches_historique_d ON demarches_historique(demarche_id);
 ");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_obligations', '2')");
+}
+/** « Comment le client a connu Madame Cho » (14/11/2026) : une colonne de plus sur les commandes (code de CONNU_PAR, vide = non précisé).
+ *  Marqueur à part (schema_connu), comme les Obligations, pour ne pas gêner le numéro 11 de la branche des factures. */
+function connu_schema(PDO $pdo): void {
+    if ($pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_connu'")->fetchColumn() === '1') return;
+    $cols = array_column($pdo->query("PRAGMA table_info(commandes)")->fetchAll(PDO::FETCH_ASSOC), 'name');
+    if (!in_array('connu', $cols, true)) {
+        try { $pdo->exec("ALTER TABLE commandes ADD COLUMN connu TEXT NOT NULL DEFAULT ''"); }
+        catch (\PDOException $e) { if (stripos($e->getMessage(), 'duplicate column') === false) throw $e; }   // deux pages ouvertes en même temps
+    }
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_connu', '1')");
 }
 /** Les photos des clients (demande d'Olivier du 10/11/2026, inc/photos.php) : une table à part, marqueur schema_photos. */
 function photos_schema(PDO $pdo): void {

@@ -20,7 +20,15 @@ const KO_CHAMPS = ['type' => '종류', 'prenom' => '이름', 'nom' => '성', 'so
                    'ville' => '도시', 'canal' => '경로', 'qonto' => 'Qonto', 'lettre_info' => '뉴스레터', 'retrait_date' => '픽업 날짜', 'retrait_moment' => '시간대',
                    'retrait_heure' => '시간', 'mode' => '방식', 'perso' => '맞춤 내용', 'besoin' => '업체 요청', 'lignes' => '케이크', 'prix_final' => '최종 가격',
                    'acompte' => '선금', 'facture' => '청구서', 'moyen' => '결제 수단', 'statut' => '상태', 'fiche_lien' => '시트 링크', 'valide_le' => '확인 날짜',
-                   'valide_par' => '확인한 사람', 'emballage' => '포장비', 'tva' => '부가세', 'notes' => '메모', 'recette' => '만드는 법'];
+                   'valide_par' => '확인한 사람', 'emballage' => '포장비', 'tva' => '부가세', 'notes' => '메모', 'recette' => '만드는 법', 'connu' => '알게 된 경로'];
+/** Comment le client a connu Madame Cho (CONNU_PAR), dans le bandeau « Changé : … » et la pastille du filtre. */
+const KO_CONNU = ['Bouche-à-oreille' => '입소문', 'Google' => '구글', 'Instagram' => '인스타그램', 'Restaurant ou café' => '레스토랑·카페',
+                  'QR code' => 'QR 코드', 'Déjà client' => '기존 고객', 'Autre' => '기타', 'non précisé' => '미입력'];
+/** Le bouton de l'accueil par lequel une demande du site a commencé (ENVIES de .sources/donnees.py, « origine »). */
+const KO_BOUTONS_SITE = ['le bouton « Faire ma demande » des Anniversaires' => '생일 케이크의 « Faire ma demande » 버튼',
+                         'le bouton « Faire ma demande » du Number cake' => '넘버 케이크의 « Faire ma demande » 버튼',
+                         'le bouton « Parlons de votre événement »' => '이벤트의 « Parlons de votre événement » 버튼',
+                         'le bouton « Demander ma bûche » des Bûches de Noël' => '크리스마스 뷔슈의 « Demander ma bûche » 버튼'];
 
 /* ---------- Dictionnaire : un texte français exact | sa traduction ---------- */
 function coreen_dico(): array {
@@ -244,6 +252,11 @@ Confirmation envoyée au client | 고객에게 확정 이메일 보냄
 Remise au client | 고객에게 전달
 Avis demandé | 리뷰 부탁함
 À faire maintenant | 지금 할 일
+envoyer la proposition | 견적 보내기
+confirmer la commande | 주문 확정하기
+envoyer la confirmation au client | 고객에게 확정 이메일 보내기
+remettre la commande au client | 고객에게 전달하기
+demander un avis | 리뷰 부탁하기
 Étapes de la commande | 주문 단계
 Confirmation envoyée. Prochaine étape, le jour du retrait : touchez « Commande remise au client » en bas de ce cadre. | 확정 이메일을 보냈어요. 다음 단계: 픽업 날, 이 칸 아래의 ‘고객에게 전달 완료’를 누르세요.
 À faire maintenant : envoyer la confirmation au client (ci-dessous). | 지금 할 일: 아래에서 고객에게 확정 이메일 보내기.
@@ -705,6 +718,16 @@ Mois | 월
 Panier | 평균 금액
 Pas encore de commande remise. | 아직 전달한 주문이 없어요.
 D'où viennent les commandes | 주문이 들어온 경로
+Comment les clients ont connu Madame Cho | 고객이 Madame Cho를 알게 된 경로
+Réponse | 답변
+Seulement les commandes où c'est précisé : la réponse du client sur le site, ou ce que vous notez dans « Modifier la commande ». | 경로가 적힌 주문만 세요: 고객이 사이트에서 고른 답변, 또는 « 주문 수정 »에서 직접 적은 내용이에요.
+Pas encore de réponse. Le formulaire du site pose la question, et vous pouvez la noter dans « Modifier la commande ». | 아직 답변이 없어요. 사이트 문의 양식에서 물어보고, « 주문 수정 »에서 직접 적을 수도 있어요.
+Vous a connue par | 알게 된 경로
+Non précisé | 미입력
+Bouche-à-oreille | 입소문
+Google | 구글
+Restaurant ou café | 레스토랑·카페
+Déjà client | 기존 고객
 Canal | 경로
 Demandes | 문의
 Remises | 전달
@@ -1926,6 +1949,10 @@ Photos masquées | 숨긴 사진
 Dernier passage | 마지막 실행
 Photo du client masquée (elle ne sera plus cherchée) | 고객 사진 숨김 (더 이상 찾지 않음)
 Photo du client : de nouveau autorisée (cherchée au prochain passage du script) | 고객 사진: 다시 허용함 (다음 스크립트 실행 때 찾음)
+Plus lisible sur le téléphone | 휴대폰에서 더 보기 편하게
+Comment vos clients vous ont connue | 고객이 Madame Cho를 알게 된 경로
+Le formulaire du site demande maintenant au client, s'il veut bien répondre, comment il a connu Madame Cho : bouche-à-oreille, Google, Instagram, un restaurant… Sa réponse est sur la fiche de la commande ; pour une commande reçue autrement, notez-la dans « Modifier la commande ». Les Statistiques comptent ces réponses. Une demande dit aussi par quel bouton du site elle a commencé (anniversaire, Number cake, événement). | 이제 사이트 문의 양식에서 고객에게 Madame Cho를 어떻게 알게 됐는지 물어봐요(답은 선택이에요): 입소문, 구글, 인스타그램, 레스토랑… 답변은 주문 화면에 나와요. 다른 경로로 받은 주문은 « 주문 수정 »에서 적어 주세요. 통계에서 이 답변을 세요. 문의가 사이트의 어느 버튼에서 시작됐는지도 알려 줘요(생일, 넘버 케이크, 이벤트).
+Aujourd'hui montre d'abord ce qu'il y a à faire ; « Les 7 derniers jours » est en bas. Dans une commande, la ligne sous les ronds dit le geste à faire, un seul mail est ouvert à la fois, et les trois aides pour écrire (dicter en français, parler en coréen, corriger) tiennent sur une ligne. Dans les Statistiques, les tableaux ne coupent plus les mots : ils se font glisser du doigt. | 오늘 화면은 할 일을 먼저 보여 주고, ‘최근 7일’은 맨 아래에 있어요. 주문 화면에서는 동그라미 아래 한 줄이 지금 할 일을 알려 주고, 이메일은 한 번에 하나만 열리며, 글쓰기 도움 버튼 세 개(프랑스어로 말하기, 한국어로 말하기, 고치기)가 한 줄에 들어가요. 통계의 표는 더 이상 단어를 자르지 않아요: 손가락으로 밀어서 봐요.
 Les paiements retrouvés tout seuls dans Qonto | Qonto에서 알아서 찾는 결제
 La gestion retrouve maintenant toute seule les paiements dans Qonto : versements Tap to Pay, virements avec le numéro de la facture ou le nom du client, sur le compte Qonto et sur celui du Crédit Mutuel. Plus rien à cocher. Seuls les cas à vérifier apparaissent, dans Aujourd'hui et au Rapprochement, avec un bouton pour chacun. | 이제 관리 화면이 Qonto에서 결제를 알아서 찾아요. Tap to Pay 입금, 청구서 번호나 고객 이름이 적힌 이체를 Qonto 계좌와 Crédit Mutuel 계좌에서 찾아요. 더 이상 체크할 것이 없어요. 확인할 경우만 오늘 화면과 대조 화면에 버튼과 함께 나와요.
 Un son pour chaque nouvelle commande | 새 주문마다 알림음
@@ -1989,9 +2016,11 @@ function coreen_relatif(string $s): ?string {
 /** « heure du retrait : 09 h 00 → 10 h 00 ; gâteaux » (bandeau après « Modifier la commande ») → coréen ; null si un morceau est inconnu. */
 function coreen_modifs(string $s): ?string {
     $noms = ['jour du retrait' => '픽업 날짜', 'heure du retrait' => '픽업 시간', 'moment' => '시간대', 'mode' => '방식', 'prix final' => '최종 가격', 'acompte' => '선금',
-             'gâteaux' => '케이크', 'gâteau personnalisé' => '맞춤 케이크', 'demande du professionnel' => '업체 요청', 'canal' => '경로', 'type' => '종류', 'facture' => '청구서', 'moyen de paiement' => '결제 수단'];
+             'gâteaux' => '케이크', 'gâteau personnalisé' => '맞춤 케이크', 'demande du professionnel' => '업체 요청', 'canal' => '경로', 'type' => '종류', 'facture' => '청구서', 'moyen de paiement' => '결제 수단',
+             'vous a connue par' => '알게 된 경로'];
     $val = function (string $v): ?string {
         if ($v === 'aucun' || $v === 'aucune') return '없음';
+        if (isset(KO_CONNU[$v])) return KO_CONNU[$v];
         if (preg_match('/^(\d{1,2}) h (\d{2})$/', $v, $m)) return $m[1] . ':' . $m[2];
         if (preg_match('/^[\d  .,]+ €$/u', $v)) return $v;
         if (isset(KO_MOMENTS[$v])) return KO_MOMENTS[$v];
@@ -2205,7 +2234,7 @@ function coreen_motifs(): array {
         ['/^client depuis le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . '부터 고객' : null],
         ['/^vu (.+)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 접속' : null],
         ['/^(Site|Email|Instagram|Téléphone|Marché|Sur place|Restaurant|Autre), le (.+)$/u', fn($m) => ($d = $date($m[2])) ? $t($m[1]) . ', ' . $d : null],
-        ['/^Sans réponse depuis (\d+) h$/', fn($m) => $m[1] . '시간째 답장 없음'],
+        ['/^Sans réponse depuis (\d+) (h|jours)$/', fn($m) => $m[1] . ($m[2] === 'h' ? '시간째' : '일째') . ' 답장 없음'],
         ['/^Rien depuis (\d+) j$/', fn($m) => $m[1] . '일째 소식 없음'],
         ['/^Recette : (\d+)\/(\d+)$/', fn($m) => '레시피: ' . $m[1] . '/' . $m[2]],
         ['/^marge (\d+) à (\d+) %$/', fn($m) => '마진 ' . ($m[1] === $m[2] ? $m[1] : $m[1] . '~' . $m[2]) . ' %'],
@@ -2225,7 +2254,7 @@ function coreen_motifs(): array {
         ['/^Modifier (.+)$/u', fn($m) => $m[1] . ' 수정'],
         ['/^Retrait programmé : (.+)$/u', fn($m) => ($d = coreen_retrait($m[1])) ? '픽업 예정: ' . $d : null],
         ['/^Commande modifiée\. Changé : (.+)\.$/us', fn($m) => ($x = coreen_modifs($m[1])) !== null ? '주문을 수정했어요. 바뀐 내용: ' . $x . '.' : null],
-        ['/^Étape (\d) sur 6 : (.+)$/u', fn($m) => ($x = coreen_dico()[coreen_cle($m[2])] ?? null) !== null ? '6단계 중 ' . $m[1] . '단계: ' . $x : null],
+        ['/^Étape (\d) sur 6, à faire : (.+)$/u', fn($m) => ($x = coreen_dico()[coreen_cle($m[2])] ?? null) !== null ? '6단계 중 ' . $m[1] . '단계, 지금 할 일: ' . $x : null],
         ['/^Confirmer la commande pour (.+) \?$/u', fn($m) => ($d = coreen_retrait($m[1])) ? $d . '로 주문을 확정할까요?' : null],
         ['/^Remise le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 전달 완료' : null],
         ['/^Livrée le (.+)$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 배달 완료' : null],
@@ -2233,7 +2262,7 @@ function coreen_motifs(): array {
         ['/^Annulée par Madame Cho(?:, (.+))?$/u', fn($m) => 'Madame Cho가 취소' . (isset($m[1]) ? ': ' . $m[1] : '')],
         ['/^par le client(?:, (.+))?$/u', fn($m) => '고객 요청' . (isset($m[1]) ? ': ' . $m[1] : '')],
         ['/^par Madame Cho(?:, (.+))?$/u', fn($m) => 'Madame Cho 결정' . (isset($m[1]) ? ': ' . $m[1] : '')],
-        ['/^Reçue il y a (\d+) h : le site promet une réponse sous 24 h\.$/u', fn($m) => $m[1] . '시간 전에 접수됐어요. 사이트는 24시간 안에 답장한다고 약속해요.'],
+        ['/^Reçue il y a (\d+) (h|jours) : le site promet une réponse sous 24 h\.$/u', fn($m) => $m[1] . ($m[2] === 'h' ? '시간' : '일') . ' 전에 접수됐어요. 사이트는 24시간 안에 답장한다고 약속해요.'],
         ['/^À répondre avant le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . '까지 답장하세요.' : null],
         ['/^Proposition envoyée (.+?)( :|\.)$/u', fn($m) => ($d = coreen_relatif($m[1])) ? $d . ' 견적 발송' . ($m[2] === '.' ? '.' : ':') : null],
         ['/^sans nouvelles depuis (\d+) jours, une relance ou « sans suite » \?$/u', fn($m) => $m[1] . '일째 소식이 없어요. 다시 연락할까요, ‘진행 안 됨’으로 할까요?'],
@@ -2246,7 +2275,12 @@ function coreen_motifs(): array {
         ['/^Tout voir \\((\\d+)\\)$/u', fn($m) => '모두 보기 (' . $m[1] . ')'],
         ['/^(\\d+) autres changements$/u', fn($m) => '다른 변경 ' . $m[1] . '건'],
         ['/^\\((\\d+) à regarder\\)$/u', fn($m) => '(확인할 것 ' . $m[1] . '건)'],
-        ['/^((?:jour du retrait|heure du retrait|moment|mode|prix final|acompte|gâteaux|gâteau personnalisé|demande du professionnel|canal|type|facture|moyen de paiement)(?: : .+)?(?: ; .+)*)$/u', fn($m) => coreen_modifs($m[1])],
+        ['/^((?:jour du retrait|heure du retrait|moment|mode|prix final|acompte|gâteaux|gâteau personnalisé|demande du professionnel|canal|type|facture|moyen de paiement|vous a connue par)(?: : .+)?(?: ; .+)*)$/u', fn($m) => coreen_modifs($m[1])],
+        // 14/11/2026 : la pastille du filtre « Vous a connue par : … » et l'origine d'une demande du site (QR code, lien d'Instagram, bouton de l'accueil)
+        ['/^Vous a connue par : (.+)$/u', fn($m) => isset(KO_CONNU[$m[1]]) ? '알게 된 경로: ' . KO_CONNU[$m[1]] : null],
+        ['/^Demande envoyée par le formulaire du site(?: après un scan du QR code(?: \\((.+?)\\))?| (après une arrivée par le lien de la page Instagram))?(?:, commencée par (.+))?$/u',
+            fn($m) => '사이트 문의 양식으로 접수' . (!empty($m[2]) ? ' (인스타그램 프로필 링크로 방문)' : (str_contains($m[0], 'scan du QR code') ? ' (포장 QR 코드 스캔 후' . (!empty($m[1]) ? ', ' . $m[1] : '') . ')' : ''))
+                    . (!empty($m[3]) ? ', 시작한 곳: ' . (KO_BOUTONS_SITE[$m[3]] ?? $m[3]) : '')],
         ['/^Préparer le mail \\(commande (MC-[0-9A-F-]+)\\)$/u', fn($m) => '이메일 준비하기 (주문 ' . $m[1] . ')'],
         ['/^Avis Google demandé le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 구글 리뷰 요청함.' : null],
         ['/^Avis reçu le (.+)\.$/u', fn($m) => ($d = $date($m[1])) ? $d . ' 리뷰 받음.' : null],

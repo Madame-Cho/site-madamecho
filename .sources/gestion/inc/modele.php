@@ -372,10 +372,10 @@ function commande_creer(array $d): int {
     $type = $d['type'] ?? (($d['besoin'] ?? '') !== '' ? 'pro' : ((($d['perso'] ?? '') !== '' || !$lignes) ? 'perso' : 'carte'));
     $ref = $d['reference'] ?? reference_nouvelle();
     q("INSERT INTO commandes (reference, client_id, canal, type, statut, retrait_date, retrait_moment, retrait_heure, mode, lignes, perso, besoin, total_indicatif,
-       recue_le, dernier_echange, cree_le, maj_le) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+       recue_le, dernier_echange, cree_le, maj_le, connu) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [$ref, $d['client_id'], $d['canal'] ?? 'site', $type, $d['statut'] ?? 'demande', $d['retrait_date'] ?? null, $d['retrait_moment'] ?? '', $d['retrait_heure'] ?? '',
        $d['mode'] ?? 'retrait', json_encode($lignes, JSON_UNESCAPED_UNICODE), $d['perso'] ?? '', $d['besoin'] ?? '', lignes_total($lignes),
-       $d['recue_le'] ?? $now, $d['recue_le'] ?? $now, $now, $now]);
+       $d['recue_le'] ?? $now, $d['recue_le'] ?? $now, $now, $now, isset(CONNU_PAR[$d['connu'] ?? '']) ? $d['connu'] : '']);
     $id = (int)db()->lastInsertId();
     client_echange((int)$d['client_id'], $d['recue_le'] ?? $now);
     evenement('creation', $d['origine'] ?? 'Demande créée', ['commande' => $id, 'client' => (int)$d['client_id']], '', $d['statut'] ?? 'demande', $d['auteur'] ?? null);
@@ -393,6 +393,7 @@ function modifications_texte(array $k, array $diff): string {
         'mode' => ['mode', fn($v) => MODES[$v] ?? (string)$v],
         'prix_final' => ['prix final', fn($v) => $v === null || $v === '' ? 'aucun' : euros((int)$v)],
         'acompte' => ['acompte', fn($v) => (int)$v ? euros((int)$v) : 'aucun'],
+        'connu' => ['vous a connue par', fn($v) => CONNU_PAR[$v] ?? 'non précisé'],
     ];
     $noms = ['lignes' => 'gâteaux', 'perso' => 'gâteau personnalisé', 'besoin' => 'demande du professionnel', 'canal' => 'canal', 'type' => 'type', 'facture' => 'facture', 'moyen' => 'moyen de paiement'];
     $t = [];
@@ -407,7 +408,7 @@ function commande_modifier(int $id, array $d): string {
     $k = commande($id);
     if (!$k) return '';
     $diff = [];
-    foreach (['canal', 'type', 'retrait_date', 'retrait_moment', 'retrait_heure', 'mode', 'perso', 'besoin', 'facture', 'moyen', 'acompte', 'prix_final'] as $c) {
+    foreach (['canal', 'type', 'retrait_date', 'retrait_moment', 'retrait_heure', 'mode', 'perso', 'besoin', 'facture', 'moyen', 'acompte', 'prix_final', 'connu'] as $c) {
         if (array_key_exists($c, $d) && (string)$d[$c] !== (string)$k[$c]) $diff[$c] = $d[$c];
     }
     if (isset($d['lignes'])) {
@@ -625,6 +626,7 @@ function commandes_filtres(array $g): array {
     $f = [];
     if (is_string($g['statut'] ?? null) && isset(STATUTS[$g['statut']])) $f['statut'] = $g['statut'];
     if (is_string($g['canal'] ?? null) && isset(CANAUX[$g['canal']])) $f['canal'] = $g['canal'];
+    if (is_string($g['connu'] ?? null) && isset(CONNU_PAR[$g['connu']])) $f['connu'] = $g['connu'];   // « Comment ils ont connu Madame Cho » (Statistiques)
     if (is_string($g['mois'] ?? null) && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $g['mois'])) $f['mois'] = $g['mois'];
     if (in_array($g['groupe'] ?? null, ['particuliers', 'pros'], true)) $f['groupe'] = $g['groupe'];
     if (in_array($g['j7'] ?? null, ['recues', 'confirmees', 'remises'], true)) $f['j7'] = $g['j7'];   // l'activité des 7 derniers jours (Aujourd'hui)
@@ -643,6 +645,7 @@ function commandes_lister(string $vue = 'en_cours', string $recherche = '', ?str
     }
     if ($statut && isset(STATUTS[$statut])) { $w[] = "k.statut = :s"; $p['s'] = $statut; }
     if (isset($f['canal'])) { $w[] = "k.canal = :canal"; $p['canal'] = $f['canal']; }
+    if (isset($f['connu'])) { $w[] = "k.connu = :connu"; $p['connu'] = $f['connu']; }
     if (isset($f['mois'])) { $w[] = "substr(k.remise_le, 1, 7) = :mois"; $p['mois'] = $f['mois']; }
     if (isset($f['groupe'])) $w[] = ($f['groupe'] === 'pros' ? '' : 'NOT ') . "(k.type = 'pro' OR c.type = 'professionnel')";
     if (isset($f['j7'])) {
@@ -1192,6 +1195,8 @@ function statistiques(): array {
         $s['demandes'][$x['g']] = ['n' => (int)$x['n'], 'remises' => (int)$x['remises'], 'perdues' => (int)$x['perdues']];
     }
     $s['par_canal'] = lignes("SELECT canal, COUNT(*) AS n, SUM(CASE WHEN statut = 'remise' THEN 1 ELSE 0 END) AS remises FROM commandes GROUP BY canal ORDER BY n DESC");
+    // Comment les clients ont connu Madame Cho (14/11/2026) : seulement les commandes où c'est précisé
+    $s['par_connu'] = lignes("SELECT connu, COUNT(*) AS n, SUM(CASE WHEN statut = 'remise' THEN 1 ELSE 0 END) AS remises FROM commandes WHERE connu <> '' GROUP BY connu ORDER BY n DESC, connu");
     $s['statuts'] = lignes("SELECT statut, COUNT(*) AS n FROM commandes GROUP BY statut");
     $d = lignes("SELECT k.recue_le, MIN(e.le) AS repondu FROM commandes k JOIN evenements e ON e.commande_id = k.id AND e.type = 'statut' AND e.nouveau = 'proposition' WHERE k.canal = 'site' GROUP BY k.id");
     $h = [];

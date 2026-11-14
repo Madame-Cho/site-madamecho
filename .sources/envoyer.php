@@ -129,6 +129,13 @@ $besoin = $pro ? champ('besoin', 1200) : '';
 // Provenance (07/11/2026) : la campagne Matomo de la visite, « qr-code packaging » après un scan du QR code d'un emballage ; vide sinon
 $via = uneLigne(champ('via', 90));
 if (!preg_match('/^[\w.-]{1,40}(?: [\w.-]{1,40})?$/', $via)) $via = '';
+// Demande déjà commencée (14/11/2026) : le bouton de l'accueil par lequel elle a commencé (anniversaire, Number cake, événement…),
+// seulement une clé connue de la carte ; vide sinon
+$depuis = champ('depuis', 30);
+if (!isset($CAT['envies'][$depuis])) $depuis = '';
+// « Comment avez-vous connu Madame Cho ? » (14/11/2026) : question facultative, seulement une des réponses proposées ; vide sinon
+$connu = champ('connu', 20);
+if (!isset($CAT['connu'][$connu])) $connu = '';
 
 if ($deuxChamps) {
     if ($prenom === '') $erreurs[] = 'Indiquez votre prénom.';
@@ -253,7 +260,9 @@ $dateTexte = $jours[(int)$jour->format('w')] . ' ' . (int)$jour->format('j') . '
 $euros = fn(int $c) => ($c % 100) ? intdiv($c, 100) . ',' . sprintf('%02d', $c % 100) . ' €' : intdiv($c, 100) . ' €';
 
 $t = [];
-$t[] = 'Nouvelle demande sans engagement reçue par le site madamecho.com' . (strncmp($via, 'qr-code', 7) === 0 ? ', après un scan du QR code d\'un emballage.' : '.');
+$t[] = 'Nouvelle demande sans engagement reçue par le site madamecho.com'
+     . (strncmp($via, 'qr-code', 7) === 0 ? ', après un scan du QR code d\'un emballage' : (strncmp($via, 'instagram', 9) === 0 ? ', après une arrivée par le lien de la page Instagram' : ''))
+     . ($depuis !== '' ? ', commencée par ' . $CAT['envies'][$depuis]['origine'] : '') . '.';
 $t[] = 'Référence : ' . $ref . ' (envoyée le ' . date('d/m/Y à H:i') . ')';
 $t[] = '';
 $t[] = 'RETRAIT SOUHAITÉ';
@@ -274,6 +283,7 @@ $t[] = 'CLIENT';
 if ($deuxChamps) { $t[] = 'Prénom : ' . $prenom; $t[] = 'Nom : ' . $nom; } else $t[] = 'Nom : ' . $nom;
 $t[] = 'Email : ' . $email;
 if ($tel !== '') $t[] = 'Téléphone : ' . $tel;
+if ($connu !== '') $t[] = 'Réponse à « Comment avez-vous connu Madame Cho ? » : ' . $CAT['connu'][$connu];
 $t[] = '';
 // Pas de « Répondre » : la réponse citerait cet email interne, avec un « Re: » que le client n'a jamais reçu, et risquerait ses indésirables (07/11/2026)
 $t[] = is_file(GESTION_ENREGISTRER)
@@ -329,7 +339,8 @@ if (PHP_VERSION_ID >= 80000 && is_file(GESTION_ENREGISTRER)) {   // l'espace de 
     try {
         require_once GESTION_ENREGISTRER;
         $commande = \MadameCho\Gestion\enregistrer_demande(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'moment' => $moment,
-            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin, 'via' => $via]);
+            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin, 'via' => $via,
+            'depuis' => $depuis !== '' ? $CAT['envies'][$depuis]['origine'] : '', 'connu' => $connu]);
     } catch (\Throwable $e) {
         $commande = 0;
         error_log('madamecho formulaire : demande ' . $ref . ' non enregistrée dans la gestion (' . get_class($e) . ')');

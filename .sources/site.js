@@ -33,6 +33,15 @@
     if (via) via.value = camp[1] + (mot ? ' ' + mot[1] : '');
   })();
 
+  /* ---------- Clics comptés (14/11/2026) ----------
+     Un lien avec data-evenement="Catégorie|Action|Nom" envoie un événement à Matomo s'il mesure la visite (sinon rien). */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('[data-evenement]');
+    if (!a || !window._paq) return;
+    var t = a.getAttribute('data-evenement').split('|');
+    window._paq.push(['trackEvent', t[0], t[1] || '', t[2] || '']);
+  });
+
   /* ---------- Panier ----------
      Une seule source : le stockage du navigateur quand il marche ; sinon, la mémoire de la page, et la demande passe
      dans l'adresse vers « Ma demande » (#d=…). Mêmes plafonds que le serveur : 10 par taille, 200 par parfum (audit C05). */
@@ -99,6 +108,26 @@
       c.hidden = !n; c.textContent = n;
       c.setAttribute('aria-label', n + (n > 1 ? ' gâteaux' : ' gâteau'));
     });
+    barreDemande(n);
+  }
+  /* Barre « Ma demande » en bas de l'écran, sur téléphone (14/11/2026) : dès qu'un gâteau est dans la demande, partout sauf sur la page
+     « Ma demande ». Elle reprend le lien du menu (provenance comprise) ; sans stockage, la demande passe dans l'adresse, comme ailleurs. */
+  var barre = null;
+  function barreDemande(n) {
+    var menu = $('.nav-demande');
+    if (!menu || $('#formulaire') || (!barre && !n)) return;
+    if (!barre) {
+      barre = document.createElement('a'); barre.className = 'barre-demande';
+      barre.innerHTML = '<span><b>Ma demande</b> <span data-bd></span></span><span class="bd-voir">Voir</span>';
+      document.body.appendChild(barre);
+    }
+    barre.hidden = !n;
+    document.body.classList.toggle('avec-barre', !!n);
+    if (!n) return;
+    var combien = n + (n > 1 ? ' gâteaux' : ' gâteau');
+    $('[data-bd]', barre).textContent = '· ' + combien;
+    barre.setAttribute('aria-label', 'Voir ma demande : ' + combien);
+    barre.href = menu.getAttribute('href') + (STOCKAGE ? '' : '#d=' + encodeURIComponent(JSON.stringify(lignes())));
   }
   function prixLigne(l) {
     var p = CAT.produits[l.p];
@@ -180,9 +209,14 @@
         qs = {}; majP();
       });
     }
+  }
+
+  /* « Partager ce gâteau » : sur la page d'un gâteau, avec ou sans ajout à la demande (fiche du Number cake) */
+  function boutonPartager() {
     var part = $('[data-partager]');
     if (part) part.addEventListener('click', function () {
-      var url = location.href.replace(/index\.html$/, '');
+      // sans la provenance de la visite (QR code, lien d'Instagram) : la personne qui reçoit le lien n'est pas venue par là
+      var url = location.href.replace(/[?#].*$/, '').replace(/index\.html$/, '');
       if (navigator.share) { navigator.share({ title: document.title, url: url }).catch(function () {}); return; }
       copier(url, function (ok) { part.textContent = ok ? 'Lien copié' : url; });
     });
@@ -230,6 +264,25 @@
     var lienCarte = ($('.vide a', panier) || { getAttribute: function () { return '../#carte'; } }).getAttribute('href');
 
     if (/[?&]pro=1/.test(location.search)) { var c = $('[data-pro]'); if (c) c.checked = true; }
+    /* Demande déjà commencée (14/11/2026) : un bouton de l'accueil ouvre cette page avec ?demande=<clé> (anniversaire, Number cake,
+       événement…). « Votre envie » commence par quelques mots que le client complète, l'aide dit quoi préciser, et la demande dit à
+       Madame Cho par quel bouton elle a commencé (champ caché « depuis »). Le client peut tout effacer ; des mots laissés tels quels
+       ne suffisent pas (voir verifier). */
+    var cleEnvie = (/[?&]demande=([\w-]{1,30})(?:&|$)/.exec(location.search) || [])[1];
+    var ENVIE = cleEnvie && own(CAT.envies, cleEnvie) ? CAT.envies[cleEnvie] : null;
+    function typo(t) { return t.replace(/ ([:;?!»])/g, ' $1').replace(/« /g, '« '); }
+    if (ENVIE) {
+      if (!perso.value.trim()) perso.value = ENVIE.envie;
+      var aideP = $('[data-perso-aide]'); if (aideP && ENVIE.aide) aideP.textContent = typo(ENVIE.aide);
+      if (form.elements.depuis) form.elements.depuis.value = cleEnvie;
+    }
+    /* « Comment avez-vous connu Madame Cho ? » : une réponse à toucher, que l'on retire en la touchant de nouveau (facultatif) */
+    var choisi = null;
+    $$('input[name="connu"]', form).forEach(function (r) {
+      r.addEventListener('click', function () {
+        if (choisi === r) { r.checked = false; choisi = null; } else choisi = r;
+      });
+    });
     function majPro() {
       var on = $('[data-pro]') && $('[data-pro]').checked;
       $('[data-societe]').hidden = !on; $('[data-message-pro]').hidden = !on;
@@ -385,6 +438,8 @@
       }
       if (!ls.length && !f.perso.value.trim() && !(f.pro.checked && f.besoin.value.trim()))
         err(f.perso, 'Ajoutez au moins un gâteau de la carte, ou décrivez votre gâteau personnalisé.');
+      else if (ENVIE && f.perso.value.trim() === ENVIE.envie.trim())   // les premiers mots, laissés tels quels : à compléter, ou à effacer
+        err(f.perso, typo(ENVIE.incomplet) + (ls.length ? ' Ou effacez « Votre envie » pour ne demander que les gâteaux de la carte.' : ''));
       manques(ls).forEach(function (m) { out.push(m); });
       if (!f.date.value) err(f.date, 'Choisissez une date de retrait.');
       else if (f.date.value < dateIn.min) err(f.date, 'La date de retrait doit être au plus tôt le ' + dateFr(dateIn.min) + '.');
@@ -466,6 +521,7 @@
   var rendreDemande = null;
   compteur();
   pageGateau();
+  boutonPartager();
   pageDemande();
   // Une demande changée ou vidée dans un autre onglet est reprise ici, jamais un ancien contenu (audit C05)
   window.addEventListener('storage', function (e) { if (e.key === CLE || e.key === null) { compteur(); if (rendreDemande) rendreDemande(); } });

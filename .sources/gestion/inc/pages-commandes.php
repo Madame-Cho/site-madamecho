@@ -26,7 +26,8 @@ function page_accueil(): void {
         $c .= '<p class="rappel-hygiene' . ($hy['hors'] ? ' hors' : ($hy['notes'] >= $hy['attendus'] || $hy['sans_production'] ? ' fait' : '')) . '"><a href="' . h(u('hygiene')) . '">' . icone('hygiene') . '<span>' . h($txt) . '</span>'
             . ($hy['hors'] ? '<span class="etiq etiq-alerte">' . h($hy['hors'] . ' hors plage') . '</span>' : '') . '</a></p>';
     }
-    $c .= $kpi;
+    // Sur téléphone, « Les 7 derniers jours » passe sous les listes à faire (ordre donné par la feuille de style, 14/11/2026)
+    $c .= '<div class="accueil-corps">' . $kpi;
     // L'activité des 7 derniers jours : visites du site (Matomo) et commandes, chaque chiffre mène au détail (demande d'Olivier, 07/11/2026)
     $act = activite_commandes();
     $vis = matomo_activite();
@@ -79,6 +80,7 @@ function page_accueil(): void {
             . '<span class="statut s-demande">À facturer</span></span><span class="l2">' . h(ucfirst(mois_texte($r['mois']))) . ' · ' . h($r['n'] . ' livraison(s)') . '</span></a>';
         $c .= bloc('Relevés à facturer', '<p class="aide">Faites la facture dans Qonto à partir du relevé, puis notez son numéro.</p><div class="liste">' . $l . '</div>');
     }
+    $c .= '</div>';
     mise_en_page('Aujourd\'hui', $c, 'accueil');
 }
 
@@ -107,6 +109,7 @@ function page_commandes(): void {
         if (isset($f['statut'])) $chips .= chip_statut($f['statut'], false);
         if (isset($f['groupe'])) $chips .= '<span class="chip">' . h($f['groupe'] === 'pros' ? 'Professionnels' : 'Particuliers') . '</span>';
         if (isset($f['canal'])) $chips .= '<span class="chip">' . h(CANAUX[$f['canal']]) . '</span>';
+        if (isset($f['connu'])) $chips .= '<span class="chip">' . h('Vous a connue par : ' . CONNU_PAR[$f['connu']]) . '</span>';
         if (isset($f['mois'])) $chips .= '<span class="chip">' . h('Remises en ' . MOIS[(int)substr($f['mois'], 5, 2)] . ' ' . substr($f['mois'], 0, 4)) . '</span>';
         if (isset($f['j7'])) $chips .= '<span class="chip">' . h(['recues' => 'Reçues', 'confirmees' => 'Confirmées', 'remises' => 'Remises'][$f['j7']] . ' ces 7 derniers jours') . '</span>';
         $c .= '<p class="filtre-actif"><span>Filtre</span>' . $chips . '<a href="' . h(u('commandes', ['vue' => $vue] + ($r !== '' ? ['r' => $r] : []))) . '">Retirer le filtre</a></p>';
@@ -301,6 +304,7 @@ function page_commande(): void {
     $c .= '<div class="grille-2">';
     $c .= bloc('Client', definition(['Nom' => '<a href="' . h(u('client', ['id' => $k['client_id']])) . '" translate="no">' . h($nom) . '</a> <span class="petit">' . h($k['client_numero']) . '</span>',
                                      'Email' => $mail, 'Téléphone' => $tel, 'Ville' => $k['client_ville'] !== '' ? '<span translate="no">' . h($k['client_ville']) . '</span>' : '',
+                                     'Vous a connue par' => h(CONNU_PAR[$k['connu'] ?? ''] ?? ''),   // sa réponse sur le site, ou ce que Youngmi a noté (14/11/2026)
                                      'Historique' => h($ch['remises'] . ' commande(s) remise(s)' . ($ch['total'] ? ' · ' . ($k['client_type'] === 'professionnel' ? euros($ch['total_ht']) . ' HT' : euros($ch['total']) . ' TTC') : '') . ($ch['derniere'] ? ' · dernière le ' . date_fr($ch['derniere']) : ''))])
                      . avertissement_doublon((int)$k['client_id'])
                      . '<p class="actions">' . lien_bouton(u('client', ['id' => $k['client_id']]), 'Voir la fiche du client', 'discret')
@@ -419,8 +423,8 @@ function bloc_mail_client(array $k, string $type, string $titre, string $avant =
                  'placeholder' => $type === 'avis' ? 'Par exemple : j\'espère que le gâteau vous a plu !' : 'Par exemple : la plaque sera bien prête, à vendredi !'])
           . '<p class="etiq-apercu">Aperçu du mail (tel que le client le recevra)</p>'
           . '<div class="cadre-apercu" id="' . $ap . '" data-source="' . h(u('apercu-mail', ['id' => $id, 'type' => $type])) . '">' . mail_commande($k, $type, ['apercu' => true])['html'] . '</div>'
-          . '<div class="actions">' . bouton(icone('email') . ($deja ? 'Renvoyer à ' : 'Envoyer à ') . '<span translate="no">' . h($email) . '</span>', 'principal') . '</div>';
-    return '<details class="email-pret" id="' . $boite . '"' . ($ouvert && !$deja ? ' open' : '') . '><summary>' . icone('email') . h($titre) . ($deja ? ' <span class="compte">envoyé</span>' : '') . '</summary>'
+          . '<div class="actions">' . bouton(libelle_envoi($deja ? 'Renvoyer à' : 'Envoyer à', $email), 'principal') . '</div>';
+    return '<details class="email-pret" name="mail-etape" id="' . $boite . '"' . ($ouvert && !$deja ? ' open' : '') . '><summary>' . icone('email') . h($titre) . ($deja ? ' <span class="compte">envoyé</span>' : '') . '</summary>'
          . formulaire('envoyer_' . $type, $form, ['class' => 'form-mail', 'data-confirmer' => 'Envoyer ce mail à ' . $email . ' maintenant ?'])
          . '<details class="replie"><summary>Autre façon : ouvrir dans ma messagerie</summary>' . bloc_email($boite . '-texte', 'Texte simple, à envoyer vous-même', $m, $email) . $secours . '</details>'
          . '</details>';
@@ -445,11 +449,14 @@ function bloc_rappel_client(array $k): string {
     $titre = 'Envoyer le rappel au client';
     $alerte = $modifie ? '<p class="erreur">Le jour ou l\'heure du retrait a changé depuis le dernier rappel : prévenez le client.</p>' : '';
     if (!email_valide((string)$k['client_email'])) {
-        return '<details class="email-pret" id="mail-rappel"' . ($fait ? '' : ' open') . '><summary>' . icone('email') . h($titre) . ($fait ? ' <span class="compte">envoyé</span>' : '') . '</summary>'
+        return '<details class="email-pret" name="mail-etape" id="mail-rappel"' . ($fait ? '' : ' open') . '><summary>' . icone('email') . h($titre) . ($fait ? ' <span class="compte">envoyé</span>' : '') . '</summary>'
              . $alerte . ($fait ? '<p class="aide"><b>Déjà envoyé</b> · ' . h(date_fr($fait, 'heure')) . '</p>' : '')
              . '<p class="aide">Pas d\'email pour ce client : envoyez la version courte par SMS ou WhatsApp, puis notez-le.</p>' . $noter . '</details>';
     }
-    return $alerte . bloc_mail_client($k, 'rappel', $titre, '', '<p class="aide">Envoyé autrement (SMS, WhatsApp, téléphone, Gmail) ? Notez-le :</p>' . $noter, !$fait && rappel_quand($k) !== 'le ' . date_fr($d, 'jour'));
+    // Un seul mail ouvert à la fois (14/11/2026) : tant que la confirmation n'est pas partie, c'est elle qui est ouverte (envoyée la veille
+    // ou le jour même, elle tient lieu de rappel) ; le rappel s'ouvre en le touchant, ou en venant de « Rappels à envoyer »
+    return $alerte . bloc_mail_client($k, 'rappel', $titre, '', '<p class="aide">Envoyé autrement (SMS, WhatsApp, téléphone, Gmail) ? Notez-le :</p>' . $noter,
+        !$fait && rappel_quand($k) !== 'le ' . date_fr($d, 'jour') && mail_deja((int)$k['id'], 'confirmation') !== null);
 }
 /** Les façons de déclarer un rappel envoyé hors de la gestion (A07). */
 const RAPPEL_CANAUX = ['sms' => 'SMS', 'whatsapp' => 'WhatsApp', 'telephone' => 'Téléphone', 'email' => 'Email (Gmail)'];
@@ -472,7 +479,7 @@ function bloc_ecrire_client(array $k): string {
           . zone('texte_mail', 'Message', $texteDefaut, ['rows' => '6', 'maxlength' => '4000', 'required' => true, 'data-apercu' => 'apercu-libre', 'lang' => 'fr', 'data-aide-saisie' => '1'])
           . '<p class="etiq-apercu">Aperçu du mail (tel que le client le recevra)</p>'
           . '<div class="cadre-apercu" id="apercu-libre" data-source="' . h(u('apercu-mail', ['id' => $id, 'type' => 'message'])) . '">' . mail_commande($k, 'message', ['accueil' => $texteDefaut, 'apercu' => true])['html'] . '</div>'
-          . '<div class="actions">' . bouton(icone('email') . 'Envoyer à <span translate="no">' . h($email) . '</span>', 'principal') . '</div>';
+          . '<div class="actions">' . bouton(libelle_envoi('Envoyer à', $email), 'principal') . '</div>';
     return '<details class="geste ecrire-client" id="ecrire"><summary>' . icone('email') . 'Écrire un mail au client</summary>'
          . formulaire('ecrire_client', $form, ['class' => 'form-ecrire', 'data-confirmer' => 'Envoyer ce mail à ' . $email . ' maintenant ?']) . '</details>';
 }
@@ -532,8 +539,10 @@ function parcours_commande(array $k): string {
         $s .= '<li class="pc-' . $etat . '"' . ($etat === 'courant' ? ' aria-current="step"' : '') . '><span class="pc-rond">' . ($faits[$i] ? icone('valider') : ($i + 1)) . '</span>'
             . '<span class="pc-nom">' . h($n) . '</span>' . ($etat === 'courant' ? '<span class="pc-afaire">À faire maintenant</span>' : '') . '</li>';
     }
-    // Sur téléphone, les ronds seuls et une ligne qui dit l'étape à faire (la frise reste en haut sans manger l'écran)
-    if ($courant !== false) $s .= '<li class="pc-ligne" aria-hidden="true">Étape ' . ($courant + 1) . ' sur 6 : ' . h($noms[$courant]) . '</li>';
+    // Sur téléphone, les ronds seuls et une ligne qui dit l'étape à faire (la frise reste en haut sans manger l'écran).
+    // Elle dit le geste (« à faire : envoyer la proposition »), pas le nom de l'étape une fois faite, qui laissait croire que c'était fait (14/11/2026)
+    $afaire = ['', 'envoyer la proposition', 'confirmer la commande', 'envoyer la confirmation au client', 'remettre la commande au client', 'demander un avis'];
+    if ($courant !== false) $s .= '<li class="pc-ligne" aria-hidden="true">Étape ' . ($courant + 1) . ' sur 6, à faire : ' . h($afaire[$courant]) . '</li>';
     return '<ol class="parcours" aria-label="Étapes de la commande">' . $s . '</ol>';
 }
 
@@ -545,7 +554,7 @@ function etape_suivante(array $k): string {
     switch ($k['statut']) {
         case 'demande':
             $h = heures_depuis($k['recue_le']);
-            $quand = $h >= GESTION_RETARD_HEURES ? '<span class="retard">Reçue il y a ' . $h . ' h : le site promet une réponse sous 24 h.</span>' : 'À répondre avant le ' . h(date_fr(date('Y-m-d H:i:s', strtotime($k['recue_le']) + 86400), 'heure')) . '.';
+            $quand = $h >= GESTION_RETARD_HEURES ? '<span class="retard">Reçue il y a ' . attente_lisible($k['recue_le']) . ' : le site promet une réponse sous 24 h.</span>' : 'À répondre avant le ' . h(date_fr(date('Y-m-d H:i:s', strtotime($k['recue_le']) + 86400), 'heure')) . '.';
             $acompteDefaut = $k['perso'] !== '' ? number_format(round(montant_commande($k) * 0.3 / 100, 2), 2, ',', '') : '';
             $gmail = 'https://mail.google.com/mail/?authuser=contact@madamecho.com#search/' . rawurlencode($k['reference']);
             return '<section class="etape"><h2>Prochaine étape : envoyer une proposition</h2><p>' . $quand . '</p>'
@@ -672,7 +681,9 @@ function page_commande_edition(): void {
         $d = ['canal' => choix('canal', CANAUX, $k['canal'] ?? 'autre'), 'type' => choix('type', TYPES_COMMANDE, $k['type'] ?? 'carte'),
               'retrait_date' => date_valide(texte('retrait_date', 10)), 'retrait_moment' => choix('retrait_moment', ['' => ''] + MOMENTS, ''),
               'retrait_heure' => preg_match('/^\d{2}:\d{2}$/', texte('retrait_heure', 5)) ? texte('retrait_heure', 5) : '', 'mode' => choix('mode', MODES, 'retrait'),
-              'perso' => texte('perso', 2000), 'besoin' => texte('besoin', 2000), 'lignes' => $lignes];
+              'perso' => texte('perso', 2000), 'besoin' => texte('besoin', 2000), 'lignes' => $lignes]
+           // absent de l'envoi (une modification préparée par l'assistant ne le porte pas) : la valeur de la commande reste
+           + ($livraison ? [] : ['connu' => choix('connu', ['' => ''] + CONNU_PAR, (string)($k['connu'] ?? ''))]);
         if (!$lignes && $d['perso'] === '' && $d['besoin'] === '') $erreurs[] = 'Ajoutez au moins un gâteau, ou décrivez la demande.';
         if (!$erreurs) {
             if (!empty($nouveauClient)) $cid = client_creer($nouveauClient + ['premier_contact' => maintenant(), 'dernier_echange' => maintenant()]);
@@ -728,6 +739,9 @@ function page_commande_edition(): void {
     // Demande
     $f .= bloc($livraison ? 'La livraison' : 'La demande', '<div class="ligne-champs">' . liste_choix('canal', 'Reçue par', CANAUX, $val('canal', $k['canal'] ?? ($livraison ? 'restaurant' : (is_string($_GET['ref'] ?? null) ? 'site' : 'instagram'))))
         . liste_choix('type', 'Type', TYPES_COMMANDE, $val('type', $k['type'] ?? ($livraison ? 'pro' : 'carte'))) . '</div>'
+        // « Comment le client a connu Madame Cho » (14/11/2026) : sa réponse sur le site, ou ce qu'il dit au téléphone ; compté dans les Statistiques
+        // (pas pour un restaurant : ni sur une nouvelle livraison, ni sur une commande pro déjà enregistrée)
+        . ($livraison || ($k && $k['type'] === 'pro') ? '' : liste_choix('connu', 'Vous a connue par', ['' => 'Non précisé'] + CONNU_PAR, $val('connu', $k['connu'] ?? '')))
         . ($k ? '' : champ('reference', 'Référence MC-… si elle existe', $val('reference', is_string($_GET['ref'] ?? null) ? strtoupper($_GET['ref']) : ''), ['placeholder' => 'MC-261106-1A2B', 'pattern' => 'MC-[0-9]{6}-[0-9A-Fa-f]{4}'])));
     // Gâteaux
     $groupes = []; $gpro = [];

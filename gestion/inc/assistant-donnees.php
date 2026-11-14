@@ -228,6 +228,7 @@ function outil_commande(array $in): array {
           'recue_par' => CANAUX[$k['canal']] ?? $k['canal'], 'client' => $client, 'retrait' => ia_retrait($k),
           'retrait_date' => $k['retrait_date'], 'retrait_moment' => $k['retrait_moment'], 'retrait_heure' => $k['retrait_heure'], 'mode' => MODES[$k['mode']] ?? $k['mode'],
           'gateaux' => $gateaux];
+    if (isset(CONNU_PAR[$k['connu'] ?? ''])) $r['a_connu_madame_cho_par'] = CONNU_PAR[$k['connu']];   // sa réponse sur le site, ou ce que Youngmi a noté
     if ($k['perso'] !== '') $r['gateau_personnalise'] = $k['perso'];
     if ($k['besoin'] !== '') $r['demande_pro'] = $k['besoin'];
     $r['montant'] = ['ttc' => euros($m['ttc']), 'ht' => euros($m['ht']),
@@ -435,13 +436,14 @@ function outil_chiffres(array $in): array {
         }
     }
     arsort($canaux); arsort($gat);
-    $recues = lignes("SELECT statut, canal FROM commandes WHERE substr(recue_le, 1, 10) BETWEEN ? AND ?", [$du, $au]);
-    $parCanal = []; $parEtape = [];
+    $recues = lignes("SELECT statut, canal, connu FROM commandes WHERE substr(recue_le, 1, 10) BETWEEN ? AND ?", [$du, $au]);
+    $parCanal = []; $parEtape = []; $parConnu = [];
     foreach ($recues as $k) {
         $c = CANAUX[$k['canal']] ?? $k['canal']; $parCanal[$c] = ($parCanal[$c] ?? 0) + 1;
         $e = STATUTS[$k['statut']] ?? $k['statut']; $parEtape[$e] = ($parEtape[$e] ?? 0) + 1;
+        if (isset(CONNU_PAR[$k['connu']])) $parConnu[CONNU_PAR[$k['connu']]] = ($parConnu[CONNU_PAR[$k['connu']]] ?? 0) + 1;
     }
-    arsort($parCanal);
+    arsort($parCanal); arsort($parConnu);
     $n = $g['part']['n'] + $g['pro']['n'];
     return [
         'periode' => 'du ' . ia_jour($du) . ' au ' . ia_jour($au) . ' compris',
@@ -451,7 +453,8 @@ function outil_chiffres(array $in): array {
                                    'panier_moyen_ttc' => $g['part']['n'] ? euros(intdiv($g['part']['ttc'], $g['part']['n'])) : '—'],
             'professionnels_B2B' => ['nombre' => $g['pro']['n'], 'ht' => euros($g['pro']['ht']), 'ttc' => euros($g['pro']['ttc'])],
             'par_canal' => $canaux ?: 'aucune vente', 'gateaux_les_plus_vendus' => array_slice($gat, 0, 10, true) ?: 'aucun'],
-        'demandes_recues' => ['nombre' => count($recues), 'par_canal' => $parCanal ?: 'aucune', 'par_etape_actuelle' => $parEtape ?: 'aucune'],
+        'demandes_recues' => ['nombre' => count($recues), 'par_canal' => $parCanal ?: 'aucune', 'par_etape_actuelle' => $parEtape ?: 'aucune']
+                           + ($parConnu ? ['comment_les_clients_ont_connu_madame_cho' => $parConnu] : []),
         'annulees' => (int)val("SELECT COUNT(*) FROM commandes WHERE statut = 'annulee' AND substr(annulee_le, 1, 10) BETWEEN ? AND ?", [$du, $au]),
         'classees_sans_suite' => (int)val("SELECT COUNT(*) FROM commandes WHERE statut = 'sans_suite' AND substr(sans_suite_le, 1, 10) BETWEEN ? AND ?", [$du, $au]),
         'site_madamecho_com' => ia_visites($du, $au),

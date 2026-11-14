@@ -16,7 +16,9 @@ require_once __DIR__ . '/accuse.php';   // l'accusé de réception au client (09
 
 /**
  * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
- * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code).
+ * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code,
+ * « instagram bio » par le lien de la page Instagram), depuis (facultatif : le bouton de l'accueil par lequel la demande a commencé, en clair),
+ * connu (facultatif : la réponse à « Comment avez-vous connu Madame Cho ? », un code de CONNU_PAR).
  * Renvoie le numéro interne de la commande (0 : rien d'enregistré).
  * Ne fait rien tant que l'espace n'est pas ouvert, ni avant que l'enregistrement soit activé dans Paramètres (mise en ligne en deux temps).
  */
@@ -35,6 +37,11 @@ function enregistrer_demande(array $d): int {
         $qr = str_starts_with($via, 'qr-code');
         $canal = $qr ? 'qr' : 'site';
         $support = $qr ? trim(substr($via, 7)) : '';
+        // 14/11/2026 : le lien de la page Instagram (madamecho.com/insta) et le bouton de l'accueil par lequel la demande a commencé sont notés
+        // dans l'historique ; « Vous a connue par » prend la réponse du client, sinon ce que l'arrivée sur le site dit déjà
+        $insta = str_starts_with($via, 'instagram');
+        $depuis = is_string($d['depuis'] ?? null) ? trim($d['depuis']) : '';
+        $connu = is_string($d['connu'] ?? null) && isset(CONNU_PAR[$d['connu']]) ? $d['connu'] : ($qr ? 'qr' : ($insta ? 'instagram' : ''));
         $cid = client_trouver_ou_creer((string)$d['email'], $prenom, $nom, (string)$d['telephone'], $canal, (bool)$d['pro'], (string)$d['societe'], $quand);
         $lignes = [];
         foreach ($d['lignes'] as $l) {
@@ -44,8 +51,9 @@ function enregistrer_demande(array $d): int {
         $type = $d['pro'] ? 'pro' : (($d['perso'] !== '' || !$lignes) ? 'perso' : 'carte');
         $id = commande_creer(['reference' => $d['ref'], 'client_id' => $cid, 'canal' => $canal, 'type' => $type,
                               'retrait_date' => $d['date'], 'retrait_moment' => $d['moment'], 'lignes' => $lignes,
-                              'perso' => (string)$d['perso'], 'besoin' => (string)$d['besoin'], 'recue_le' => $quand,
-                              'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ''), 'auteur' => 'site']);
+                              'perso' => (string)$d['perso'], 'besoin' => (string)$d['besoin'], 'recue_le' => $quand, 'connu' => $connu,
+                              'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ($insta ? ' après une arrivée par le lien de la page Instagram' : ''))
+                                         . ($depuis !== '' ? ', commencée par ' . $depuis : ''), 'auteur' => 'site']);
         $pdo->commit();
         return $id;
     } catch (\Throwable $e) {

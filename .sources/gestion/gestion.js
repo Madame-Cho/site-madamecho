@@ -468,8 +468,8 @@
   // navigateur, dans la langue de l'écran) et « Corriger mon français » (l'assistant propose un texte corrigé, avec la traduction
   // coréenne ; Youngmi touche « Utiliser » ou garde le sien). Rien n'est inscrit ni envoyé sans son toucher sur « Ajouter » ou « Envoyer ».
   // Demande d'Olivier du 07/11/2026.
-  var T = ko ? { dicter: "프랑스어로 말하기", dicterKo: "한국어로 말하기", hangul: "한국어가 들어 있어요. 고객과 기록은 프랑스어로 써요. ‘프랑스어 고치기’를 눌러 프랑스어로 바꿔 주세요.", ecoute: "듣는 중… (다시 누르면 멈춤)", corriger: "프랑스어 고치기", attente: "고치는 중…", utiliser: "이 문장 쓰기", garder: "내 문장 그대로", sens: "뜻 (한국어):", erreur: "고치지 못했어요: ", vide: "먼저 문장을 쓰거나 말해 주세요." }
-             : { dicter: "Dicter en français", dicterKo: "Parler en coréen", hangul: "Le texte contient du coréen. Les mails et les notes sont en français : touchez « Corriger mon français » pour le traduire.", ecoute: "J'écoute… (touchez pour arrêter)", corriger: "Corriger mon français", attente: "Correction…", utiliser: "Utiliser ce texte", garder: "Garder le mien", sens: "Le sens, en coréen :", erreur: "La correction n'a pas marché : ", vide: "Écrivez ou dictez d'abord votre texte." };
+  var T = ko ? { dicterC: "프랑스어", dicterKoC: "한국어", corrigerC: "고치기", ecouteC: "멈춤", dicter: "프랑스어로 말하기", dicterKo: "한국어로 말하기", hangul: "한국어가 들어 있어요. 고객과 기록은 프랑스어로 써요. ‘프랑스어 고치기’를 눌러 프랑스어로 바꿔 주세요.", ecoute: "듣는 중… (다시 누르면 멈춤)", corriger: "프랑스어 고치기", attente: "고치는 중…", utiliser: "이 문장 쓰기", garder: "내 문장 그대로", sens: "뜻 (한국어):", erreur: "고치지 못했어요: ", vide: "먼저 문장을 쓰거나 말해 주세요." }
+             : { dicterC: "Français", dicterKoC: "Coréen", corrigerC: "Corriger", ecouteC: "Arrêter", dicter: "Dicter en français", dicterKo: "Parler en coréen", hangul: "Le texte contient du coréen. Les mails et les notes sont en français : touchez « Corriger mon français » pour le traduire.", ecoute: "J'écoute… (touchez pour arrêter)", corriger: "Corriger mon français", attente: "Correction…", utiliser: "Utiliser ce texte", garder: "Garder le mien", sens: "Le sens, en coréen :", erreur: "La correction n'a pas marché : ", vide: "Écrivez ou dictez d'abord votre texte." };
   var ZONES = { texte: "note", accueil: "accueil", mot: "mot", texte_mail: "message" };
   var urlCorriger = d.body.getAttribute("data-corriger"), jeton = d.body.getAttribute("data-jeton");
   function changer(z, v) { z.value = v; z.dispatchEvent(new Event("input", { bubbles: true })); }
@@ -483,11 +483,19 @@
     // Deux façons de dicter (demande d'Olivier, 07/11/2026) : en français, ou en coréen, et l'assistant propose aussitôt la phrase en français
     var bc = null;
     function drapeau(l) { var t = d.getElementById("drapeau-" + l); return t ? t.innerHTML : ""; }
-    function bouton_dicter(langue, libelle, apres) {
+    // Un bouton d'aide : le dessin, le nom entier (ordinateur) et un mot court (téléphone : les trois boutons tiennent sur une ligne,
+    // 14/11/2026) ; le nom entier reste dans l'étiquette lue par les lecteurs d'écran et au survol
+    function habiller(b, dessin, long, court) {
+      b.innerHTML = '<span class="as-dessin" aria-hidden="true">' + dessin + "</span>";
+      var l = d.createElement("span"); l.className = "as-long"; l.textContent = long; b.appendChild(l);
+      var c = d.createElement("span"); c.className = "as-court"; c.setAttribute("aria-hidden", "true"); c.textContent = court; b.appendChild(c);
+      b.setAttribute("aria-label", long); b.title = long;
+    }
+    function bouton_dicter(langue, libelle, court, apres) {
       var b = d.createElement("button"); b.type = "button"; b.className = "btn secondaire petit-btn";
       // 🎤 + drapeau de la langue parlée (+ → drapeau français quand l'assistant traduit)
-      var dessin = "🎤 " + drapeau(langue === "ko-KR" ? "ko" : "fr") + (langue === "ko-KR" ? " → " + drapeau("fr") : "") + " ";
-      function etiquette() { b.innerHTML = dessin; b.appendChild(d.createTextNode(libelle)); }
+      var dessin = "🎤 " + drapeau(langue === "ko-KR" ? "ko" : "fr") + (langue === "ko-KR" ? " → " + drapeau("fr") : "");
+      function etiquette() { habiller(b, dessin, libelle, court); }
       etiquette();
       var reco = null;
       b.addEventListener("click", function () {
@@ -503,17 +511,17 @@
         };
         reco.onend = function () { reco = null; etiquette(); b.classList.remove("actif"); if (dit && apres) apres(); };
         reco.onerror = function () {};
-        b.textContent = "■ " + T.ecoute; b.classList.add("actif");
+        habiller(b, "■", T.ecoute, T.ecouteC); b.classList.add("actif");
         reco.start();
       });
       barreA.appendChild(b);
     }
     if (Reco) {
-      bouton_dicter("fr-FR", T.dicter, null);
-      if (urlCorriger) bouton_dicter("ko-KR", T.dicterKo, function () { if (bc) bc.click(); });
+      bouton_dicter("fr-FR", T.dicter, T.dicterC, null);
+      if (urlCorriger) bouton_dicter("ko-KR", T.dicterKo, T.dicterKoC, function () { if (bc) bc.click(); });
     }
     if (urlCorriger) {
-      bc = d.createElement("button"); bc.type = "button"; bc.className = "btn secondaire petit-btn"; bc.textContent = "✎ " + T.corriger;
+      bc = d.createElement("button"); bc.type = "button"; bc.className = "btn secondaire petit-btn"; habiller(bc, "✎", T.corriger, T.corrigerC);
       bc.addEventListener("click", function () {
         var texte = z.value.trim();
         boite.hidden = false; boite.textContent = "";
@@ -553,11 +561,19 @@
     }
   }, true);
 
+  // Un seul mail ouvert à la fois dans le cadre de l'étape (14/11/2026) : les navigateurs récents le font seuls (attribut name des
+  // <details>) ; pour les autres, on referme ici les mails voisins quand l'un s'ouvre
+  function fermerAutresMails(el) {
+    if (!el || el.tagName !== "DETAILS" || el.getAttribute("name") !== "mail-etape") return;
+    d.querySelectorAll('details[name="mail-etape"][open]').forEach(function (x) { if (x !== el) x.open = false; });
+  }
+  d.addEventListener("toggle", function (e) { if (e.target.open) fermerAutresMails(e.target); }, true);
   // « Répondre » sous une réponse de client, ou un lien vers #mail-avis : ouvrir le bloc replié et y aller
   function ouvrir(id) {
     var el = id && d.getElementById(id);
     if (!el) return false;
     for (var p = el; p; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;
+    fermerAutresMails(el);
     el.scrollIntoView({ block: "start" });
     var t = el.querySelector("textarea, input:not([type=hidden])");
     if (t) setTimeout(function () { t.focus(); }, 200);

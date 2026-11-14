@@ -663,6 +663,25 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .aide-saisie{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 10px}
 .btn.petit-btn{min-height:44px;padding:4px 12px;font-size:14px}
 .btn.petit-btn.actif{background:#6E2A10;color:#fff}
+/* Aides à l'écriture (14/11/2026) : sur téléphone, les trois boutons sur une seule ligne, le dessin au-dessus d'un mot court ;
+   sur ordinateur, le nom entier comme avant */
+.aide-saisie .as-dessin{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.aide-saisie .as-court{display:none}
+@media (max-width:599px){
+ .aide-saisie{flex-wrap:nowrap}
+ .aide-saisie .btn.petit-btn{flex:1 1 0;min-width:0;flex-direction:column;gap:1px;min-height:50px;padding:5px 4px;font-size:12px;line-height:1.25}
+ .aide-saisie .as-dessin{font-size:14px}
+ .aide-saisie .as-long{display:none}
+ .aide-saisie .as-court{display:block}
+}
+/* Le bouton qui envoie un mail : « Envoyer à », puis l'adresse ; sur téléphone, toute la largeur et l'adresse sur sa ligne */
+.lib-envoi{min-width:0}
+.lib-envoi .le-verbe{white-space:nowrap}
+.lib-envoi .le-adresse{overflow-wrap:anywhere}
+@media (max-width:599px){
+ .form-mail .actions .btn.principal,.form-ecrire .actions .btn.principal{width:100%;padding-top:7px;padding-bottom:7px}
+ .lib-envoi .le-adresse{display:block;font-weight:400}
+}
 .correction{background:var(--ivoire);border-radius:10px;padding:12px 14px;margin:0 0 12px}
 .correction .corrige{white-space:pre-wrap;margin:0 0 8px;font-size:16px;line-height:1.5}
 .noter-echange{margin:10px 0}
@@ -916,6 +935,15 @@ html:lang(ko) .par::after{content:" 님"}
 .doc-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.doc-actions form{margin:0}
 .etiquette .e-poids{font-size:6pt}
 .tableau td{overflow-wrap:anywhere}
+/* Tableaux qui glissent (14/11/2026) : dans un cadre qui défile, un mot ne se coupe plus lettre par lettre (ni un mot coréen syllabe par syllabe) ;
+   le tableau garde sa largeur, et sa première colonne reste en vue pendant qu'on le fait glisser */
+.defile .tableau td,.defile .tableau th{overflow-wrap:normal}
+.defile .tableau td:first-child,.defile .tableau th:first-child{position:sticky;left:0;z-index:1;background:var(--carte);padding-right:10px}
+.defile{background:linear-gradient(to left,var(--carte) 40%,rgba(255,255,255,0)) right/36px 100% no-repeat local,radial-gradient(farthest-side at 100% 50%,rgba(59,29,14,.2),rgba(59,29,14,0)) right/12px 100% no-repeat scroll}
+.ventes-gateaux th.nombre{white-space:normal}
+@media (max-width:480px){.ventes-gateaux td,.ventes-gateaux th{padding-left:5px;padding-right:5px}.defile .ventes-gateaux td:first-child,.defile .ventes-gateaux th:first-child{padding-right:6px}}
+/* Aujourd'hui sur téléphone (14/11/2026) : d'abord ce qu'il y a à faire ; « Les 7 derniers jours » (demande d'Olivier, 07/11) passe sous les listes */
+@media (max-width:599px){.accueil-corps{display:flex;flex-direction:column}.accueil-corps>.bloc.activite{order:1}}
 .case-bloquee{opacity:.75}
 /* Photos des clients (10/11/2026) : la photo Google du client, ronde, à côté de son nom ; rien sans photo */
 .avatar-client{display:inline-block;flex:none;border-radius:50%;object-fit:cover;background:var(--ivoire);box-shadow:0 0 0 1px var(--ligne)}

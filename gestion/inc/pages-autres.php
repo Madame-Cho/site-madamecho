@@ -170,7 +170,18 @@ function page_statistiques(): void {
         $rows .= '<tr><td><a href="' . h(u('commandes', ['vue' => 'toutes', 'canal' => (string)$k['canal']])) . '">' . h(CANAUX[$k['canal']] ?? $k['canal']) . '</a></td><td class="nombre">' . (int)$k['n'] . '</td><td class="nombre">' . (int)$k['remises'] . '</td><td class="nombre">' . h(pourcent((int)$k['remises'], (int)$k['n'])) . '</td>'
                . '<td class="nombre">' . h(isset($m['part']) ? euros_ronds((int)$m['part'][$t]) : '—') . '</td><td class="nombre">' . h(isset($m['pro']) ? euros_ronds((int)$m['pro'][$t]) : '—') . '</td></tr>';
     }
-    if ($rows !== '') $c .= bloc('D\'où viennent les commandes', '<div class="defile"><table class="tableau"><thead><tr><th>Canal</th><th class="nombre">Demandes</th><th class="nombre">Remises</th><th class="nombre">Abouties</th><th class="nombre">' . h('Particuliers, ' . $T) . '</th><th class="nombre">' . h('Professionnels, ' . $T) . '</th></tr></thead><tbody>' . $rows . '</tbody></table></div>');
+    // Comment les clients ont connu Madame Cho (14/11/2026) : la réponse à la question facultative du formulaire du site, ou ce que Youngmi
+    // note dans la commande ; seulement les commandes où c'est précisé. Chaque ligne mène à sa liste, comme les canaux.
+    $connu = '';
+    foreach ($s['par_connu'] as $k) {
+        if (!isset(CONNU_PAR[$k['connu']])) continue;
+        $connu .= '<tr><td><a href="' . h(u('commandes', ['vue' => 'toutes', 'connu' => (string)$k['connu']])) . '">' . h(CONNU_PAR[$k['connu']]) . '</a></td><td class="nombre">' . (int)$k['n'] . '</td><td class="nombre">' . (int)$k['remises'] . '</td></tr>';
+    }
+    $connu = ($connu !== '' ? '<div class="defile"><table class="tableau"><thead><tr><th>Réponse</th><th class="nombre">Demandes</th><th class="nombre">Remises</th></tr></thead><tbody>' . $connu . '</tbody></table></div>' : '')
+           . '<p class="aide">' . ($connu !== '' ? 'Seulement les commandes où c\'est précisé : la réponse du client sur le site, ou ce que vous notez dans « Modifier la commande ».'
+                                                 : 'Pas encore de réponse. Le formulaire du site pose la question, et vous pouvez la noter dans « Modifier la commande ».') . '</p>';
+    if ($rows !== '') $c .= bloc('D\'où viennent les commandes', '<div class="defile"><table class="tableau"><thead><tr><th>Canal</th><th class="nombre">Demandes</th><th class="nombre">Remises</th><th class="nombre">Abouties</th><th class="nombre">' . h('Particuliers, ' . $T) . '</th><th class="nombre">' . h('Professionnels, ' . $T) . '</th></tr></thead><tbody>' . $rows . '</tbody></table></div>')
+                          . bloc('Comment les clients ont connu Madame Cho', $connu, '', 'connu');
     // Ventes par gâteau (demande d'Olivier, 07/11/2026) : particuliers (B2C) et professionnels (B2B) côte à côte, dans la même base, et depuis quand chaque gâteau est proposé
     $c .= bloc('Ventes par gâteau', tableau_ventes_gateaux($s['produits'], $t), '', 'gateaux');
     // Étapes

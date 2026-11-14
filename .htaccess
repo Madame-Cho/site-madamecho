@@ -28,6 +28,10 @@ RewriteRule ^atelier-(site|logo)(/|$) - [G,L]
 # pour changer un jour la destination sans réimprimer ; Matomo compte chaque scan dans la campagne « qr-code », mot-clé « packaging »
 RewriteRule ^qr/?$ /carte/?mtm_campaign=qr-code&mtm_kwd=packaging [R=302,L,NC,NE]
 
+# Lien de la page Instagram de Madame Cho (14/11/2026) : adresse courte madamecho.com/insta, même principe que /qr ;
+# Matomo compte chaque arrivée dans la campagne « instagram », mot-clé « bio », et la demande envoyée ensuite le dit à la gestion
+RewriteRule ^insta/?$ /?mtm_campaign=instagram&mtm_kwd=bio [R=302,L,NC,NE]
+
 # Retrait dans l'agenda du client (email de confirmation, demande d'Olivier du 07/11/2026) : adresses courtes madamecho.com/rdv/…,
 # servies par la gestion (?p=rdv, jeton secret) sans changer l'adresse affichée
 RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/google/?$ /gestion/index.php?p=rdv&c=$1&vers=google [L]

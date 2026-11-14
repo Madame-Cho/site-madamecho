@@ -257,7 +257,7 @@ function carte_commande(array $k, bool $avecClient = true): string {
     // La pastille de la personne (FR-041) : « Nouvelle demande », « Le client a répondu », « Commande modifiée »… avec un liseré de couleur
     $pa = pastilles()['commandes'][(int)$k['id']] ?? null;
     if ($pa) $alertes = etiquette_pastille($pa) . $alertes;
-    if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . heures_depuis($k['recue_le']) . ' h</span>';
+    if (commande_en_retard($k)) $alertes .= '<span class="retard">Sans réponse depuis ' . attente_lisible($k['recue_le']) . '</span>';
     elseif (commande_dormante($k)) $alertes .= '<span class="dormant">Rien depuis ' . jours_depuis($k['dernier_echange']) . ' j</span>';
     $nom = $avecClient ? avatar_client((int)$k['client_id']) . '<b translate="no">' . h(commande_client_nom($k)) . '</b>' : '<b>' . h(livraison_pro($k) ? 'Livraison' : (TYPES_COMMANDE[$k['type']] ?? 'Commande')) . '</b>';
     $montant = montant_lu($k);
@@ -321,6 +321,11 @@ function formulaire(string $action, string $contenu, array $a = [], string $page
 }
 function bouton(string $label, string $classe = '', array $a = []): string {
     return '<button type="submit" class="btn ' . h($classe) . '"' . attrs($a) . '>' . $label . '</button>';
+}
+/** Le libellé d'un bouton qui envoie un mail : l'enveloppe, « Envoyer à », puis l'adresse ; sur téléphone l'adresse passe proprement
+ *  à la ligne au lieu de couper « Envoyer / à » (14/11/2026). */
+function libelle_envoi(string $verbe, string $email): string {
+    return icone('email') . '<span class="lib-envoi"><span class="le-verbe">' . h($verbe) . '</span> <span class="le-adresse" translate="no">' . h($email) . '</span></span>';
 }
 function lien_bouton(string $href, string $label, string $classe = '', array $a = []): string {
     return '<a class="btn ' . h($classe) . '" href="' . h($href) . '"' . attrs($a) . '>' . $label . '</a>';

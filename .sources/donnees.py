@@ -100,7 +100,97 @@ ANNIV = [
  "Une plaque en chocolat avec le prénom et le message de votre choix est comprise dans le prix.",
  "Commandez au moins 2 jours à l'avance.",
 ]
-PARCOURS = "Diplômée de l'Université nationale de Séoul, Youngmi arrive en France en 2015 et se forme à l'École Ducasse. Elle passe six ans dans de grandes maisons de la gastronomie française, dont le George V et La Réserve. Aujourd'hui, à Meudon, elle prépare chaque gâteau à la commande et partage aussi les saveurs de la Corée."
+
+# ---------- Demandes sur mesure déjà commencées (14/11/2026, décision d'Olivier du même jour) ----------
+# Un bouton de l'accueil ouvre « Ma demande » avec ?demande=<clé>#perso : « Votre envie » commence par quelques mots que le client
+# complète, l'aide dit quoi préciser, et la demande dit à Madame Cho (email et gestion) par quel bouton elle a commencé.
+# Rien d'inventé : chaque aide reprend ce que le bloc de l'accueil dit déjà. « aide » absente : l'aide habituelle reste.
+# « origine » : la suite de « commencée par … » dans l'email à Madame Cho et dans l'historique de la gestion.
+ENVIES = {
+ "anniversaire": dict(
+  envie="Gâteau d'anniversaire : ",
+  incomplet="Décrivez votre gâteau d'anniversaire : nombre de personnes, saveurs, décoration.",
+  origine="le bouton « Faire ma demande » des Anniversaires",
+  evenement="Demande commencée|Accueil|Anniversaires"),
+ "number-cake": dict(
+  envie="Number cake façon Saint-Honoré, chiffres : ",
+  aide="Pour votre Number cake : le ou les chiffres et le nombre de personnes (1 chiffre à partir de 4 personnes, 2 chiffres à partir de 8).",
+  incomplet="Indiquez le ou les chiffres de votre Number cake et le nombre de personnes.",
+  origine="le bouton « Faire ma demande » du Number cake",
+  evenement="Demande commencée|Accueil|Number cake"),
+ "evenement": dict(
+  envie="Création pour un événement : ",
+  aide="Pour votre événement : l'occasion, le thème, vos envies et le nombre de personnes.",
+  incomplet="Décrivez votre événement : l'occasion, le thème, le nombre de personnes.",
+  origine="le bouton « Parlons de votre événement »",
+  evenement="Demande commencée|Accueil|Événements"),
+}
+
+# Section saisonnière « Bûches de Noël sur mesure » de l'accueil (préparée le 09/11/2026, reprise le 14/11/2026).
+# actif=False : la section n'est pas sur le site. Elle reste éteinte tant que Youngmi n'a pas répondu (questions envoyées le 14/11/2026) :
+#   parfums proposés ; tailles ou nombre de personnes ; prix indicatif ; date limite de commande ; acompte (30 % pour une personnalisation) ;
+#   jours de retrait (le 24 décembre est fermé aujourd'hui). Rien d'inventé : aucun parfum, prix ni date limite ici avant ses réponses.
+# Pas de photo de bûche pour l'instant : la section est en texte seul. À éteindre de nouveau après les fêtes.
+NOEL = dict(
+ actif=False,
+ etiquette="Bûches de Noël sur mesure",
+ titre="Une bûche à votre goût, pour les fêtes",
+ textes=[
+  "Madame Cho prépare votre bûche de Noël sur commande. Parfums, taille, décoration : faites-lui part de vos envies pour imaginer ensemble la bûche de votre table.",
+  "Indiquez le nombre de personnes et le jour du retrait : Madame Cho vous répond sous 24 heures par une proposition écrite, sans engagement.",
+ ],
+ petit="Retrait sur rendez-vous à Meudon. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre.",
+ bouton="Demander ma bûche",
+)
+if NOEL["actif"]:
+    ENVIES["buche-noel"] = dict(
+     envie="Bûche de Noël sur mesure : ",
+     aide="Pour votre bûche : nombre de personnes, parfums, décoration, et un message si vous le souhaitez.",
+     incomplet="Décrivez votre bûche : nombre de personnes, parfums, décoration.",
+     origine="le bouton « Demander ma bûche » des Bûches de Noël",
+     evenement="Demande commencée|Accueil|Bûches de Noël")
+
+# ---------- Fiche du Number cake dans la carte (préparée le 14/11/2026, décision d'Olivier du même jour) ----------
+# Une fiche « vitrine » : une page de la carte, avec sa vignette, comme les six gâteaux, mais sans ajout au panier.
+# Le bouton « Faire ma demande » ouvre « Ma demande » déjà commencée (ENVIES["number-cake"]) : le client y écrit ses chiffres.
+# Textes, prix, photos et légende : ceux du bloc de l'accueil écrit par Youngmi (12 et 13/11/2026), repris mot pour mot. Ce bloc reste
+# dans gen.py tel qu'elle l'a écrit ; à la génération, gen.py vérifie que l'accueil et la fiche disent la même chose et s'arrête sinon.
+# LA FICHE N'EST PAS SUR LE SITE tant qu'une des quatre informations ci-dessous manque (None) : règle du haut de ce fichier et R-39,
+# rien d'inventé. Questions envoyées à Youngmi le 14/11/2026. Quand elle a répondu : remplir les quatre lignes, puis générer.
+#   delai_txt        : suite de « Commander » ; exemples des autres fiches : "2 jours avant le retrait", "la veille du retrait"
+#   personnalisation : une phrase ; si la plaque est comprise, on peut reprendre PLAQUE
+#   conservation     : exemple des autres fiches : "Au réfrigérateur, à déguster dans les 3 jours."
+#   allergenes       : la liste exacte, comme pour les autres gâteaux (la phrase TRACES s'ajoute toute seule)
+NUMBER_CAKE = dict(
+ id="number-cake", nom="Number Cake façon Saint-Honoré", envie="number-cake",
+ photo="number-cake-dessus", alt="Number Cake façon Saint-Honoré en deux chiffres, vu du dessus",
+ # (photo, texte de remplacement, nom du bouton de la miniature), dans l'ordre des miniatures de l'accueil
+ photos=[("number-cake-detail", "Détail des choux caramélisés et du feuilletage", "Détail des choux et du feuilletage"),
+         ("number-cake-dessus", "Number Cake façon Saint-Honoré en deux chiffres, vu du dessus", "Vue du dessus"),
+         ("number-cake-perspective", "Number Cake façon Saint-Honoré, vu de trois quarts", "Vue de trois quarts")],
+ legende_photo=["Le modèle présenté est composé de deux chiffres pour 8 personnes,", "disposés sur un support de 25 × 25 cm."],
+ phrase="Le Saint-Honoré revisité en gâteau chiffre pour les anniversaires !",
+ court="Le Saint-Honoré revisité en gâteau chiffre pour les anniversaires !",
+ textes=["Une pâte feuilletée croustillante, une crème à la vanille, du caramel, une chantilly à la vanille et de petits choux caramélisés."],
+ tarifs=[("1 chiffre · à partir de 4 personnes", 4000, "pour 4 personnes"),
+         ("2 chiffres · à partir de 8 personnes", 7000, "pour 8 personnes")],
+ tarifs_note=["Pour plus de parts, contactez-nous pour un devis.", "Prix TTC · Création sur commande."],
+ carte_pour="à partir de 4 personnes", carte_prix="dès 40 €",
+ delai_txt=None,
+ personnalisation=None,
+ conservation=None,
+ allergenes=None,
+)
+VITRINES = [NUMBER_CAKE]
+VITRINE_OBLIGATOIRE = ("delai_txt", "personnalisation", "conservation", "allergenes")
+
+# ---------- « Comment avez-vous connu Madame Cho ? » (14/11/2026) ----------
+# Question facultative en fin de formulaire, réponses à toucher : (code, texte du formulaire). Les mêmes codes dans la gestion
+# (inc/base.php, CONNU_PAR), qui y ajoute le QR code des emballages, connu sans rien demander.
+CONNU = [("proche", "Par un proche"), ("google", "Google"), ("instagram", "Instagram"),
+         ("restaurant", "Un restaurant ou un café"), ("client", "J'ai déjà commandé"), ("autre", "Autre")]
+
+PARCOURS ="Diplômée de l'Université nationale de Séoul, Youngmi arrive en France en 2015 et se forme à l'École Ducasse. Elle passe six ans dans de grandes maisons de la gastronomie française, dont le George V et La Réserve. Aujourd'hui, à Meudon, elle prépare chaque gâteau à la commande et partage aussi les saveurs de la Corée."
 REPERES = ["Université nationale de Séoul", "École Ducasse", "George V et La Réserve", "Saveurs coréennes"]
 PROS_REF = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés."
 PROS = "Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés. Pour une réunion, un séminaire ou une fête d'entreprise, Madame Cho compose une sélection sucrée, sur devis."
@@ -177,6 +267,9 @@ SEO_PRODUITS = {
                       "Choux craquelin faits main : vanille, caramel, chocolat, praliné noisette ou citron. 2,50 € la pièce, à partir de 10. Retrait à Meudon."),
  "petits-gateaux-du-gouter": ("Petits gâteaux du goûter sur commande à Meudon",
                       "Petits cakes faits main pour le goûter : banane-chocolat, noix de coco, chocolat ou vegan au praliné cacahuète. 3,50 € la pièce, à partir de 6."),
+ # fiche vitrine (NUMBER_CAKE) : sert seulement quand la fiche est sur le site
+ "number-cake": ("Number cake (gâteau chiffre) sur commande à Meudon",
+                      "Number cake façon Saint-Honoré fait main par Madame Cho : feuilletage, crème vanille, caramel et choux. 1 chiffre dès 40 €, 2 chiffres dès 70 €."),
 }
 ACTIVITE = "Pâtisserie sur commande à Meudon, dans les Hauts-de-Seine."
 # Villes citées pour le référencement local (accord d'Olivier du 07/11/2026 : pas de livraison, retrait à Meudon seulement)

@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-12-merci"
+VERSION = "2026-11-14-demande"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -28,6 +28,11 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 COMMUN = os.path.join(ICI, "commun") + "/"   # police Jost et logo, repris des maquettes (retirées du site le 03/11/2026)
 E = html.escape
 PHOTOS = json.load(open(os.path.join(ICI, "photos.json")))   # dimensions des photos de assets/photos (photos.py)
+# La carte montrée : les gâteaux du panier (PRODUITS), puis les fiches « vitrine » complètes (VITRINES, donnees.py : sans panier,
+# la demande passe par « Ma demande » déjà commencée). Une fiche vitrine dont une information manque n'est pas sur le site (R-39).
+VITRINES_EN_LIGNE = [v for v in VITRINES if all(v.get(k) for k in VITRINE_OBLIGATOIRE)]
+CARTE = PRODUITS + VITRINES_EN_LIGNE
+NOMBRES = {6: "Six", 7: "Sept", 8: "Huit", 9: "Neuf", 10: "Dix"}
 
 # Adresse email cliquable (ouvre la messagerie) suivie d'un bouton « copier » : sur un ordinateur sans
 # messagerie installée, le lien mailto ne fait rien ; l'icône copie l'adresse (demande d'Olivier, 08/11/2026).
@@ -179,7 +184,7 @@ def page(chemin, titre, desc, corps, prof, script_page="", jsonld=None, classe="
 
 def carte_items(prof, h="h3"):
     out = []
-    for p in PRODUITS:
+    for p in CARTE:
         out.append(f'''<a class="gateau" href="{lien('carte/' + p['id'] + '/', prof)}">
  <div class="cadre">{img('charlotte-dessus' if p['id'] == 'charlotte-chocolat-framboise' else p['photo'], prof, p['alt'], "(min-width: 860px) 31vw, (min-width: 700px) 46vw, 100vw")}</div>
  <div class="legende"><{h}>{E(p['nom'])}</{h}><p>{E(p['court'])}</p>
@@ -190,6 +195,9 @@ def carte_items(prof, h="h3"):
 # ---------- Accueil ----------
 def accueil(prof=0):
     a = lien("ma-demande/", prof)
+    def depuis(cle):
+        """Lien vers « Ma demande » déjà commencée (ENVIES, 14/11/2026) : ?demande=<clé>, et le clic compté par Matomo."""
+        return f'href="{a}?demande={cle}#perso" data-evenement="{E(ENVIES[cle]["evenement"])}"'
     anniv = "".join(f"<p>{E(x)}</p>" for x in ANNIV)
     rep = "".join(f"<li>{E(x)}</li>" for x in REPERES)
     etapes = "".join(f'<li><span class="num">{i}</span><b>{E(t)}</b><span>{E(d)}</span></li>' for i, (t, d) in enumerate(ETAPES, 1))
@@ -207,6 +215,20 @@ def accueil(prof=0):
  {offre}</div>
  <div>{img("professionnels-desserts", prof, "Assortiment de desserts : tarte aux fruits à coque, pâtisseries individuelles et gâteau aux carottes", "(min-width: 860px) 45vw, 100vw", grand="professionnels-final-grand.webp", petit="professionnels-final-600.webp")}</div>
 </div></section>'''
+    # Bûches de Noël (NOEL, donnees.py) : la section n'existe que si elle est allumée
+    noel = ""
+    if NOEL["actif"]:
+        nt = "".join(f"<p>{E(x)}</p>" for x in NOEL["textes"])
+        noel = f'''<section class="bloc" id="noel" aria-labelledby="t-noel"><div class="large">
+ <h2 class="titre" id="t-noel"><span class="etiquette">{E(NOEL['etiquette'])}</span> {E(NOEL['titre'])}</h2>
+ {nt}
+ <p class="petit">{E(NOEL['petit'])}</p>
+ <a class="bouton" {depuis("buche-noel")}>{E(NOEL['bouton'])}</a>
+</div></section>
+'''
+    # Bloc Événements de Youngmi (12/11/2026). Décision d'Olivier du 14/11/2026 : les photos d'Halloween restent, elles montrent ce que
+    # Madame Cho sait faire sur un thème. Seuls le deuxième paragraphe (« Quel que soit votre thème… ») et le début de la légende ont
+    # été écrits ce jour-là, pour dire que tous les thèmes sont possibles ; le reste est le texte de Youngmi.
     corps = f'''<section class="ouverture" aria-labelledby="t-accueil">
  {img("ouverture", prof, "Quatre choux craquelin posés sur une pierre claire, dans la lumière du matin", "(min-width: 860px) calc(100vw - 96px), 100vw", lazy=False, grand="ouverture-1600.webp", petit="ouverture-800.webp")}
  <div class="texte"><h1 id="t-accueil">{E(H1)}</h1><p>{E(SOUS)}</p><a class="lien" href="#carte">Voir la carte</a></div>
@@ -216,10 +238,10 @@ def accueil(prof=0):
  <div class="grille">{carte_items(prof)}</div>
  <p class="petit centre">{E(TRACES)}</p>
 </section>
-<section class="bloc" id="anniversaires" aria-labelledby="t-anniv"><div class="deux">
+{noel}<section class="bloc" id="anniversaires" aria-labelledby="t-anniv"><div class="deux">
  <div>{img("anniversaire", prof, "Tiramisu cerclé de chocolat, saupoudré de cacao et de feuilles d'or", "(min-width: 860px) 45vw, 100vw")}</div>
  <div><h2 class="titre" id="t-anniv"><span class="etiquette">Anniversaires</span> Un gâteau à votre nom</h2>{anniv}
- <a class="bouton" href="{a}#perso">Faire ma demande</a></div>
+ <a class="bouton" {depuis("anniversaire")}>Faire ma demande</a></div>
 </div></section>
 <section class="bloc" id="number-cake" aria-labelledby="t-number-cake"><div class="deux">
  <figure class="number-galerie">
@@ -239,15 +261,16 @@ def accueil(prof=0):
    <div><span>2 chiffres · à partir de 8 personnes</span><strong>70 € <small>(pour 8 personnes)</small></strong></div>
   </div>
   <p class="petit">Pour plus de parts, contactez-nous pour un devis.<br>Prix TTC · Création sur commande.</p>
-  <a class="bouton" href="{a}#perso">Faire ma demande</a>
+  <a class="bouton" {depuis("number-cake")}>Faire ma demande</a>
  </div>
 </div></section>
 <section class="bloc" id="evenements" aria-labelledby="t-evenements"><div class="large">
  <h2 class="titre" id="t-evenements"><span class="etiquette">Événements &amp; créations sur commande</span> Un thème, une occasion, une touche gourmande.</h2>
- <p>Anniversaire d’enfant, baptême, mariage ou toute autre occasion : Madame Cho imagine des créations gourmandes sur commande, adaptées au thème et à l’ambiance que vous souhaitez. Halloween n’est ici qu’un exemple parmi tant d’autres !</p>
+ <p>Anniversaire d’enfant, baptême, mariage ou toute autre occasion : Madame Cho imagine des créations gourmandes sur commande, adaptées au thème et à l’ambiance que vous souhaitez.</p>
+ <p>Quel que soit votre thème, du plus classique au plus fantaisiste, Madame Cho lui donne forme avec le même soin du détail. Halloween n’est ici qu’un exemple parmi tant d’autres !</p>
  <p>Partagez vos envies, votre thème, la date et le nombre de personnes : imaginons ensemble les douceurs qui accompagneront votre événement.</p>
- <figure class="evenements-collage">{img("halloween-triptyque", prof, "Créations d’Halloween : truffes araignées et biscuits doigts de sorcière, mini-gâteaux au chocolat et desserts fantômes", "(min-width: 1200px) 1100px, 100vw")}<figcaption>Truffes au chocolat en forme d’araignées et biscuits « doigts de sorcière », mini-gâteaux au chocolat et desserts fantômes : des créations imaginées pour Halloween.</figcaption></figure>
- <a class="bouton" href="{a}#perso">Parlons de votre événement</a>
+ <figure class="evenements-collage">{img("halloween-triptyque", prof, "Créations d’Halloween : truffes araignées et biscuits doigts de sorcière, mini-gâteaux au chocolat et desserts fantômes", "(min-width: 1200px) 1100px, 100vw")}<figcaption>Halloween à la façon de Madame Cho : truffes au chocolat en forme d’araignées et biscuits « doigts de sorcière », mini-gâteaux au chocolat et desserts fantômes.</figcaption></figure>
+ <a class="bouton" {depuis("evenement")}>Parlons de votre événement</a>
 </div></section>
 {pros}
 <section class="bloc" id="maison" aria-labelledby="t-maison"><div class="maison">
@@ -277,7 +300,7 @@ def accueil(prof=0):
 def carte():
     prof = 1
     corps = f'''<section class="bloc premier" aria-labelledby="t-carte"><div class="tete-page"><h1 class="etiquette centre" id="t-carte">La carte</h1>
- <p class="chapo centre">Six gâteaux préparés à la commande par Madame Cho, à retirer sur rendez-vous à Meudon.</p></div>
+ <p class="chapo centre">{NOMBRES.get(len(CARTE), str(len(CARTE)))} gâteaux préparés à la commande par Madame Cho, à retirer sur rendez-vous à Meudon.</p></div>
  <div class="grille">{carte_items(prof, "h2")}</div>
  <p class="petit centre">{E(TRACES)}</p>
  <p class="centre"><a class="bouton" href="{lien('', prof)}#anniversaires">Un gâteau d'anniversaire ?</a></p>
@@ -288,6 +311,14 @@ def carte():
     return page("carte/index.html", SEO_CARTE[0], SEO_CARTE[1], corps, prof, jsonld=ld)
 
 # ---------- Page d'un gâteau ----------
+def autres_gateaux(p, prof):
+    """« Les autres gâteaux » d'une fiche : les vignettes, et la classe de leur grille (cinq de front ; six quand une fiche vitrine est sur le site)."""
+    autres = [q for q in CARTE if q["id"] != p["id"]]
+    vignettes = "".join(
+        f'<a class="autre" href="{lien("carte/" + q["id"] + "/", prof)}">{img(q["photo"], prof, q["alt"], "(min-width: 860px) 18vw, 45vw")}<span>{E(q["nom"])}</span></a>'
+        for q in autres)
+    return vignettes, "autres" if len(autres) == 5 else "autres par-six"
+
 def fiche(p):
     prof = 2
     compo = ""
@@ -315,10 +346,7 @@ def fiche(p):
                ("Allergènes", p["allergenes"] + " " + TRACES),
                ("Conservation", p["conservation"])]
     dl = "".join(f"<div><dt>{E(a)}</dt><dd>{E(b)}</dd></div>" for a, b in details)
-    autres = [q for q in PRODUITS if q["id"] != p["id"]]
-    autres_html = "".join(
-        f'<a class="autre" href="{lien("carte/" + q["id"] + "/", prof)}">{img(q["photo"], prof, q["alt"], "(min-width: 860px) 18vw, 45vw")}<span>{E(q["nom"])}</span></a>'
-        for q in autres)
+    autres_html, autres_classe = autres_gateaux(p, prof)
     photo_html = f'<div class="fiche-photo">{img(p["photo"], prof, p["alt"], "(min-width: 860px) 50vw, 100vw", lazy=False)}</div>'
     if p['id'] == 'charlotte-chocolat-framboise':
         photo_html = f'''<div class="fiche-photo charlotte-galerie">
@@ -344,7 +372,7 @@ def fiche(p):
   <div class="partage"><button type="button" class="lien-bouton" data-partager>Partager ce gâteau</button></div>
  </div>
 </article>
-<section class="bloc autres-bloc" aria-labelledby="t-autres"><h2 class="etiquette centre" id="t-autres">Les autres gâteaux</h2><div class="autres">{autres_html}</div></section>'''
+<section class="bloc autres-bloc" aria-labelledby="t-autres"><h2 class="etiquette centre" id="t-autres">Les autres gâteaux</h2><div class="{autres_classe}">{autres_html}</div></section>'''
     url = SITE + "carte/" + p["id"] + "/"
     vendeur = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho"}
     if p["mode"] == "taille":
@@ -370,10 +398,78 @@ def fiche(p):
         result = result.replace('</body>', f'<script src="{R(prof)}assets/charlotte-galerie.js?v=2026-11-12"></script>\n</body>')
     return result
 
+# ---------- Page d'une création sur commande, sans panier (fiche « vitrine » : le Number cake) ----------
+def fiche_vitrine(v):
+    """Comme la page d'un gâteau, sauf le choix : les prix sont montrés, et le bouton ouvre « Ma demande » déjà commencée (ENVIES).
+    Galerie, tarifs et styles : ceux du bloc de l'accueil (number-cake.css et number-cake.js de Youngmi), sans rien y changer."""
+    prof = 2
+    minis = "".join(
+        f'<button type="button" data-number-photo="{n}" data-alt="{E(a)}" aria-label="{E(l)}" aria-pressed="{"true" if n == v["photo"] else "false"}">{img(n, prof, "", "72px")}</button>'
+        for n, a, l in v["photos"])
+    textes = "".join(f"<p>{E(x)}</p>" for x in v["textes"])
+    tarifs = "".join(f'<div><span>{E(l)}</span><strong>{euros(prix)} <small>({E(pour)})</small></strong></div>' for l, prix, pour in v["tarifs"])
+    details = [("Commander", v["delai_txt"][:1].upper() + v["delai_txt"][1:] + ", sur rendez-vous à Meudon."),
+               ("Personnalisation", v["personnalisation"]),
+               ("Allergènes", v["allergenes"] + " " + TRACES),
+               ("Conservation", v["conservation"])]
+    dl = "".join(f"<div><dt>{E(a)}</dt><dd>{E(b)}</dd></div>" for a, b in details)
+    autres_html, autres_classe = autres_gateaux(v, prof)
+    envie = ENVIES[v["envie"]]
+    corps = f'''<nav class="fil" aria-label="Fil d'Ariane"><a href="{lien('carte/', prof)}">← La carte</a></nav>
+<article class="fiche fiche-vitrine">
+ <div class="fiche-photo fiche-galerie"><figure class="number-galerie">
+  {img(v["photo"], prof, v["alt"], "(min-width: 860px) 50vw, 100vw", lazy=False, cls="number-photo")}
+  <div class="number-miniatures" role="group" aria-label="Photos : {E(v['nom'])}">{minis}</div>
+  <figcaption>{E(" ".join(v["legende_photo"])).replace(" × ", "\u00a0×\u00a0").replace(" cm", "\u00a0cm")}</figcaption>
+ </figure></div>
+ <div class="fiche-texte">
+  <div class="etiquette">La carte</div>
+  <h1 class="titre">{_re.sub(r"(\w+-\w+)", r'<span class="insecable">\1</span>', E(v['nom']))}</h1>
+  <p class="phrase">{E(v['phrase'])}</p>
+  {textes}
+  <div class="number-tarifs">{tarifs}</div>
+  <p class="petit">{"<br>".join(E(x) for x in v["tarifs_note"])}</p>
+  <a class="bouton plein" href="{lien('ma-demande/', prof)}?demande={v['envie']}#perso" data-evenement="{E(envie['evenement'].replace('|Accueil|', '|Fiche|'))}">Faire ma demande</a>
+  <p class="petit apres-bouton">Vous indiquez vos chiffres et le nombre de personnes : Madame Cho vous répond sous 24 heures par une proposition écrite, sans engagement.</p>
+  <dl class="details">{dl}</dl>
+  <div class="partage"><button type="button" class="lien-bouton" data-partager>Partager ce gâteau</button></div>
+ </div>
+</article>
+<section class="bloc autres-bloc" aria-labelledby="t-autres"><h2 class="etiquette centre" id="t-autres">Les autres gâteaux</h2><div class="{autres_classe}">{autres_html}</div></section>'''
+    url = SITE + "carte/" + v["id"] + "/"
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "Product", "@id": url + "#gateau", "name": v["nom"], "description": v["phrase"] + " " + " ".join(v["textes"]),
+         "image": [SITE + "assets/photos/" + v["photo"] + "-grand.webp", SITE + "assets/photos/partage-" + v["id"] + ".jpg"],
+         "brand": {"@type": "Brand", "name": "Madame Cho"}, "category": "Pâtisserie",
+         "offers": {"@type": "AggregateOffer", "priceCurrency": "EUR", "lowPrice": f"{min(t[1] for t in v['tarifs'])/100:.2f}",
+                    "offerCount": len(v["tarifs"]), "url": url, "seller": {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho"}}},
+        {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Accueil", "item": SITE},
+            {"@type": "ListItem", "position": 2, "name": "La carte", "item": SITE + "carte/"},
+            {"@type": "ListItem", "position": 3, "name": v["nom"], "item": url}]}]}
+    titre_seo, desc = SEO_PRODUITS[v["id"]]
+    result = page(f"carte/{v['id']}/index.html", f"{titre_seo} · Madame Cho", desc, corps, prof, jsonld=ld, classe="page-fiche",
+                  image="partage-" + v["id"] + ".jpg", image_alt=v["alt"], titre_partage=f"{v['nom']} · Madame Cho")
+    result = result.replace('</head>', f'<link rel="stylesheet" href="{R(prof)}assets/number-cake.css?v=2026-11-12">\n</head>')
+    return result.replace('</body>', f'<script src="{R(prof)}assets/number-cake.js?v=2026-11-12"></script>\n</body>')
+
+def verifier_vitrines(html_accueil):
+    """L'accueil (bloc écrit à la main par Youngmi) et la fiche vitrine doivent dire la même chose : textes, prix, légende.
+    Sinon la génération s'arrête : mieux vaut ne rien publier que deux prix différents pour le même gâteau (R-39)."""
+    for v in VITRINES_EN_LIGNE:
+        attendus = ([E(v["phrase"])] + [E(x) for x in v["textes"]] + ["<br>".join(E(x) for x in v["tarifs_note"]), "<br>".join(E(x) for x in v["legende_photo"])]
+                    + [f"<span>{E(l)}</span><strong>{euros(prix)} <small>({E(pour)})</small></strong>" for l, prix, pour in v["tarifs"]])
+        absents = [x for x in attendus if x not in html_accueil]
+        if absents:
+            sys.exit(f"ARRÊT : la fiche « {v['nom']} » (donnees.py) et son bloc de l'accueil (gen.py) ne disent plus la même chose.\n"
+                     "Absent de l'accueil : " + " | ".join(absents) + "\nCorriger l'un des deux, puis générer de nouveau. Rien n'a été écrit.")
+
 # ---------- Ma demande ----------
 def demande():
     prof = 1
     moments = "".join(f'<option value="{c}">{E(l)}</option>' for c, l in MOMENTS)
+    # « Comment avez-vous connu Madame Cho ? » (14/11/2026) : facultatif, une réponse à toucher (on peut la retirer en la touchant de nouveau)
+    connu = "".join(f'<label class="puce"><input type="radio" name="connu" value="{c}"><span>{E(l)}</span></label>' for c, l in CONNU)
     corps = f'''<section class="bloc premier demande" aria-labelledby="t-dem">
 <div class="etroit">
  <h1 class="titre" id="t-dem">Ma demande</h1>
@@ -384,7 +480,7 @@ def demande():
   <div class="panier" data-panier aria-live="polite"><p class="vide">Votre demande est vide pour l'instant. <a href="{lien('', prof)}#carte">Voir la carte</a></p></div>
 
   <h2 class="sous-titre" id="perso">Un gâteau personnalisé ?</h2>
-  <p class="aide">Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
+  <p class="aide" data-perso-aide>Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
   <label class="champ"><span>Votre envie <i>(facultatif)</i></span>
    <textarea name="perso" rows="4" maxlength="1200" data-perso aria-describedby="aide-sante"></textarea></label>
   <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a>.</p>
@@ -408,8 +504,11 @@ def demande():
   <label class="case" data-pro-case {'hidden' if not DEMANDE_PRO else ''}><input type="checkbox" name="pro" value="1" data-pro> Je fais cette demande pour une entreprise ou un restaurant</label>
   <label class="champ" data-societe hidden><span>Nom de l'entreprise</span><input type="text" name="societe" autocomplete="organization" maxlength="100"></label>
   <label class="champ" data-message-pro hidden><span>Votre besoin <i>(nombre de personnes, date, budget)</i></span><textarea name="besoin" rows="3" maxlength="1200"></textarea></label>
+  <fieldset class="connu"><legend>Comment avez-vous connu Madame Cho ? <i>(facultatif)</i></legend>
+   <div class="puces">{connu}</div></fieldset>
   <div class="piege" aria-hidden="true"><label>Ne pas remplir <input type="text" name="site_web" tabindex="-1" autocomplete="off"></label></div>
   <input type="hidden" name="via" value="">
+  <input type="hidden" name="depuis" value="">
 
   <p class="notice">Vos coordonnées servent seulement à répondre à votre demande ; elles ne sont ni vendues ni utilisées pour de la publicité. <a href="{lien('confidentialite/', prof)}">Confidentialité</a> · <a href="{lien('conditions-de-commande/', prof)}">Conditions de commande</a></p>
   <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
@@ -503,7 +602,7 @@ MENTIONS = [
 CONFID = [
  ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, {EMAIL_HTML}."]),
  ("Pourquoi", ["Seulement pour répondre à votre demande, vous faire une proposition, préparer et retirer votre commande. Base légale : les mesures prises à votre demande avant un contrat, puis le contrat lui-même. Aucune publicité, aucune revente."]),
- ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande, puis le suivi de votre commande (étapes, montant, paiement, notes de préparation) et les échanges à son sujet : emails, et résumé des appels ou messages notés par Madame Cho. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
+ ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande, votre réponse à la question « Comment avez-vous connu Madame Cho ? » si vous y répondez, puis le suivi de votre commande (étapes, montant, paiement, notes de préparation) et les échanges à son sujet : emails, et résumé des appels ou messages notés par Madame Cho. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
  ("Qui les reçoit", ["Madame Cho. Prestataires techniques : OVH (hébergement du site, envoi du formulaire et outil de suivi des commandes, en France) et Google (messagerie).",
    "Votre demande est enregistrée dans l'outil de suivi des commandes de Madame Cho, hébergé avec le site chez OVH en France et réservé à Madame Cho.",
    "Quand vous payez par carte ou par virement, l'outil retrouve votre paiement dans les comptes bancaires de Madame Cho (Qonto, et son compte au Crédit Mutuel relié à Qonto) : il y lit les paiements reçus (date, montant, libellé du virement avec le nom de celui qui paie) pour les rapprocher de votre commande, en lecture seule. Ce libellé n'est transmis à aucun assistant d'intelligence artificielle.",
@@ -514,7 +613,7 @@ CONFID = [
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Pour qu'une même adresse ne reçoive pas plusieurs emails de confirmation dans la journée, le site garde aussi une empreinte pseudonymisée de votre email, effacée après 24 heures. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
  ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les échanges d'une commande suivent la même durée que la commande. Les informations d'un client sont effacées 3 ans après sa dernière commande ou son dernier échange avec Madame Cho. Les factures sont conservées 10 ans, comme la loi l'exige. Les échanges avec l'assistant de l'outil de suivi des commandes sont effacés après 6 mois. Une commande ou une fiche supprimée par erreur reste 30 jours dans la corbeille de l'outil, puis elle est effacée."]),
  ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à {EMAIL_HTML}. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
- ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Quand vous choisissez la date et le moment du retrait, la page demande au site si Madame Cho est disponible : seuls la date et le moment sont envoyés, et rien n'est enregistré. Si vous arrivez par le QR code d'un emballage, les pages que vous ouvrez ensuite gardent cette indication dans leur adresse, et votre demande la signale à Madame Cho ; rien d'autre n'est noté."]),
+ ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Quand vous choisissez la date et le moment du retrait, la page demande au site si Madame Cho est disponible : seuls la date et le moment sont envoyés, et rien n'est enregistré. Si vous arrivez par le QR code d'un emballage ou par le lien de la page Instagram de Madame Cho, les pages que vous ouvrez ensuite gardent cette indication dans leur adresse, et votre demande la signale à Madame Cho. Si vous commencez votre demande par un bouton du site (anniversaire, Number cake, événement), elle signale aussi ce bouton ; rien d'autre n'est noté."]),
 ] + ([("Mesure d'audience", [
    "Pour savoir quelles pages sont lues et améliorer le site, Madame Cho compte les visites avec Matomo, un outil installé sur son propre hébergement chez OVH, en France. "
    "Aucun cookie n'est déposé, l'adresse IP est tronquée avant d'être enregistrée, les données ne sont ni croisées avec d'autres ni transmises à quiconque, et elles servent seulement à produire des statistiques anonymes. "
@@ -587,6 +686,9 @@ def htaccess():
               "# QR code imprimé sur les emballages (décision d'Olivier du 07/11/2026) : adresse fixe madamecho.com/qr, redirection temporaire (302)",
               "# pour changer un jour la destination sans réimprimer ; Matomo compte chaque scan dans la campagne « qr-code », mot-clé « packaging »",
               "RewriteRule ^qr/?$ /carte/?mtm_campaign=qr-code&mtm_kwd=packaging [R=302,L,NC,NE]", "",
+              "# Lien de la page Instagram de Madame Cho (14/11/2026) : adresse courte madamecho.com/insta, même principe que /qr ;",
+              "# Matomo compte chaque arrivée dans la campagne « instagram », mot-clé « bio », et la demande envoyée ensuite le dit à la gestion",
+              "RewriteRule ^insta/?$ /?mtm_campaign=instagram&mtm_kwd=bio [R=302,L,NC,NE]", "",
               "# Retrait dans l'agenda du client (email de confirmation, demande d'Olivier du 07/11/2026) : adresses courtes madamecho.com/rdv/…,",
               "# servies par la gestion (?p=rdv, jeton secret) sans changer l'adresse affichée",
               "RewriteRule ^rdv/([0-9]+-[0-9a-f]{24})/google/?$ /gestion/index.php?p=rdv&c=$1&vers=google [L]",
@@ -637,7 +739,7 @@ def images_partage():
         from PIL import Image
     except ImportError:
         print("PIL absent : images de partage non refaites"); return
-    for p in PRODUITS:
+    for p in CARTE:
         cible = os.path.join(OUT, "assets/photos", f"partage-{p['id']}.jpg")
         source = os.path.join(OUT, "assets/photos", f"{p['photo']}-grand.webp")
         if os.path.exists(cible) and os.path.getmtime(cible) >= os.path.getmtime(source):
@@ -659,7 +761,10 @@ def catalogue():
             d["parfums"] = {c: {"libelle": l} for c, l, _ in p["parfums"]}
             d.update(unite=p["unite"], minimum=p["minimum"], pas=p["pas"])
         prods[p["id"]] = d
-    return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO}
+    return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO,
+            # demandes déjà commencées (ENVIES) : textes pour la page, « origine » pour l'email et la gestion ; « connu » : réponses acceptées
+            "envies": {c: {k: v for k, v in e.items() if k != "evenement"} for c, e in ENVIES.items()},
+            "connu": dict(CONNU)}
 
 def catalogue_gestion():
     """Carte pour l'espace de gestion : la même, plus les textes publics des fiches (comparaison des allergènes, R-39)."""
@@ -699,12 +804,16 @@ def ecrire(chemin, texte):
     with open(f, "w", encoding="utf-8") as h:
         h.write(texte)
 
-ecrire("index.html", accueil())
+_accueil = accueil()
+verifier_vitrines(_accueil)   # avant toute écriture
+ecrire("index.html", _accueil)
 if APERCU:
     ecrire("accueil/index.html", accueil(1))
 ecrire("carte/index.html", carte())
 for p in PRODUITS:
     ecrire(f"carte/{p['id']}/index.html", fiche(p))
+for v in VITRINES_EN_LIGNE:
+    ecrire(f"carte/{v['id']}/index.html", fiche_vitrine(v))
 ecrire("ma-demande/index.html", demande())
 ecrire("retrait/index.html", retrait())
 ecrire("questions/index.html", questions())
@@ -713,7 +822,7 @@ if not APERCU:
     ecrire(".htaccess", htaccess())
 images_partage()
 ecrire("mentions-legales/index.html", legale("mentions-legales", "Mentions légales", "Mentions légales du site de Madame Cho, pâtisserie à Meudon.", MENTIONS))
-ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID, maj="13 novembre 2026"))
+ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID, maj="14 novembre 2026"))
 ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, acompte, retrait, paiement.", CONDITIONS, maj="4 novembre 2026"))
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
@@ -756,7 +865,7 @@ for f in ("favicon.ico", "favicon.svg", "apple-touch-icon.png", "icone-192.png",
 shutil.copy(os.path.join(ICI, "favicon", "favicon.ico"), os.path.join(OUT, "favicon.ico"))
 if EN_LIGNE:
     # Plan du site : les pages à trouver dans les résultats (Ma demande et la 404 n'y sont pas)
-    urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in PRODUITS] + ["retrait/", "questions/", "conditions-de-commande/", "mentions-legales/", "confidentialite/"]
+    urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in CARTE] + ["retrait/", "questions/", "conditions-de-commande/", "mentions-legales/", "confidentialite/"]
     ecrire("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
            "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{MAJ}</lastmod></url>\n" for u in urls) + "</urlset>\n")
     # Tout est permis aux robots : les pages à ne pas indexer (Ma demande, 404) portent leur « noindex » (il faut pouvoir le lire)
@@ -785,7 +894,7 @@ if EN_LIGNE:
               f"- Comment commander : demande en ligne sur {SITE}ma-demande/ (réponse sous 24 heures avec une proposition écrite), ou par téléphone."]
     lignes += [f"- {t} : {x}" for t, x in PRATIQUE if t != "Conservation"]
     lignes += ["", "## La carte", ""]
-    for p in PRODUITS:
+    for p in CARTE:
         lignes.append(f"- [{p['nom']}]({SITE}carte/{p['id']}/) : {p['court']} {p.get('carte_pour', '')}, {p.get('carte_prix', '')}. Allergènes : {p['allergenes']}".replace(" , ", " ").replace(", .", "."))
     lignes += ["", f"## Professionnels", "", PROS, "", "## Pages", "",
                f"- [Accueil]({SITE})", f"- [La carte et les prix]({SITE}carte/)", f"- [Retrait à Meudon]({SITE}retrait/)", f"- [Questions fréquentes]({SITE}questions/)",

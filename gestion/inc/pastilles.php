@@ -27,6 +27,12 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-connu', 'le' => '2026-11-14', 'titre' => 'Comment vos clients vous ont connue',
+     'texte' => 'Le formulaire du site demande maintenant au client, s\'il veut bien répondre, comment il a connu Madame Cho : bouche-à-oreille, Google, Instagram, un restaurant… Sa réponse est sur la fiche de la commande ; pour une commande reçue autrement, notez-la dans « Modifier la commande ». Les Statistiques comptent ces réponses. Une demande dit aussi par quel bouton du site elle a commencé (anniversaire, Number cake, événement).',
+     'lien' => ['statistiques', 'connu']],
+    ['id' => '2026-11-telephone', 'le' => '2026-11-14', 'titre' => 'Plus lisible sur le téléphone',
+     'texte' => 'Aujourd\'hui montre d\'abord ce qu\'il y a à faire ; « Les 7 derniers jours » est en bas. Dans une commande, la ligne sous les ronds dit le geste à faire, un seul mail est ouvert à la fois, et les trois aides pour écrire (dicter en français, parler en coréen, corriger) tiennent sur une ligne. Dans les Statistiques, les tableaux ne coupent plus les mots : ils se font glisser du doigt.',
+     'lien' => ['manuel', 'commande']],
     ['id' => '2026-11-rapprochement-auto', 'le' => '2026-11-13', 'titre' => 'Les paiements retrouvés tout seuls dans Qonto',
      'texte' => 'La gestion retrouve maintenant toute seule les paiements dans Qonto : versements Tap to Pay, virements avec le numéro de la facture ou le nom du client, sur le compte Qonto et sur celui du Crédit Mutuel. Plus rien à cocher. Seuls les cas à vérifier apparaissent, dans Aujourd\'hui et au Rapprochement, avec un bouton pour chacun.',
      'lien' => ['rapprochement', 'a-verifier']],
