@@ -31,10 +31,9 @@
 
 ## Notes
 
-- 3 marqueurs [NEEDS CLARIFICATION] : FR-007 (qui crée le lien dans Qonto, exception à R-24),
-  FR-013 (reçu envoyé tout seul, exception à R-01), FR-018 (ce qui est gardé après une annulation
-  tardive). Ce sont trois décisions d'Olivier, à lever avec `/speckit-clarify` avant
-  `/speckit-plan`.
+- 2 marqueurs [NEEDS CLARIFICATION] : FR-013 (reçu envoyé tout seul, exception à R-01) et FR-018
+  (ce qui est gardé après une annulation tardive). FR-007 levé le 2026-11-21 (la gestion crée le
+  lien au toucher de Youngmi, exception à R-24). À lever avant `/speckit-plan`.
 - Le prestataire (lien de paiement de Qonto) est nommé dans le constat et les hypothèses parce que
   c'est le système de paiement de Madame Cho ; les exigences restent indépendantes de l'outil.
 - À vérifier à l'activation chez Qonto : remboursement, plafond et durée de vie d'un lien, délai
