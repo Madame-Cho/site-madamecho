@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-21
 
-**Status**: Brouillon, trois décisions d'Olivier à prendre (marqueurs ci-dessous) ; aucun code écrit
+**Status**: Brouillon, deux décisions d'Olivier à prendre (marqueurs ci-dessous) ; aucun code écrit
 
 **Input**: Demande d'Olivier du 2026-11-21 : « ajouter le paiement direct en choix de paiement sur
 le site », puis : « on a des offres à la carte qui sont fixes et des offres personnalisables qui
@@ -29,6 +29,10 @@ n'oublie pas le mail avec le reçu. »
   paiement en ligne est proposé, jamais imposé.
 - Q: Le reçu ? → A : un mail avec le reçu part après le paiement en ligne (décision du 2026-11-09 :
   reçu pour chaque particulier ; facture seulement si le client la demande, spécification 003).
+
+- Q: Qui crée le lien de paiement dans Qonto ? → A : la gestion, au toucher de Youngmi (carte de
+  décision du 2026-11-21, 15:53) ; droit Qonto limité aux liens de paiement, exception à R-24 à
+  inscrire au rulebook.
 
 ### Constat du 2026-11-21 (lecture seule)
 
@@ -213,10 +217,10 @@ la commande confirmée et payée dans la gestion ; refaire sur un créneau ferm�
   de la commande, et cesser de fonctionner quand la commande est payée, annulée ou remise.
 - **FR-006**: Si le prix ou l'acompte change, le lien en cours DOIT être annulé avant tout nouvel
   envoi.
-- **FR-007**: La création d'un lien de paiement DOIT se faire [NEEDS CLARIFICATION: par la gestion,
-  au toucher de Youngmi, avec un droit Qonto limité aux liens de paiement (exception à R-24 à
-  inscrire au rulebook), ou à la main par Youngmi dans l'application Qonto, qui colle ensuite le
-  lien dans la commande ?]
+- **FR-007**: Le lien de paiement DOIT être créé par la gestion, au toucher de Youngmi, jamais
+  sans elle au temps 1 ; la gestion reçoit pour cela un droit Qonto limité aux liens de paiement
+  (ni virement, ni carte, ni facture), par exception à R-24 inscrite au rulebook (décision
+  d'Olivier du 2026-11-21).
 
 **Constater le paiement**
 
