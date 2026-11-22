@@ -3,7 +3,7 @@
 # Autres modes : python3 -I gen.py SORTIE [--apercu | --essai]
 #   --apercu : liens vers index.html (lecture hors serveur), bandeau « aperçu privé », envoi du formulaire simulé.
 # Sans --apercu : liens propres (/carte/…/), prêt pour OVH ; la balise noindex reste sans --en-ligne (version de la racine, R-19).
-import os, sys, json, html, shutil
+import os, sys, json, html, shutil, hashlib, datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from donnees import *
@@ -23,7 +23,7 @@ MATOMO = "https://stats.madamecho.com/"   # Matomo installé le 06/11/2026 (avec
 MATOMO_SITE = 1           # numéro du site dans Matomo
 MESURE = bool(MATOMO) and EN_LIGNE
 BASE = "/atelier-site/site/" if ESSAI else "/"   # chemin absolu du site sur le serveur (page 404, servie à n'importe quelle adresse)
-MAJ = VERSION[:10]        # date de mise à jour annoncée au plan du site
+MAJ = VERSION[:10]        # date de la version
 ICI = os.path.dirname(os.path.abspath(__file__))
 COMMUN = os.path.join(ICI, "commun") + "/"   # police Jost et logo, repris des maquettes (retirées du site le 03/11/2026)
 E = html.escape
@@ -796,9 +796,13 @@ def typo(html_txt):
         morceaux[i] = t
     return "".join(morceaux)
 
+EMPREINTES = {}   # page écrite -> empreinte de son contenu
 def ecrire(chemin, texte):
     if chemin.endswith(".html"):
         texte = typo(texte)
+    if chemin.endswith(".html"):
+        # Empreinte du contenu, sans les « ?v=… » qui changent à chaque version : sert aux dates du plan du site
+        EMPREINTES[chemin] = hashlib.sha256(_re.sub(r'\?v=[^"&\s]*', "", texte.replace("\r", "")).encode("utf-8")).hexdigest()[:16]
     f = os.path.join(OUT, chemin)
     os.makedirs(os.path.dirname(f), exist_ok=True)
     with open(f, "w", encoding="utf-8") as h:
@@ -866,8 +870,26 @@ shutil.copy(os.path.join(ICI, "favicon", "favicon.ico"), os.path.join(OUT, "favi
 if EN_LIGNE:
     # Plan du site : les pages à trouver dans les résultats (Ma demande et la 404 n'y sont pas)
     urls = ["", "carte/"] + ["carte/" + p["id"] + "/" for p in CARTE] + ["retrait/", "questions/", "conditions-de-commande/", "mentions-legales/", "confidentialite/"]
+    # Date de chaque page (22/11/2026) : celle de son dernier vrai changement, et non la date de la version pour toutes.
+    # pages-dates.json garde, par page, l'empreinte de son contenu et la date où elle a changé pour la dernière fois ;
+    # une page dont l'empreinte a changé prend la date du jour (heure de Paris), les autres gardent la leur.
+    _f_dates = os.path.join(ICI, "pages-dates.json")
+    _dates = json.load(open(_f_dates, encoding="utf-8")) if os.path.exists(_f_dates) else {}
+    _jour = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)).strftime("%Y-%m-%d")
+    try:
+        from zoneinfo import ZoneInfo
+        _jour = datetime.datetime.now(ZoneInfo("Europe/Paris")).strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    for u in urls:
+        e = EMPREINTES[u + "index.html"]
+        if _dates.get(u, {}).get("empreinte") != e:
+            _dates[u] = {"empreinte": e, "date": _jour}
+    _dates = {u: _dates[u] for u in urls}
+    with open(_f_dates, "w", encoding="utf-8", newline="\n") as h:
+        h.write(json.dumps(_dates, indent=1, ensure_ascii=False) + "\n")
     ecrire("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-           "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{MAJ}</lastmod></url>\n" for u in urls) + "</urlset>\n")
+           "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{_dates[u]['date']}</lastmod></url>\n" for u in urls) + "</urlset>\n")
     # Tout est permis aux robots : les pages à ne pas indexer (Ma demande, 404) portent leur « noindex » (il faut pouvoir le lire)
     # Fiche contact (demande d'Olivier, 07/11/2026) : sur téléphone, le lien ouvre « Ajouter aux contacts » ; les mails de Madame Cho arrivent mieux
     ecrire("madame-cho.vcf", "\r\n".join(["BEGIN:VCARD", "VERSION:3.0", "FN:Madame Cho", "N:;Madame Cho;;;", "ORG:Madame Cho",

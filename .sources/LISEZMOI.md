@@ -13,6 +13,7 @@ Les pages, `.htaccess`, `robots.txt`, `sitemap.xml`, `assets/catalogue.js` et `m
 - `gestion/` : l'espace de gestion de Madame Cho (clients, commandes, produits), copié tel quel dans `gestion/` à la génération. Voir plus bas.
 - `mesure.js` : la mesure d'audience Matomo (sans cookie, exemption CNIL, refus possible sur la page Confidentialité). Elle n'est active que si `MATOMO` est rempli dans `gen.py` ; vide, le site ne mesure rien et ses textes le disent.
 - `favicon/`, `commun/` : icônes, police Jost (licence OFL) et logo.
+- `pages-dates.json` : tenu par `gen.py`, ne pas le modifier à la main. Il garde pour chaque page du plan du site la date de son dernier vrai changement (`lastmod` de `sitemap.xml`) ; une page qui change prend la date du jour de la génération.
 - `photos.json` : la taille de chaque photo de `assets/photos`. Une nouvelle photo s'ajoute en WebP (`nom-grand.webp`, 1 200 px, et `nom-600.webp`), avec sa ligne dans `photos.json`. Le script qui a préparé les photos actuelles est rangé dans le Drive (15/04), avec une copie de ces sources.
 
 ## Espace de gestion (`/gestion/`)
