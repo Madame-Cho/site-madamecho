@@ -112,7 +112,9 @@
     var cible = d.getElementById(b.getAttribute("data-cible"));
     if (!modele || !cible) return;
     var n = parseInt(cible.getAttribute("data-prochain"), 10) || 0;
-    var html = modele.innerHTML.replace(/999/g, String(n));
+    // Le modèle porte le numéro 999 : on ne le remplace que dans le nom et l'identifiant des champs, jamais ailleurs
+    // (22/11/2026 : remplacé partout, il changeait aussi max="999" de la quantité, et la 2e ligne refusait plus de 1 gâteau).
+    var html = modele.innerHTML.replace(/lignes\[999\]/g, "lignes[" + n + "]").replace(/"l999([a-z])"/g, '"l' + n + '$1"');
     cible.insertAdjacentHTML("beforeend", html);
     cible.setAttribute("data-prochain", String(n + 1));
     var s = cible.lastElementChild && cible.lastElementChild.querySelector("select");
