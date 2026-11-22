@@ -181,9 +181,37 @@ function assistant_specs(): string {
     return $t === '' ? '' : "\n\nLes spécifications (le pourquoi et les règles détaillées ; le manuel dit ce qui est en ligne) :" . $t;
 }
 
+/** Les messages tels que l'API les accepte. PHP relit un objet JSON vide « {} » comme un tableau vide, puis le réécrit « [] » : un appel
+ *  d'outil sans paramètre (« input ») repartait donc en liste, et l'API refusait toute la conversation (« tool_use.input: Input should be
+ *  an object », signalé par Youngmi le 22/11/2026). Ici, « input » redevient toujours un objet, pour le tour en cours comme pour les
+ *  messages déjà enregistrés ; un bloc qui n'est pas un tableau est écarté, et un message resté sans bloc reçoit un texte « … ». */
+function assistant_messages_api(array $messages): array {
+    $l = [];
+    foreach ($messages as $m) {
+        if (!is_array($m)) continue;
+        $c = $m['content'] ?? '';
+        if (is_array($c)) {
+            $blocs = [];
+            foreach ($c as $b) {
+                if (!is_array($b)) continue;
+                if (($b['type'] ?? '') === 'tool_use') {
+                    $in = $b['input'] ?? null;
+                    if (is_string($in)) $in = json_decode($in, true);                      // un « input » resté en texte JSON
+                    if (!is_array($in) && !is_object($in)) $in = [];
+                    $b['input'] = (is_array($in) && array_is_list($in)) ? ($in ? (object)['valeurs' => $in] : new \stdClass()) : (object)$in;
+                }
+                $blocs[] = $b;
+            }
+            $c = $blocs ?: [['type' => 'text', 'text' => '…']];
+        }
+        $l[] = ['role' => (string)($m['role'] ?? 'user'), 'content' => $c];
+    }
+    return $l;
+}
 /** L'appel au modèle. Si l'API refuse l'option de repli (bêta) ou le cache automatique, on réessaie sans. */
 function assistant_appel(array $corps, string $cle, string $effort = GESTION_ASSISTANT_EFFORT): array {
     @set_time_limit(150);
+    if (is_array($corps['messages'] ?? null)) $corps['messages'] = assistant_messages_api($corps['messages']);
     $corps['model'] = GESTION_ASSISTANT_MODELE;
     $corps['max_tokens'] = GESTION_ASSISTANT_MAX_TOKENS;
     $corps['output_config'] = ['effort' => $effort];
