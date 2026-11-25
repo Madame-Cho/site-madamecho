@@ -182,6 +182,38 @@ def page(chemin, titre, desc, corps, prof, script_page="", jsonld=None, classe="
 </html>
 '''
 
+# ---------- Données structurées (25/11/2026) : ce que Google et les assistants IA lisent, invisible pour les visiteurs ----------
+# Rien d'inventé (R-39) : noms, phrases, photos, tailles, parts et prix viennent de donnees.py, comme les pages.
+def fil_ld(*etapes):
+    """Fil d'Ariane d'une page : l'accueil, puis les (nom, chemin) donnés."""
+    return {"@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": i + 1, "name": nom, "item": SITE + chemin}
+        for i, (nom, chemin) in enumerate((("Accueil", ""),) + etapes)]}
+
+def offre_ld(p):
+    """Les prix d'un gâteau : une offre par taille (avec le nombre de parts), ou le prix à la pièce et le minimum de commande."""
+    url = SITE + "carte/" + p["id"] + "/"
+    vendeur = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho"}
+    if "tarifs" in p:      # fiche vitrine (Number cake) : prix « à partir de »
+        return {"@type": "AggregateOffer", "priceCurrency": "EUR", "lowPrice": f"{min(t[1] for t in p['tarifs'])/100:.2f}",
+                "offerCount": len(p["tarifs"]), "url": url, "seller": vendeur}
+    if p["mode"] == "taille":
+        prix = [t[3] for t in p["tailles"]]
+        return {"@type": "AggregateOffer", "priceCurrency": "EUR", "lowPrice": f"{min(prix)/100:.2f}", "highPrice": f"{max(prix)/100:.2f}",
+                "offerCount": len(prix), "url": url, "seller": vendeur,
+                "offers": [{"@type": "Offer", "name": f"{l} · {pour}", "price": f"{px/100:.2f}", "priceCurrency": "EUR", "url": url}
+                           for _c, l, pour, px in p["tailles"]]}
+    return {"@type": "Offer", "priceCurrency": "EUR", "price": f"{p['unite']/100:.2f}", "url": url, "seller": vendeur,
+            "eligibleQuantity": {"@type": "QuantitativeValue", "minValue": p["minimum"], "unitText": "pièces"}}
+
+def produit_ld(p):
+    """Un gâteau de la carte (Product), le même sur sa fiche et dans la carte de l'accueil."""
+    url = SITE + "carte/" + p["id"] + "/"
+    return {"@type": "Product", "@id": url + "#gateau", "name": p["nom"], "url": url,
+            "description": p["phrase"] + (" " + " ".join(p["textes"]) if "textes" in p else ""),
+            "image": [SITE + "assets/photos/" + p["photo"] + "-grand.webp", SITE + "assets/photos/partage-" + p["id"] + ".jpg"],
+            "brand": {"@type": "Brand", "name": "Madame Cho"}, "category": "Pâtisserie", "offers": offre_ld(p)}
+
 def carte_items(prof, h="h3"):
     out = []
     for p in CARTE:
@@ -290,7 +322,8 @@ def accueil(prof=0):
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebSite", "@id": SITE + "#site", "url": SITE, "name": "Madame Cho", "inLanguage": "fr-FR",
          "publisher": {"@id": SITE + "#maison"}},
-        MAISON_LD]}
+        dict(MAISON_LD, hasOfferCatalog={"@type": "OfferCatalog", "name": "La carte", "url": SITE + "carte/",
+                                         "itemListElement": [produit_ld(p) for p in CARTE]})]}
     result = page("index.html", SEO_ACCUEIL[0], SEO_ACCUEIL[1], corps, prof, jsonld=ld, classe="accueil",
                 image_alt="Quatre choux craquelin de Madame Cho posés sur une pierre claire")
     result = result.replace('</head>', f'<link rel="stylesheet" href="{R(prof)}assets/number-cake.css?v=2026-11-12">\n</head>')
@@ -305,9 +338,11 @@ def carte():
  <p class="petit centre">{E(TRACES)}</p>
  <p class="centre"><a class="bouton" href="{lien('', prof)}#anniversaires">Un gâteau d'anniversaire ?</a></p>
 </section>'''
-    ld = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
-        {"@type": "ListItem", "position": 1, "name": "Accueil", "item": SITE},
-        {"@type": "ListItem", "position": 2, "name": "La carte", "item": SITE + "carte/"}]}
+    ld = {"@context": "https://schema.org", "@graph": [
+        fil_ld(("La carte", "carte/")),
+        {"@type": "ItemList", "name": "La carte", "numberOfItems": len(CARTE), "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": p["nom"], "url": SITE + "carte/" + p["id"] + "/"}
+            for i, p in enumerate(CARTE)]}]}
     return page("carte/index.html", SEO_CARTE[0], SEO_CARTE[1], corps, prof, jsonld=ld)
 
 # ---------- Page d'un gâteau ----------
@@ -374,22 +409,7 @@ def fiche(p):
 </article>
 <section class="bloc autres-bloc" aria-labelledby="t-autres"><h2 class="etiquette centre" id="t-autres">Les autres gâteaux</h2><div class="{autres_classe}">{autres_html}</div></section>'''
     url = SITE + "carte/" + p["id"] + "/"
-    vendeur = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho"}
-    if p["mode"] == "taille":
-        prix = [t[3] for t in p["tailles"]]
-        offre = {"@type": "AggregateOffer", "priceCurrency": "EUR", "lowPrice": f"{min(prix)/100:.2f}", "highPrice": f"{max(prix)/100:.2f}",
-                 "offerCount": len(prix), "url": url, "seller": vendeur}
-    else:
-        offre = {"@type": "Offer", "priceCurrency": "EUR", "price": f"{p['unite']/100:.2f}", "url": url, "seller": vendeur,
-                 "eligibleQuantity": {"@type": "QuantitativeValue", "minValue": p["minimum"], "unitText": "pièces"}}
-    ld = {"@context": "https://schema.org", "@graph": [
-        {"@type": "Product", "@id": url + "#gateau", "name": p["nom"], "description": p["phrase"],
-         "image": [SITE + "assets/photos/" + p["photo"] + "-grand.webp", SITE + "assets/photos/partage-" + p["id"] + ".jpg"],
-         "brand": {"@type": "Brand", "name": "Madame Cho"}, "category": "Pâtisserie", "offers": offre},
-        {"@type": "BreadcrumbList", "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Accueil", "item": SITE},
-            {"@type": "ListItem", "position": 2, "name": "La carte", "item": SITE + "carte/"},
-            {"@type": "ListItem", "position": 3, "name": p["nom"], "item": url}]}]}
+    ld = {"@context": "https://schema.org", "@graph": [produit_ld(p), fil_ld(("La carte", "carte/"), (p["nom"], "carte/" + p["id"] + "/"))]}
     titre_seo, desc = SEO_PRODUITS[p["id"]]
     result = page(f"carte/{p['id']}/index.html", f"{titre_seo} · Madame Cho", desc, corps, prof, jsonld=ld, classe="page-fiche",
                 image="partage-" + p["id"] + ".jpg", image_alt=p["alt"], titre_partage=f"{p['nom']} · Madame Cho")
@@ -437,16 +457,7 @@ def fiche_vitrine(v):
 </article>
 <section class="bloc autres-bloc" aria-labelledby="t-autres"><h2 class="etiquette centre" id="t-autres">Les autres gâteaux</h2><div class="{autres_classe}">{autres_html}</div></section>'''
     url = SITE + "carte/" + v["id"] + "/"
-    ld = {"@context": "https://schema.org", "@graph": [
-        {"@type": "Product", "@id": url + "#gateau", "name": v["nom"], "description": v["phrase"] + " " + " ".join(v["textes"]),
-         "image": [SITE + "assets/photos/" + v["photo"] + "-grand.webp", SITE + "assets/photos/partage-" + v["id"] + ".jpg"],
-         "brand": {"@type": "Brand", "name": "Madame Cho"}, "category": "Pâtisserie",
-         "offers": {"@type": "AggregateOffer", "priceCurrency": "EUR", "lowPrice": f"{min(t[1] for t in v['tarifs'])/100:.2f}",
-                    "offerCount": len(v["tarifs"]), "url": url, "seller": {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho"}}},
-        {"@type": "BreadcrumbList", "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Accueil", "item": SITE},
-            {"@type": "ListItem", "position": 2, "name": "La carte", "item": SITE + "carte/"},
-            {"@type": "ListItem", "position": 3, "name": v["nom"], "item": url}]}]}
+    ld = {"@context": "https://schema.org", "@graph": [produit_ld(v), fil_ld(("La carte", "carte/"), (v["nom"], "carte/" + v["id"] + "/"))]}
     titre_seo, desc = SEO_PRODUITS[v["id"]]
     result = page(f"carte/{v['id']}/index.html", f"{titre_seo} · Madame Cho", desc, corps, prof, jsonld=ld, classe="page-fiche",
                   image="partage-" + v["id"] + ".jpg", image_alt=v["alt"], titre_partage=f"{v['nom']} · Madame Cho")
@@ -536,7 +547,8 @@ def demande():
 </div>
 </section>'''
     return page("ma-demande/index.html", "Ma demande · Madame Cho", "Envoyer une demande sans engagement à Madame Cho : gâteaux, date de retrait à Meudon, coordonnées.",
-                corps, prof, classe="page-demande", indexer=False)
+                corps, prof, classe="page-demande", indexer=False,
+                jsonld=dict({"@context": "https://schema.org"}, **fil_ld(("Ma demande", "ma-demande/"))))
 
 # ---------- Pages légales ----------
 def legale(slug, titre, desc, sections, maj="3 novembre 2026"):
@@ -547,7 +559,8 @@ def legale(slug, titre, desc, sections, maj="3 novembre 2026"):
     corps = f'''<section class="bloc premier" aria-labelledby="t-leg"><div class="etroit texte-long">
  <h1 class="titre" id="t-leg">{E(titre)}</h1>{s}
  <p class="petit">Mise à jour : {maj}.</p></div></section>'''
-    return page(f"{slug}/index.html", f"{titre} · Madame Cho", desc, corps, prof)
+    return page(f"{slug}/index.html", f"{titre} · Madame Cho", desc, corps, prof,
+                jsonld=dict({"@context": "https://schema.org"}, **fil_ld((titre, slug + "/"))))
 
 # ---------- Questions fréquentes (08/11/2026) : réponses courtes que les moteurs et les assistants IA peuvent citer ----------
 def questions():
@@ -556,8 +569,10 @@ def questions():
     corps = f'''<section class="bloc premier" aria-labelledby="t-faq"><div class="etroit texte-long">
  <h1 class="titre" id="t-faq">Questions fréquentes</h1>{items}
  <p>Une autre question ? <a href="tel:{TEL_LIEN}">{TEL}</a> · {EMAIL_HTML}, ou <a href="{lien('ma-demande/', prof)}">votre demande en ligne</a>.</p></div></section>'''
-    ld = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
-        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": r}} for q, r in FAQ]}
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": r}} for q, r in FAQ]},
+        fil_ld(("Questions fréquentes", "questions/"))]}
     return page("questions/index.html", "Questions fréquentes · Madame Cho, pâtisserie à Meudon",
                 "Commander, délais, retrait à Meudon, tailles, plaque en chocolat, paiement : les réponses de Madame Cho.", corps, prof, jsonld=ld)
 
@@ -577,9 +592,7 @@ def retrait():
  <h2 class="sous-titre">Comment commander</h2>
  <p>Choisissez vos gâteaux sur <a href="{lien('carte/', prof)}">la carte</a> et envoyez votre demande, sans engagement. Madame Cho vous répond sous 24 heures avec une proposition écrite : le prix, le jour et l'heure du retrait. Pour une question : <a href="tel:{TEL_LIEN}">{TEL}</a> ou {EMAIL_HTML}.</p>
  <p class="centre"><a class="bouton plein" href="{lien('ma-demande/', prof)}">Faire ma demande</a></p></div></section>'''
-    ld = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
-        {"@type": "ListItem", "position": 1, "name": "Accueil", "item": SITE},
-        {"@type": "ListItem", "position": 2, "name": "Retrait à Meudon", "item": SITE + "retrait/"}]}
+    ld = dict({"@context": "https://schema.org"}, **fil_ld(("Retrait à Meudon", "retrait/")))
     return page("retrait/index.html", SEO_RETRAIT[0], SEO_RETRAIT[1], corps, prof, jsonld=ld)
 
 # Médiateur : CM2C choisi par Olivier ; texte à remplacer par ses coordonnées et le numéro d'adhérent dès la confirmation de l'adhésion
@@ -647,6 +660,14 @@ def introuvable():
     return page("404.html", "Page introuvable · Madame Cho", "Cette page n'existe pas sur le site de Madame Cho.", corps, prof, indexer=False)
 
 # Madame Cho dans les données structurées (accueil ; les fiches y renvoient par son @id)
+def _jours_fermes_ld():
+    """Les jours sans retrait (JOURS_FERMES, « MM-JJ ») : la prochaine date de chacun, comptée depuis la date de la version."""
+    lignes = []
+    for mj in JOURS_FERMES:
+        an = int(MAJ[:4]) + (1 if mj < MAJ[5:] else 0)
+        lignes.append({"@type": "OpeningHoursSpecification", "validFrom": f"{an}-{mj}", "validThrough": f"{an}-{mj}",
+                       "opens": "00:00", "closes": "00:00"})
+    return lignes
 MAISON_LD = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho", "url": SITE,
              "description": INTRO,
              "image": [SITE + "assets/photos/partage.jpg", SITE + "assets/photos/ouverture-1600.webp"],
@@ -658,6 +679,8 @@ MAISON_LD = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho", "
              "openingHoursSpecification": [{"@type": "OpeningHoursSpecification",
                                             "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
                                             "opens": "09:00", "closes": "19:00"}],
+             "specialOpeningHoursSpecification": _jours_fermes_ld(),
+             "hasMap": FICHE_GOOGLE,
              "hasMenu": SITE + "carte/", "servesCuisine": "Pâtisserie", "priceRange": "€€",
              "paymentAccepted": "Carte bancaire, virement, espèces", "currenciesAccepted": "EUR",
              "founder": {"@type": "Person", "name": "Youngmi Cho", "jobTitle": "Pâtissière",
