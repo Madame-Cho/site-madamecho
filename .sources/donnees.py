@@ -1,5 +1,5 @@
 # Données du site Madame Cho v2 : textes et carte, tirés des réponses de Youngmi
-# (réponses du 04/11/2026 : annulation 24 h avant le retrait, soja (lécithine) partout où il y a du chocolat, photos choux et anniversaire, lien d'Approach)
+# (réponses du 04/11/2026 : annulation 24 h avant le retrait, depuis le 28/11/2026 avant le début de la plage de retrait, soja (lécithine) partout où il y a du chocolat, photos choux et anniversaire, lien d'Approach)
 # (séance 1 du 03/11/2026 : carte et fiches ; séance 2 : textes, retrait, paiement ;
 #  séance 3 : maquette « Galerie », acompte confirmé, texte Anniversaires réécrit par elle).
 # Prix en centimes, TTC. Un gâteau dont une information manque n'est pas proposé (spécification, rubrique 5).
@@ -142,7 +142,7 @@ NOEL = dict(
   "Madame Cho prépare votre bûche de Noël sur commande. Parfums, taille, décoration : faites-lui part de vos envies pour imaginer ensemble la bûche de votre table.",
   "Indiquez le nombre de personnes et le jour du retrait : Madame Cho vous répond sous 24 heures par une proposition écrite, sans engagement.",
  ],
- petit="Retrait sur rendez-vous à Meudon. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre.",
+ petit="Retrait sur rendez-vous à Meudon. Annulation sans frais jusqu'à 24 heures avant le début de votre plage de retrait. Pas de retrait le 24 décembre.",
  bouton="Demander ma bûche",
 )
 if NOEL["actif"]:
@@ -214,7 +214,7 @@ ETAPES = [
 ]
 PRATIQUE = [
  ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, du lundi au samedi de 9 h à 19 h, sur la plage horaire choisie. Pas de livraison. À quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart."),
- ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le dimanche ni le 24 décembre."),
+ ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le début de votre plage de retrait. Pas de retrait le dimanche (sauf cas particulier convenu par téléphone) ni le 24 décembre."),
  ("Paiement", "Au retrait, par carte bancaire, virement ou espèces."),
  ("Conservation", "Indiquée sur la page de chaque gâteau."),
 ]
@@ -233,7 +233,9 @@ FICHE_GOOGLE = "https://maps.google.com/?cid=15029990752430360950"
 # (sans gluten, Noël, dernière minute, plus de 12 personnes, mariages, touche coréenne) s'ajoutent ici quand elle a répondu.
 FAQ = [
  ("Comment commander un gâteau chez Madame Cho ?",
-  "Choisissez vos gâteaux sur la carte et envoyez votre demande en ligne, sans engagement, ou appelez le 06 61 31 17 79. Madame Cho répond sous 24 heures avec une proposition écrite : le prix, le jour et la plage horaire du retrait. La commande est confirmée quand vous acceptez la proposition."),
+  "Choisissez vos gâteaux sur la carte et envoyez votre demande en ligne, sans engagement, ou appelez le 06 61 31 17 79. Madame Cho répond sous 24 heures avec une proposition écrite : le prix, le jour et la plage horaire du retrait. Si tout vous convient, répondez à sa proposition : elle vous confirme ensuite la commande par écrit, et votre retrait est alors réservé."),
+ ("Et si la plage horaire que je veux est complète ?",
+  "Choisissez une autre plage ou un autre jour : le formulaire ne propose que les plages encore libres. Pour un besoin particulier, appelez Madame Cho au 06 61 31 17 79, vous verrez ensemble ce qui est possible."),
  ("Combien de temps à l'avance faut-il commander ?",
   "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Le délai de chaque gâteau est indiqué sur sa page."),
  ("Madame Cho livre-t-elle ?",
@@ -245,7 +247,7 @@ FAQ = [
  ("Y a-t-il un gâteau vegan ?",
   "Oui, le petit cake vegan au praliné cacahuète, parmi les petits gâteaux du goûter. Les allergènes de chaque gâteau sont indiqués sur sa page."),
  ("Comment payer ?",
-  "Au retrait, par carte bancaire, virement ou espèces. L'annulation est sans frais jusqu'à 24 heures avant le retrait."),
+  "Au retrait, par carte bancaire, virement ou espèces : aucun acompte n'est demandé. L'annulation est sans frais jusqu'à 24 heures avant le début de votre plage de retrait. Un empêchement ensuite ? Appelez Madame Cho ou répondez à son message : vous chercherez une solution ensemble."),
  ("Madame Cho travaille-t-elle pour les entreprises et les restaurants ?",
   "Oui. Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés. Pour une réunion, un séminaire ou une fête d'entreprise, elle compose une sélection sucrée, sur devis."),
 ]

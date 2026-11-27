@@ -48,14 +48,20 @@ function page_agenda(): void {
             $code = texte('plage', 4);
             $op = choix('op', ['fermer' => 1, 'rouvrir' => 1, 'maximum' => 1, 'defaut' => 1], '');
             $n = entier('maximum', 0, 20, 0);
-            $max = $op === 'maximum' && $n >= 1 && $n !== plage_maximum_defaut() ? $n : null;
+            // Un maximum choisi reste celui du jour, même s'il vaut le maximum par défaut : seul « Revenir à … » l'enlève (audit n° 10, C10-09)
+            $max = $op === 'maximum' && $n >= 1 ? $n : null;
             if (!$pj || !isset(PLAGES[$code]) || $op === '' || ($op === 'maximum' && $n < 1)) flash('erreur', 'Choisissez un maximum entre 1 et 20.');
             elseif (plage_regler($pj, $code, $op === 'defaut' ? 'maximum' : $op, $op === 'defaut' ? null : $max)) {
                 $quoi = 'La plage ' . PLAGES_COURTES[$code] . ' du ' . date_fr($pj, 'jour');
+                $e = plages_du_jour($pj)[$code];
+                // Les retraits déjà confirmés ne bougent jamais : on le dit (C10-09)
+                $gardes = $e['n'] ? ' ' . ($e['n'] > 1 ? 'Les ' . $e['n'] . ' retraits déjà confirmés sont maintenus.' : 'Le retrait déjà confirmé est maintenu.') : '';
                 flash('ok', match ($op) {
-                    'fermer' => $quoi . ' est fermée : les clients ne peuvent plus la choisir sur le site.',
-                    'rouvrir' => $quoi . ' est rouverte.',
-                    default => $quoi . ' accepte maintenant ' . ($max ?? plage_maximum_defaut()) . ' retrait' . (($max ?? plage_maximum_defaut()) > 1 ? 's' : '') . ' au plus' . ($max === null ? ' (le maximum par défaut).' : '.'),
+                    'fermer' => $quoi . ' est fermée aux nouvelles demandes : les clients ne peuvent plus la choisir sur le site.' . $gardes,
+                    'rouvrir' => $quoi . ' est rouverte.' . ($e['indispo'] !== null ? ' Une indispo la touche encore : le site ne la propose pas.'
+                                 : ($e['n'] >= $e['maximum'] ? ' Elle reste complète (' . $e['n'] . ' sur ' . $e['maximum'] . ') : augmentez son maximum pour la proposer de nouveau sur le site.' : '')),
+                    default => $quoi . ' accepte maintenant ' . $e['maximum'] . ' retrait' . ($e['maximum'] > 1 ? 's' : '') . ' au plus' . ($max === null ? ' (le maximum par défaut).' : '.')
+                               . ($e['n'] > $e['maximum'] ? $gardes : ''),
                 });
             }
             rediriger('agenda', ['mois' => substr($pj ?? $mois, 0, 7), 'jour' => $pj ?? $jour], 'plages');
@@ -127,7 +133,7 @@ function page_agenda(): void {
     if (array_filter($kj, fn($k) => $k['statut'] === 'confirmee')) $actions .= lien_bouton(u('production', ['du' => $jour, 'jours' => '1']), icone('imprimer') . 'Fiche de production', 'discret');
     if (!$ij) $actions .= lien_bouton(u('agenda', ['mois' => $mois, 'jour' => $jour, 'ajouter' => '1']) . '#ajouter', icone('ajouter') . 'Indispo ce jour-là', 'discret');
     $c .= bloc(h(ucfirst(date_fr($jour, 'jour'))) . ($kj ? ' <span class="compte">' . count($kj) . '</span>' : ''), $p . ($actions !== '' ? '<div class="actions">' . $actions . '</div>' : ''), 'agenda-jour', 'jour');
-    $c .= bloc_plages($jour, $auj);
+    $c .= bloc_plages($jour, $auj, $kj);
 
     // Les indispos à venir, et le formulaire pour en ajouter une
     $aVenir = lignes("SELECT * FROM indispos WHERE fin >= ? ORDER BY debut, heure_debut, id LIMIT 60", [$auj]);
@@ -145,7 +151,7 @@ function page_agenda(): void {
 
 /** Les plages du jour choisi (spécification 007) : « 2 sur 5 » par plage (retraits confirmés ou remis), fermer, rouvrir, maximum.
  *  Le dimanche et le 24 décembre : fermé au public, rien à régler. Un jour passé : lecture seule. */
-function bloc_plages(string $jour, string $auj): string {
+function bloc_plages(string $jour, string $auj, array $kj = []): string {
     $ferme = jour_ferme($jour);
     if ($ferme !== '') {
         return bloc('Plages de retrait', '<p class="aide">' . ($ferme === 'dimanche'
@@ -154,11 +160,27 @@ function bloc_plages(string $jour, string $auj): string {
     }
     $modifiable = $jour >= $auj;
     $defaut = plage_maximum_defaut();
+    // Les commandes du jour rangées dans leur plage (FR-011, audit n° 10, C10-08) : les retraits confirmés ou remis, puis les demandes et
+    // propositions en attente (elles ne prennent pas de place) ; un retrait confirmé sans plage ni heure est « à préciser »
+    $parPlage = []; $sansPlage = [];
+    foreach ($kj as $k) {
+        if (($k['mode'] ?? 'retrait') !== 'retrait' || !empty($k['efface_le'])) continue;
+        $pc = plage_de_commande($k);
+        $quoi = commande_prend_place($k) ? 'places' : 'attente';
+        if ($pc === null) { if ($quoi === 'places') $sansPlage[] = $k; continue; }
+        $parPlage[$pc][$quoi][] = $k;
+    }
+    $lien = fn(array $k): string => '<a class="plage-cmd e-' . h(str_replace('_', '-', $k['statut'])) . '" href="' . h(u('commande', ['id' => $k['id']])) . '">'
+        . (($hp = heure_valide((string)$k['retrait_heure'])) !== '' ? '<span class="evt-h">' . h(str_replace(':', ' h ', $hp)) . '</span> ' : '')
+        . '<b translate="no">' . h(commande_client_nom($k)) . '</b></a>';
     $l = '';
     foreach (plages_du_jour($jour) as $code => $p) {
         $code = (string)$code;
-        $cle = $p['fermee'] ? 'fermee' : ($p['indispo'] !== null ? 'indispo' : ($p['n'] >= $p['maximum'] ? 'complete' : 'libre'));
-        $etat = ['fermee' => 'Fermée', 'indispo' => 'Indispo', 'complete' => 'Complète', 'libre' => 'Libre'][$cle];
+        $cle = $p['fermee'] ? 'fermee' : ($p['indispo'] !== null ? 'indispo' : ($p['n'] > $p['maximum'] ? 'depassee' : ($p['n'] >= $p['maximum'] ? 'complete' : 'libre')));
+        $etat = ['fermee' => 'Fermée', 'indispo' => 'Indispo', 'depassee' => 'Dépassée', 'complete' => 'Complète', 'libre' => 'Libre'][$cle];
+        $cmds = '';
+        if (!empty($parPlage[$code]['places'])) $cmds .= '<span class="plage-cmds-liste">' . implode('', array_map($lien, $parPlage[$code]['places'])) . '</span>';
+        if (!empty($parPlage[$code]['attente'])) $cmds .= '<span class="plage-cmds-liste plage-attente"><span class="petit">En attente, sans place prise :</span> ' . implode('', array_map($lien, $parPlage[$code]['attente'])) . '</span>';
         $compte = fr_ko($p['n'] . ' sur ' . $p['maximum'], $p['n'] . '명 / 최대 ' . $p['maximum'] . '명');
         $cache = '<input type="hidden" name="plage_jour" value="' . h($jour) . '"><input type="hidden" name="plage" value="' . h($code) . '">';
         $act = '';
@@ -174,10 +196,14 @@ function bloc_plages(string $jour, string $auj): string {
         }
         $l .= '<div class="plage-ligne p-' . $cle . '"><span class="plage-h">' . h(PLAGES_COURTES[$code]) . '</span>'
             . '<span class="plage-etat"><b>' . h($compte) . '</b> · ' . h($etat) . ($p['particulier'] ? ' · maximum du jour' : '') . '</span>'
-            . ($act !== '' ? '<span class="plage-actions">' . $act . '</span>' : '') . '</div>';
+            . ($act !== '' ? '<span class="plage-actions">' . $act . '</span>' : '')
+            . ($cmds !== '' ? '<span class="plage-cmds">' . $cmds . '</span>' : '') . '</div>';
     }
+    if ($sansPlage) $l .= '<div class="plage-ligne p-apreciser"><span class="plage-h">À préciser</span><span class="plage-etat">Retraits confirmés sans plage ni heure : '
+                       . 'ouvrez la commande et choisissez sa plage avec le client.</span><span class="plage-cmds"><span class="plage-cmds-liste">' . implode('', array_map($lien, $sansPlage)) . '</span></span></div>';
     $aide = '<p class="aide">Retraits confirmés sur le maximum de la plage (' . $defaut . ' par défaut, à changer dans Plus › Paramètres). '
-          . 'Une demande ou une proposition ne prend pas de place. Une plage complète ou fermée n\'est plus proposée sur le site ; dans la gestion, vous pouvez toujours y mettre une commande.</p>';
+          . 'Une demande ou une proposition ne prend pas de place. Une plage complète ou fermée n\'est plus proposée sur le site ; dans la gestion, vous pouvez toujours y mettre une commande, '
+          . 'en exception convenue avec le client. Fermer une plage ou baisser son maximum n\'annule aucun retrait déjà confirmé.</p>';
     return bloc('Plages de retrait', '<div class="plages-jour">' . $l . '</div>' . $aide, 'plages', 'plages');
 }
 

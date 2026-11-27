@@ -674,7 +674,7 @@ function mail_commande(array $k, string $type, array $o = []): array {
             // Accusé de réception, parti tout seul (demandes d'Olivier du 09/11 et du 11/11/2026, exception à R-01, inc/accuse.php) :
             // un texte fixe, sans prix ni décision, sans rien de ce que le client a écrit à part son prénom
             $traite = 'Nous la traitons dans les plus brefs délais et nous revenons très vite vers vous.';
-            $suite = in_array($k['statut'] ?? 'demande', ['demande', 'proposition'], true) ? 'Nous vous confirmerons par écrit le prix, le jour et l\'heure du retrait.' : '';
+            $suite = in_array($k['statut'] ?? 'demande', ['demande', 'proposition'], true) ? 'Nous vous confirmerons par écrit le prix, le jour et la plage horaire du retrait : votre retrait sera réservé à ce moment-là.' : '';
             $ajout = 'Un détail à ajouter ? Répondez simplement à ce mail.';
             $html .= $p(h($traite), 'margin-bottom:14px')
                    . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"' . $S('background:#F3EDE4;border-radius:6px;margin-top:6px') . '><tr><td' . $S('padding:18px 20px') . '>'
@@ -686,16 +686,16 @@ function mail_commande(array $k, string $type, array $o = []): array {
             break;
         case 'proposition':
             $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '')
-                   . $p('<b>Pour confirmer, il suffit de répondre à ce mail.</b> Annulation sans frais jusqu\'à 24 heures avant le retrait.', 'margin-top:20px');
+                   . $p('<b>Si tout vous convient, répondez simplement à ce mail</b> : nous vous confirmerons ensuite votre commande et votre plage de retrait. ' . h(annulation_phrase($k)), 'margin-top:20px');
             $total = montant_commande($k);
             $texte .= lignes_email($k) . "\n\nTotal : " . ($total ? euros($total) . ' TTC' : 'à préciser') . "\n" . retrait_email($k) . "\n"
                     . ((int)$k['acompte'] > 0 ? 'Pour réserver, un acompte de ' . euros((int)$k['acompte']) . " est demandé ; il est déduit du prix au retrait.\n" : '')
-                    . ($mot !== '' ? "\n" . $mot . "\n" : '') . "\nPour confirmer, il suffit de répondre à ce mail. Annulation sans frais jusqu'à 24 heures avant le retrait.\n\n";
+                    . ($mot !== '' ? "\n" . $mot . "\n" : '') . "\nSi tout vous convient, répondez simplement à ce mail : nous vous confirmerons ensuite votre commande et votre plage de retrait. " . annulation_phrase($k) . "\n\n";
             $fin = 'Belle journée,';
             break;
         case 'confirmation':
             $agenda = rdv_client_possible($k) ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:20px') : '';
-            $regle = ($k['paiement'] === 'paye' ? '' : 'Paiement par carte, virement ou espèces. ') . 'Annulation sans frais jusqu\'à 24 heures avant le retrait.';
+            $regle = ($k['paiement'] === 'paye' ? '' : 'Paiement par carte, virement ou espèces. ') . annulation_phrase($k);
             $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '') . $agenda
                    . $p(h($regle), 'margin-top:14px');
             $texte .= lignes_email($k) . "\n\n" . total_email($k) . "\n"
@@ -764,9 +764,20 @@ function flash_envoi(string $ok): void {
 }
 /** Le dernier envoi d'un type de mail sur la commande (ou null). */
 function mail_deja(int $commande, string $type): ?array {
-    $l = ligne("SELECT le FROM evenements WHERE commande_id = ? AND type = 'email_client' AND (ancien LIKE ? OR (? = 'confirmation' AND texte LIKE '%est confirmée%')) ORDER BY id DESC LIMIT 1",
+    $l = ligne("SELECT le, ancien FROM evenements WHERE commande_id = ? AND type = 'email_client' AND (ancien LIKE ? OR (? = 'confirmation' AND texte LIKE '%est confirmée%')) ORDER BY id DESC LIMIT 1",
                [$commande, 'type:' . $type . ' %', $type]);
     return $l ?: null;
+}
+/** Le délai d'annulation dit au client (Conditions de commande § 6, audit n° 10, C10-10) : 24 heures avant l'heure convenue, sinon avant
+ *  le début de la plage de retrait. */
+function annulation_phrase(array $k): string {
+    return 'Annulation sans frais jusqu\'à 24 heures avant ' . (heure_valide((string)($k['retrait_heure'] ?? '')) !== '' ? 'l\'heure convenue.' : 'le début de votre plage de retrait.');
+}
+/** La dernière confirmation envoyée au client : ['le', 'a_jour' (même jour, plage, heure et mode qu'aujourd'hui)], ou null. Un retrait
+ *  changé après l'envoi redevient « à prévenir » (audit n° 10, C10-04) ; une confirmation d'avant le 08/11 (sans rendez-vous noté) reste à jour. */
+function confirmation_etat(array $k): ?array {
+    $e = mail_deja((int)$k['id'], 'confirmation');
+    return $e ? ['le' => (string)$e['le'], 'a_jour' => rdv_de((string)($e['ancien'] ?? ''), $k)] : null;
 }
 /* Les noms d'avant, gardés pour le reste de la gestion */
 function email_proposition(array $k): array { return mail_commande($k, 'proposition'); }

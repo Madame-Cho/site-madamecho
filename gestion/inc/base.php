@@ -165,6 +165,8 @@ function date_valide(string $s): ?string {
     $d = DateTimeImmutable::createFromFormat('!Y-m-d', $s);
     return ($d && $d->format('Y-m-d') === $s) ? $s : null;
 }
+/** Une heure « HH:MM » réelle (00:00 à 23:59), sinon '' (audit n° 10, C10-02). */
+function heure_valide(string $s): string { return preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $s) ? $s : ''; }
 function email_valide(string $e): bool { return $e !== '' && filter_var($e, FILTER_VALIDATE_EMAIL) !== false && !preg_match('/[\r\n,;]/', $e); }
 
 /* ---------- Chemins et base de données ---------- */

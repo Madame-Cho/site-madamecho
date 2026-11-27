@@ -38,6 +38,17 @@ réel). Les commandes et les réglages vivent dans la base de la gestion seuleme
 - Q: Les nouvelles pages (Retrait, Questions, Conditions de commande) ? → A : elles conviennent à
   Youngmi.
 
+### Session 2026-11-28 (audit n° 10, décision d'Olivier : « Tout corriger avant publication »)
+
+- Q: Confirmer sur une plage complète ou fermée, un dimanche ou une indispo ? → A : la gestion ne le
+  fait plus en silence : il faut cocher « Confirmer quand même » (exception convenue avec le client),
+  et l'exception est notée dans l'historique. Même règle quand on déplace une commande confirmée.
+- Q: Une heure précise et une plage qui se contredisent ? → A : la plage suit l'heure.
+- Q: Jusqu'à quand le client peut-il annuler sans frais ? → A : 24 heures avant le début de sa plage
+  de retrait (ou avant l'heure convenue, s'il y en a une).
+- Q: Quand le retrait est-il réservé ? → A : quand Madame Cho confirme par écrit, pas à l'envoi de la
+  demande ni à l'accord du client sur la proposition.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Le client choisit une plage libre (Priority: P1)
@@ -209,9 +220,11 @@ occurrence ; les données lues par les moteurs annoncent du lundi au samedi, 9 h
 - **FR-011**: L'Agenda DOIT montrer, pour chaque jour, ses plages avec « retraits sur maximum », les
   plages fermées et les commandes de chaque plage, chacune menant à sa page.
 - **FR-012**: La saisie et la modification d'une commande DOIVENT proposer la plage (et en option une
-  heure précise) au lieu du « moment », et avertir sans bloquer pour un dimanche, un jour fermé ou une
-  plage complète.
-- **FR-013**: La confirmation d'une demande DOIT avertir quand la plage est déjà complète.
+  heure précise, que la plage suit) au lieu du « moment ». Pour une commande confirmée, un dimanche, un
+  jour fermé, une indispo ou une plage complète ou fermée ne s'enregistre qu'avec « Exception convenue
+  avec le client » (audit n° 10).
+- **FR-013**: La confirmation d'une demande DOIT refuser une plage complète ou fermée, un dimanche ou
+  une indispo, sauf « Confirmer quand même » (exception convenue avec le client, notée dans l'historique).
 - **FR-014**: Les mails au client (proposition, confirmation, rappel) et le lien d'agenda DOIVENT donner
   la plage, ou l'heure précise si Youngmi en a noté une.
 - **FR-015**: L'assistant de la gestion DOIT pouvoir lire les plages et leur remplissage, sans pouvoir

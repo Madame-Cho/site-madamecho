@@ -441,6 +441,13 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .plage-form{margin:0}
 .plage-form .champ{margin-bottom:8px;max-width:12em}
 details.mini.plage-max>summary{min-height:44px;padding:0 6px}
+.plage-ligne.p-depassee{background:var(--ambre-f);border-color:var(--ambre)}
+.plage-ligne.p-apreciser{border-style:dashed}
+.plage-cmds{flex-basis:100%;display:grid;gap:4px}
+.plage-cmds-liste{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.plage-cmd{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 10px;border:1px solid var(--ligne);border-radius:22px;background:var(--fond);color:var(--texte);text-decoration:none}
+.plage-cmd.e-demande,.plage-cmd.e-proposition{border-style:dashed}
+.plage-attente .petit{color:var(--doux)}
 details.mini.plage-max[open]{flex-basis:100%;background:var(--fond)}
 .plage-actions:has(details[open]){flex-basis:100%}
 /* Statistiques par gâteau : particuliers et pros côte à côte, depuis quand il est proposé (07/11/2026) */

@@ -77,13 +77,11 @@ function plages_pour_demande(string $date): array {
     if (!in_array('libre', $r['plages'], true)) $r['message'] = jour_complet_texte($date);
     return $r;
 }
-/** La phrase d'un jour sans plage libre : les jours d'une indispo d'une journée entière (sans motif), sinon « toutes les plages sont complètes ». */
+/** La phrase d'un jour sans plage libre : le jour demandé seulement, jamais toute la période d'une indispo ni son motif (audit n° 10,
+ *  C10-13), sinon « toutes les plages sont complètes ». */
 function jour_complet_texte(string $date): string {
     foreach (indispos_entre($date, $date) as $i) {
-        if (!indispo_journee($i)) continue;
-        $de = max($i['debut'], date('Y-m-d'));   // une indispo déjà commencée : à partir d'aujourd'hui
-        $jours = $de < $i['fin'] ? 'du ' . date_fr($de, 'jour') . ' au ' . date_fr($i['fin'], 'jour') : 'le ' . date_fr($date, 'jour');
-        return 'Madame Cho n\'est pas disponible ' . $jours . ' : choisissez une autre date.';
+        if (indispo_journee($i)) return 'Madame Cho n\'est pas disponible le ' . date_fr($date, 'jour') . ' : choisissez une autre date.';
     }
     return 'Le ' . date_fr($date, 'jour') . ', toutes les plages de retrait sont complètes : choisissez une autre date.';
 }

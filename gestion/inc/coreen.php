@@ -2003,7 +2003,35 @@ Choisissez un nombre de retraits entre 1 et 20. | 픽업 수는 1에서 20 사�
 Indiquez le prix TTC, vérifiez le jour et la plage horaire du retrait dans la commande, puis envoyez. | 가격(부가세 포함)을 적고, 주문의 픽업 날짜와 시간대를 확인한 뒤 보내요.
 changer le jour ou la plage en haut | 위에서 날짜나 시간대 바꾸기
 Les plages de retrait | 픽업 시간대
-Le site propose maintenant six plages de retrait, du lundi au samedi : 9 h – 10 h 30, 10 h 30 – 12 h, 12 h – 14 h, 14 h – 16 h, 16 h – 18 h et 18 h – 19 h. Plusieurs clients peuvent venir dans la même plage, jusqu'à 5 retraits confirmés ; ensuite le site ne la propose plus. Dans l'Agenda, touchez un jour : « Plages de retrait » montre « 2 sur 5 » pour chaque plage, et vous pouvez la fermer, la rouvrir ou changer son maximum. Le maximum de tous les jours se règle dans Paramètres › Retraits. Le dimanche, plus de retrait sur le site. | 이제 사이트에서 월요일부터 토요일까지 픽업 시간대 6개를 고를 수 있어요: 9:00–10:30, 10:30–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–19:00. 한 시간대에 여러 고객이 올 수 있고, 확정된 픽업이 5명이 되면 사이트에 더 이상 나오지 않아요. 일정에서 날짜를 누르면 « 픽업 시간대 »에 시간대마다 ‘2명 / 최대 5명’처럼 보이고, 시간대를 닫거나 다시 열거나 최대 인원을 바꿀 수 있어요. 모든 날의 최대 인원은 설정 › 픽업에서 정해요. 일요일에는 이제 사이트에서 픽업을 고를 수 없어요.
+Le site propose maintenant six plages de retrait, du lundi au samedi : 9 h – 10 h 30, 10 h 30 – 12 h, 12 h – 14 h, 14 h – 16 h, 16 h – 18 h et 18 h – 19 h. Plusieurs clients peuvent venir dans la même plage, jusqu'à 5 retraits confirmés ; ensuite le site ne la propose plus. Dans l'Agenda, touchez un jour : « Plages de retrait » montre « 2 sur 5 » pour chaque plage, et vous pouvez la fermer, la rouvrir ou changer son maximum. Le maximum de tous les jours se règle dans Paramètres › Retraits. Le dimanche, plus de retrait sur le site. Sous chaque plage, vous voyez les noms des clients. Une plage complète ou fermée ne se confirme qu'en cochant « Confirmer quand même », seulement si c'est convenu avec le client. | 이제 사이트에서 월요일부터 토요일까지 픽업 시간대 6개를 고를 수 있어요: 9:00–10:30, 10:30–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–19:00. 한 시간대에 여러 고객이 올 수 있고, 확정된 픽업이 5명이 되면 사이트에 더 이상 나오지 않아요. 일정에서 날짜를 누르면 « 픽업 시간대 »에 시간대마다 ‘2명 / 최대 5명’처럼 보이고, 시간대를 닫거나 다시 열거나 최대 인원을 바꿀 수 있어요. 모든 날의 최대 인원은 설정 › 픽업에서 정해요. 일요일에는 이제 사이트에서 픽업을 고를 수 없어요. 시간대마다 아래에 고객 이름이 보여요. 꽉 찼거나 닫힌 시간대는 ‘그래도 확정’에 체크해야만 확정돼요. 고객과 이미 정한 경우에만 쓰세요.
+# Audit n° 10 (28/11/2026) : confirmer, plages, exceptions convenues avec le client
+Pas encore confirmée : choisissez le jour et la plage horaire du retrait. | 아직 확정하지 않았어요. 픽업 날짜와 시간대를 고르세요.
+Pas encore confirmée. | 아직 확정하지 않았어요.
+Changez la plage, ou cochez « Confirmer quand même » si c'est convenu avec le client. | 시간대를 바꾸거나, 고객과 이미 정한 경우라면 « 그래도 확정 »에 체크하세요.
+Commande confirmée, en exception convenue avec le client : envoyez-lui la confirmation et ajoutez le retrait à votre agenda. | 고객과 정한 예외로 주문을 확정했어요. 고객에게 확정 이메일을 보내고 픽업을 캘린더에 추가하세요.
+Étape non changée. | 단계를 바꾸지 않았어요.
+Le retrait n'a pas de jour ni de plage horaire. | 픽업 날짜와 시간대가 없어요.
+Pour confirmer, changez d'abord le jour ou la plage (« Modifier la commande »), ou cochez « Confirmer quand même » sous « Changer l'étape à la main » si c'est convenu avec le client. | 확정하려면 먼저 날짜나 시간대를 바꾸거나 (« 주문 수정 »), 고객과 이미 정한 경우라면 « 단계 직접 바꾸기 » 아래의 « 그래도 확정 »에 체크하세요.
+Le retrait n'a pas encore de plage horaire. | 픽업 시간대가 아직 없어요.
+Confirmer en haut | 위에서 확정하기
+Confirmer quand même si la plage est complète ou fermée (exception convenue avec le client) | 시간대가 꽉 찼거나 닫혀 있어도 확정 (고객과 정한 예외)
+Confirmer quand même (exception convenue avec le client) | 그래도 확정 (고객과 정한 예외)
+Exception convenue avec le client : enregistrer quand même | 고객과 정한 예외: 그래도 저장
+Seulement si vous avez convenu d'une heure avec le client : la plage suit l'heure. | 고객과 시간을 정했을 때만 적어요. 시간대는 이 시간에 맞춰져요.
+La plage suit l'heure. | 시간대는 정확한 시간에 맞춰져요.
+Rien n'est enregistré. | 아무것도 저장하지 않았어요.
+Changez le jour ou la plage, ou cochez « Exception convenue avec le client » sous la plage. | 날짜나 시간대를 바꾸거나, 시간대 아래의 « 고객과 정한 예외 »에 체크하세요.
+Plus d'acompte pour une nouvelle commande : le client paie tout au retrait. | 새 주문에는 이제 선금이 없어요. 고객은 픽업 때 전부 내요.
+Rien n'a été changé. | 아무것도 바꾸지 않았어요.
+À faire maintenant : le retrait a changé, prévenez le client en renvoyant la confirmation (ci-dessous). | 지금 할 일: 픽업이 바뀌었어요. 아래에서 확정 이메일을 다시 보내 고객에게 알려 주세요.
+Le retrait déjà confirmé est maintenu. | 이미 확정된 픽업은 그대로예요.
+Une indispo la touche encore : le site ne la propose pas. | 하지만 예약 불가와 겹쳐서 사이트에는 나오지 않아요.
+Dépassée | 초과
+En attente, sans place prise : | 대기 중 (자리 차지 안 함):
+À préciser | 정해야 함
+Retraits confirmés sans plage ni heure : ouvrez la commande et choisissez sa plage avec le client. | 시간대도 시간도 없는 확정된 픽업이에요. 주문을 열고 고객과 시간대를 정하세요.
+Une plage complète ou fermée n'est plus proposée sur le site ; dans la gestion, vous pouvez toujours y mettre une commande, en exception convenue avec le client. | 꽉 찼거나 닫힌 시간대는 사이트에 더 이상 나오지 않아요. 관리 화면에서는 고객과 정한 예외로 그래도 주문을 넣을 수 있어요.
+Fermer une plage ou baisser son maximum n'annule aucun retrait déjà confirmé. | 시간대를 닫거나 최대 인원을 줄여도 이미 확정된 픽업은 취소되지 않아요.
 Plus d'acompte | 선금 없음
 Madame Cho ne demande plus d'acompte : la proposition n'a plus de case « Acompte », et le site n'en parle plus. Le client paie le prix complet. Une commande qui avait déjà un acompte le garde. | 이제 Madame Cho는 선금을 받지 않아요. 견적에 « 선금 » 칸이 없고, 사이트에도 더 이상 나오지 않아요. 고객은 전체 가격을 내요. 이미 선금이 있던 주문은 그대로 남아요.
 TXT;
@@ -2176,8 +2204,20 @@ function coreen_motifs(): array {
         // Une indispo seule, écrite en toutes lettres (carte de l'assistant)
         ['/^.+, (?:toute la journée|\d{1,2} h(?: \d{2})? – \d{1,2} h(?: \d{2})?)(?: \(.*\))?$/us', fn($m) => $indispo($m[0])],
         // Plages de retrait (spécification 007, 27/11/2026)
-        ['/^La plage (.+?) du (.+) est fermée : les clients ne peuvent plus la choisir sur le site\.$/u',
-            fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대를 닫았어요. 고객이 사이트에서 더 이상 고를 수 없어요.' : null],
+        ['/^La plage (.+?) du (.+) est fermée aux nouvelles demandes : les clients ne peuvent plus la choisir sur le site\.$/u',
+            fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대를 새 주문에 닫았어요. 고객이 사이트에서 더 이상 고를 수 없어요.' : null],
+        // Audit n° 10 (28/11/2026)
+        ['/^Les (\d+) retraits déjà confirmés sont maintenus\.$/u', fn($m) => '이미 확정된 픽업 ' . $m[1] . '건은 그대로예요.'],
+        ['/^Elle reste complète \((\d+) sur (\d+)\) : augmentez son maximum pour la proposer de nouveau sur le site\.$/u',
+            fn($m) => '아직 꽉 차 있어요 (' . $m[1] . '명 / 최대 ' . $m[2] . '명). 사이트에 다시 나오게 하려면 최대 인원을 늘리세요.'],
+        ['/^Ce retrait tombe sur une indispo : (.+)\.$/us', fn($m) => ($x = $indispo($m[1])) ? '이 픽업은 예약 불가와 겹쳐요: ' . $x . '.' : null],
+        ['/^Le retrait a changé depuis la confirmation envoyée (.+) : prévenez le client en lui renvoyant la confirmation\.$/u',
+            fn($m) => ($d = coreen_date($m[1])) ? '확정 이메일을 보낸 뒤 (' . $d . ') 픽업이 바뀌었어요. 확정 이메일을 다시 보내 고객에게 알려 주세요.' : null],
+        ['/^Commande modifiée, en exception convenue avec le client\. Changé : (.+)\.$/us',
+            fn($m) => ($x = coreen_modifs($m[1])) !== null ? '고객과 정한 예외로 주문을 수정했어요. 바뀐 내용: ' . $x . '.' : null],
+        ['/^Retrait (confirmé|déplacé|saisi) en exception convenue avec le client : (.+)$/us',
+            fn($m) => ($x = coreen_traduction($m[2])) !== null ? '고객과 정한 예외로 픽업을 ' . ['confirmé' => '확정했어요', 'déplacé' => '옮겼어요', 'saisi' => '입력했어요'][$m[1]] . ': ' . $x : null],
+        ['/^(\d{1,2}) h (\d{2})$/', fn($m) => $m[1] . ':' . $m[2]],
         ['/^La plage (.+?) du (.+) est rouverte\.$/u', fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대를 다시 열었어요.' : null],
         ['/^La plage (.+?) du (.+) accepte maintenant (\d+) retraits? au plus( \(le maximum par défaut\))?\.$/u',
             fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대: 최대 ' . $m[3] . '명' . (!empty($m[4]) ? ' (기본값)' : '') . '이에요.' : null],

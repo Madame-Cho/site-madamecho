@@ -12,9 +12,11 @@
 
 ## R2. À quelle plage compte une commande
 
-- **Decision** : `plage_de_commande()` : le code de plage s'il y en a un ; sinon l'heure précise, dans la plage
-  qui la contient (avant 9 h : la première ; à 19 h ou après : la dernière) ; sinon l'ancien moment, dans la
-  première plage qu'il couvre. Comptent : `mode = retrait`, statut `confirmee` ou `remise`, non effacée.
+- **Decision** : `plage_de_commande()` : l'heure précise d'abord, dans la plage qui la contient (avant 9 h : la
+  première ; à 19 h ou après : la dernière) ; sinon le code de plage ; sinon l'ancien moment, dans la
+  première plage qu'il couvre. À l'enregistrement, `plage_alignee()` remet le code de la plage qui contient
+  l'heure, pour que l'Agenda, les places et les mails disent la même chose (audit n° 10, C10-02 : avant,
+  le code l'emportait sur l'heure). Comptent : `mode = retrait`, statut `confirmee` ou `remise`, non effacée.
 - **Rationale** : décision d'Olivier (« une demande ne prend pas de place ») ; une commande remise a occupé
   sa plage ce jour-là.
 - **Alternatives considered** : compter les propositions (refusé par Olivier).

@@ -50,6 +50,17 @@ Toutes les modifications se font dans `.sources/`, puis on régénère (principe
 - [X] T022 Essais `plages.php` et `plages.js` (quickstart), captures dans les fichiers du projet
 - [X] T023 Consigne d'audit pour le ChatGPT d'Olivier (P-26), rapport vide dans 92/02 (audit n° 10, 27/11/2026)
 
+## Phase 7 : corrections de l'audit n° 10 (28/11/2026, « Tout corriger avant publication »)
+
+- [X] T024 C10-01, C10-11 : confirmer (proposition, bas de page, étape à la main, assistant) refuse une plage complète ou fermée, un dimanche, une indispo ou une commande sans plage, sauf « Confirmer quand même » ; l'exception est notée dans l'historique (`pages-commandes.php`, `modele.php` : `retrait_alerte()`)
+- [X] T025 C10-02 : la plage suit l'heure précise (`base.php` : `heure_valide()` ; `modele.php` : `plage_alignee()`, `plage_de_commande()`)
+- [X] T026 C10-04 : confirmation à renvoyer quand le jour, la plage ou l'heure change après l'envoi (`vues.php` : `confirmation_etat()`)
+- [X] T027 C10-07 : plus d'acompte accepté pour une nouvelle commande, ni par les formulaires ni par l'assistant (`pages-commandes.php`, `assistant-donnees.php`) ; « acompte éventuel » retiré du mail à Madame Cho
+- [X] T028 C10-08, C10-09 : les commandes sous chaque plage dans l'Agenda (confirmées, puis en attente), ligne « À préciser », état « Dépassée », messages de fermeture qui disent que les retraits confirmés sont maintenus (`pages-agenda.php`, `gestion.css`)
+- [X] T029 C10-03, C10-10, C10-13 : textes du site et des mails (réservation à la confirmation écrite, annulation 24 h avant le début de la plage, plage complète dans les Questions, Conditions et Confidentialité datées du 28 novembre) ; contrôle de la date avant toute lecture de l'agenda (`envoyer.php`)
+- [X] T030 C10-05, C10-06, C10-12 : formulaire du site (plages choisies après la date, 24 décembre comme le dimanche, phrase quand les plages ne peuvent pas être vérifiées, plage retirée signalée ; ancien « moment » placé sur une plage libre et signalé à Madame Cho)
+- [X] T031 Coréen, manuel et nouveauté mis à jour ; essais refaits
+
 ## Dépendances
 
 Phase 1 avant tout ; US1 et US2 indépendantes ensuite ; US3/US4 après T003 ; US5 indépendante ; Phase 6 en dernier.

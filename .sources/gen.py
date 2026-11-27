@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-27-plages"
+VERSION = "2026-11-28-plages"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -497,7 +497,7 @@ def demande():
   <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a>.</p>
 
   <h2 class="sous-titre">Le retrait</h2>
-  <p class="aide">Au {E(ADRESSE)}, du lundi au samedi. Vous venez quand vous voulez pendant la plage horaire choisie ; Madame Cho la confirme dans sa réponse.</p>
+  <p class="aide">Au {E(ADRESSE)}, du lundi au samedi. Choisissez la plage qui vous arrange : Madame Cho vous la confirme dans sa réponse, puis vous venez quand vous voulez pendant cette plage.</p>
   <div class="deux-champs">
    <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date aria-describedby="aide-date indispo-date"></label>
    <label class="champ"><span>Plage horaire</span><select name="plage" required data-plage aria-describedby="indispo-date">{plages}</select></label>
@@ -537,7 +537,7 @@ def demande():
     <p>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et la plage horaire du retrait.</p>
    </div>
   </div>
-  <p>Rien n'est encore réservé ni à payer : votre commande est confirmée quand vous acceptez cette proposition par écrit.</p>
+  <p>Rien n'est encore réservé ni à payer : si la proposition vous convient, répondez-y, et Madame Cho vous confirme la commande par écrit. Votre retrait est réservé à ce moment-là.</p>
   <p>Sa réponse viendra de <b>{EMAIL}</b> : <a href="{lien('madame-cho.vcf', prof)}">ajoutez Madame Cho à vos contacts</a>, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>
@@ -615,7 +615,7 @@ MENTIONS = [
 CONFID = [
  ("Qui traite vos données", [f"MADAME CHO, {E(ADRESSE)}, {EMAIL_HTML}."]),
  ("Pourquoi", ["Seulement pour répondre à votre demande, vous faire une proposition, préparer et retirer votre commande. Base légale : les mesures prises à votre demande avant un contrat, puis le contrat lui-même. Aucune publicité, aucune revente."]),
- ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, la date de retrait souhaitée et le contenu de votre demande, votre réponse à la question « Comment avez-vous connu Madame Cho ? » si vous y répondez, puis le suivi de votre commande (étapes, montant, paiement, notes de préparation) et les échanges à son sujet : emails, et résumé des appels ou messages notés par Madame Cho. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
+ ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, le jour et la plage horaire de retrait souhaités (puis l'heure convenue avec Madame Cho, s'il y en a une) et le contenu de votre demande, votre réponse à la question « Comment avez-vous connu Madame Cho ? » si vous y répondez, puis le suivi de votre commande (étapes, montant, paiement, notes de préparation) et les échanges à son sujet : emails, et résumé des appels ou messages notés par Madame Cho. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
  ("Qui les reçoit", ["Madame Cho. Prestataires techniques : OVH (hébergement du site, envoi du formulaire et outil de suivi des commandes, en France) et Google (messagerie).",
    "Votre demande est enregistrée dans l'outil de suivi des commandes de Madame Cho, hébergé avec le site chez OVH en France et réservé à Madame Cho.",
    "Quand vous payez par carte ou par virement, l'outil retrouve votre paiement dans les comptes bancaires de Madame Cho (Qonto, et son compte au Crédit Mutuel relié à Qonto) : il y lit les paiements reçus (date, montant, libellé du virement avec le nom de celui qui paie) pour les rapprocher de votre commande, en lecture seule. Ce libellé n'est transmis à aucun assistant d'intelligence artificielle.",
@@ -637,10 +637,11 @@ CONDITIONS = [
  ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau."]),
  ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et plage horaire du retrait. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
  ("3. Les prix", ["Les prix sont indiqués en euros TTC. Le prix de la carte est celui de la proposition ; une personnalisation au-delà de la plaque en chocolat (comprise) est chiffrée dans la proposition."]),
- ("4. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, du lundi au samedi de 9 h à 19 h, sur la plage horaire convenue (pas de retrait le dimanche ni le 24 décembre). Le client vérifie sa commande au retrait."]),
- ("5. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces."]),
- # Délai d'annulation fixé par Youngmi le 04/11/2026 (réponse au mail du 03/11) : 24 heures avant le retrait
- ("6. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait."]),
+ ("4. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, du lundi au samedi de 9 h à 19 h, sur la plage horaire convenue (pas de retrait le dimanche, sauf cas particulier convenu par téléphone, ni le 24 décembre). Le client vérifie sa commande au retrait."]),
+ ("5. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces. Aucun acompte n'est demandé."]),
+ # Délai d'annulation fixé par Youngmi le 04/11/2026 (réponse au mail du 03/11) : 24 heures avant le retrait ; depuis les plages
+ # (audit n° 10, décision d'Olivier du 28/11/2026) : avant le début de la plage, ou avant l'heure convenue
+ ("6. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le début de la plage de retrait, ou avant l'heure convenue s'il y en a une. Pour un empêchement après ce délai, le client prévient Madame Cho au plus tôt, par téléphone ou par écrit."]),
  ("7. Droit de rétractation", ["Les gâteaux de la carte sont des denrées fraîches, à consommer dans les 3 jours : le droit de rétractation ne s'applique pas à eux, car ils sont susceptibles de se détériorer rapidement (code de la consommation, article L221-28, 4°). Il ne s'applique pas non plus à un gâteau confectionné selon les choix du client, comme un gâteau personnalisé (même article, 3°)."]),
  ("8. Allergènes", ["Les allergènes de chaque gâteau sont indiqués sur sa page et rappelés au retrait. Tous les gâteaux sont préparés dans un atelier qui utilise aussi des fruits à coque et des arachides."]),
  ("9. Réclamations", [f"Une réclamation s'adresse à {EMAIL_HTML} ou au {TEL}, de préférence le jour du retrait."]),
@@ -848,8 +849,8 @@ if not APERCU:
     ecrire(".htaccess", htaccess())
 images_partage()
 ecrire("mentions-legales/index.html", legale("mentions-legales", "Mentions légales", "Mentions légales du site de Madame Cho, pâtisserie à Meudon.", MENTIONS))
-ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID, maj="27 novembre 2026"))
-ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, retrait, paiement.", CONDITIONS, maj="27 novembre 2026"))
+ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID, maj="28 novembre 2026"))
+ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, retrait, paiement.", CONDITIONS, maj="28 novembre 2026"))
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
 ecrire("ma-demande/catalogue.php", "<?php\n// Carte de Madame Cho, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(cat) + ";\n")

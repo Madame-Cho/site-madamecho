@@ -759,14 +759,22 @@ function proposition_regles(string $genre, ?array $f, array &$c): array {
             if (($c['retrait_date'] ?? '') === '' && empty($f['retrait_date'])) $e[] = 'retrait_date manque : la commande n\'a pas encore de jour de retrait';
             if ($f['statut'] === 'confirmee') $e[] = 'la commande est déjà confirmée (pour changer la date : commande_modifier)';
             break;
-        case 'commande_proposition': if ($f['statut'] === 'proposition') $e[] = 'la proposition est déjà notée'; break;
+        case 'commande_proposition':
+            if ($f['statut'] === 'proposition') $e[] = 'la proposition est déjà notée';
+            if ((centimes((string)($c['acompte'] ?? '')) ?? 0) > 0 && !avec_acompte($f)) $e[] = 'plus d\'acompte depuis le 27/11/2026 : enlève acompte, le client paie tout au retrait';
+            break;
         case 'commande_remise': if ($f['statut'] === 'remise') $e[] = 'la commande est déjà remise (pour le paiement : commande_paiement)'; break;
         case 'commande_annuler': if ($f['statut'] === 'annulee') $e[] = 'la commande est déjà annulée'; break;
         case 'commande_etape':
             if (($c['etape'] ?? '') === '') $e[] = 'etape manque';
             elseif ($c['etape'] === $f['statut']) $e[] = 'la commande est déjà à cette étape';
             break;
-        case 'commande_paiement': case 'commande_modifier': case 'client_modifier': case 'produit_fiche': case 'produit_prix_pro': case 'ingredient_modifier': case 'indispo_modifier':
+        case 'commande_paiement': case 'commande_modifier':
+            if (!$c) $e[] = 'aucun champ à changer';
+            if (((centimes((string)($c['acompte'] ?? '')) ?? 0) > 0 || in_array($c['paiement'] ?? '', ['acompte_demande', 'acompte_recu'], true) || ($c['acompte_recu'] ?? '') === 'oui') && $f && !avec_acompte($f))
+                $e[] = 'plus d\'acompte depuis le 27/11/2026 : cette commande n\'en a pas, enlève acompte (et les états acompte_…)';
+            break;
+        case 'client_modifier': case 'produit_fiche': case 'produit_prix_pro': case 'ingredient_modifier': case 'indispo_modifier':
             if (!$c) $e[] = 'aucun champ à changer';
             break;
         case 'commande_creer':

@@ -1,7 +1,7 @@
 {
  "": {
-  "empreinte": "802d3de37119e60a",
-  "date": "2026-11-27"
+  "empreinte": "102eb75801400ad7",
+  "date": "2026-11-28"
  },
  "carte/": {
   "empreinte": "46be00841583c56e",
@@ -36,19 +36,19 @@
   "date": "2026-11-27"
  },
  "questions/": {
-  "empreinte": "195bfbc6819e3f61",
-  "date": "2026-11-27"
+  "empreinte": "92396e7a4be76fac",
+  "date": "2026-11-28"
  },
  "conditions-de-commande/": {
-  "empreinte": "52058bd0f54f11e2",
-  "date": "2026-11-27"
+  "empreinte": "eebb58e4d34ed2c8",
+  "date": "2026-11-28"
  },
  "mentions-legales/": {
   "empreinte": "8032e1c2f2951ee2",
   "date": "2026-11-27"
  },
  "confidentialite/": {
-  "empreinte": "1bd0da905854cb0f",
-  "date": "2026-11-27"
+  "empreinte": "5d2894c5e0990899",
+  "date": "2026-11-28"
  }
 }

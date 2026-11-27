@@ -313,16 +313,20 @@
     var indispoP = $('[data-date-indispo]'), indispo = { cle: '', message: '' }, numIndispo = 0, plageSel = form.elements.plage, complets = {};
     var MSG_DIMANCHE = 'Pas de retrait le dimanche : choisissez un autre jour, ou appelez Madame Cho au 06 61 31 17 79 pour un cas particulier.';
     function estDimanche(d) { var x = new Date(d + 'T12:00:00'); return !isNaN(x) && (CAT.fermesSemaine || [0]).indexOf(x.getDay()) >= 0; }
+    // Audit n° 10 (28/11/2026) : les plages ne se choisissent qu'une fois le jour connu (C10-12) ; une plage choisie qui n'est plus libre
+    // est retirée avec une phrase, la demande est gardée. Rend true si la plage choisie vient d'être retirée.
     function majPlages(etats) {   // etats : { code: 'libre'|'complet' } ; null : toutes libres
+      var sansDate = !form.elements.date.value, avant = plageSel.value;
       complets = {};
       $$('option', plageSel).forEach(function (o) {
-        if (!o.value) { o.textContent = form.elements.date.value ? 'Choisissez une plage' : 'Choisissez une date d’abord'; return; }
+        if (!o.value) { o.textContent = sansDate ? 'Choisissez une date d’abord' : 'Choisissez une plage'; return; }
         var complet = !!(etats && etats[o.value] === 'complet');
         if (complet) complets[o.value] = true;
-        o.disabled = complet;
+        o.disabled = complet || sansDate;
         o.textContent = CAT.plages[o.value] + (complet ? ' (complet)' : '');
       });
-      if (plageSel.value && complets[plageSel.value]) plageSel.value = '';
+      if (plageSel.value && (complets[plageSel.value] || sansDate)) plageSel.value = '';
+      return !!(avant && !plageSel.value && !sansDate);
     }
     function montrerIndispo(cle, message) {
       var avant = indispo.message;
@@ -331,27 +335,35 @@
       if (message) form.elements.date.setAttribute('aria-invalid', 'true');
       else if (avant) form.elements.date.removeAttribute('aria-invalid');
     }
+    // Une phrase sous la date qui ne bloque pas l'envoi (vérification en cours, plage retirée, plages pas vérifiées)
+    function noter(texte) { if (indispoP && !indispo.message) indispoP.textContent = texte; }
+    var TOUT_COMPLET = { '0900': 'complet', '1030': 'complet', '1200': 'complet', '1400': 'complet', '1600': 'complet', '1800': 'complet' };
     function verifierAgenda() {
       var d = form.elements.date.value, n = ++numIndispo;
       montrerIndispo('', '');
       majPlages(null);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
-      if (estDimanche(d)) {
-        majPlages({ '0900': 'complet', '1030': 'complet', '1200': 'complet', '1400': 'complet', '1600': 'complet', '1800': 'complet' });
-        montrerIndispo(d, MSG_DIMANCHE);
+      if (estDimanche(d) || d.slice(5) === '12-24') {   // jours fermés connus : aucune plage, comme le dimanche (C10-12)
+        majPlages(TOUT_COMPLET);
+        montrerIndispo(d, estDimanche(d) ? MSG_DIMANCHE : 'Pas de retrait le 24 décembre\u00a0: choisissez une autre date.');
         return;
       }
-      if (APERCU || !window.fetch || !window.FormData || d < dateIn.min || d > dateIn.max || d.slice(5) === '12-24') return;
+      if (APERCU || !window.fetch || !window.FormData || d < dateIn.min || d > dateIn.max) return;
       var fd = new FormData();
       fd.append('verifier', '1'); fd.append('date', d);
+      noter('Vérification des plages libres…');
+      // Sans réponse, la demande reste possible, mais la page ne dit pas que les plages sont libres (C10-05)
+      var nonVerifie = function () { if (n === numIndispo && d === form.elements.date.value) noter('Les plages libres ne peuvent pas être vérifiées pour le moment. Vous pouvez envoyer votre demande : Madame Cho vous confirmera la plage.'); };
       fetch(form.getAttribute('action'), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
         .then(function (r) { return r.json(); })
         .then(function (j) {
-          if (n !== numIndispo || d !== form.elements.date.value || !j || !j.ok || !j.plages) return;
-          majPlages(j.plages);
+          if (n !== numIndispo || d !== form.elements.date.value) return;
+          if (!j || !j.ok || !j.plages) { nonVerifie(); return; }
+          var retiree = majPlages(j.plages);
           montrerIndispo(d, String(j.message || ''));
+          noter(retiree ? 'La plage choisie n’est plus libre ce jour-là : choisissez-en une autre, votre demande est gardée.' : '');
         })
-        .catch(function () {});
+        .catch(nonVerifie);
     }
     dateIn.addEventListener('change', verifierAgenda);
     plageSel.addEventListener('change', function () { if (plageSel.value) plageSel.removeAttribute('aria-invalid'); });

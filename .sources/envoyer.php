@@ -113,6 +113,10 @@ function gestion_agenda(callable $f, $sinon) {
 }
 function plages_libres(string $date, array $CAT): array {
     $toutes = ['plages' => array_fill_keys(array_map('strval', array_keys($CAT['plages'])), 'libre'), 'message' => ''];
+    // Date invalide, passée ou au-delà de six mois : la réponse neutre du contrat, sans lire l'agenda (audit n° 10, C10-13)
+    $j = DateTimeImmutable::createFromFormat('!Y-m-d', $date, new DateTimeZone('Europe/Paris'));
+    $auj = new DateTimeImmutable('today', new DateTimeZone('Europe/Paris'));
+    if (!$j || $j->format('Y-m-d') !== $date || $j < $auj || $j > $auj->modify('+6 month')) return $toutes;
     $ferme = jour_ferme_texte($date, $CAT);
     if ($ferme !== '') return ['plages' => array_fill_keys(array_keys($toutes['plages']), 'complet'), 'message' => $ferme];
     return gestion_agenda(fn() => \MadameCho\Gestion\plages_pour_demande($date), $toutes);
@@ -138,8 +142,18 @@ $tel = uneLigne(champ('telephone', 30));
 $perso = champ('perso', 1200);
 $date = champ('date', 10);
 $plage = champ('plage', 4);
-// Une page du formulaire restée ouverte avant le 27/11/2026 envoie encore un « moment » : sa première plage
-if ($plage === '' && isset($_POST['moment'])) $plage = ['matin' => '0900', 'midi' => '1200', 'apres-midi' => '1400', 'soir' => '1800'][champ('moment', 20)] ?? '';
+// Une page du formulaire restée ouverte avant le 27/11/2026 envoie encore un « moment » : la première plage encore libre de ce moment,
+// notée « à préciser avec le client » dans le mail à Madame Cho (audit n° 10, C10-06)
+$momentAncien = '';
+if ($plage === '' && isset($_POST['moment'])) {
+    $parMoment = ['matin' => ['0900', '1030'], 'midi' => ['1200'], 'apres-midi' => ['1400', '1600'], 'soir' => ['1800']][champ('moment', 20)] ?? [];
+    if ($parMoment) {
+        $momentAncien = ['matin' => 'le matin', 'midi' => 'le midi', 'apres-midi' => 'l\'après-midi', 'soir' => 'le soir'][champ('moment', 20)];
+        $etats = plages_libres($date, $CAT)['plages'];
+        foreach ($parMoment as $c) if (($etats[$c] ?? 'libre') === 'libre') { $plage = $c; break; }
+        if ($plage === '') $plage = $parMoment[0];   // aucune libre : l'envoi est refusé plus bas, avec la phrase de la plage
+    }
+}
 $pro = champ('pro', 1) === '1';
 $societe = $pro ? uneLigne(champ('societe', 100)) : '';
 $besoin = $pro ? champ('besoin', 1200) : '';
@@ -218,8 +232,12 @@ if (!$jour || $jour->format('Y-m-d') !== $date) {
     if ($ferme !== '') $indispo = $ferme;
     if ($jour > $auj->modify('+6 month')) $erreurs[] = 'Choisissez une date dans les six prochains mois.';
     // Une date possible, mais une plage pleine, fermée ou indisponible dans l'agenda de la gestion : refusée aussi (la page l'a dit pendant la saisie)
-    if ($indispo === '' && count($erreurs) === $avant && isset($CAT['plages'][$plage]))
-        $indispo = gestion_agenda(fn() => \MadameCho\Gestion\plage_refusee($date, $plage), '');
+    // Sans réponse de l'agenda, la demande passe (une demande ne prend pas de place), mais le mail à Madame Cho le dit (C10-05)
+    if ($indispo === '' && count($erreurs) === $avant && isset($CAT['plages'][$plage])) {
+        $r = gestion_agenda(fn() => \MadameCho\Gestion\plage_refusee($date, $plage), null);
+        if ($r === null) $plageNonVerifiee = true;
+        else $indispo = $r;
+    }
     if ($indispo !== '') $erreurs[] = $indispo;
 }
 
@@ -286,6 +304,8 @@ $t[] = 'Référence : ' . $ref . ' (envoyée le ' . date('d/m/Y à H:i') . ')';
 $t[] = '';
 $t[] = 'RETRAIT SOUHAITÉ';
 $t[] = ucfirst($dateTexte) . ', ' . mb_strtolower($CAT['plages'][$plage]);
+if ($momentAncien !== '') $t[] = 'Envoyée depuis une ancienne page du site : le client avait demandé ' . $momentAncien . ' ; plage à préciser avec lui.';
+if (!empty($plageNonVerifiee)) $t[] = 'Plage pas vérifiée : l\'agenda de la gestion n\'a pas répondu. Vérifiez-la avant de confirmer.';
 $t[] = '';
 if ($lignes) {
     $t[] = 'GÂTEAUX (prix de la carte, TTC)';
@@ -309,7 +329,7 @@ $t[] = is_file(GESTION_ENREGISTRER)
     ? 'Pour répondre au client, ouvrez la demande dans la gestion (lien ci-dessous) puis « Préparer la proposition » : un nouveau message, envoyé depuis ' . DESTINATAIRE . '. Évitez « Répondre » ici : votre réponse citerait cet email et risquerait les indésirables du client.'
     : 'Pour répondre au client, écrivez-lui un nouveau message depuis ' . DESTINATAIRE . '. Évitez « Répondre » ici : votre réponse citerait cet email et risquerait les indésirables du client.';
 $t[] = '고객에게는 « 답장 » 대신 ' . DESTINATAIRE . '에서 새 메일로 보내 주세요' . (is_file(GESTION_ENREGISTRER) ? ' (관리 화면의 « 견적 이메일 준비 »)' : '') . '. 답장하면 이 메일이 인용되어 고객의 스팸함으로 갈 수 있어요.';
-$t[] = 'Rappel : une proposition écrite (prix TTC total, jour et heure du retrait, acompte éventuel), son accord écrit, puis votre confirmation.';
+$t[] = 'Rappel : une proposition écrite (prix TTC total, jour et plage horaire du retrait), son accord écrit, puis votre confirmation : le retrait n\'est réservé qu\'à ce moment-là.';
 // Espace de gestion : la demande y est aussi enregistrée (voir plus bas) ; le lien ouvre sa fiche, ou propose de la créer
 if (is_file(GESTION_ENREGISTRER)) { $t[] = ''; $t[] = 'Dans la gestion : https://' . DKIM_DOMAINE . '/gestion/?p=commande&ref=' . $ref; }
 $corps = implode("\r\n", $t);

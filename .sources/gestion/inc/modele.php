@@ -870,13 +870,14 @@ function jour_ferme(string $jour): string {
     if (in_array(date('m-d', $t), (array)(catalogue()['fermes'] ?? ['12-24']), true)) return 'ferme';
     return '';
 }
-/** La plage d'une commande : son code de plage ; sinon celle qui contient son heure précise ; sinon la première plage de son ancien moment
- *  (matin, midi…) ; null sans rien de tout cela. Avant 9 h : la première plage ; à 19 h ou après : la dernière. */
+/** La plage d'une commande : celle qui contient son heure précise, quand Youngmi en a convenu une (c'est l'heure que disent les mails,
+ *  audit n° 10, C10-02) ; sinon son code de plage ; sinon la première plage de son ancien moment (matin, midi…) ; null sans rien de
+ *  tout cela. Avant 9 h : la première plage ; à 19 h ou après : la dernière. */
 function plage_de_commande(array $k): ?string {
     $m = (string)($k['retrait_moment'] ?? '');
-    if (isset(PLAGES[$m])) return $m;
-    $h = (string)($k['retrait_heure'] ?? '');
-    if (!preg_match('/^\d{2}:\d{2}$/', $h)) {
+    $h = heure_valide((string)($k['retrait_heure'] ?? ''));
+    if ($h === '') {
+        if (isset(PLAGES[$m])) return $m;
         if (!isset(MOMENTS_PLAGES[$m])) return null;
         $h = MOMENTS_PLAGES[$m][0];
     }
@@ -934,6 +935,19 @@ function plage_avertissement(array $k): string {
     if ($etat['fermee']) return 'Vous avez fermé cette plage (' . $quoi . ').';
     if ($etat['n'] >= $etat['maximum']) return 'Cette plage est déjà complète : ' . $etat['n'] . ' sur ' . $etat['maximum'] . ' (' . $quoi . ').';
     return '';
+}
+/** Le code de plage à enregistrer avec une heure précise : celui de la plage qui contient l'heure, pour que l'Agenda, les places et
+ *  les mails disent la même chose (audit n° 10, C10-02). Un ancien moment (matin, midi…) reste tel quel : l'heure y fait déjà foi. */
+function plage_alignee(string $moment, string $heure): string {
+    if (heure_valide($heure) === '' || ($moment !== '' && !isset(PLAGES[$moment]))) return $moment;
+    return (string)plage_de_commande(['retrait_moment' => '', 'retrait_heure' => $heure]);
+}
+/** Ce qui doit arrêter Youngmi avant qu'un retrait prenne une place (audit n° 10, C10-01 et C10-11) : une indispo, un dimanche ou un
+ *  jour fermé, une plage fermée ou complète. '' si rien, et pour un jour déjà passé (une vente d'avant saisie après coup). */
+function retrait_alerte(array $k): string {
+    if (($k['mode'] ?? 'retrait') !== 'retrait' || empty($k['retrait_date']) || (string)$k['retrait_date'] < aujourdhui()) return '';
+    if ($i = indispo_de_commande(['statut' => 'confirmee'] + $k)) return 'Ce retrait tombe sur une indispo : ' . indispo_texte($i) . '.';
+    return plage_avertissement($k);
 }
 /** Ferme, rouvre ou change le maximum d'une plage d'un jour (Agenda). $maximum null : revenir au maximum par défaut. */
 function plage_regler(string $jour, string $plage, string $action, ?int $maximum = null): bool {
