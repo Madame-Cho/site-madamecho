@@ -389,7 +389,7 @@ function modifications_texte(array $k, array $diff): string {
     $fmt = [
         'retrait_date' => ['jour du retrait', fn($v) => $v ? date_fr((string)$v, 'jour') : 'aucun'],
         'retrait_heure' => ['heure du retrait', $heure],
-        'retrait_moment' => ['moment', fn($v) => MOMENTS_COURTS[$v] ?? 'aucun'],
+        'retrait_moment' => ['plage', fn($v) => MOMENTS_COURTS[$v] ?? 'aucune'],
         'mode' => ['mode', fn($v) => MODES[$v] ?? (string)$v],
         'prix_final' => ['prix final', fn($v) => $v === null || $v === '' ? 'aucun' : euros((int)$v)],
         'acompte' => ['acompte', fn($v) => (int)$v ? euros((int)$v) : 'aucun'],
@@ -444,6 +444,7 @@ function commande_statut(int $id, string $statut, array $extra = []): bool {
     if ($statut === 'confirmee') {
         if (!empty($extra['retrait_date'])) $maj['retrait_date'] = $extra['retrait_date'];
         if (isset($extra['retrait_heure'])) $maj['retrait_heure'] = $extra['retrait_heure'];
+        if (isset($extra['retrait_moment'])) $maj['retrait_moment'] = $extra['retrait_moment'];   // la plage (spécification 007)
         if (isset($extra['prix_final'])) $maj['prix_final'] = $extra['prix_final'];
     }
     if ($statut === 'proposition' && isset($extra['prix_final'])) $maj['prix_final'] = $extra['prix_final'];
@@ -853,6 +854,104 @@ function indispo_de_commande(array $k): ?array {
         if (indispo_journee($i) || ($i['heure_debut'] < $a && $i['heure_fin'] > $de)) return $i;
     }
     return null;
+}
+
+/* ---------- Plages de retrait (spécification 007, décisions d'Olivier et de Youngmi du 27/11/2026) ---------- */
+/** Le maximum d'une plage sans réglage particulier : Paramètres › Retraits (1 à 20), 5 sinon. */
+function plage_maximum_defaut(): int {
+    $n = (int)(parametre('plage_maximum') ?? (string)PLAGE_MAXIMUM);
+    return ($n >= 1 && $n <= 20) ? $n : PLAGE_MAXIMUM;
+}
+/** Le jour est-il fermé au public ? 'dimanche', 'ferme' (24 décembre, jours fermés de la carte) ou ''. La gestion avertit sans bloquer. */
+function jour_ferme(string $jour): string {
+    $t = strtotime($jour . ' 12:00:00');
+    if ($t === false) return '';
+    if (in_array((int)date('w', $t), JOURS_SEMAINE_FERMES, true)) return 'dimanche';
+    if (in_array(date('m-d', $t), (array)(catalogue()['fermes'] ?? ['12-24']), true)) return 'ferme';
+    return '';
+}
+/** La plage d'une commande : son code de plage ; sinon celle qui contient son heure précise ; sinon la première plage de son ancien moment
+ *  (matin, midi…) ; null sans rien de tout cela. Avant 9 h : la première plage ; à 19 h ou après : la dernière. */
+function plage_de_commande(array $k): ?string {
+    $m = (string)($k['retrait_moment'] ?? '');
+    if (isset(PLAGES[$m])) return $m;
+    $h = (string)($k['retrait_heure'] ?? '');
+    if (!preg_match('/^\d{2}:\d{2}$/', $h)) {
+        if (!isset(MOMENTS_PLAGES[$m])) return null;
+        $h = MOMENTS_PLAGES[$m][0];
+    }
+    $choisie = (string)array_key_first(PLAGES);
+    foreach (PLAGES_HEURES as $c => [$de, $a]) if ($h >= $de) $choisie = (string)$c;
+    return $choisie;
+}
+/** Une commande prend-elle une place dans sa plage ? Un retrait confirmé ou remis, pas effacé (une demande ou une proposition n'en prend pas). */
+function commande_prend_place(array $k): bool {
+    return ($k['mode'] ?? 'retrait') === 'retrait' && in_array($k['statut'] ?? '', ['confirmee', 'remise'], true) && empty($k['efface_le']);
+}
+/** Les plages d'un jour : bornes, maximum, réglage, indispo qui la touche, commandes qui y comptent, et si elle est complète.
+ *  $sauf : une commande à ne pas compter (celle qu'on est en train de confirmer ou de modifier). */
+function plages_du_jour(string $jour, int $sauf = 0): array {
+    $defaut = plage_maximum_defaut();
+    $reglages = [];
+    foreach (lignes("SELECT * FROM plages_reglages WHERE jour = ?", [$jour]) as $x) $reglages[$x['plage']] = $x;
+    $indispos = indispos_entre($jour, $jour);
+    $r = [];
+    foreach (PLAGES_HEURES as $c => [$de, $a]) {
+        $reg = $reglages[$c] ?? null;
+        $indispo = null;
+        foreach ($indispos as $i) if (indispo_journee($i) || ($i['heure_debut'] < $a && $i['heure_fin'] > $de)) { $indispo = $i; break; }
+        $r[$c] = ['code' => (string)$c, 'debut' => $de, 'fin' => $a, 'maximum' => ($reg && $reg['maximum'] !== null) ? (int)$reg['maximum'] : $defaut,
+                  'particulier' => $reg && $reg['maximum'] !== null, 'fermee' => $reg && (int)$reg['fermee'] === 1, 'indispo' => $indispo, 'commandes' => [], 'n' => 0];
+    }
+    $ks = lignes("SELECT id, retrait_moment, retrait_heure, statut, mode, efface_le FROM commandes WHERE retrait_date = ? AND mode = 'retrait'
+                  AND statut IN ('confirmee', 'remise') AND efface_le IS NULL AND id <> ?", [$jour, $sauf]);
+    foreach ($ks as $k) {
+        $p = plage_de_commande($k);
+        if ($p === null) continue;
+        $r[$p]['commandes'][] = (int)$k['id'];
+        $r[$p]['n']++;
+    }
+    foreach ($r as $c => $p) $r[$c]['complete'] = $p['fermee'] || $p['indispo'] !== null || $p['n'] >= $p['maximum'];
+    return $r;
+}
+/** « entre 10 h 30 et 12 h » : une plage dans une phrase (mails, rappels). */
+function plage_entre(string $code): string {
+    if (!isset(PLAGES_HEURES[$code])) return '';
+    $f = fn(string $t): string => (int)substr($t, 0, 2) . ' h' . (substr($t, 3, 2) !== '00' ? ' ' . substr($t, 3, 2) : '');
+    return 'entre ' . $f(PLAGES_HEURES[$code][0]) . ' et ' . $f(PLAGES_HEURES[$code][1]);
+}
+/** Avertissement (sans blocage) pour une commande de retrait de la gestion : dimanche, jour fermé, plage fermée, indisponible ou complète.
+ *  '' si rien à dire. Une demande ou une proposition est vérifiée comme si elle allait être confirmée. */
+function plage_avertissement(array $k): string {
+    if (($k['mode'] ?? 'retrait') !== 'retrait' || empty($k['retrait_date'])) return '';
+    $f = jour_ferme((string)$k['retrait_date']);
+    if ($f === 'dimanche') return 'Le dimanche, Madame Cho est fermée au public : à garder seulement pour un cas particulier convenu par téléphone.';
+    if ($f === 'ferme') return 'Ce jour est fermé au public (pas de retrait le 24 décembre).';
+    $p = plage_de_commande($k);
+    if ($p === null) return '';
+    $etat = plages_du_jour((string)$k['retrait_date'], (int)($k['id'] ?? 0))[$p];
+    $quoi = date_fr((string)$k['retrait_date'], 'jour') . ', ' . PLAGES_COURTES[$p];
+    if ($etat['fermee']) return 'Vous avez fermé cette plage (' . $quoi . ').';
+    if ($etat['n'] >= $etat['maximum']) return 'Cette plage est déjà complète : ' . $etat['n'] . ' sur ' . $etat['maximum'] . ' (' . $quoi . ').';
+    return '';
+}
+/** Ferme, rouvre ou change le maximum d'une plage d'un jour (Agenda). $maximum null : revenir au maximum par défaut. */
+function plage_regler(string $jour, string $plage, string $action, ?int $maximum = null): bool {
+    if (!date_valide($jour) || !isset(PLAGES[$plage]) || !in_array($action, ['fermer', 'rouvrir', 'maximum'], true)) return false;
+    if ($action === 'maximum' && $maximum !== null && ($maximum < 1 || $maximum > 20)) return false;
+    $e = ligne("SELECT * FROM plages_reglages WHERE jour = ? AND plage = ?", [$jour, $plage]);
+    $max = ($e && $e['maximum'] !== null) ? (int)$e['maximum'] : null;
+    $fermee = $e ? (int)$e['fermee'] : 0;
+    if ($action === 'fermer') $fermee = 1;
+    elseif ($action === 'rouvrir') $fermee = 0;
+    else $max = $maximum;
+    if ($max === null && !$fermee) q("DELETE FROM plages_reglages WHERE jour = ? AND plage = ?", [$jour, $plage]);
+    else q("INSERT OR REPLACE INTO plages_reglages (jour, plage, maximum, fermee, maj_le, maj_par) VALUES (?, ?, ?, ?, ?, ?)",
+           [$jour, $plage, $max, $fermee, maintenant(), auteur()]);
+    $texte = ['fermer' => 'Plage fermée', 'rouvrir' => 'Plage rouverte',
+              'maximum' => 'Maximum de la plage : ' . ($max !== null ? (string)$max : plage_maximum_defaut() . ' (par défaut)')][$action];
+    evenement('agenda', $texte . ' : ' . date_fr($jour, 'jour') . ', ' . PLAGES_COURTES[$plage]);
+    return true;
 }
 
 /* ---------- Produits, ingrédients, recettes ---------- */
@@ -1351,7 +1450,7 @@ function importer(array $data): array {
             $id = commande_creer(['reference' => $k['reference'], 'client_id' => $cid, 'canal' => isset(CANAUX[$k['canal'] ?? '']) ? $k['canal'] : 'autre',
                                   'type' => isset(TYPES_COMMANDE[$k['type'] ?? '']) ? $k['type'] : null, 'statut' => $statut,
                                   'retrait_date' => date_valide((string)($k['retrait_date'] ?? '')) ? $k['retrait_date'] : null,
-                                  'retrait_moment' => isset(MOMENTS[$k['retrait_moment'] ?? '']) ? $k['retrait_moment'] : '',
+                                  'retrait_moment' => isset(MOMENTS_TOUS[$k['retrait_moment'] ?? '']) ? (string)$k['retrait_moment'] : '',
                                   'retrait_heure' => preg_match('/^\d{2}:\d{2}$/', (string)($k['retrait_heure'] ?? '')) ? $k['retrait_heure'] : '',
                                   'lignes' => is_array($k['lignes'] ?? null) ? $k['lignes'] : [], 'perso' => (string)($k['perso'] ?? ''), 'besoin' => (string)($k['besoin'] ?? ''),
                                   'recue_le' => $recue, 'origine' => (string)($k['origine'] ?? 'Reprise des données')]);

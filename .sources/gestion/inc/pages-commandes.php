@@ -156,11 +156,15 @@ function page_commande(): void {
             case 'confirmer':
                 $d = date_valide(texte('retrait_date', 10));
                 $h = preg_match('/^\d{2}:\d{2}$/', texte('retrait_heure', 5)) ? texte('retrait_heure', 5) : '';
+                $pl = isset($_POST['retrait_moment']) ? choix('retrait_moment', ['' => ''] + MOMENTS_TOUS, (string)$k['retrait_moment']) : null;
                 $prix = centimes(texte('prix_final', 12));
-                commande_statut($id, 'confirmee', ['retrait_date' => $d, 'retrait_heure' => $h] + ($prix !== null ? ['prix_final' => $prix] : []));
+                commande_statut($id, 'confirmee', ['retrait_date' => $d, 'retrait_heure' => $h] + ($pl !== null ? ['retrait_moment' => $pl] : []) + ($prix !== null ? ['prix_final' => $prix] : []));
                 if (!empty($_POST['acompte_recu']) && in_array($k['paiement'], ['aucun', 'acompte_demande'], true)) commande_paiement($id, 'acompte_recu', choix('moyen', MOYENS, ''), (int)$k['acompte'] ?: null, (string)$k['facture']);
-                $ind = indispo_de_commande(commande($id) ?? []);
+                $kc = commande($id) ?? [];
+                $ind = indispo_de_commande($kc);
+                $avert = $kc ? plage_avertissement($kc) : '';   // dimanche, plage fermée ou déjà complète : on prévient, sans bloquer (spécification 007)
                 if ($ind) flash('erreur', 'Commande confirmée, mais le retrait tombe sur une indispo : ' . indispo_texte($ind) . '. Vérifiez avec le client, ou changez la date.');
+                elseif ($avert !== '') flash('erreur', 'Commande confirmée. Attention : ' . $avert . ' Vérifiez avec le client, ou changez la plage.');
                 else flash('ok', 'Commande confirmée : envoyez la confirmation au client et ajoutez le retrait à votre agenda.');
                 break;
             // Les mails au client partent de la gestion au toucher de Youngmi sur « Envoyer » (R-01) ; Gmail reste le secours
@@ -238,7 +242,7 @@ function page_commande(): void {
                 flash('ok', 'Commande annulée.');
                 break;
             case 'paiement':
-                commande_paiement($id, choix('paiement', PAIEMENTS, 'aucun'), choix('moyen', MOYENS, ''), centimes(texte('acompte', 12)) ?? 0, une_ligne(texte('facture', 40)));
+                commande_paiement($id, choix('paiement', PAIEMENTS, 'aucun'), choix('moyen', MOYENS, ''), isset($_POST['acompte']) ? (centimes(texte('acompte', 12)) ?? 0) : null, une_ligne(texte('facture', 40)));
                 $pf = texte('prix_final', 12);
                 if ($pf !== '') commande_modifier($id, ['prix_final' => centimes($pf)]);
                 flash('ok', 'Paiement enregistré.');
@@ -311,9 +315,11 @@ function page_commande(): void {
                      . ($k['client_statut'] !== 'efface' ? lien_bouton(u('client-edition', ['id' => $k['client_id']]), icone('crayon') . 'Corriger le nom ou les coordonnées', 'discret') : '') . '</p>');
     $quand = preg_replace('/ \(livraison\)$/', '', retrait_texte($k));   // le bloc s'appelle déjà « Livraison »
     $close = !$k['retrait_date'] && in_array($k['statut'], ['remise', 'annulee', 'sans_suite'], true);
-    $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h($quand)]) : definition(['Quand' => h($quand), 'Moment demandé' => h(MOMENTS[$k['retrait_moment']] ?? ''), 'Heure convenue' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : 'à convenir'),
+    $c .= bloc(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Retrait', $close ? definition(['Quand' => h($quand)]) : definition(['Quand' => h($quand), (isset(PLAGES[$k['retrait_moment']]) ? 'Plage horaire' : 'Moment demandé') => h(PLAGES[$k['retrait_moment']] ?? MOMENTS[$k['retrait_moment']] ?? ''),
+                                     'Heure précise' => h($k['retrait_heure'] !== '' ? str_replace(':', ' h ', $k['retrait_heure']) : (isset(PLAGES[$k['retrait_moment']]) ? '' : 'à convenir')),
                                      'Où' => h(($k['mode'] ?? 'retrait') === 'livraison' ? 'Livraison' : 'Au 4 avenue du Château, 92190 Meudon')])
                       . (($ind = indispo_de_commande($k)) ? '<p class="erreur">' . icone('alerte') . ' Indispo ce jour-là : ' . h(indispo_texte($ind)) . '. Vérifiez avec le client, ou changez la date. <a href="' . h(u('agenda', ['mois' => substr((string)$k['retrait_date'], 0, 7), 'jour' => (string)$k['retrait_date']])) . '#jour">Voir l\'agenda</a></p>' : '')
+                      . (in_array($k['statut'], STATUTS_EN_COURS, true) && ($av = plage_avertissement($k)) !== '' ? '<p class="erreur">' . icone('alerte') . ' ' . h($av) . ' <a href="' . h(u('agenda', ['mois' => substr((string)$k['retrait_date'], 0, 7), 'jour' => (string)$k['retrait_date']])) . '#plages">Voir les plages</a></p>' : '')
                       . ((livraison_pro($k) && in_array($k['statut'], STATUTS_EN_COURS, true) && ($de = volumes_distance_etat((int)$k['client_id'])))   // vérifiée avant de livrer (contre-expertise n° 9, constat 3)
                           ? '<p class="erreur">' . icone('alerte') . ' ' . h(volumes_distance_message($de)) . ' <a href="' . h(u('obligations', ['vue' => 'volumes'])) . '#restaurants">Voir les restaurants</a></p>' : '')
                       . agenda_boutons($k));
@@ -371,9 +377,9 @@ function page_commande(): void {
                                      'Facture Qonto' => h($k['facture'])])
         . rapprochement_formulaire($k)
         . '<details class="replie"><summary>Modifier le paiement</summary>'
-        . formulaire('paiement', '<div class="ligne-champs">' . liste_choix('paiement', 'Paiement', PAIEMENTS, $k['paiement']) . liste_choix('moyen', 'Moyen', MOYENS, $k['moyen']) . '</div>'
+        . formulaire('paiement', '<div class="ligne-champs">' . liste_choix('paiement', 'Paiement', paiements_proposes($k), $k['paiement']) . liste_choix('moyen', 'Moyen', MOYENS, $k['moyen']) . '</div>'
             . '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $k['prix_final'] !== null ? number_format((int)$k['prix_final'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal'])
-            . champ('acompte', 'Acompte (€)', (int)$k['acompte'] ? number_format((int)$k['acompte'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal']) . '</div>'
+            . (avec_acompte($k) ? champ('acompte', 'Acompte (€)', (int)$k['acompte'] ? number_format((int)$k['acompte'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal']) : '') . '</div>'
             . champ('facture', 'N° de facture Qonto', $k['facture'], ['placeholder' => 'F-2026-013']) . bouton('Enregistrer', 'secondaire'))
         . '</details>');
     // Problème
@@ -516,8 +522,9 @@ function confirmer_en_bas(array $k): string {
     if ($k['statut'] !== 'proposition' || !$k['retrait_date']) return '';
     $quand = retrait_texte($k);
     $prix = number_format(montant_commande($k) / 100, 2, ',', '');
-    return '<div class="confirmer-bas"><p><b>Le client a accepté ?</b> <span>' . h($quand) . '</span> · <a href="#etape">changer le jour ou l\'heure en haut</a></p>'
+    return '<div class="confirmer-bas"><p><b>Le client a accepté ?</b> <span>' . h($quand) . '</span> · <a href="#etape">changer le jour ou la plage en haut</a></p>'
          . formulaire('confirmer', '<input type="hidden" name="retrait_date" value="' . h((string)$k['retrait_date']) . '"><input type="hidden" name="retrait_heure" value="' . h((string)$k['retrait_heure']) . '">'
+             . '<input type="hidden" name="retrait_moment" value="' . h((string)$k['retrait_moment']) . '">'
              . '<input type="hidden" name="prix_final" value="' . h($prix) . '">' . bouton('Confirmer la commande', 'principal'),
              ['class' => 'form-etape', 'data-confirmer' => 'Confirmer la commande pour ' . $quand . ' ?']) . '</div>';
 }
@@ -555,16 +562,17 @@ function etape_suivante(array $k): string {
         case 'demande':
             $h = heures_depuis($k['recue_le']);
             $quand = $h >= GESTION_RETARD_HEURES ? '<span class="retard">Reçue il y a ' . attente_lisible($k['recue_le']) . ' : le site promet une réponse sous 24 h.</span>' : 'À répondre avant le ' . h(date_fr(date('Y-m-d H:i:s', strtotime($k['recue_le']) + 86400), 'heure')) . '.';
-            $acompteDefaut = $k['perso'] !== '' ? number_format(round(montant_commande($k) * 0.3 / 100, 2), 2, ',', '') : '';
+            // Plus d'acompte (décision d'Olivier du 27/11/2026) : le champ ne reste que pour une commande qui en a déjà un
+            $acompteActuel = avec_acompte($k) ? number_format((int)$k['acompte'] / 100, 2, ',', '') : null;
             $gmail = 'https://mail.google.com/mail/?authuser=contact@madamecho.com#search/' . rawurlencode($k['reference']);
             return '<section class="etape"><h2>Prochaine étape : envoyer une proposition</h2><p>' . $quand . '</p>'
-                 . '<p class="aide">Indiquez le prix TTC et l\'acompte (si personnalisé), vérifiez le jour et l\'heure du retrait dans la commande, puis envoyez.</p>'
+                 . '<p class="aide">Indiquez le prix TTC, vérifiez le jour et la plage horaire du retrait dans la commande, puis envoyez.</p>'
                  . bloc_mail_client($k, 'proposition', 'Envoyer la proposition au client',
                        '<div class="ligne-champs">' . champ('prix_final', 'Prix proposé (€ TTC)', $prixDefaut, ['inputmode' => 'decimal', 'data-apercu' => 'apercu-proposition', 'id' => 'f-prix-prop'])
-                       . champ('acompte', 'Acompte demandé (€)', $acompteDefaut, ['inputmode' => 'decimal', 'data-apercu' => 'apercu-proposition', 'id' => 'f-acompte-prop'], 'Vide s\'il n\'y en a pas.') . '</div>',
+                       . ($acompteActuel !== null ? champ('acompte', 'Acompte demandé (€)', $acompteActuel, ['inputmode' => 'decimal', 'data-apercu' => 'apercu-proposition', 'id' => 'f-acompte-prop'], 'Vide s\'il n\'y en a pas.') : '') . '</div>',
                        '<p class="aide">Vous l\'avez envoyée vous-même ? Notez-la :</p>'
                        . formulaire('proposition', '<div class="ligne-champs">' . champ('prix_final', 'Prix proposé (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])
-                           . champ('acompte', 'Acompte demandé (€)', $acompteDefaut, ['inputmode' => 'decimal'], 'Vide s\'il n\'y en a pas.') . '</div>'
+                           . ($acompteActuel !== null ? champ('acompte', 'Acompte demandé (€)', $acompteActuel, ['inputmode' => 'decimal'], 'Vide s\'il n\'y en a pas.') : '') . '</div>'
                            . bouton('J\'ai envoyé la proposition', 'secondaire'), ['class' => 'form-etape'])
                        . '<div class="actions">' . lien_bouton($gmail, icone('email') . 'Retrouver la demande dans Gmail', 'discret', ['target' => '_blank', 'rel' => 'noopener']) . '</div>')
                  . formulaire('statut', '<input type="hidden" name="statut" value="sans_suite">' . bouton('Classer sans suite', 'discret'), ['class' => 'form-secondaire'])
@@ -574,7 +582,8 @@ function etape_suivante(array $k): string {
             return '<section class="etape" id="etape"><h2>Le client a accepté ?</h2>'
                  . '<p>Proposition envoyée ' . h(date_fr($k['dernier_echange'], 'relative')) . ($j >= GESTION_SANS_SUITE_JOURS ? ' : <span class="dormant">sans nouvelles depuis ' . $j . ' jours, une relance ou « sans suite » ?</span>' : '.') . '</p>'
                  . formulaire('confirmer', '<div class="ligne-champs">' . champ('retrait_date', 'Jour du retrait', (string)$k['retrait_date'], ['type' => 'date', 'required' => true])
-                      . champ('retrait_heure', 'Heure convenue', $k['retrait_heure'], ['type' => 'time', 'step' => '900']) . '</div>'
+                      . liste_choix('retrait_moment', 'Plage horaire', options_plage((string)$k['retrait_moment']), (string)$k['retrait_moment'], ['id' => 'f-plage-confirmer']) . '</div>'
+                      . champ('retrait_heure', 'Heure précise (facultatif)', $k['retrait_heure'], ['type' => 'time', 'step' => '900'], 'Seulement si vous avez convenu d\'une heure avec le client.')
                       . champ('prix_final', 'Prix final (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])
                       . ((int)$k['acompte'] ? case_a_cocher('acompte_recu', 'Acompte de ' . h(euros((int)$k['acompte'])) . ' reçu', $k['paiement'] === 'acompte_recu') . liste_choix('moyen', 'Moyen de l\'acompte', MOYENS, $k['moyen']) : '')
                       . bouton('Confirmer la commande', 'principal'), ['class' => 'form-etape'])
@@ -679,7 +688,7 @@ function page_commande_edition(): void {
                       + (isset($V[$v]['ht']) ? ['ht' => $V[$v]['ht'], 'tva' => $V[$v]['tva']] : []);
         }
         $d = ['canal' => choix('canal', CANAUX, $k['canal'] ?? 'autre'), 'type' => choix('type', TYPES_COMMANDE, $k['type'] ?? 'carte'),
-              'retrait_date' => date_valide(texte('retrait_date', 10)), 'retrait_moment' => choix('retrait_moment', ['' => ''] + MOMENTS, ''),
+              'retrait_date' => date_valide(texte('retrait_date', 10)), 'retrait_moment' => choix('retrait_moment', ['' => ''] + MOMENTS_TOUS, ''),
               'retrait_heure' => preg_match('/^\d{2}:\d{2}$/', texte('retrait_heure', 5)) ? texte('retrait_heure', 5) : '', 'mode' => choix('mode', MODES, 'retrait'),
               'perso' => texte('perso', 2000), 'besoin' => texte('besoin', 2000), 'lignes' => $lignes]
            // absent de l'envoi (une modification préparée par l'assistant ne le porte pas) : la valeur de la commande reste
@@ -691,8 +700,10 @@ function page_commande_edition(): void {
             $prix = centimes(texte('prix_final', 12));
             $acompte = centimes(texte('acompte', 12));
             if ($k) {
-                $chg = commande_modifier($id, $d + ['prix_final' => $prix, 'acompte' => $acompte ?? 0]);
-                flash('ok', $chg !== '' ? 'Commande modifiée. Changé : ' . $chg . '.' : 'Rien n\'a changé dans la commande.');
+                $chg = commande_modifier($id, $d + ['prix_final' => $prix] + (isset($_POST['acompte']) ? ['acompte' => $acompte ?? 0] : []));
+                $avert = $livraison ? '' : plage_avertissement(commande($id) ?? []);   // dimanche, plage fermée ou complète : on prévient, sans bloquer
+                if ($avert !== '' && $chg !== '') flash('erreur', 'Commande modifiée. Attention : ' . $avert);
+                else flash('ok', $chg !== '' ? 'Commande modifiée. Changé : ' . $chg . '.' : 'Rien n\'a changé dans la commande.');
             } else {
                 $ref = strtoupper(une_ligne(texte('reference', 20)));
                 $statut = choix('statut', STATUTS, 'demande');
@@ -708,7 +719,11 @@ function page_commande_edition(): void {
                 $accuse = $livraison ? 'sans' : accuser_reception_commande($id);
                 $accuseTexte = ['envoye' => ' Le client a reçu l\'accusé de réception par email.', 'echec' => ' L\'accusé de réception n\'a pas pu partir : prévenez Olivier.'][$accuse] ?? '';
                 if ($livraison && empty($repris)) flash('ok', 'Livraison enregistrée.');
-                else flash('ok', (!empty($repris) ? 'Commande créée, sur la fiche de ' . client_nom($repris) . ' (' . $repris['numero'] . '), retrouvée par son ' . ($repris['par'] === 'email' ? 'email' : 'téléphone') . '.' : 'Commande créée.') . $accuseTexte);
+                else {
+                    $avert = $livraison ? '' : plage_avertissement(commande($id) ?? []);   // dimanche, plage fermée ou complète : on prévient, sans bloquer
+                    flash($avert !== '' ? 'erreur' : 'ok', (!empty($repris) ? 'Commande créée, sur la fiche de ' . client_nom($repris) . ' (' . $repris['numero'] . '), retrouvée par son ' . ($repris['par'] === 'email' ? 'email' : 'téléphone') . '.' : 'Commande créée.') . $accuseTexte
+                          . ($avert !== '' ? ' Attention : ' . $avert : ''));
+                }
             }
             rediriger('commande', ['id' => $id]);
         }
@@ -778,13 +793,13 @@ function page_commande_edition(): void {
         . zone('besoin', 'Demande d\'un professionnel', $val('besoin', $k['besoin'] ?? ''), ['rows' => '2', 'maxlength' => '2000']));
     // Retrait
     $f .= bloc($livraison ? 'Le jour' : 'Le retrait', '<div class="ligne-champs">' . champ('retrait_date', 'Jour', $val('retrait_date', (string)($k['retrait_date'] ?? ($livraison ? aujourdhui() : ''))), ['type' => 'date'])
-        . liste_choix('retrait_moment', 'Moment', ['' => '—'] + MOMENTS, $val('retrait_moment', $k['retrait_moment'] ?? '')) . '</div>'
-        . '<div class="ligne-champs">' . champ('retrait_heure', 'Heure convenue', $val('retrait_heure', $k['retrait_heure'] ?? ''), ['type' => 'time', 'step' => '900'])
+        . liste_choix('retrait_moment', 'Plage horaire', options_plage((string)$val('retrait_moment', $k['retrait_moment'] ?? '')), $val('retrait_moment', $k['retrait_moment'] ?? '')) . '</div>'
+        . '<div class="ligne-champs">' . champ('retrait_heure', 'Heure précise (facultatif)', $val('retrait_heure', $k['retrait_heure'] ?? ''), ['type' => 'time', 'step' => '900'])
         . liste_choix('mode', 'Mode', MODES, $val('mode', $k['mode'] ?? ($livraison ? 'livraison' : 'retrait'))) . '</div>');
     // Montants et étape
     $pf = $k && $k['prix_final'] !== null ? number_format((int)$k['prix_final'] / 100, 2, ',', '') : '';
     $ac = $k && (int)$k['acompte'] ? number_format((int)$k['acompte'] / 100, 2, ',', '') : '';
-    $m = $livraison ? '' : '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $val('prix_final', $pf), ['inputmode' => 'decimal'], 'Vide : le total des gâteaux.') . champ('acompte', 'Acompte (€)', $val('acompte', $ac), ['inputmode' => 'decimal']) . '</div>';
+    $m = $livraison ? '' : '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $val('prix_final', $pf), ['inputmode' => 'decimal'], 'Vide : le total des gâteaux.') . ($k && avec_acompte($k) ? champ('acompte', 'Acompte (€)', $val('acompte', $ac), ['inputmode' => 'decimal']) : '') . '</div>';
     if ($livraison) {
         $m .= liste_choix('statut', 'Où en est-elle ?', ['confirmee' => 'À livrer', 'remise' => 'Déjà livrée'], $val('statut', 'confirmee'))
             . '<input type="hidden" name="paiement" value="aucun">'
@@ -880,7 +895,7 @@ function page_production(): void {
     $au = date('Y-m-d', strtotime($du . ' +' . ((int)$jours - 1) . ' days'));
     $ks = lignes("SELECT k.*, c.nom AS client_nom, c.prenom AS client_prenom, c.societe AS client_societe, c.type AS client_type, c.statut AS client_statut, c.numero AS client_numero
                   FROM commandes k JOIN clients c ON c.id = k.client_id WHERE k.statut = 'confirmee' AND k.retrait_date BETWEEN ? AND ?
-                  ORDER BY k.retrait_date, CASE WHEN k.retrait_heure <> '' THEN k.retrait_heure ELSE CASE k.retrait_moment WHEN 'matin' THEN '09' WHEN 'midi' THEN '12' WHEN 'apres-midi' THEN '14' ELSE '18' END END", [$du, $au]);
+                  ORDER BY k.retrait_date, " . ORDRE_DANS_LA_JOURNEE, [$du, $au]);
     $total = [];
     $parJour = [];
     foreach ($ks as $k) {

@@ -1,54 +1,54 @@
 {
  "": {
-  "empreinte": "e21e25cc309b2277",
-  "date": "2026-11-25"
+  "empreinte": "802d3de37119e60a",
+  "date": "2026-11-27"
  },
  "carte/": {
-  "empreinte": "e73031caedad2c08",
-  "date": "2026-11-25"
+  "empreinte": "46be00841583c56e",
+  "date": "2026-11-27"
  },
  "carte/entremets-fruits/": {
-  "empreinte": "729df805ad2caebc",
-  "date": "2026-11-25"
+  "empreinte": "bff435600b736cb9",
+  "date": "2026-11-27"
  },
  "carte/charlotte-chocolat-framboise/": {
-  "empreinte": "5601b5ee4b60582a",
-  "date": "2026-11-25"
+  "empreinte": "d5fe6b9afb8802e2",
+  "date": "2026-11-27"
  },
  "carte/tarte-pecan/": {
-  "empreinte": "31f678c5206fd5c1",
-  "date": "2026-11-25"
+  "empreinte": "edaa6edb569a7021",
+  "date": "2026-11-27"
  },
  "carte/cookies/": {
-  "empreinte": "f1d4b7af96650530",
-  "date": "2026-11-25"
+  "empreinte": "1674821a53a9560a",
+  "date": "2026-11-27"
  },
  "carte/choux/": {
-  "empreinte": "3f16015c0137ce91",
-  "date": "2026-11-25"
+  "empreinte": "0c607b6347c305e0",
+  "date": "2026-11-27"
  },
  "carte/petits-gateaux-du-gouter/": {
-  "empreinte": "51c322c512a9177a",
-  "date": "2026-11-25"
+  "empreinte": "4acce2c0692548a8",
+  "date": "2026-11-27"
  },
  "retrait/": {
-  "empreinte": "6095cd453af1ac41",
-  "date": "2026-11-08"
+  "empreinte": "d037dd527e7c0c14",
+  "date": "2026-11-27"
  },
  "questions/": {
-  "empreinte": "d4365462dcca31f7",
-  "date": "2026-11-25"
+  "empreinte": "195bfbc6819e3f61",
+  "date": "2026-11-27"
  },
  "conditions-de-commande/": {
-  "empreinte": "8a6f326ee5b31003",
-  "date": "2026-11-25"
+  "empreinte": "52058bd0f54f11e2",
+  "date": "2026-11-27"
  },
  "mentions-legales/": {
-  "empreinte": "83401fb05cd75a66",
-  "date": "2026-11-25"
+  "empreinte": "8032e1c2f2951ee2",
+  "date": "2026-11-27"
  },
  "confidentialite/": {
-  "empreinte": "e1737aa7a180dd9f",
-  "date": "2026-11-25"
+  "empreinte": "1bd0da905854cb0f",
+  "date": "2026-11-27"
  }
 }

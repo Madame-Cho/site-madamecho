@@ -27,6 +27,12 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-plages', 'le' => '2026-11-28', 'titre' => 'Les plages de retrait',
+     'texte' => 'Le site propose maintenant six plages de retrait, du lundi au samedi : 9 h – 10 h 30, 10 h 30 – 12 h, 12 h – 14 h, 14 h – 16 h, 16 h – 18 h et 18 h – 19 h. Plusieurs clients peuvent venir dans la même plage, jusqu\'à 5 retraits confirmés ; ensuite le site ne la propose plus. Dans l\'Agenda, touchez un jour : « Plages de retrait » montre « 2 sur 5 » pour chaque plage, et vous pouvez la fermer, la rouvrir ou changer son maximum. Le maximum de tous les jours se règle dans Paramètres › Retraits. Le dimanche, plus de retrait sur le site.',
+     'lien' => ['agenda', 'plages']],
+    ['id' => '2026-11-sans-acompte', 'le' => '2026-11-28', 'titre' => 'Plus d\'acompte',
+     'texte' => 'Madame Cho ne demande plus d\'acompte : la proposition n\'a plus de case « Acompte », et le site n\'en parle plus. Le client paie le prix complet. Une commande qui avait déjà un acompte le garde.',
+     'lien' => ['manuel', 'commande']],
     ['id' => '2026-11-connu', 'le' => '2026-11-14', 'titre' => 'Comment vos clients vous ont connue',
      'texte' => 'Le formulaire du site demande maintenant au client, s\'il veut bien répondre, comment il a connu Madame Cho : bouche-à-oreille, Google, Instagram, un restaurant… Sa réponse est sur la fiche de la commande ; pour une commande reçue autrement, notez-la dans « Modifier la commande ». Les Statistiques comptent ces réponses. Une demande dit aussi par quel bouton du site elle a commencé (anniversaire, Number cake, événement).',
      'lien' => ['statistiques', 'connu']],

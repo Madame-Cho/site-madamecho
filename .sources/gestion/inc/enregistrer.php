@@ -3,7 +3,7 @@
  * Madame Cho : enregistrement d'une demande du formulaire du site dans l'espace de gestion.
  * Appelé par ma-demande/envoyer.php APRÈS l'envoi de l'email à contact@ (même référence MC-…) :
  * si l'enregistrement échoue, l'email est parti quand même et le visiteur ne voit aucune différence.
- * Le formulaire y demande aussi, avant l'envoi, si le jour et le moment choisis tombent sur une indispo de l'agenda.
+ * Le formulaire y demande aussi, avant l'envoi, l'état des plages de retrait du jour choisi (spécification 007) : libre ou complète.
  * Aucun cookie, aucune session : le visiteur du site n'a pas de compte (GESTION_CONTEXTE_SITE).
  */
 declare(strict_types=1);
@@ -15,7 +15,7 @@ require_once __DIR__ . '/modele.php';
 require_once __DIR__ . '/accuse.php';   // l'accusé de réception au client (09/11/2026)
 
 /**
- * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), moment, lignes ([p, c, q, prix (total de la ligne), plaque]),
+ * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), plage (code de PLAGES ; « moment » pour une ancienne page), lignes ([p, c, q, prix (total de la ligne), plaque]),
  * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code,
  * « instagram bio » par le lien de la page Instagram), depuis (facultatif : le bouton de l'accueil par lequel la demande a commencé, en clair),
  * connu (facultatif : la réponse à « Comment avez-vous connu Madame Cho ? », un code de CONNU_PAR).
@@ -50,7 +50,7 @@ function enregistrer_demande(array $d): int {
         }
         $type = $d['pro'] ? 'pro' : (($d['perso'] !== '' || !$lignes) ? 'perso' : 'carte');
         $id = commande_creer(['reference' => $d['ref'], 'client_id' => $cid, 'canal' => $canal, 'type' => $type,
-                              'retrait_date' => $d['date'], 'retrait_moment' => $d['moment'], 'lignes' => $lignes,
+                              'retrait_date' => $d['date'], 'retrait_moment' => (string)($d['plage'] ?? $d['moment'] ?? ''), 'lignes' => $lignes,
                               'perso' => (string)$d['perso'], 'besoin' => (string)$d['besoin'], 'recue_le' => $quand, 'connu' => $connu,
                               'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ($insta ? ' après une arrivée par le lien de la page Instagram' : ''))
                                          . ($depuis !== '' ? ', commencée par ' . $depuis : ''), 'auteur' => 'site']);
@@ -63,27 +63,35 @@ function enregistrer_demande(array $d): int {
 }
 
 /**
- * Le retrait demandé sur le site tombe-t-il sur une indispo de l'agenda (demande d'Olivier du 07/11/2026) ? Renvoie la phrase pour le
- * visiteur, ou '' si ce jour et ce moment sont libres. Jamais le motif ni les heures de l'indispo : le jour et le moment choisis, les autres
- * moments encore libres ce jour-là, ou les jours d'une indispo d'une journée entière. Une plage ferme tout le moment qu'elle touche, comme
- * pour les commandes de la gestion (indispo_de_commande). Rien tant que l'espace de gestion n'est pas ouvert : la base n'est jamais créée ici.
+ * Les plages de retrait d'un jour, pour le formulaire du site (spécification 007, 27/11/2026) : ['plages' => [code => 'libre'|'complet'],
+ * 'message' => phrase quand aucune plage n'est libre]. « complet » vaut pour une plage pleine, fermée par Youngmi ou touchée par une indispo :
+ * jamais de nombre de clients ni de motif. Le dimanche et les jours fermés sont refusés par envoyer.php avant d'arriver ici.
+ * Tant que l'espace de gestion n'est pas ouvert, toutes les plages sont libres : la base n'est jamais créée ici.
  */
-function indispo_pour_demande(string $date, string $moment): string {
-    if (!date_valide($date) || !isset(MOMENTS_PLAGES[$moment]) || !gestion_base_existante()) return '';
-    $i = indispo_de_commande(['statut' => 'demande', 'retrait_date' => $date, 'retrait_heure' => '', 'retrait_moment' => $moment]);
-    if (!$i) return '';
-    $duJour = indispos_entre($date, $date);
-    $libres = array_keys(array_filter(MOMENTS_PLAGES, function (array $p) use ($duJour): bool {
-        foreach ($duJour as $x) if (indispo_journee($x) || ($x['heure_debut'] < $p[1] && $x['heure_fin'] > $p[0])) return false;
-        return true;
-    }));
-    if (!$libres) {
+function plages_pour_demande(string $date): array {
+    $libres = ['plages' => array_fill_keys(array_map('strval', array_keys(PLAGES)), 'libre'), 'message' => ''];
+    if (!date_valide($date) || !gestion_base_existante()) return $libres;
+    $etats = plages_du_jour($date);
+    $r = ['plages' => [], 'message' => ''];
+    foreach ($etats as $c => $p) $r['plages'][(string)$c] = $p['complete'] ? 'complet' : 'libre';
+    if (!in_array('libre', $r['plages'], true)) $r['message'] = jour_complet_texte($date);
+    return $r;
+}
+/** La phrase d'un jour sans plage libre : les jours d'une indispo d'une journée entière (sans motif), sinon « toutes les plages sont complètes ». */
+function jour_complet_texte(string $date): string {
+    foreach (indispos_entre($date, $date) as $i) {
+        if (!indispo_journee($i)) continue;
         $de = max($i['debut'], date('Y-m-d'));   // une indispo déjà commencée : à partir d'aujourd'hui
-        $jours = (indispo_journee($i) && $de < $i['fin']) ? 'du ' . date_fr($de, 'jour') . ' au ' . date_fr($i['fin'], 'jour') : 'le ' . date_fr($date, 'jour');
+        $jours = $de < $i['fin'] ? 'du ' . date_fr($de, 'jour') . ' au ' . date_fr($i['fin'], 'jour') : 'le ' . date_fr($date, 'jour');
         return 'Madame Cho n\'est pas disponible ' . $jours . ' : choisissez une autre date.';
     }
-    $pas = ['matin' => 'le matin', 'midi' => 'à midi', 'apres-midi' => 'l\'après-midi', 'soir' => 'le soir'];
-    $plutot = array_map(fn(string $m): string => ['matin' => 'le matin', 'midi' => 'midi', 'apres-midi' => 'l\'après-midi', 'soir' => 'le soir'][$m], $libres);
-    $choix = count($plutot) > 1 ? implode(', ', array_slice($plutot, 0, -1)) . ' ou ' . end($plutot) : $plutot[0];
-    return 'Le ' . date_fr($date, 'jour') . ', Madame Cho n\'est pas disponible ' . $pas[$moment] . ' : choisissez plutôt ' . $choix . ', ou une autre date.';
+    return 'Le ' . date_fr($date, 'jour') . ', toutes les plages de retrait sont complètes : choisissez une autre date.';
+}
+/** La plage choisie sur le site est-elle refusée ? La phrase pour le visiteur (sans motif), ou '' si elle est libre. */
+function plage_refusee(string $date, string $plage): string {
+    if (!isset(PLAGES[$plage])) return 'Choisissez une plage horaire de retrait.';
+    $r = plages_pour_demande($date);
+    if (($r['plages'][$plage] ?? 'libre') === 'libre') return '';
+    if ($r['message'] !== '') return $r['message'];
+    return 'Le ' . date_fr($date, 'jour') . ', la plage ' . mb_strtolower(PLAGES[$plage]) . ' est complète : choisissez-en une autre, ou une autre date.';
 }

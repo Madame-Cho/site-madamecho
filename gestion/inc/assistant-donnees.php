@@ -96,7 +96,7 @@ function assistant_outils_donnees(): array {
          'description' => 'La fiche complète d\'un client : coordonnées, type, statut, premier contact, avis Google, nom dans Qonto, chiffres (HT pour un professionnel, TTC pour un particulier), ses commandes et son historique.',
          'input_schema' => $objet(['numero' => ['type' => 'string', 'description' => 'Numéro CL-…']], ['numero'])],
         ['name' => 'agenda',
-         'description' => 'Les retraits et livraisons prévus entre deux dates (commandes à répondre, proposées, confirmées ou remises), jour par jour, et les indispos de Youngmi qui touchent ces jours, avec leur numéro (pour les modifier). Par défaut aujourd\'hui et les 13 jours suivants ; 62 jours au plus.',
+         'description' => 'Les retraits et livraisons prévus entre deux dates (commandes à répondre, proposées, confirmées ou remises), jour par jour, et les indispos de Youngmi qui touchent ces jours, avec leur numéro (pour les modifier), et les plages de retrait fermées, complètes ou au maximum changé. Par défaut aujourd\'hui et les 13 jours suivants ; 62 jours au plus.',
          'input_schema' => $objet(['du' => $date, 'au' => $date])],
         ['name' => 'gateaux',
          'description' => 'Les gâteaux et produits. Sans critère : la liste, avec l\'identifiant de chaque produit, son statut, ses tailles ou parfums (code de variante et prix TTC ; prix HT pour la gamme pro des restaurants) et depuis quand il est proposé. Avec produit : sa fiche, ses recettes par variante (lignes numérotées, ingrédients, quantités, coût, marge HT) et ses allergènes (recette et site). Avec ingredients : la liste des ingrédients (numéro, unité, prix d\'achat, allergènes, fournisseur).',
@@ -364,7 +364,20 @@ function outil_agenda(array $in): array {
     }
     $ind = array_map(fn(array $i): array => ['numero' => (int)$i['id'], 'quand' => indispo_texte($i), 'debut' => $i['debut'], 'fin' => $i['fin'],
                                              'heures' => indispo_journee($i) ? 'toute la journée' : $i['heure_debut'] . '-' . $i['heure_fin']], indispos_entre($du, $au));
-    return ['du' => ia_jour($du), 'au' => ia_jour($au)] + ($note !== '' ? ['note' => $note] : []) + ['jours' => $jours ?: 'aucun retrait ni livraison', 'indispos' => $ind ?: 'aucune'];
+    // Les plages de retrait (spécification 007) : seulement celles qui ne sont pas « libres au maximum par défaut »
+    $pl = [];
+    for ($d = $du; $d <= $au; $d = date('Y-m-d', strtotime($d . ' +1 day'))) {
+        if (($f = jour_ferme($d)) !== '') { if ($f !== 'dimanche') $pl[ia_jour($d)] = ['fermé au public']; continue; }
+        $x = [];
+        foreach (plages_du_jour($d) as $code => $p) {
+            if (!$p['fermee'] && !$p['particulier'] && $p['n'] < $p['maximum']) continue;
+            $x[] = PLAGES_COURTES[(string)$code] . ' : ' . $p['n'] . ' sur ' . $p['maximum'] . ($p['fermee'] ? ', fermée par Youngmi' : ($p['n'] >= $p['maximum'] ? ', complète' : '')) . ($p['particulier'] ? ', maximum changé pour ce jour' : '');
+        }
+        if ($x) $pl[ia_jour($d)] = $x;
+    }
+    return ['du' => ia_jour($du), 'au' => ia_jour($au)] + ($note !== '' ? ['note' => $note] : []) + ['jours' => $jours ?: 'aucun retrait ni livraison', 'indispos' => $ind ?: 'aucune',
+            'plages' => ['maximum_par_defaut' => plage_maximum_defaut(), 'regle' => 'six plages du lundi au samedi, dimanche fermé ; une plage compte ses retraits confirmés ou remis',
+                         'a_noter' => $pl ?: 'toutes les plages sont libres, au maximum par défaut']];
 }
 
 function outil_gateaux(array $in): array {
@@ -505,7 +518,7 @@ function ia_visites(string $du, string $au): array|string {
 // Chaque action : la fiche visée (cible) et les champs permis avec leur type. L'écran et les champs postés sont dans proposition_formulaire.
 const PROPOSITIONS = [
     'commande_proposition' => ['cible' => 'commande', 'champs' => ['prix_final' => 'montant', 'acompte' => 'montant']],
-    'commande_confirmer' => ['cible' => 'commande', 'champs' => ['retrait_date' => 'date', 'retrait_heure' => 'heure', 'prix_final' => 'montant', 'acompte_recu' => 'ouinon', 'moyen' => 'moyen']],
+    'commande_confirmer' => ['cible' => 'commande', 'champs' => ['retrait_date' => 'date', 'retrait_moment' => 'moment', 'retrait_heure' => 'heure', 'prix_final' => 'montant', 'acompte_recu' => 'ouinon', 'moyen' => 'moyen']],
     'commande_remise' => ['cible' => 'commande', 'champs' => ['prix_final' => 'montant', 'paiement' => 'paiement', 'moyen' => 'moyen', 'facture' => 'ligne:40']],
     'commande_annuler' => ['cible' => 'commande', 'champs' => ['qui' => 'qui', 'motif' => 'ligne:300', 'acompte_sort' => 'acompte_sort']],
     'commande_etape' => ['cible' => 'commande', 'champs' => ['etape' => 'etape', 'motif' => 'ligne:300']],
@@ -557,13 +570,14 @@ function outil_proposer_modification(): array {
         'name' => 'proposer_modification',
         'description' => "Prépare une modification des données de la gestion. Elle s'affiche sous ta réponse avec un bouton « Confirmer » : rien ne change tant que Youngmi ne l'a pas touché, et c'est le formulaire habituel de la gestion qui l'applique (mêmes contrôles, même historique). Vérifie d'abord les valeurs actuelles avec les outils de lecture. Une proposition par changement (pour plusieurs commandes, une par commande ; " . ASSISTANT_PROPOSITIONS_TOUR . " au plus par réponse). Les champs non donnés gardent leur valeur actuelle. Dates AAAA-MM-JJ, heures HH:MM, montants en euros TTC (« 45 » ou « 45,50 ») sauf prix_ht.\n"
             . "Actions (cible entre parenthèses, puis champs) :\n"
+            . "- Plages de retrait (depuis le 27/11/2026) : retrait_moment vaut 0900 (9 h – 10 h 30), 1030 (10 h 30 – 12 h), 1200 (12 h – 14 h), 1400 (14 h – 16 h), 1600 (16 h – 18 h) ou 1800 (18 h – 19 h) ; les anciennes commandes peuvent garder matin|midi|apres-midi|soir. Du lundi au samedi, pas de retrait le dimanche (cas particulier par téléphone seulement). retrait_heure (HH:MM) est facultatif : seulement une heure précise convenue. Madame Cho ne demande plus d'acompte : ne propose acompte, acompte_recu ou acompte_sort que pour une commande qui en a déjà un.\n"
             . "- commande_proposition (MC-…) : prix_final, acompte. La proposition a été envoyée au client : étape Proposition.\n"
-            . "- commande_confirmer (MC-…) : retrait_date, retrait_heure, prix_final, acompte_recu (oui|non), moyen. Le client a accepté.\n"
+            . "- commande_confirmer (MC-…) : retrait_date, retrait_moment, retrait_heure, prix_final, acompte_recu (oui|non), moyen. Le client a accepté.\n"
             . "- commande_remise (MC-…) : prix_final, paiement (paye|aucun), moyen, facture. Gâteau remis ou livré. Donne toujours paiement et moyen tels que la personne les a dits ; si elle n'a rien dit du paiement, demande-le-lui avant de préparer (sinon la fiche garde son paiement actuel).\n"
             . "- commande_annuler (MC-…) : qui (client|madamecho), motif, acompte_sort (acquis|rembourse, vide sinon).\n"
             . "- commande_etape (MC-…) : etape (demande|proposition|confirmee|remise|sans_suite|annulee), motif. Pour classer sans suite ou revenir en arrière.\n"
             . "- commande_paiement (MC-…) : paiement (aucun|acompte_demande|acompte_recu|paye|rembourse), moyen (carte|virement|especes|autre), acompte, facture, prix_final.\n"
-            . "- commande_modifier (MC-…) : retrait_date, retrait_moment (matin|midi|apres-midi|soir), retrait_heure, mode (retrait|livraison), canal, type (carte|perso|pro), perso, besoin, prix_final, acompte, gateaux (liste de {variante, quantite, plaque} : remplace tous les gâteaux ; variante = code produit|code donné par gateaux ou commande).\n"
+            . "- commande_modifier (MC-…) : retrait_date, retrait_moment (0900|1030|1200|1400|1600|1800), retrait_heure, mode (retrait|livraison), canal, type (carte|perso|pro), perso, besoin, prix_final, acompte, gateaux (liste de {variante, quantite, plaque} : remplace tous les gâteaux ; variante = code produit|code donné par gateaux ou commande).\n"
             . "- commande_creer (sans cible) : client (CL-…) ou nouveau_client ({type, prenom, nom, societe, email, telephone, ville}), les champs de commande_modifier, etape (demande|proposition|confirmee|remise), paiement et moyen si remise, note.\n"
             . "- commande_probleme (MC-…) : note. commande_resolu (MC-…) : note. commande_commentaire (MC-…) : texte (un échange qui n'est pas passé par les mails, une remarque), par (telephone|sms|whatsapp|oral|instagram|autre : comment l'échange a eu lieu). Écris la note en français correct et simple, même si Youngmi te l'a dite en coréen ou dans un français approximatif, sans rien ajouter à ce qu'elle a dit.\n"
             . "- client_modifier (CL-…) et client_creer (sans cible) : type (particulier|professionnel), prenom, nom, societe, contact, email, telephone, ville, canal, qonto.\n"
@@ -643,7 +657,7 @@ function proposition_valeur(string $type, mixed $v, string &$err): mixed {
         case 'acompte_sort': return $enum(['' => 1, 'acquis' => 1, 'rembourse' => 1], 'acompte_sort');
         case 'etape': return $enum(STATUTS, 'étape');
         case 'etape_creation': return $enum(['demande' => 1, 'proposition' => 1, 'confirmee' => 1, 'remise' => 1], 'étape');
-        case 'moment': return $enum(['' => 1] + MOMENTS, 'moment');
+        case 'moment': return $enum(['' => 1] + MOMENTS_TOUS, 'moment');
         case 'mode': return $enum(MODES, 'mode');
         case 'canal': return $enum(CANAUX, 'canal');
         case 'par_echange': return $enum(['' => 1] + CANAUX_ECHANGE, 'par');
@@ -812,7 +826,7 @@ function proposition_regles(string $genre, ?array $f, array &$c): array {
 // Le libellé de chaque champ sur la carte, en français et en coréen
 const PROPOSITIONS_CHAMPS = [
     'prix_final' => ['Prix final', '최종 가격'], 'acompte' => ['Acompte', '선금'], 'retrait_date' => ['Jour', '날짜'], 'retrait_heure' => ['Heure', '시간'],
-    'retrait_moment' => ['Moment', '시간대'], 'acompte_recu' => ['Acompte reçu', '선금 받음'], 'moyen' => ['Moyen', '결제 수단'], 'paiement' => ['Paiement', '결제'],
+    'retrait_moment' => ['Plage horaire', '픽업 시간대'], 'acompte_recu' => ['Acompte reçu', '선금 받음'], 'moyen' => ['Moyen', '결제 수단'], 'paiement' => ['Paiement', '결제'],
     'facture' => ['Facture', '청구서'], 'qui' => ['Annulée par', '취소한 쪽'], 'motif' => ['Motif', '이유'], 'acompte_sort' => ['Acompte', '선금'], 'etape' => ['Étape', '단계'],
     'mode' => ['Mode', '방식'], 'canal' => ['Reçue par', '경로'], 'type' => ['Type', '종류'], 'perso' => ['Gâteau personnalisé', '맞춤 케이크'], 'besoin' => ['Demande pro', '업체 요청'],
     'gateaux' => ['Gâteaux', '케이크'], 'client' => ['Client', '고객'], 'nouveau_client' => ['Nouveau client', '새 고객'], 'note' => ['Note', '메모'], 'texte' => ['Texte', '내용'], 'par' => ['Par', '경로'],
@@ -881,7 +895,7 @@ function proposition_detail(array $a): array {
             'retrait_date', 'debut', 'fin', 'propose_depuis', 'valide_le' => $vide($s, fn($x) => $i(date_fr($x, 'jour'))),
             'retrait_heure', 'heure_debut', 'heure_fin', 'tva' => $vide($s, fn($x) => $l($k === 'tva' ? nombre_tva((int)$x) : $x)),
             'etape' => $i(STATUTS[$s] ?? $s), 'paiement' => $i(PAIEMENTS[$s] ?? $s), 'moyen' => $i(MOYENS[$s] ?? $s), 'mode' => $i(MODES[$s] ?? $s),
-            'canal' => $i(CANAUX[$s] ?? $s), 'par' => $i(CANAUX_ECHANGE[$s] ?? $s), 'retrait_moment' => $vide($s, fn($x) => $i(MOMENTS[$x] ?? $x)), 'unite' => $i(UNITES[$s] ?? $s),
+            'canal' => $i(CANAUX[$s] ?? $s), 'par' => $i(CANAUX_ECHANGE[$s] ?? $s), 'retrait_moment' => $vide($s, fn($x) => $i(MOMENTS_TOUS[$x] ?? $x)), 'unite' => $i(UNITES[$s] ?? $s),
             'type' => $i(str_starts_with($genre, 'client') ? (TYPES_CLIENT_LONGS[$s] ?? $s) : (TYPES_COMMANDE[$s] ?? $s)),
             'statut' => $i(STATUTS_PRODUIT[$s] ?? $s),
             'qui' => $l($s === 'madamecho' ? 'Madame Cho' : fr_ko('le client', '고객')),
@@ -959,6 +973,7 @@ function proposition_formulaire(array $a): array {
             return $commande(['_action' => 'proposition', 'prix_final' => $v('prix_final', montant_champ(montant_commande($f))), 'acompte' => $v('acompte')]);
         case 'commande_confirmer':
             $p = ['_action' => 'confirmer', 'retrait_date' => $v('retrait_date', (string)$f['retrait_date']) ?: (string)$f['retrait_date'], 'retrait_heure' => $v('retrait_heure', $f['retrait_heure']),
+                  'retrait_moment' => $v('retrait_moment', (string)$f['retrait_moment']),
                   'prix_final' => $v('prix_final', montant_champ(montant_commande($f))), 'moyen' => $v('moyen', $f['moyen'])];
             if ($v('acompte_recu', 'non') === 'oui') $p['acompte_recu'] = '1';
             return $commande($p);

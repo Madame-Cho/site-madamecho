@@ -3,8 +3,10 @@
  * Madame Cho : espace de gestion. L'agenda (demande d'Olivier du 07/11/2026) : les retraits et les livraisons du mois,
  * jour par jour, chaque commande menant à sa page ; les indispos de Youngmi (jours entiers ou plages horaires), à ajouter,
  * modifier ou supprimer ici. La gestion prévient quand une commande en cours tombe sur une indispo.
- * Le formulaire « Ma demande » du site en tient compte aussi (2e version, 07/11/2026) : un jour ou un moment indisponible y est refusé,
- * sans le motif (indispo_pour_demande, dans enregistrer.php).
+ * Le formulaire « Ma demande » du site en tient compte aussi (2e version, 07/11/2026) : un jour ou une plage indisponible y est refusé,
+ * sans le motif (plages_pour_demande, dans enregistrer.php).
+ * Les plages de retrait (spécification 007, 27/11/2026) : pour le jour choisi, chaque plage dit combien de retraits confirmés elle a
+ * sur son maximum ; Youngmi peut la fermer, la rouvrir ou changer son maximum. Une plage complète ou fermée n'est plus proposée sur le site.
  */
 declare(strict_types=1);
 namespace MadameCho\Gestion;
@@ -41,6 +43,23 @@ function page_agenda(): void {
                 . ($n ? ' Attention : ' . $n . ($n > 1 ? ' commandes en cours tombent' : ' commande en cours tombe') . ' dessus, à voir avec le client.' : ''));
             rediriger('agenda', ['mois' => substr($d['debut'], 0, 7), 'jour' => $d['debut']], 'jour');
         }
+        if ($a === 'plage') {   // fermer, rouvrir ou changer le maximum d'une plage d'un jour (spécification 007)
+            $pj = date_valide(texte('plage_jour', 10));
+            $code = texte('plage', 4);
+            $op = choix('op', ['fermer' => 1, 'rouvrir' => 1, 'maximum' => 1, 'defaut' => 1], '');
+            $n = entier('maximum', 0, 20, 0);
+            $max = $op === 'maximum' && $n >= 1 && $n !== plage_maximum_defaut() ? $n : null;
+            if (!$pj || !isset(PLAGES[$code]) || $op === '' || ($op === 'maximum' && $n < 1)) flash('erreur', 'Choisissez un maximum entre 1 et 20.');
+            elseif (plage_regler($pj, $code, $op === 'defaut' ? 'maximum' : $op, $op === 'defaut' ? null : $max)) {
+                $quoi = 'La plage ' . PLAGES_COURTES[$code] . ' du ' . date_fr($pj, 'jour');
+                flash('ok', match ($op) {
+                    'fermer' => $quoi . ' est fermée : les clients ne peuvent plus la choisir sur le site.',
+                    'rouvrir' => $quoi . ' est rouverte.',
+                    default => $quoi . ' accepte maintenant ' . ($max ?? plage_maximum_defaut()) . ' retrait' . (($max ?? plage_maximum_defaut()) > 1 ? 's' : '') . ' au plus' . ($max === null ? ' (le maximum par défaut).' : '.'),
+                });
+            }
+            rediriger('agenda', ['mois' => substr($pj ?? $mois, 0, 7), 'jour' => $pj ?? $jour], 'plages');
+        }
         rediriger('agenda', ['mois' => $mois]);
     }
     $premier = $mois . '-01';
@@ -71,7 +90,7 @@ function page_agenda(): void {
         $kj = $parJour[$d] ?? [];
         $ij = indispos_du_jour($indispos, $d);
         $journee = (bool)array_filter($ij, fn($i) => indispo_journee($i));
-        $classes = 'jour-agenda' . (substr($d, 0, 7) !== $mois ? ' hors-mois' : '') . ($d < $auj ? ' passe' : '') . ($d === $auj ? ' aujourdhui' : '')
+        $classes = 'jour-agenda' . (substr($d, 0, 7) !== $mois ? ' hors-mois' : '') . ($d < $auj ? ' passe' : '') . ($d === $auj ? ' aujourdhui' : '') . (jour_ferme($d) !== '' ? ' jour-ferme' : '')
                  . ($d === $jour ? ' choisi' : '') . ($journee ? ' indispo-jour' : ($ij ? ' indispo-partielle' : ''));
         $evts = '';
         foreach ($ij as $i) {
@@ -108,6 +127,7 @@ function page_agenda(): void {
     if (array_filter($kj, fn($k) => $k['statut'] === 'confirmee')) $actions .= lien_bouton(u('production', ['du' => $jour, 'jours' => '1']), icone('imprimer') . 'Fiche de production', 'discret');
     if (!$ij) $actions .= lien_bouton(u('agenda', ['mois' => $mois, 'jour' => $jour, 'ajouter' => '1']) . '#ajouter', icone('ajouter') . 'Indispo ce jour-là', 'discret');
     $c .= bloc(h(ucfirst(date_fr($jour, 'jour'))) . ($kj ? ' <span class="compte">' . count($kj) . '</span>' : ''), $p . ($actions !== '' ? '<div class="actions">' . $actions . '</div>' : ''), 'agenda-jour', 'jour');
+    $c .= bloc_plages($jour, $auj);
 
     // Les indispos à venir, et le formulaire pour en ajouter une
     $aVenir = lignes("SELECT * FROM indispos WHERE fin >= ? ORDER BY debut, heure_debut, id LIMIT 60", [$auj]);
@@ -121,6 +141,44 @@ function page_agenda(): void {
         . '<p class="aide">Un jour entier ou une plage horaire (de 14 h à 18 h, par exemple), sur un ou plusieurs jours. La gestion prévient si une commande tombe dessus, et le formulaire du site refuse ces jours et ces moments, sans jamais dire le motif.</p>'
         . $ajout, '', 'indispos');
     mise_en_page('Agenda', $c, 'agenda', 'page-agenda');
+}
+
+/** Les plages du jour choisi (spécification 007) : « 2 sur 5 » par plage (retraits confirmés ou remis), fermer, rouvrir, maximum.
+ *  Le dimanche et le 24 décembre : fermé au public, rien à régler. Un jour passé : lecture seule. */
+function bloc_plages(string $jour, string $auj): string {
+    $ferme = jour_ferme($jour);
+    if ($ferme !== '') {
+        return bloc('Plages de retrait', '<p class="aide">' . ($ferme === 'dimanche'
+            ? 'Le dimanche, Madame Cho est fermée : le site ne propose aucune plage. Un cas particulier convenu par téléphone se saisit dans « Nouvelle commande ».'
+            : 'Jour fermé au public : le site ne propose aucune plage.') . '</p>', 'plages', 'plages');
+    }
+    $modifiable = $jour >= $auj;
+    $defaut = plage_maximum_defaut();
+    $l = '';
+    foreach (plages_du_jour($jour) as $code => $p) {
+        $code = (string)$code;
+        $cle = $p['fermee'] ? 'fermee' : ($p['indispo'] !== null ? 'indispo' : ($p['n'] >= $p['maximum'] ? 'complete' : 'libre'));
+        $etat = ['fermee' => 'Fermée', 'indispo' => 'Indispo', 'complete' => 'Complète', 'libre' => 'Libre'][$cle];
+        $compte = fr_ko($p['n'] . ' sur ' . $p['maximum'], $p['n'] . '명 / 최대 ' . $p['maximum'] . '명');
+        $cache = '<input type="hidden" name="plage_jour" value="' . h($jour) . '"><input type="hidden" name="plage" value="' . h($code) . '">';
+        $act = '';
+        if ($modifiable) {
+            $act = formulaire('plage', $cache . '<input type="hidden" name="op" value="' . ($p['fermee'] ? 'rouvrir' : 'fermer') . '">'
+                     . bouton($p['fermee'] ? 'Rouvrir' : 'Fermer', $p['fermee'] ? 'secondaire' : 'discret', ['aria-label' => ($p['fermee'] ? 'Rouvrir' : 'Fermer') . ' la plage ' . PLAGES_COURTES[$code]]), ['class' => 'plage-form'])
+                 . '<details class="mini plage-max"><summary>Maximum</summary>'
+                 . formulaire('plage', $cache . '<input type="hidden" name="op" value="maximum">'
+                     . champ('maximum', 'Retraits au plus', (string)$p['maximum'], ['type' => 'number', 'min' => '1', 'max' => '20', 'step' => '1', 'inputmode' => 'numeric', 'required' => true, 'id' => 'f-max-' . $code])
+                     . bouton('Enregistrer', 'secondaire'), ['class' => 'plage-form'])
+                 . ($p['particulier'] ? formulaire('plage', $cache . '<input type="hidden" name="op" value="defaut">' . bouton('Revenir à ' . $defaut . ' (par défaut)', 'discret'), ['class' => 'plage-form']) : '')
+                 . '</details>';
+        }
+        $l .= '<div class="plage-ligne p-' . $cle . '"><span class="plage-h">' . h(PLAGES_COURTES[$code]) . '</span>'
+            . '<span class="plage-etat"><b>' . h($compte) . '</b> · ' . h($etat) . ($p['particulier'] ? ' · maximum du jour' : '') . '</span>'
+            . ($act !== '' ? '<span class="plage-actions">' . $act . '</span>' : '') . '</div>';
+    }
+    $aide = '<p class="aide">Retraits confirmés sur le maximum de la plage (' . $defaut . ' par défaut, à changer dans Plus › Paramètres). '
+          . 'Une demande ou une proposition ne prend pas de place. Une plage complète ou fermée n\'est plus proposée sur le site ; dans la gestion, vous pouvez toujours y mettre une commande.</p>';
+    return bloc('Plages de retrait', '<div class="plages-jour">' . $l . '</div>' . $aide, 'plages', 'plages');
 }
 
 /** L'heure d'une commande dans la grille : l'heure convenue (« 10 h 30 »), sinon le moment demandé (« matin »). */

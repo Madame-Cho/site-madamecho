@@ -15,7 +15,7 @@ EN_LIGNE = "--en-ligne" in sys.argv   # version de la racine, publiée seulement
 AVEC_PROS = True          # section Professionnels (restaurants cités, avec leurs liens)
 DEMANDE_PRO = True        # offre, devis et demande des professionnels (décision d'Olivier du 03/11/2026, audit C02 : partie Pros gardée)
 DELAI_PRO = 14            # « Commande deux semaines à l'avance » : appliqué aussi par le formulaire et par le serveur (audit C02)
-VERSION = "2026-11-14-demande"
+VERSION = "2026-11-27-plages"
 SITE = "https://madamecho.com/"
 # Mesure d'audience (T-06) : Matomo installé chez OVH sur stats.madamecho.com, réglé pour l'exemption de la CNIL (sans cookie).
 # Vide = aucune mesure, le site reste exactement comme avant. À remplir seulement quand Matomo répond à cette adresse.
@@ -104,7 +104,7 @@ def pied(prof):
     return f'''<footer class="pied">
  <img class="logo-pied" src="{r}assets/logo-chocolat.svg" alt="Madame Cho" width="150" height="45" loading="lazy">
  <p class="activite">{E(ACTIVITE).replace("Hauts-de-Seine", '<span class="insecable">Hauts-de-Seine</span>')}</p>
- <address>{E(ADRESSE)}<br><a href="{lien('retrait/', prof)}">Retrait sur rendez-vous</a>, tous les jours de 9 h à 19 h<br>
+ <address>{E(ADRESSE)}<br><a href="{lien('retrait/', prof)}">Retrait sur rendez-vous</a>, du lundi au samedi de 9 h à 19 h<br>
  <a href="tel:{TEL_LIEN}">{TEL}</a> · {EMAIL_HTML}<br>
  </address>
  {bouton_insta("insta-pied")}
@@ -377,7 +377,7 @@ def fiche(p):
 <p class="total" data-total aria-live="polite"></p>'''
     perso = PLAQUE if p["plaque"] else "Pas de personnalisation pour ce gâteau."
     details = [("Commander", p["delai_txt"].capitalize() + ", sur rendez-vous à Meudon."),
-               ("Personnalisation", perso + (" Sur demande : goût, couleurs, ingrédients, recette (acompte de 30 %)." if p["plaque"] else "")),
+               ("Personnalisation", perso + (" Sur demande : goût, couleurs, ingrédients, recette." if p["plaque"] else "")),
                ("Allergènes", p["allergenes"] + " " + TRACES),
                ("Conservation", p["conservation"])]
     dl = "".join(f"<div><dt>{E(a)}</dt><dd>{E(b)}</dd></div>" for a, b in details)
@@ -478,7 +478,7 @@ def verifier_vitrines(html_accueil):
 # ---------- Ma demande ----------
 def demande():
     prof = 1
-    moments = "".join(f'<option value="{c}">{E(l)}</option>' for c, l in MOMENTS)
+    plages = '<option value="" selected disabled>Choisissez une date d\'abord</option>' + "".join(f'<option value="{c}">{E(l)}</option>' for c, l in PLAGES)
     # « Comment avez-vous connu Madame Cho ? » (14/11/2026) : facultatif, une réponse à toucher (on peut la retirer en la touchant de nouveau)
     connu = "".join(f'<label class="puce"><input type="radio" name="connu" value="{c}"><span>{E(l)}</span></label>' for c, l in CONNU)
     corps = f'''<section class="bloc premier demande" aria-labelledby="t-dem">
@@ -491,16 +491,16 @@ def demande():
   <div class="panier" data-panier aria-live="polite"><p class="vide">Votre demande est vide pour l'instant. <a href="{lien('', prof)}#carte">Voir la carte</a></p></div>
 
   <h2 class="sous-titre" id="perso">Un gâteau personnalisé ?</h2>
-  <p class="aide" data-perso-aide>Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration. Une personnalisation au-delà de la plaque demande un acompte de 30 %.</p>
+  <p class="aide" data-perso-aide>Pour un anniversaire ou une envie particulière : nombre de personnes (4 à 12), saveurs, couleurs, ingrédients, décoration.</p>
   <label class="champ"><span>Votre envie <i>(facultatif)</i></span>
    <textarea name="perso" rows="4" maxlength="1200" data-perso aria-describedby="aide-sante"></textarea></label>
   <p class="aide" id="aide-sante">N'écrivez pas d'information médicale ici. Les allergènes sont indiqués sur la page de chaque gâteau ; pour une allergie ou un besoin particulier, appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a>.</p>
 
   <h2 class="sous-titre">Le retrait</h2>
-  <p class="aide">Au {E(ADRESSE)}, sur rendez-vous. Madame Cho confirme l'heure dans sa réponse.</p>
+  <p class="aide">Au {E(ADRESSE)}, du lundi au samedi. Vous venez quand vous voulez pendant la plage horaire choisie ; Madame Cho la confirme dans sa réponse.</p>
   <div class="deux-champs">
    <label class="champ"><span>Date souhaitée</span><input type="date" name="date" required data-date aria-describedby="aide-date indispo-date"></label>
-   <label class="champ"><span>Moment</span><select name="moment" required>{moments}</select></label>
+   <label class="champ"><span>Plage horaire</span><select name="plage" required data-plage aria-describedby="indispo-date">{plages}</select></label>
   </div>
   <p class="aide" id="aide-date" data-date-aide></p>
   <p class="indispo" id="indispo-date" data-date-indispo role="status"></p>
@@ -534,7 +534,7 @@ def demande():
    <div>
     <div class="etiquette">Demande bien reçue</div>
     <h2 class="titre">Merci<span data-merci-prenom></span>, votre demande est bien arrivée chez Madame Cho</h2>
-    <p>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et l'heure du retrait.</p>
+    <p>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et la plage horaire du retrait.</p>
    </div>
   </div>
   <p>Rien n'est encore réservé ni à payer : votre commande est confirmée quand vous acceptez cette proposition par écrit.</p>
@@ -585,12 +585,12 @@ def retrait():
     itineraire = "https://www.google.com/maps/dir/?api=1&destination=" + "4+avenue+du+Ch%C3%A2teau+92190+Meudon"
     corps = f'''<section class="bloc premier" aria-labelledby="t-ret"><div class="etroit texte-long">
  <h1 class="titre" id="t-ret">Retrait de vos gâteaux à Meudon</h1>
- <p>Madame Cho ne livre pas : chaque commande se retire sur rendez-vous, à l'heure convenue, au <b>{E(ADRESSE)}</b>, tous les jours de 9 h à 19 h (pas de retrait le 24 décembre).</p>
+ <p>Madame Cho ne livre pas : chaque commande se retire au <b>{E(ADRESSE)}</b>, du lundi au samedi de 9 h à 19 h, sur la plage horaire choisie. Pas de retrait le dimanche, sauf cas particulier convenu par téléphone, ni le 24 décembre.</p>
  <h2 class="sous-titre">Pour les villes voisines</h2>
- <p>Meudon est à quelques minutes de {E(liste)}. Pour un gâteau d'anniversaire, un entremets ou des choux, vous choisissez le jour et l'heure du retrait dans votre demande, Madame Cho vous confirme le rendez-vous.</p>
+ <p>Meudon est à quelques minutes de {E(liste)}. Pour un gâteau d'anniversaire, un entremets ou des choux, vous choisissez le jour et la plage horaire du retrait dans votre demande, et Madame Cho vous la confirme.</p>
  <p><a href="{E(itineraire)}" rel="noopener" target="_blank">Préparer l'itinéraire jusqu'au 4 avenue du Château</a></p>
  <h2 class="sous-titre">Comment commander</h2>
- <p>Choisissez vos gâteaux sur <a href="{lien('carte/', prof)}">la carte</a> et envoyez votre demande, sans engagement. Madame Cho vous répond sous 24 heures avec une proposition écrite : le prix, le jour et l'heure du retrait. Pour une question : <a href="tel:{TEL_LIEN}">{TEL}</a> ou {EMAIL_HTML}.</p>
+ <p>Choisissez vos gâteaux sur <a href="{lien('carte/', prof)}">la carte</a> et envoyez votre demande, sans engagement. Madame Cho vous répond sous 24 heures avec une proposition écrite : le prix, le jour et la plage horaire du retrait. Pour une question : <a href="tel:{TEL_LIEN}">{TEL}</a> ou {EMAIL_HTML}.</p>
  <p class="centre"><a class="bouton plein" href="{lien('ma-demande/', prof)}">Faire ma demande</a></p></div></section>'''
     ld = dict({"@context": "https://schema.org"}, **fil_ld(("Retrait à Meudon", "retrait/")))
     return page("retrait/index.html", SEO_RETRAIT[0], SEO_RETRAIT[1], corps, prof, jsonld=ld)
@@ -626,7 +626,7 @@ CONFID = [
  ("Sécurité du formulaire", ["Pour bloquer les envois abusifs, le site garde une empreinte pseudonymisée de votre adresse IP (calculée avec une clé secrète ; l'adresse elle-même n'est jamais enregistrée) et l'heure de vos envois. Elles sont effacées automatiquement 48 heures au plus après votre dernier envoi. Pour qu'une même adresse ne reçoive pas plusieurs emails de confirmation dans la journée, le site garde aussi une empreinte pseudonymisée de votre email, effacée après 24 heures. Base légale : l'intérêt légitime de Madame Cho à protéger son formulaire. L'hébergeur OVH tient aussi des journaux techniques de connexion, comme la loi l'y oblige."]),
  ("Combien de temps", ["Une demande sans suite est supprimée au plus tard 12 mois après le dernier échange. Les échanges d'une commande suivent la même durée que la commande. Les informations d'un client sont effacées 3 ans après sa dernière commande ou son dernier échange avec Madame Cho. Les factures sont conservées 10 ans, comme la loi l'exige. Les échanges avec l'assistant de l'outil de suivi des commandes sont effacés après 6 mois. Une commande ou une fiche supprimée par erreur reste 30 jours dans la corbeille de l'outil, puis elle est effacée."]),
  ("Vos droits", [f"Vous pouvez demander l'accès à vos données, leur correction, leur effacement, leur portabilité, la limitation de leur usage ou vous y opposer, en écrivant à {EMAIL_HTML}. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr)."]),
- ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Quand vous choisissez la date et le moment du retrait, la page demande au site si Madame Cho est disponible : seuls la date et le moment sont envoyés, et rien n'est enregistré. Si vous arrivez par le QR code d'un emballage ou par le lien de la page Instagram de Madame Cho, les pages que vous ouvrez ensuite gardent cette indication dans leur adresse, et votre demande la signale à Madame Cho. Si vous commencez votre demande par un bouton du site (anniversaire, Number cake, événement), elle signale aussi ce bouton ; rien d'autre n'est noté."]),
+ ("Navigateur", [("Le site ne dépose aucun cookie." if MESURE else "Le site ne dépose aucun cookie et ne mesure pas l'audience.") + " Votre demande en cours (gâteaux, tailles et quantités, sans nom ni coordonnées) est gardée dans votre navigateur : après 7 jours, le site ne la reprend plus et l'efface à votre visite suivante. Quand vous choisissez la date du retrait, la page demande au site quelles plages horaires sont encore libres ce jour-là : seule la date est envoyée, et rien n'est enregistré. Si vous arrivez par le QR code d'un emballage ou par le lien de la page Instagram de Madame Cho, les pages que vous ouvrez ensuite gardent cette indication dans leur adresse, et votre demande la signale à Madame Cho. Si vous commencez votre demande par un bouton du site (anniversaire, Number cake, événement), elle signale aussi ce bouton ; rien d'autre n'est noté."]),
 ] + ([("Mesure d'audience", [
    "Pour savoir quelles pages sont lues et améliorer le site, Madame Cho compte les visites avec Matomo, un outil installé sur son propre hébergement chez OVH, en France. "
    "Aucun cookie n'est déposé, l'adresse IP est tronquée avant d'être enregistrée, les données ne sont ni croisées avec d'autres ni transmises à quiconque, et elles servent seulement à produire des statistiques anonymes. "
@@ -635,18 +635,17 @@ CONFID = [
 CONDITIONS = [
  ("Madame Cho", [f"MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : {EMAIL_HTML}."]),
  ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau."]),
- ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et heure du retrait, acompte éventuel. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
+ ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et plage horaire du retrait. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
  ("3. Les prix", ["Les prix sont indiqués en euros TTC. Le prix de la carte est celui de la proposition ; une personnalisation au-delà de la plaque en chocolat (comprise) est chiffrée dans la proposition."]),
- ("4. L'acompte", ["Pour un gâteau personnalisé au-delà de la plaque, un acompte de 30 % du prix est demandé à l'acceptation de la proposition ; il est déduit du prix au retrait."]),
- ("5. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, sur rendez-vous, à l'heure convenue, tous les jours de 9 h à 19 h (pas de retrait le 24 décembre). Le client vérifie sa commande au retrait."]),
- ("6. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces, déduction faite de l'acompte éventuel."]),
+ ("4. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, du lundi au samedi de 9 h à 19 h, sur la plage horaire convenue (pas de retrait le dimanche ni le 24 décembre). Le client vérifie sa commande au retrait."]),
+ ("5. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces."]),
  # Délai d'annulation fixé par Youngmi le 04/11/2026 (réponse au mail du 03/11) : 24 heures avant le retrait
- ("7. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait. Passé ce délai, l'acompte versé, s'il y en a un, reste acquis à Madame Cho."]),
- ("8. Droit de rétractation", ["Les gâteaux de la carte sont des denrées fraîches, à consommer dans les 3 jours : le droit de rétractation ne s'applique pas à eux, car ils sont susceptibles de se détériorer rapidement (code de la consommation, article L221-28, 4°). Il ne s'applique pas non plus à un gâteau confectionné selon les choix du client, comme un gâteau personnalisé (même article, 3°)."]),
- ("9. Allergènes", ["Les allergènes de chaque gâteau sont indiqués sur sa page et rappelés au retrait. Tous les gâteaux sont préparés dans un atelier qui utilise aussi des fruits à coque et des arachides."]),
- ("10. Réclamations", [f"Une réclamation s'adresse à {EMAIL_HTML} ou au {TEL}, de préférence le jour du retrait."]),
- ("11. Garanties légales", ["Le client consommateur bénéficie des garanties légales rappelées ci-dessous.", GARANTIES]),
- ("12. Médiation", [MEDIATION]),
+ ("6. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le retrait."]),
+ ("7. Droit de rétractation", ["Les gâteaux de la carte sont des denrées fraîches, à consommer dans les 3 jours : le droit de rétractation ne s'applique pas à eux, car ils sont susceptibles de se détériorer rapidement (code de la consommation, article L221-28, 4°). Il ne s'applique pas non plus à un gâteau confectionné selon les choix du client, comme un gâteau personnalisé (même article, 3°)."]),
+ ("8. Allergènes", ["Les allergènes de chaque gâteau sont indiqués sur sa page et rappelés au retrait. Tous les gâteaux sont préparés dans un atelier qui utilise aussi des fruits à coque et des arachides."]),
+ ("9. Réclamations", [f"Une réclamation s'adresse à {EMAIL_HTML} ou au {TEL}, de préférence le jour du retrait."]),
+ ("10. Garanties légales", ["Le client consommateur bénéficie des garanties légales rappelées ci-dessous.", GARANTIES]),
+ ("11. Médiation", [MEDIATION]),
 ]
 
 # ---------- Page introuvable (404) ----------
@@ -677,7 +676,7 @@ MAISON_LD = {"@type": "Bakery", "@id": SITE + "#maison", "name": "Madame Cho", "
                          "addressLocality": "Meudon", "addressRegion": "Hauts-de-Seine", "addressCountry": "FR"},
              "areaServed": [{"@type": "City", "name": v} for v in VILLES],
              "openingHoursSpecification": [{"@type": "OpeningHoursSpecification",
-                                            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                                            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],   # dimanche fermé (27/11/2026)
                                             "opens": "09:00", "closes": "19:00"}],
              "specialOpeningHoursSpecification": _jours_fermes_ld(),
              "hasMap": FICHE_GOOGLE,
@@ -784,7 +783,7 @@ def catalogue():
             d["parfums"] = {c: {"libelle": l} for c, l, _ in p["parfums"]}
             d.update(unite=p["unite"], minimum=p["minimum"], pas=p["pas"])
         prods[p["id"]] = d
-    return {"version": VERSION, "produits": prods, "moments": dict(MOMENTS), "fermes": JOURS_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO,
+    return {"version": VERSION, "produits": prods, "plages": dict(PLAGES), "fermes": JOURS_FERMES, "fermesSemaine": JOURS_SEMAINE_FERMES, "delaiPerso": 2, "delaiPro": DELAI_PRO,
             # demandes déjà commencées (ENVIES) : textes pour la page, « origine » pour l'email et la gestion ; « connu » : réponses acceptées
             "envies": {c: {k: v for k, v in e.items() if k != "evenement"} for c, e in ENVIES.items()},
             "connu": dict(CONNU)}
@@ -849,8 +848,8 @@ if not APERCU:
     ecrire(".htaccess", htaccess())
 images_partage()
 ecrire("mentions-legales/index.html", legale("mentions-legales", "Mentions légales", "Mentions légales du site de Madame Cho, pâtisserie à Meudon.", MENTIONS))
-ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID, maj="14 novembre 2026"))
-ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, acompte, retrait, paiement.", CONDITIONS, maj="4 novembre 2026"))
+ecrire("confidentialite/index.html", legale("confidentialite", "Confidentialité", "Comment Madame Cho utilise les données envoyées avec une demande.", CONFID, maj="27 novembre 2026"))
+ecrire("conditions-de-commande/index.html", legale("conditions-de-commande", "Conditions de commande", "Conditions de commande de Madame Cho : demande, proposition, retrait, paiement.", CONDITIONS, maj="27 novembre 2026"))
 cat = catalogue()
 ecrire("assets/catalogue.js", "/* Carte de Madame Cho, générée par gen.py : ne pas modifier à la main. */\nwindow.MC_CATALOGUE=" + json.dumps(cat, ensure_ascii=False) + ";\n")
 ecrire("ma-demande/catalogue.php", "<?php\n// Carte de Madame Cho, générée par gen.py : ne pas modifier à la main.\nreturn " + php_val(cat) + ";\n")

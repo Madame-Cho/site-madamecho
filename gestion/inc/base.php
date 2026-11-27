@@ -65,10 +65,23 @@ const TYPES_CLIENT = ['particulier' => 'Particulier', 'professionnel' => 'Profes
 const TYPES_CLIENT_LONGS = ['particulier' => 'Particulier (B2C)', 'professionnel' => 'Professionnel (B2B)'];
 const MOMENTS = ['matin' => 'Le matin, de 9 h à 12 h', 'midi' => 'À midi, de 12 h à 14 h',
                  'apres-midi' => 'L\'après-midi, de 14 h à 18 h', 'soir' => 'Le soir, de 18 h à 19 h'];
-const MOMENTS_COURTS = ['matin' => 'matin', 'midi' => 'midi', 'apres-midi' => 'après-midi', 'soir' => 'soir'];
-const MOMENTS_PLAGES = ['matin' => ['09:00', '12:00'], 'midi' => ['12:00', '14:00'], 'apres-midi' => ['14:00', '18:00'], 'soir' => ['18:00', '19:00']];
-// L'ordre d'une journée : l'heure convenue, sinon le début du moment demandé (les commandes sans heure ni moment en dernier)
-const ORDRE_DANS_LA_JOURNEE = "CASE WHEN k.retrait_heure <> '' THEN k.retrait_heure ELSE CASE k.retrait_moment WHEN 'matin' THEN '09:00' WHEN 'midi' THEN '12:00' WHEN 'apres-midi' THEN '14:00' WHEN 'soir' THEN '18:00' ELSE '99' END END";
+// Les plages de retrait (spécification 007, décisions d'Olivier et de Youngmi du 27/11/2026) : six plages fixes, du lundi au samedi,
+// plusieurs clients par plage jusqu'au maximum (5 par défaut, Paramètres ; une plage d'un jour se règle ou se ferme dans l'Agenda).
+// Le code d'une plage (son heure de début) va dans commandes.retrait_moment ; les anciennes commandes y gardent leur moment (matin, midi…).
+const PLAGES = ['0900' => 'De 9 h à 10 h 30', '1030' => 'De 10 h 30 à 12 h', '1200' => 'De 12 h à 14 h',
+                '1400' => 'De 14 h à 16 h', '1600' => 'De 16 h à 18 h', '1800' => 'De 18 h à 19 h'];
+const PLAGES_COURTES = ['0900' => '9 h – 10 h 30', '1030' => '10 h 30 – 12 h', '1200' => '12 h – 14 h',
+                        '1400' => '14 h – 16 h', '1600' => '16 h – 18 h', '1800' => '18 h – 19 h'];
+const PLAGES_HEURES = ['0900' => ['09:00', '10:30'], '1030' => ['10:30', '12:00'], '1200' => ['12:00', '14:00'],
+                       '1400' => ['14:00', '16:00'], '1600' => ['16:00', '18:00'], '1800' => ['18:00', '19:00']];
+const PLAGE_MAXIMUM = 5;                 // maximum par défaut d'une plage, tant que les Paramètres n'en disent pas d'autre
+const JOURS_SEMAINE_FERMES = [0];        // pas de retrait le dimanche (cas particuliers par téléphone, saisis dans la gestion)
+const MOMENTS_COURTS = ['matin' => 'matin', 'midi' => 'midi', 'apres-midi' => 'après-midi', 'soir' => 'soir'] + PLAGES_COURTES;
+const MOMENTS_PLAGES = ['matin' => ['09:00', '12:00'], 'midi' => ['12:00', '14:00'], 'apres-midi' => ['14:00', '18:00'], 'soir' => ['18:00', '19:00']] + PLAGES_HEURES;
+// Ce qu'une commande peut porter dans retrait_moment : une plage, ou un ancien moment (commandes d'avant le 27/11/2026)
+const MOMENTS_TOUS = PLAGES + MOMENTS;
+// L'ordre d'une journée : l'heure convenue, sinon le début de la plage ou du moment demandé (les commandes sans heure ni moment en dernier)
+const ORDRE_DANS_LA_JOURNEE = "CASE WHEN k.retrait_heure <> '' THEN k.retrait_heure ELSE CASE WHEN k.retrait_moment GLOB '[0-2][0-9][0-5][0-9]' THEN substr(k.retrait_moment, 1, 2) || ':' || substr(k.retrait_moment, 3, 2) WHEN k.retrait_moment = 'matin' THEN '09:00' WHEN k.retrait_moment = 'midi' THEN '12:00' WHEN k.retrait_moment = 'apres-midi' THEN '14:00' WHEN k.retrait_moment = 'soir' THEN '18:00' ELSE '99' END END";
 const MODES = ['retrait' => 'Retrait à Meudon', 'livraison' => 'Livraison'];
 const STATUTS_CLIENT = ['actif' => 'Actif', 'inactif' => 'Inactif', 'efface' => 'Effacé'];
 const STATUTS_PRODUIT = ['carte' => 'À la carte', 'demande' => 'Sur demande seulement', 'pro' => 'Gamme pro', 'retire' => 'Retiré'];
@@ -195,6 +208,7 @@ function gestion_schema(PDO $pdo): void {
     obligations_schema($pdo);   // écran Obligations (spécification 004) : hors de la numérotation, pour ne pas gêner l'étape 11 des factures
     hygiene_schema($pdo);       // relevés d'hygiène (spécification 004, lot 2), même principe : marqueur à part
     photos_schema($pdo);        // photos des clients (10/11/2026), même principe : marqueur à part
+    plages_schema($pdo);        // réglages des plages de retrait (spécification 007), même principe : marqueur à part
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
     if ($v >= 10) return;
     if ($v < 1) $pdo->exec("
@@ -382,6 +396,14 @@ function photos_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS photos_clients (client_id INTEGER PRIMARY KEY, email TEXT NOT NULL DEFAULT '', image BLOB,
   verifie_le TEXT, maj_le TEXT NOT NULL, masquee INTEGER NOT NULL DEFAULT 0)");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_photos', '1')");
+}
+/** Les réglages des plages de retrait (spécification 007, 27/11/2026) : une ligne seulement pour une plage d'un jour que Youngmi a
+ *  fermée ou dont elle a changé le maximum ; sans ligne, la plage est ouverte avec le maximum par défaut. Marqueur schema_plages. */
+function plages_schema(PDO $pdo): void {
+    if ($pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_plages'")->fetchColumn() === '1') return;
+    $pdo->exec("CREATE TABLE IF NOT EXISTS plages_reglages (jour TEXT NOT NULL, plage TEXT NOT NULL, maximum INTEGER, fermee INTEGER NOT NULL DEFAULT 0,
+  maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '', PRIMARY KEY (jour, plage))");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_plages', '1')");
 }
 /** Les relevés d'hygiène (spécification 004, lot 2) : tables à part, marqueur schema_hygiene. */
 function hygiene_schema(PDO $pdo): void {
@@ -602,7 +624,7 @@ function catalogue(): array {
     foreach ([__DIR__ . '/catalogue.php', gestion_site() . '/ma-demande/catalogue.php'] as $f) {
         if (is_file($f)) { $c = require $f; if (is_array($c)) return $c; }
     }
-    return $c = ['produits' => [], 'moments' => MOMENTS];
+    return $c = ['produits' => [], 'plages' => PLAGES];
 }
 /** Toutes les variantes vendables : « produit|code » => [nom, libelle, prix, produit, code]. */
 function variantes(): array {

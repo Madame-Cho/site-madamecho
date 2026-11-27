@@ -477,8 +477,30 @@ function lignes_email(array $k): string {
 function retrait_email(array $k): string {
     if (!$k['retrait_date']) return 'Retrait : jour à convenir ensemble, au 4 avenue du Château, 92190 Meudon.';
     $quand = date_fr($k['retrait_date'], 'jour');
-    $h = $k['retrait_heure'] !== '' ? ' à ' . str_replace(':', ' h ', $k['retrait_heure']) : (isset(MOMENTS[$k['retrait_moment']]) ? ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)' : '');
-    return 'Retrait : ' . $quand . $h . ', au 4 avenue du Château, 92190 Meudon.';
+    return 'Retrait : ' . $quand . retrait_heure_phrase($k) . ', au 4 avenue du Château, 92190 Meudon.';
+}
+/** L'heure du retrait dans une phrase : « à 10 h 30 » (heure précise), « , entre 10 h 30 et 12 h » (plage, spécification 007),
+ *  « , le matin, de 9 h à 12 h (heure à convenir) » (ancien moment), ou rien. */
+function retrait_heure_phrase(array $k): string {
+    $h = (string)($k['retrait_heure'] ?? '');
+    if ($h !== '') return ' à ' . (int)substr($h, 0, 2) . ' h' . (substr($h, 3, 2) !== '00' ? ' ' . substr($h, 3, 2) : '');
+    $m = (string)($k['retrait_moment'] ?? '');
+    if (isset(PLAGES[$m])) return ', ' . plage_entre($m);
+    return isset(MOMENTS[$m]) ? ', ' . mb_strtolower(MOMENTS[$m]) . ' (heure à convenir)' : '';
+}
+/** Les choix de plage d'un formulaire de la gestion : les six plages ; l'ancien moment d'une commande d'avant le 27/11/2026 reste choisissable. */
+function options_plage(string $actuel): array {
+    $o = ['' => '—'] + PLAGES;
+    if ($actuel !== '' && !isset(PLAGES[$actuel]) && isset(MOMENTS[$actuel])) $o[$actuel] = MOMENTS[$actuel] . ' (ancien moment)';
+    return $o;
+}
+/** Plus d'acompte (décision d'Olivier du 27/11/2026) : les champs d'acompte ne restent que pour une commande qui en a déjà un. */
+function avec_acompte(array $k): bool {
+    return (int)($k['acompte'] ?? 0) > 0 || in_array($k['paiement'] ?? '', ['acompte_demande', 'acompte_recu'], true);
+}
+/** Les états de paiement proposés : sans les deux états d'acompte, sauf pour une commande qui en a un. */
+function paiements_proposes(array $k): array {
+    return avec_acompte($k) ? PAIEMENTS : array_diff_key(PAIEMENTS, ['acompte_demande' => 1, 'acompte_recu' => 1]);
 }
 /* ---------- Les mails aux clients (demandes d'Olivier du 07/11/2026) ----------
  * Tout se fait dans la gestion, Gmail en secours : chaque mail part de la gestion au toucher de Youngmi sur « Envoyer »
@@ -554,8 +576,7 @@ function rappel_sms(array $k): string {
     $d = (string)($k['retrait_date'] ?? '');
     $quand = rappel_quand($k);
     $jour = $d !== '' ? JOURS[(int)date('w', strtotime($d))] . ' ' . date('d/m', strtotime($d)) : '';
-    $h = $k['retrait_heure'] !== '' ? ' à ' . (int)substr($k['retrait_heure'], 0, 2) . ' h' . (substr($k['retrait_heure'], 3, 2) !== '00' ? ' ' . substr($k['retrait_heure'], 3, 2) : '')
-       : (isset(MOMENTS[$k['retrait_moment']]) ? ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)' : '');
+    $h = retrait_heure_phrase($k);
     $prenom = explode("\n", trim(signature()))[0] ?? '';
     $prenom = trim(explode(' ', trim($prenom))[0] ?? '') ?: 'Youngmi';
     return salutation($k) . ' petit rappel de Madame Cho : votre commande ' . $k['reference'] . ' vous attend '
@@ -583,6 +604,7 @@ function mail_quand(array $k): string {
     if (!$k['retrait_date']) return 'Jour à convenir ensemble';
     $q = ucfirst(date_fr($k['retrait_date'], 'jour'));
     if ($k['retrait_heure'] !== '') return $q . ', ' . str_replace(':', ' h ', $k['retrait_heure']);
+    if (isset(PLAGES[$k['retrait_moment']])) return $q . ', ' . plage_entre((string)$k['retrait_moment']);   // plage de retrait (spécification 007)
     return isset(MOMENTS[$k['retrait_moment']]) ? $q . ', ' . mb_strtolower(MOMENTS[$k['retrait_moment']]) . ' (heure à convenir)' : $q;
 }
 /** L'encadré ivoire : quand, où, les gâteaux, le total (proposition et confirmation). */
@@ -802,9 +824,11 @@ function lien_agenda_google(array $k): ?string {
  * ou un fichier agenda (.ics) pour iPhone, Outlook et les autres. Les deux liens passent par ?p=rdv&c=… (page publique) :
  * une adresse courte, impossible à deviner (empreinte HMAC avec le sel du serveur), qui donne toujours le jour et l'heure
  * à jour, et plus rien si la commande est annulée. Jamais le lien de la gestion, le nom du client ni les prix dans l'événement.
- * Seulement pour un retrait à Meudon avec une heure précise (une livraison ou un moment « à convenir » n'a pas de lien). */
+ * Seulement pour un retrait à Meudon avec une heure précise ou une plage (spécification 007 : l'événement couvre la plage) ; une livraison
+ * ou un ancien moment « à convenir » n'a pas de lien. */
 function rdv_client_possible(array $k): bool {
-    return ($k['mode'] ?? 'retrait') !== 'livraison' && (string)$k['retrait_date'] !== '' && preg_match('/^\d{2}:\d{2}$/', (string)$k['retrait_heure']) === 1
+    return ($k['mode'] ?? 'retrait') !== 'livraison' && (string)$k['retrait_date'] !== ''
+        && (preg_match('/^\d{2}:\d{2}$/', (string)$k['retrait_heure']) === 1 || isset(PLAGES[(string)$k['retrait_moment']]))
         && !in_array($k['statut'], ['annulee', 'sans_suite', 'remise'], true);
 }
 function rdv_jeton(array $k): string { return substr(hash_hmac('sha256', 'rdv|' . (int)$k['id'] . '|' . $k['reference'], sel()), 0, 24); }

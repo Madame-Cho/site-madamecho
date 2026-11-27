@@ -1965,6 +1965,47 @@ La photo vient du compte Google du client, telle que Gmail la montre dans contac
 Pas de photo trouvée : le client n'a pas de photo publique sur son compte Google, ou il n'utilise pas Google. On cherche de nouveau chaque semaine. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 사진을 찾지 못했어요. 고객의 구글 계정에 공개 사진이 없거나, 고객이 구글을 쓰지 않아요. 매주 다시 찾아봐요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
 Pas encore cherchée : le script de contact@ passe une fois par jour. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 아직 찾아보지 않았어요. contact@의 스크립트는 하루에 한 번 실행돼요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
 Photo masquée : elle n'est plus affichée ni cherchée pour ce client. Si le client ne veut pas qu'elle apparaisse, « Masquer la photo ». | 사진을 숨겼어요. 이 고객의 사진은 더 이상 보이지 않고 찾지도 않아요. 고객이 사진이 보이는 걸 원하지 않으면 « 사진 숨기기 »를 누르세요.
+# Plages de retrait (spécification 007, 27/11/2026)
+Plages de retrait | 픽업 시간대
+Plage horaire | 픽업 시간대
+Libre | 여유
+Complète | 꽉 참
+Fermée | 닫힘
+Fermer | 닫기
+Maximum | 최대 인원
+maximum du jour | 이날만 최대 인원 변경
+Retraits au plus | 최대 픽업 수
+Retraits | 픽업
+Retraits au plus par plage | 시간대별 최대 픽업 수
+Heure précise | 정확한 시간
+Heure précise (facultatif) | 정확한 시간 (선택)
+Seulement si vous avez convenu d'une heure avec le client. | 고객과 시간을 정했을 때만 적어요.
+Voir les plages | 시간대 보기
+De 9 h à 10 h 30 | 9:00–10:30
+De 10 h 30 à 12 h | 10:30–12:00
+De 12 h à 14 h | 12:00–14:00
+De 14 h à 16 h | 14:00–16:00
+De 16 h à 18 h | 16:00–18:00
+De 18 h à 19 h | 18:00–19:00
+Une demande ou une proposition ne prend pas de place. | 문의나 견적은 자리를 차지하지 않아요.
+Une plage complète ou fermée n'est plus proposée sur le site ; dans la gestion, vous pouvez toujours y mettre une commande. | 꽉 찼거나 닫힌 시간대는 사이트에 더 이상 나오지 않아요. 관리 화면에서는 그래도 주문을 넣을 수 있어요.
+Six plages du lundi au samedi : 9 h – 10 h 30, 10 h 30 – 12 h, 12 h – 14 h, 14 h – 16 h, 16 h – 18 h, 18 h – 19 h. Pas de retrait le dimanche ni le 24 décembre. | 월요일부터 토요일까지 픽업 시간대 6개: 9:00–10:30, 10:30–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–19:00. 일요일과 12월 24일에는 픽업이 없어요.
+Quand une plage atteint ce nombre de retraits confirmés, le site ne la propose plus. Une demande ou une proposition ne prend pas de place. | 시간대의 확정된 픽업이 이 수에 닿으면 사이트에 더 이상 나오지 않아요. 문의나 견적은 자리를 차지하지 않아요.
+Pour un jour précis (fermer une plage, ou changer son maximum) : Agenda › le jour › Plages de retrait. | 특정한 날(시간대 닫기, 최대 인원 바꾸기)은 일정 › 그날 › 픽업 시간대에서 해요.
+Le dimanche, Madame Cho est fermée : le site ne propose aucune plage. Un cas particulier convenu par téléphone se saisit dans « Nouvelle commande ». | 일요일은 Madame Cho가 쉬어요. 사이트에 픽업 시간대가 나오지 않아요. 전화로 정한 특별한 경우는 « 새 주문 »에서 입력해요.
+Jour fermé au public : le site ne propose aucune plage. | 영업하지 않는 날이에요. 사이트에 픽업 시간대가 나오지 않아요.
+Le dimanche, Madame Cho est fermée au public : à garder seulement pour un cas particulier convenu par téléphone. | 일요일은 Madame Cho가 쉬어요. 전화로 정한 특별한 경우에만 두세요.
+Ce jour est fermé au public (pas de retrait le 24 décembre). | 영업하지 않는 날이에요 (12월 24일에는 픽업이 없어요).
+Vérifiez avec le client, ou changez la plage. | 고객과 확인하거나 시간대를 바꾸세요.
+Commande confirmée. | 주문을 확정했어요.
+Choisissez un maximum entre 1 et 20. | 최대 인원은 1에서 20 사이로 정해요.
+Choisissez un nombre de retraits entre 1 et 20. | 픽업 수는 1에서 20 사이로 정해요.
+Indiquez le prix TTC, vérifiez le jour et la plage horaire du retrait dans la commande, puis envoyez. | 가격(부가세 포함)을 적고, 주문의 픽업 날짜와 시간대를 확인한 뒤 보내요.
+changer le jour ou la plage en haut | 위에서 날짜나 시간대 바꾸기
+Les plages de retrait | 픽업 시간대
+Le site propose maintenant six plages de retrait, du lundi au samedi : 9 h – 10 h 30, 10 h 30 – 12 h, 12 h – 14 h, 14 h – 16 h, 16 h – 18 h et 18 h – 19 h. Plusieurs clients peuvent venir dans la même plage, jusqu'à 5 retraits confirmés ; ensuite le site ne la propose plus. Dans l'Agenda, touchez un jour : « Plages de retrait » montre « 2 sur 5 » pour chaque plage, et vous pouvez la fermer, la rouvrir ou changer son maximum. Le maximum de tous les jours se règle dans Paramètres › Retraits. Le dimanche, plus de retrait sur le site. | 이제 사이트에서 월요일부터 토요일까지 픽업 시간대 6개를 고를 수 있어요: 9:00–10:30, 10:30–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–19:00. 한 시간대에 여러 고객이 올 수 있고, 확정된 픽업이 5명이 되면 사이트에 더 이상 나오지 않아요. 일정에서 날짜를 누르면 « 픽업 시간대 »에 시간대마다 ‘2명 / 최대 5명’처럼 보이고, 시간대를 닫거나 다시 열거나 최대 인원을 바꿀 수 있어요. 모든 날의 최대 인원은 설정 › 픽업에서 정해요. 일요일에는 이제 사이트에서 픽업을 고를 수 없어요.
+Plus d'acompte | 선금 없음
+Madame Cho ne demande plus d'acompte : la proposition n'a plus de case « Acompte », et le site n'en parle plus. Le client paie le prix complet. Une commande qui avait déjà un acompte le garde. | 이제 Madame Cho는 선금을 받지 않아요. 견적에 « 선금 » 칸이 없고, 사이트에도 더 이상 나오지 않아요. 고객은 전체 가격을 내요. 이미 선금이 있던 주문은 그대로 남아요.
 TXT;
 }
 
@@ -2015,7 +2056,7 @@ function coreen_relatif(string $s): ?string {
 }
 /** « heure du retrait : 09 h 00 → 10 h 00 ; gâteaux » (bandeau après « Modifier la commande ») → coréen ; null si un morceau est inconnu. */
 function coreen_modifs(string $s): ?string {
-    $noms = ['jour du retrait' => '픽업 날짜', 'heure du retrait' => '픽업 시간', 'moment' => '시간대', 'mode' => '방식', 'prix final' => '최종 가격', 'acompte' => '선금',
+    $noms = ['jour du retrait' => '픽업 날짜', 'heure du retrait' => '픽업 시간', 'moment' => '시간대', 'plage' => '픽업 시간대', 'mode' => '방식', 'prix final' => '최종 가격', 'acompte' => '선금',
              'gâteaux' => '케이크', 'gâteau personnalisé' => '맞춤 케이크', 'demande du professionnel' => '업체 요청', 'canal' => '경로', 'type' => '종류', 'facture' => '청구서', 'moyen de paiement' => '결제 수단',
              'vous a connue par' => '알게 된 경로'];
     $val = function (string $v): ?string {
@@ -2024,6 +2065,7 @@ function coreen_modifs(string $s): ?string {
         if (preg_match('/^(\d{1,2}) h (\d{2})$/', $v, $m)) return $m[1] . ':' . $m[2];
         if (preg_match('/^[\d  .,]+ €$/u', $v)) return $v;
         if (isset(KO_MOMENTS[$v])) return KO_MOMENTS[$v];
+        if (str_contains($v, '–')) return coreen_plage_courte($v);
         if ($v === 'Retrait à Meudon') return 'Meudon에서 픽업';
         if ($v === 'Livraison') return '배달';
         return coreen_date($v);
@@ -2041,12 +2083,16 @@ function coreen_modifs(string $s): ?string {
 }
 /** Le moment d'un retrait : « sam. 7 nov., 09 h 30 », « mardi 10 novembre, après-midi (livraison) ». */
 function coreen_retrait(string $s): ?string {
-    if (!preg_match('/^(.+?)(?:, (matin|midi|après-midi|soir|\d{2} h \d{2}))?( \(livraison\))?$/u', trim($s), $m)) return null;
+    if (!preg_match('/^(.+?)(?:, (matin|midi|après-midi|soir|\d{2} h \d{2}|\d{1,2} h(?: \d{2})? – \d{1,2} h(?: \d{2})?))?( \(livraison\))?$/u', trim($s), $m)) return null;
     $d = coreen_date($m[1]);
     if ($d === null) return null;
     $q = $m[2] ?? '';
-    if ($q !== '') $q = ' ' . (KO_MOMENTS[$q] ?? preg_replace('/^(\d{2}) h (\d{2})$/', '$1:$2', $q));
+    if ($q !== '') $q = ' ' . (KO_MOMENTS[$q] ?? (str_contains($q, '–') ? coreen_plage_courte($q) : preg_replace('/^(\d{2}) h (\d{2})$/', '$1:$2', $q)));
     return $d . $q . (!empty($m[3]) ? ' (배달)' : '');
+}
+/** « 10 h 30 – 12 h » → « 10:30–12:00 » (plage de retrait, spécification 007). */
+function coreen_plage_courte(string $x): string {
+    return preg_match('/^(\d{1,2}) h(?: (\d{2}))? – (\d{1,2}) h(?: (\d{2}))?$/u', $x, $a) ? sprintf('%d:%02d–%d:%02d', (int)$a[1], (int)($a[2] ?? 0), (int)$a[3], (int)($a[4] ?? 0)) : $x;
 }
 function coreen_mois(string $mois): ?string { $n = KO_MOIS[mb_strtolower($mois)] ?? null; return $n ? $n . '월' : null; }
 /** Une liste d'allergènes écrite en français (« Soja, Lait ») → les noms coréens, avec le mot français entre parenthèses. */
@@ -2129,6 +2175,25 @@ function coreen_motifs(): array {
             ? '지금은 할 수 없어요: ' . KO_PROPOSITION_RAISONS[$m[1]] . '. 어시스턴트에게 다시 부탁하세요.' : null],
         // Une indispo seule, écrite en toutes lettres (carte de l'assistant)
         ['/^.+, (?:toute la journée|\d{1,2} h(?: \d{2})? – \d{1,2} h(?: \d{2})?)(?: \(.*\))?$/us', fn($m) => $indispo($m[0])],
+        // Plages de retrait (spécification 007, 27/11/2026)
+        ['/^La plage (.+?) du (.+) est fermée : les clients ne peuvent plus la choisir sur le site\.$/u',
+            fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대를 닫았어요. 고객이 사이트에서 더 이상 고를 수 없어요.' : null],
+        ['/^La plage (.+?) du (.+) est rouverte\.$/u', fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대를 다시 열었어요.' : null],
+        ['/^La plage (.+?) du (.+) accepte maintenant (\d+) retraits? au plus( \(le maximum par défaut\))?\.$/u',
+            fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대: 최대 ' . $m[3] . '명' . (!empty($m[4]) ? ' (기본값)' : '') . '이에요.' : null],
+        ['/^Enregistré : (\d+) retraits? au plus par plage, sauf les plages que vous avez réglées dans l\'Agenda\.$/u',
+            fn($m) => '저장했어요. 시간대마다 최대 ' . $m[1] . '명이에요. 일정에서 따로 정한 시간대는 그대로예요.'],
+        ['/^Revenir à (\d+) \(par défaut\)$/u', fn($m) => '기본값 ' . $m[1] . '명으로 되돌리기'],
+        ['/^(Fermer|Rouvrir) la plage (.+)$/u', fn($m) => ($h = $plage($m[2])) ? $h . ' 시간대 ' . ($m[1] === 'Fermer' ? '닫기' : '다시 열기') : null],
+        ['/^(?:Attention : )?Cette plage est déjà complète : (\d+) sur (\d+) \((.+), (.+)\)\.$/u',
+            fn($m) => ($d = coreen_date($m[3])) && ($h = $plage($m[4])) ? (str_starts_with($m[0], 'Attention') ? '주의: ' : '') . '이 시간대는 이미 꽉 찼어요: ' . $m[1] . '명 / 최대 ' . $m[2] . '명 (' . $d . ', ' . $h . ').' : null],
+        ['/^(?:Attention : )?Vous avez fermé cette plage \((.+), (.+)\)\.$/u',
+            fn($m) => ($d = coreen_date($m[1])) && ($h = $plage($m[2])) ? (str_starts_with($m[0], 'Attention') ? '주의: ' : '') . '닫아 둔 시간대예요 (' . $d . ', ' . $h . ').' : null],
+        ['/^Attention : (Le dimanche, Madame Cho est fermée au public : à garder seulement pour un cas particulier convenu par téléphone\.|Ce jour est fermé au public \(pas de retrait le 24 décembre\)\.)$/u',
+            fn($m) => ($x = coreen_dico()[$m[1]] ?? null) ? '주의: ' . $x : null],
+        ['/^(.+) \(ancien moment\)$/u', fn($m) => ($x = coreen_dico()[$m[1]] ?? null) ? $x . ' (이전 시간대)' : null],
+        ['/^Retraits confirmés sur le maximum de la plage \((\d+) par défaut, à changer dans Plus › Paramètres\)\.$/u',
+            fn($m) => '확정된 픽업 수와 시간대의 최대 인원이에요 (기본 ' . $m[1] . '명, 더보기 › 설정에서 바꿔요).'],
         // Agenda, indispos et ventes par gâteau (07/11/2026)
         ['/^(\d{1,2}) h(?: (\d{2}))? – (\d{1,2}) h(?: (\d{2}))?$/u', fn($m) => $plage($m[0])],
         ['/^(\d+) commande\(s\) en cours$/', fn($m) => '진행 중인 주문 ' . $m[1] . '건'],

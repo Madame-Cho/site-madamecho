@@ -300,15 +300,30 @@
     function majDate() {
       var d = new Date(); d.setHours(12, 0, 0, 0);
       var n = delaiMin(lignes()); d.setDate(d.getDate() + n);
+      // le premier jour possible n'est jamais un jour fermé (dimanche, 24 décembre) : on passe au suivant
+      while ((CAT.fermesSemaine || [0]).indexOf(d.getDay()) >= 0 || iso(d).slice(5) === '12-24') d.setDate(d.getDate() + 1);
       dateIn.min = iso(d);
       var max = new Date(); max.setMonth(max.getMonth() + 6); dateIn.max = iso(max);
-      dateAide.textContent = 'Au plus tôt le ' + dateFr(dateIn.min) + (n === 1 ? ' (commande la veille).' : ' (commande ' + n + ' jours avant).') + ' Pas de retrait le 24 décembre.';
+      dateAide.textContent = 'Au plus tôt le ' + dateFr(dateIn.min) + (n === 1 ? ' (commande la veille).' : ' (commande ' + n + ' jours avant).') + ' Pas de retrait le dimanche ni le 24 décembre.';
     }
 
-    // L'agenda de Madame Cho (07/11/2026) : le jour et le moment choisis sont demandés au site, sans rien d'autre ; une phrase sous la date
-    // s'ils sont indisponibles (jamais le motif). Sans réponse, rien n'est bloqué : le serveur vérifie de nouveau à l'envoi.
-    var indispoP = $('[data-date-indispo]'), indispo = { cle: '', message: '' }, numIndispo = 0;
-    function cleRetrait() { return form.elements.date.value + '|' + form.elements.moment.value; }
+    // Les plages de retrait (spécification 007, 27/11/2026) : à chaque date choisie, la page demande au site l'état des six plages de ce
+    // jour, « libre » ou « complet » (pleine, fermée ou indisponible : jamais un nombre ni un motif), et ne laisse choisir qu'une plage libre.
+    // Pas de retrait le dimanche ni le 24 décembre. Sans réponse, rien n'est bloqué : le serveur vérifie de nouveau à l'envoi.
+    var indispoP = $('[data-date-indispo]'), indispo = { cle: '', message: '' }, numIndispo = 0, plageSel = form.elements.plage, complets = {};
+    var MSG_DIMANCHE = 'Pas de retrait le dimanche : choisissez un autre jour, ou appelez Madame Cho au 06 61 31 17 79 pour un cas particulier.';
+    function estDimanche(d) { var x = new Date(d + 'T12:00:00'); return !isNaN(x) && (CAT.fermesSemaine || [0]).indexOf(x.getDay()) >= 0; }
+    function majPlages(etats) {   // etats : { code: 'libre'|'complet' } ; null : toutes libres
+      complets = {};
+      $$('option', plageSel).forEach(function (o) {
+        if (!o.value) { o.textContent = form.elements.date.value ? 'Choisissez une plage' : 'Choisissez une date d’abord'; return; }
+        var complet = !!(etats && etats[o.value] === 'complet');
+        if (complet) complets[o.value] = true;
+        o.disabled = complet;
+        o.textContent = CAT.plages[o.value] + (complet ? ' (complet)' : '');
+      });
+      if (plageSel.value && complets[plageSel.value]) plageSel.value = '';
+    }
     function montrerIndispo(cle, message) {
       var avant = indispo.message;
       indispo = { cle: cle, message: message };
@@ -317,18 +332,30 @@
       else if (avant) form.elements.date.removeAttribute('aria-invalid');
     }
     function verifierAgenda() {
-      var d = form.elements.date.value, cle = cleRetrait(), n = ++numIndispo;
-      if (indispo.cle !== cle) montrerIndispo('', '');
-      if (APERCU || !window.fetch || !window.FormData || !/^\d{4}-\d{2}-\d{2}$/.test(d) || d < dateIn.min || d > dateIn.max || d.slice(5) === '12-24') return;
+      var d = form.elements.date.value, n = ++numIndispo;
+      montrerIndispo('', '');
+      majPlages(null);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+      if (estDimanche(d)) {
+        majPlages({ '0900': 'complet', '1030': 'complet', '1200': 'complet', '1400': 'complet', '1600': 'complet', '1800': 'complet' });
+        montrerIndispo(d, MSG_DIMANCHE);
+        return;
+      }
+      if (APERCU || !window.fetch || !window.FormData || d < dateIn.min || d > dateIn.max || d.slice(5) === '12-24') return;
       var fd = new FormData();
-      fd.append('verifier', '1'); fd.append('date', d); fd.append('moment', form.elements.moment.value);
+      fd.append('verifier', '1'); fd.append('date', d);
       fetch(form.getAttribute('action'), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
         .then(function (r) { return r.json(); })
-        .then(function (j) { if (n === numIndispo && cle === cleRetrait() && j && j.ok) montrerIndispo(cle, j.libre ? '' : String(j.message || '')); })
+        .then(function (j) {
+          if (n !== numIndispo || d !== form.elements.date.value || !j || !j.ok || !j.plages) return;
+          majPlages(j.plages);
+          montrerIndispo(d, String(j.message || ''));
+        })
         .catch(function () {});
     }
     dateIn.addEventListener('change', verifierAgenda);
-    form.elements.moment.addEventListener('change', verifierAgenda);
+    plageSel.addEventListener('change', function () { if (plageSel.value) plageSel.removeAttribute('aria-invalid'); });
+    majPlages(null);
 
     var sansStockage = $('[data-sans-stockage]');
     if (sansStockage) sansStockage.hidden = STOCKAGE;
@@ -418,7 +445,7 @@
       });
       if (ls.length) t.push('Total indicatif\u00a0: ' + euros(total) + ' TTC');
       if (f.perso.value.trim()) t.push('Personnalisation\u00a0: ' + f.perso.value.trim());
-      if (f.date.value) t.push('Retrait souhaité\u00a0: ' + dateFr(f.date.value) + ', ' + (CAT.moments[f.moment.value] || '').toLowerCase());
+      if (f.date.value) t.push('Retrait souhaité\u00a0: ' + dateFr(f.date.value) + ', ' + (CAT.plages[f.plage.value] || '').toLowerCase());
       t.push('Nom\u00a0: ' + (f.prenom ? f.prenom.value.trim() + ' ' : '') + f.nom.value.trim());
       t.push('Email\u00a0: ' + f.email.value.trim() + (f.telephone.value.trim() ? ' · Téléphone\u00a0: ' + f.telephone.value.trim() : ''));
       if (f.pro && f.pro.checked) t.push('Entreprise\u00a0: ' + f.societe.value.trim() + (f.besoin.value.trim() ? ' · Besoin\u00a0: ' + f.besoin.value.trim() : ''));
@@ -444,8 +471,10 @@
       if (!f.date.value) err(f.date, 'Choisissez une date de retrait.');
       else if (f.date.value < dateIn.min) err(f.date, 'La date de retrait doit être au plus tôt le ' + dateFr(dateIn.min) + '.');
       else if (f.date.value.slice(5) === '12-24') err(f.date, 'Pas de retrait le 24 décembre\u00a0: choisissez une autre date.');
+      else if (estDimanche(f.date.value)) err(f.date, MSG_DIMANCHE);
       else if (f.date.value > dateIn.max) err(f.date, 'Choisissez une date dans les six prochains mois.');
-      else if (indispo.message && indispo.cle === cleRetrait()) err(f.date, indispo.message);
+      else if (indispo.message && indispo.cle === f.date.value) err(f.date, indispo.message);
+      else if (!f.plage.value) err(f.plage, 'Choisissez une plage horaire de retrait.');
       if (f.prenom && !f.prenom.value.trim()) err(f.prenom, 'Indiquez votre prénom.');
       if (!f.nom.value.trim()) err(f.nom, 'Indiquez votre nom.');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) err(f.email, 'Indiquez une adresse email valide, pour recevoir la réponse de Madame Cho.');
@@ -468,7 +497,6 @@
         if (plaques[cleLigne(l)]) o.plaque = plaques[cleLigne(l)].trim().slice(0, 60);
         return o;
       })));
-      var cleEnvoi = cleRetrait();
       envoiEnCours = true; envoyer.disabled = true; envoyer.textContent = 'Envoi en cours…';
       function rouvrir() { envoiEnCours = false; envoyer.disabled = false; envoyer.textContent = 'Envoyer ma demande, sans engagement'; }
       function fini(ref) {
@@ -508,8 +536,8 @@
             if (window._paq) window._paq.push(['trackEvent', 'Demande', 'Envoyée']);
             fini(j.ref);
           }
-          else if (j && j.indispo) {   // le jour ou le moment vient d'être fermé dans l'agenda : à changer, comme une erreur de saisie
-            rouvrir(); montrerIndispo(cleEnvoi, String(j.indispo));
+          else if (j && j.indispo) {   // la plage ou le jour vient d'être fermé (ou rempli) dans l'agenda : à changer, comme une erreur de saisie
+            rouvrir(); verifierAgenda();
             erreurs.hidden = false; erreurs.textContent = (j.erreurs || [j.indispo]).join('\n'); erreurs.focus();
           }
           else echec((j && j.erreurs && j.erreurs.length) ? j.erreurs.join(' ') : 'L’envoi n’a pas abouti.');

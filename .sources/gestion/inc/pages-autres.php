@@ -488,6 +488,15 @@ function page_reglages(): void {
                 evenement('compte', 'Mot de passe changé');
                 flash('ok', 'Mot de passe changé. Les autres appareils devront se reconnecter.');
                 break;
+            case 'plage_maximum':   // le maximum par défaut d'une plage de retrait (spécification 007)
+                $ancre = 'retraits';
+                $n = entier('plage_maximum', 0, 99, 0);
+                if ($n < 1 || $n > 20) { flash('erreur', 'Choisissez un nombre de retraits entre 1 et 20.'); break; }
+                $avant = plage_maximum_defaut();
+                parametre_ecrire('plage_maximum', (string)$n);
+                if ($n !== $avant) evenement('reglage', 'Maximum par plage de retrait : ' . $avant . ' → ' . $n);
+                flash('ok', 'Enregistré : ' . $n . ' retrait' . ($n > 1 ? 's' : '') . ' au plus par plage, sauf les plages que vous avez réglées dans l\'Agenda.');
+                break;
             case 'emails':
                 $lien = une_ligne(texte('lien_avis', 300));
                 $ancre = 'avis';
@@ -678,6 +687,12 @@ function page_reglages(): void {
             . formulaire('inviter', '<div class="ligne-champs">' . champ('email', 'Email', '', ['type' => 'email', 'required' => true]) . champ('nom', 'Nom', '', ['required' => true]) . '</div>'
                 . liste_choix('role', 'Rôle', ['membre' => 'Membre (commandes, clients, produits)', 'admin' => 'Administratrice (aussi les accès et les données)'], 'membre') . bouton('Envoyer l\'invitation', 'secondaire')) . '</details>', '', 'comptes');
     }
+    // Plages de retrait (spécification 007) : le maximum par défaut ; une plage d'un jour se règle dans l'Agenda
+    $c .= bloc('Retraits', '<p>Six plages du lundi au samedi : 9 h – 10 h 30, 10 h 30 – 12 h, 12 h – 14 h, 14 h – 16 h, 16 h – 18 h, 18 h – 19 h. Pas de retrait le dimanche ni le 24 décembre.</p>'
+        . formulaire('plage_maximum', champ('plage_maximum', 'Retraits au plus par plage', (string)plage_maximum_defaut(), ['type' => 'number', 'min' => '1', 'max' => '20', 'step' => '1', 'inputmode' => 'numeric', 'required' => true],
+                'Quand une plage atteint ce nombre de retraits confirmés, le site ne la propose plus. Une demande ou une proposition ne prend pas de place.')
+            . bouton('Enregistrer', 'secondaire'))
+        . '<p class="aide">Pour un jour précis (fermer une plage, ou changer son maximum) : Agenda › le jour › Plages de retrait.</p>', '', 'retraits');
     // Demandes du site
     if ($admin) {
         $on = parametre('demandes_site') === '1';

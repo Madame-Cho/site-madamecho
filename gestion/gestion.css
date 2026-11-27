@@ -427,6 +427,22 @@ pre.corps,.essai-email pre,.cle-miroir pre{white-space:pre-wrap;font:400 14px/1.
 .indispo details.mini[open]{background:var(--carte)}
 .form-indispo{display:grid;gap:2px}
 .form-supprimer{margin-top:10px}
+/* Plages de retrait du jour choisi (spécification 007, 27/11/2026) */
+.jour-agenda.jour-ferme:not(.hors-mois){background:var(--fond)}
+.jour-agenda.jour-ferme .num{color:#9A918A}
+.plages-jour{display:grid;gap:8px;margin-bottom:10px}
+.plage-ligne{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;padding:8px 12px;border:1px solid var(--ligne);border-radius:10px;background:var(--carte)}
+.plage-h{font-weight:500;min-width:7.6em;font-variant-numeric:tabular-nums}
+.plage-etat{color:var(--doux);flex:1 1 9em}
+.plage-etat b{color:var(--texte);font-weight:500;font-variant-numeric:tabular-nums}
+.plage-ligne.p-complete{background:var(--ambre-f)}
+.plage-ligne.p-fermee,.plage-ligne.p-indispo{background:repeating-linear-gradient(135deg,#F1EEEB 0 6px,var(--fond) 6px 12px)}
+.plage-actions{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-left:auto}
+.plage-form{margin:0}
+.plage-form .champ{margin-bottom:8px;max-width:12em}
+details.mini.plage-max>summary{min-height:44px;padding:0 6px}
+details.mini.plage-max[open]{flex-basis:100%;background:var(--fond)}
+.plage-actions:has(details[open]){flex-basis:100%}
 /* Statistiques par gâteau : particuliers et pros côte à côte, depuis quand il est proposé (07/11/2026) */
 .ventes-gateaux td>span{display:block}
 .ventes-gateaux td b{font-weight:500}

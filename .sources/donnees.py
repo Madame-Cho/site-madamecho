@@ -88,12 +88,15 @@ PRODUITS = [
       carte_pour="à partir de 6", carte_prix="3,50 € la pièce"),
 ]
 
-MOMENTS = [("matin", "Le matin, de 9 h à 12 h"), ("midi", "À midi, de 12 h à 14 h"),
-           ("apres-midi", "L'après-midi, de 14 h à 18 h"), ("soir", "Le soir, de 18 h à 19 h")]
+# Plages de retrait (spécification 007, décisions d'Olivier et de Youngmi du 27/11/2026) : six plages du lundi au samedi, plusieurs clients
+# par plage ; le code est l'heure de début (le même que dans la gestion, base.php PLAGES)
+PLAGES = [("0900", "De 9 h à 10 h 30"), ("1030", "De 10 h 30 à 12 h"), ("1200", "De 12 h à 14 h"),
+          ("1400", "De 14 h à 16 h"), ("1600", "De 16 h à 18 h"), ("1800", "De 18 h à 19 h")]
+JOURS_SEMAINE_FERMES = [0]  # pas de retrait le dimanche (0 = dimanche, comme en JavaScript et en PHP) ; cas particuliers par téléphone
 JOURS_FERMES = ["12-24"]  # pas de retrait le 24 décembre (séance 2)
 
 H1 = "Des gâteaux à la façon de Madame Cho, à Meudon."
-SOUS = "Sur commande, à retirer sur rendez-vous, tous les jours de 9 h à 19 h."
+SOUS = "Sur commande, à retirer sur rendez-vous, du lundi au samedi de 9 h à 19 h."
 INTRO = "Madame Cho, c'est la pâtisserie à votre écoute : entremets, tartes, choux et cookies, préparés à la commande, avec le soin du détail et une touche de Corée."
 ANNIV = [
  "Pour un anniversaire, Madame Cho réalise votre gâteau sur commande, pour 4 à 12 personnes. Saveurs, couleurs, ingrédients, décoration : faites-lui part de vos envies pour imaginer ensemble un gâteau à votre image.",
@@ -205,14 +208,14 @@ RESTOS = [
 OFFRE = ["Plateaux de petites pièces", "Boîtes individuelles", "Gâteaux à partager", "Coffrets de cookies à offrir"]
 ETAPES = [
  ("Vous choisissez", "Ajoutez vos gâteaux à votre demande, sans engagement."),
- ("Madame Cho vous répond", "Sous 24 heures, avec une proposition écrite : le prix, le jour et l'heure du retrait."),
+ ("Madame Cho vous répond", "Sous 24 heures, avec une proposition écrite : le prix, le jour et la plage horaire du retrait."),
  ("Vous confirmez", "Vous acceptez la proposition par écrit, et Madame Cho confirme votre commande."),
- ("Vous retirez à Meudon", "Au 4 avenue du Château, à l'heure convenue."),
+ ("Vous retirez à Meudon", "Au 4 avenue du Château, sur la plage horaire choisie."),
 ]
 PRATIQUE = [
- ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h. Pas de livraison. À quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart."),
- ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le 24 décembre."),
- ("Paiement", "Au retrait, par carte bancaire, virement ou espèces. Pour une personnalisation au-delà de la plaque, un acompte de 30 % est demandé."),
+ ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, du lundi au samedi de 9 h à 19 h, sur la plage horaire choisie. Pas de livraison. À quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart."),
+ ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le retrait. Pas de retrait le dimanche ni le 24 décembre."),
+ ("Paiement", "Au retrait, par carte bancaire, virement ou espèces."),
  ("Conservation", "Indiquée sur la page de chaque gâteau."),
 ]
 
@@ -230,15 +233,15 @@ FICHE_GOOGLE = "https://maps.google.com/?cid=15029990752430360950"
 # (sans gluten, Noël, dernière minute, plus de 12 personnes, mariages, touche coréenne) s'ajoutent ici quand elle a répondu.
 FAQ = [
  ("Comment commander un gâteau chez Madame Cho ?",
-  "Choisissez vos gâteaux sur la carte et envoyez votre demande en ligne, sans engagement, ou appelez le 06 61 31 17 79. Madame Cho répond sous 24 heures avec une proposition écrite : le prix, le jour et l'heure du retrait. La commande est confirmée quand vous acceptez la proposition."),
+  "Choisissez vos gâteaux sur la carte et envoyez votre demande en ligne, sans engagement, ou appelez le 06 61 31 17 79. Madame Cho répond sous 24 heures avec une proposition écrite : le prix, le jour et la plage horaire du retrait. La commande est confirmée quand vous acceptez la proposition."),
  ("Combien de temps à l'avance faut-il commander ?",
   "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Le délai de chaque gâteau est indiqué sur sa page."),
  ("Madame Cho livre-t-elle ?",
-  "Non. Chaque commande se retire sur rendez-vous au 4 avenue du Château, 92190 Meudon, tous les jours de 9 h à 19 h, à quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart. Pas de retrait le 24 décembre."),
+  "Non. Chaque commande se retire sur rendez-vous au 4 avenue du Château, 92190 Meudon, du lundi au samedi de 9 h à 19 h, sur la plage horaire choisie, à quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart. Pas de retrait le dimanche (pour un cas particulier, appelez Madame Cho) ni le 24 décembre."),
  ("Pour combien de personnes sont les gâteaux ?",
   "Les entremets, la charlotte et la tarte se font de 4 à 10 personnes, à partir de 28 €. Les choux se commandent à partir de 10 pièces, les cookies et les petits gâteaux du goûter à partir de 6."),
  ("Peut-on écrire un prénom ou un message sur le gâteau ?",
-  "Oui : prénom et message sur une plaque en chocolat, compris dans le prix des gâteaux à partager. Pour une personnalisation au-delà de la plaque, un acompte de 30 % est demandé."),
+  "Oui : prénom et message sur une plaque en chocolat, compris dans le prix des gâteaux à partager. Pour une personnalisation au-delà de la plaque, décrivez votre envie dans votre demande : Madame Cho vous répond avec une proposition et son prix."),
  ("Y a-t-il un gâteau vegan ?",
   "Oui, le petit cake vegan au praliné cacahuète, parmi les petits gâteaux du goûter. Les allergènes de chaque gâteau sont indiqués sur sa page."),
  ("Comment payer ?",
