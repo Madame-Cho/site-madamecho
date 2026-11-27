@@ -48,7 +48,7 @@ Toutes les modifications se font dans `.sources/`, puis on régénère (principe
 - [X] T020 Manuel FR/KO et « Quoi de neuf » (`.sources/gestion/inc/manuel.php`)
 - [X] T021 `VERSION` du site changée ; régénération ; Confidentialité : la question au site ne porte plus que sur la date (phrase mise à jour, page datée du 27 novembre 2026)
 - [X] T022 Essais `plages.php` et `plages.js` (quickstart), captures dans les fichiers du projet
-- [ ] T023 Consigne d'audit pour le ChatGPT d'Olivier (P-26), rapport vide dans 92/02
+- [X] T023 Consigne d'audit pour le ChatGPT d'Olivier (P-26), rapport vide dans 92/02 (audit n° 10, 27/11/2026)
 
 ## Dépendances
 
