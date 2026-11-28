@@ -114,6 +114,11 @@ function gestion_agenda(callable $f, $sinon) {
         return $sinon;
     }
 }
+// Une référence jamais déjà prise dans la gestion (audit n° 11, C11-02) : sinon la demande serait rattachée à une autre commande
+function reference_unique(): string {
+    $r = 'MC-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
+    return gestion_agenda(fn() => \MadameCho\Gestion\gestion_base_existante() ? \MadameCho\Gestion\reference_nouvelle() : $r, $r);
+}
 function plages_libres(string $date, array $CAT): array {
     $toutes = ['plages' => array_fill_keys(array_map('strval', array_keys($CAT['plages'])), 'libre'), 'message' => ''];
     // Date invalide, passée ou au-delà de six mois : la réponse neutre du contrat, sans lire l'agenda (audit n° 10, C10-13)
@@ -308,15 +313,21 @@ if (!ecrire_etat($fh, $etat)) indisponible('compteur non écrit', $enJson, $fh);
 // la commande comme une demande et retient sa place. Aucun mail à ce moment : la confirmation (qui vaut reçu) part quand le paiement
 // est constaté ; sinon la commande redevient une demande ordinaire (mail à Madame Cho, accusé de réception au client).
 if ($payer) {
-    $refuser = function (string $message) use ($fh, &$etat): void {
+    $refuser = function (string $message, array $plus = []) use ($fh, &$etat): void {
         array_pop($etat['envois']); ecrire_etat($fh, $etat);   // un paiement refusé ne compte pas dans la limite
         flock($fh, LOCK_UN); fclose($fh);
         http_response_code(409);
-        repondre(false, ['payer' => false, 'message' => $message], true);
+        repondre(false, ['payer' => false, 'message' => $message] + $plus, true);
     };
     if (champ('conditions', 1) !== '1') $refuser('Cochez « J\'accepte les conditions de commande » pour commander et payer.');
     if (PHP_VERSION_ID < 80000 || !is_file(GESTION_ENREGISTRER)) $refuser('Le paiement en ligne n\'est pas proposé pour le moment : envoyez votre demande sans payer.');
-    $ref = 'MC-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
+    // Le client paie le total qu'il a vu et accepté, jamais un autre (audit n° 11, C11-12) : un prix changé entre-temps l'arrête
+    $vu = champ('total_vu', 12);
+    if ($vu !== '' && (!ctype_digit($vu) || (int)$vu !== $total)) {
+        $prixTexte = ($total % 100) ? intdiv($total, 100) . ',' . sprintf('%02d', $total % 100) . ' €' : intdiv($total, 100) . ' €';
+        $refuser('Le prix de votre panier a changé : il fait maintenant ' . $prixTexte . ' TTC. Rechargez la page pour voir les prix à jour, puis commandez de nouveau. Rien n\'a été débité.', ['prix' => true]);
+    }
+    $ref = reference_unique();
     try {
         require_once GESTION_ENREGISTRER;
         $r = \MadameCho\Gestion\commander_et_payer(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'plage' => $plage,
@@ -341,7 +352,7 @@ if ($payer) {
 }
 
 /* ---------- L'email à Madame Cho ---------- */
-$ref = 'MC-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
+$ref = reference_unique();
 $jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 $mois = ['', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 $dateTexte = $jours[(int)$jour->format('w')] . ' ' . (int)$jour->format('j') . ' ' . $mois[(int)$jour->format('n')] . ' ' . $jour->format('Y');

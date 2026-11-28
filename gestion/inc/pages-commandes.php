@@ -199,6 +199,7 @@ function page_commande(): void {
                 $payerUrl = ''; $sansBouton = '';
                 if (!empty($_POST['payer']) && paiement_propose($k)) {
                     try { $payerUrl = (string)lien_pour_commande($k)['url']; }
+                    catch (\DomainException $e) { $sansBouton = ' Elle est partie sans le bouton « Payer en ligne » : ' . $e->getMessage() . '.'; }
                     catch (\Throwable $e) { error_log('madamecho gestion paiement : lien pour la confirmation : ' . $e->getMessage()); $sansBouton = ' Qonto n\'a pas répondu : elle est partie sans le bouton « Payer en ligne » (vous pourrez créer le lien plus bas, dans « Paiement en ligne »).'; }
                 }
                 if (envoyer_mail_commande($k, 'confirmation', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'paiement_url' => $payerUrl])) {
@@ -235,6 +236,11 @@ function page_commande(): void {
                 flash_envoi('Demande d\'avis envoyée et notée sur la fiche du client.');
                 break;
             case 'remise':
+                if (paye_en_ligne($k)) {   // payée en ligne : ni le prix ni le paiement ne changent à la remise (audit n° 11, C11-05)
+                    commande_statut($id, 'remise');
+                    flash('ok', 'Commande remise (payée en ligne). Pensez à proposer un avis Google au client.');
+                    break;
+                }
                 $prix = centimes(texte('prix_final', 12));
                 commande_statut($id, 'remise', $prix !== null ? ['prix_final' => $prix] : []);
                 $p = choix('paiement', paiements_proposes($k), 'paye');   // pas d'état d'acompte pour une commande sans acompte (audit n° 10, C10-07)
@@ -245,11 +251,10 @@ function page_commande(): void {
                 // Une commande d'essai ou saisie par erreur, jamais une vraie vente facturée (demande d'Olivier, test du 07/11/2026)
                 if (texte('confirmation', 12) !== 'SUPPRIMER') { flash('erreur', 'Pour supprimer, tapez SUPPRIMER en majuscules.'); break; }
                 if (!commande_supprimable($k)) { flash('erreur', 'Cette commande a une facture, un paiement rapproché ou un paiement reçu : elle reste pour les comptes. Annulez-la plutôt.'); break; }
-                if (($o = lien_ouvert($id)) !== null) {   // un lien de paiement ouvert est annulé d'abord (spécification 006, FR-005)
-                    try { lien_desactiver($o, 'commande supprimée'); }
-                    catch (\Throwable $e) { flash('erreur', 'Le lien de paiement en ligne n\'a pas pu être annulé (Qonto ne répond pas) : rien n\'a été supprimé, réessayez dans un moment.'); break; }
-                    if (lien_paye($id)) { flash('erreur', 'Le client vient de payer en ligne : la commande reste pour les comptes.'); break; }
-                }
+                $ouverts = lignes("SELECT * FROM liens_paiement WHERE commande_id = ? AND etat IN ('open', 'processing') AND paiement_qonto_id IS NULL", [$id]);
+                try { foreach ($ouverts as $o) lien_desactiver($o, 'commande supprimée'); }   // tout lien ouvert est annulé d'abord (spécification 006, FR-005)
+                catch (\Throwable $e) { flash('erreur', 'Un lien de paiement en ligne n\'a pas pu être annulé (Qonto ne répond pas) : rien n\'a été supprimé, réessayez dans un moment.'); break; }
+                if (lien_paye($id)) { flash('erreur', 'Le client a payé en ligne : la commande reste pour les comptes. Annulez-la plutôt.'); break; }
                 q("DELETE FROM retenues WHERE commande_id = ?", [$id]);
                 commande_supprimer($id, une_ligne(texte('motif', 200)) ?: 'essai');
                 flash('ok', 'Commande ' . $k['reference'] . ' mise à la corbeille, avec ses échanges : 30 jours pour la restaurer (Plus › Corbeille).');
@@ -280,6 +285,11 @@ function page_commande(): void {
                 flash('ok', $k2 && ($r = a_rembourser($k2)) > 0 ? 'Commande annulée. Elle a été payée en ligne : remboursez ' . euros($r) . ' en entier dans Mollie (cadre « Paiement en ligne »).' : 'Commande annulée.');
                 break;
             case 'paiement':
+                // Un paiement constaté par Qonto ne se change pas à la main (audit n° 11, C11-05) : le remboursement passe par « Paiement en ligne »
+                if (paye_en_ligne($k)) {
+                    flash('erreur', 'Cette commande est payée en ligne : le paiement ne se change pas à la main. Pour un remboursement, voyez le cadre « Paiement en ligne ». Rien n\'a été changé.');
+                    break;
+                }
                 // Un état ou un montant d'acompte seulement sur une commande qui en a déjà un (audit n° 10, C10-07)
                 if (!avec_acompte($k) && (in_array((string)($_POST['paiement'] ?? ''), ['acompte_demande', 'acompte_recu'], true) || (centimes(texte('acompte', 12)) ?? 0) > 0)) {
                     flash('erreur', 'Plus d\'acompte pour une nouvelle commande : le client paie tout au retrait. Rien n\'a été changé.');

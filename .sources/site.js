@@ -549,6 +549,15 @@
         if (rc) rc.textContent = 'Le mail de confirmation vient';
         if (rd) rd.textContent = 'si vous ne le voyez pas d’ici quelques minutes';
       }
+      if (variante && variante.verifier) {   // payé, mais à vérifier par Madame Cho (audit n° 11, C11-03) : ni « confirmée », ni « rien à payer »
+        $('[data-recu-etiquette]').textContent = 'Paiement reçu, à vérifier';
+        $('[data-recu-titre]').textContent = ', votre paiement est bien arrivé';
+        $('[data-recu-texte]').textContent = 'Madame Cho doit le vérifier avant de confirmer votre commande : elle vous écrit très vite. Ne payez pas une deuxième fois.';
+        $('[data-recu-suite]').textContent = 'Une question ? Répondez à son mail ou appelez le 06 61 31 17 79.';
+        var rc2 = $('[data-recu-courrier]'), rd2 = $('[data-recu-delai]');
+        if (rc2) rc2.textContent = 'Son message viendra';
+        if (rd2) rd2.textContent = 'si vous ne le voyez pas d’ici quelques heures';
+      }
       var msg = $('[data-recu-message]');
       if (msg && variante && variante.message) { msg.textContent = variante.message; msg.hidden = false; }
       form.hidden = true; var ch = $('.demande .chapo'); if (ch) ch.hidden = true;
@@ -572,8 +581,10 @@
       erreurs.focus();
     }
 
-    // Le suivi du paiement : toutes les 5 secondes, 40 minutes au plus ; le jeton seul, sans aucune donnée personnelle
+    // Le suivi du paiement : toutes les 5 secondes, jusqu'à 10 minutes après la fin de la place retenue (audit n° 11, C11-03) ;
+    // le jeton seul, sans aucune donnée personnelle
     var suivi = null, suiviMinuterie = null;
+    function suiviLimite(s) { var j = new Date(s.jusqua).getTime(); return (isNaN(j) ? s.debut + 30 * 60000 : j) + 10 * 60000; }
     function suivre(etatSuivi) {
       suivi = etatSuivi;
       try { sessionStorage.setItem('mc-suivi', JSON.stringify(suivi)); } catch (e) {}
@@ -589,14 +600,20 @@
     function interroger(sansPayer) {
       clearTimeout(suiviMinuterie);
       if (!suivi) return;
-      if (!sansPayer && Date.now() - suivi.debut > 40 * 60000) { $('[data-suivi-texte]').textContent = 'Nous n’avons pas encore la réponse de Qonto. Si vous avez payé, le mail de confirmation vous arrivera ; sinon, Madame Cho a reçu votre demande et vous répond sous 24 heures.'; return; }
+      if (!sansPayer && Date.now() > suiviLimite(suivi)) { $('[data-suivi-texte]').textContent = 'Nous n’avons pas encore la réponse de Qonto : ne payez pas une deuxième fois. Si vous avez payé, le mail de confirmation vous arrivera ; sinon, Madame Cho a reçu votre demande et vous répond sous 24 heures. Une question ? 06 61 31 17 79.'; return; }
       var fd = new FormData(); fd.append(sansPayer ? 'sans_payer' : 'suivi', suivi.suivi);
       fetch(form.getAttribute('action'), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
         .then(function (r) { return r.json(); })
         .then(function (j) {
           if (j && j.etat === 'paye') { if (window._paq) window._paq.push(['trackEvent', 'Demande', 'Payée en ligne']); fini(suivi.ref, { paye: true }); suivi = null; return; }
           if (j && j.etat === 'non_abouti') { fini(suivi.ref, { message: j.message }); suivi = null; return; }
-          if (j && j.etat === 'inconnu') { fini(suivi.ref, {}); suivi = null; return; }
+          // Payé mais à vérifier par Madame Cho : jamais « confirmée », jamais « rien n'a été débité »
+          if (j && j.etat === 'verifier') { fini(suivi.ref, { verifier: true }); suivi = null; return; }
+          // La gestion ne répond pas : rien n'est conclu, le suivi continue (un paiement a pu passer)
+          if (j && j.etat === 'inconnu') {
+            $('[data-suivi-texte]').textContent = 'Nous ne pouvons pas vérifier votre paiement pour le moment : si vous avez payé, ne payez pas une deuxième fois. Nous réessayons ; au besoin, appelez Madame Cho au 06 61 31 17 79.';
+            suiviMinuterie = setTimeout(interroger, 10000); return;
+          }
           if (sansPayer && j && j.message) $('[data-suivi-texte]').textContent = j.message;
           suiviMinuterie = setTimeout(interroger, 5000);
         })
@@ -607,7 +624,7 @@
     // Revenu sur la page (onglet rechargé) pendant un paiement : le suivi reprend
     try {
       var sv0 = JSON.parse(sessionStorage.getItem('mc-suivi') || 'null');
-      if (sv0 && sv0.suivi && Date.now() - sv0.debut < 40 * 60000) suivre(sv0); else sessionStorage.removeItem('mc-suivi');
+      if (sv0 && sv0.suivi && Date.now() < suiviLimite(sv0)) suivre(sv0); else sessionStorage.removeItem('mc-suivi');
     } catch (e) {}
 
     function envoyerDemande(payer) {
@@ -627,7 +644,8 @@
         if (plaques[cleLigne(l)]) o.plaque = plaques[cleLigne(l)].trim().slice(0, 60);
         return o;
       })));
-      if (payer) donnees.append('payer', '1'); else donnees.delete && donnees.delete('conditions');
+      // Le total vu et accepté part avec la commande : s'il a changé entre-temps, rien n'est payé (audit n° 11, C11-12)
+      if (payer) { donnees.append('payer', '1'); donnees.append('total_vu', String(totalPanier(lignes()))); } else donnees.delete && donnees.delete('conditions');
       // L'onglet de paiement s'ouvre tout de suite (sinon le navigateur le bloque), puis reçoit l'adresse de Qonto
       var onglet = null;
       if (payer && !APERCU) { try { onglet = window.open('', '_blank'); if (onglet) { onglet.opener = null; onglet.document.title = 'Paiement · Madame Cho'; } } catch (e) { onglet = null; } }
@@ -658,8 +676,8 @@
             fini(j.ref, j.message ? { message: j.message } : null);
           }
           else if (j && j.payer === false) {   // le paiement n'est plus possible : la même demande peut partir sans payer, en un toucher
-            fermer(); payerJour = null; rouvrir();
-            erreurs.hidden = false; erreurs.textContent = (j.message || 'Le paiement en ligne n’est pas possible pour le moment.') + ' Votre demande est gardée : touchez « ' + texteEnvoyer + ' ».';
+            fermer(); if (!j.prix) payerJour = null; rouvrir();   // un prix changé : il suffit de recharger la page
+            erreurs.hidden = false; erreurs.textContent = (j.message || 'Le paiement en ligne n’est pas possible pour le moment.') + (j.prix ? '' : ' Votre demande est gardée : touchez « ' + texteEnvoyer + ' ».');
             erreurs.focus();
           }
           else if (j && j.indispo) {   // la plage ou le jour vient d'être fermé (ou rempli) dans l'agenda : à changer, comme une erreur de saisie

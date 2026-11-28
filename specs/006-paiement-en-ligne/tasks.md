@@ -55,7 +55,8 @@ commence sans le feu vert d'Olivier pour le code.
 - [x] T025 Essais du quickstart (1 à 15) en ligne de commande et Playwright, relevé coréen, captures ; régénération (`regen.sh`)
 - [ ] T026 Registre des traitements (20/01) : ligne « paiement en ligne » ; ligne d'outil « Liens de paiement Qonto (Mollie) » proposée pour « Outils digitaux »
 - [ ] T027 Exceptions à R-24 (liens de paiement) et R-01 (reçu et confirmation automatiques) : texte proposé à Olivier pour le rulebook, puis principe II de la constitution mis à jour
-- [ ] T028 Audit par le ChatGPT d'Olivier (P-26), corrections, puis feu vert de publication (interrupteurs éteints) et recette réelle à 1 € (quickstart, après publication)
+- [ ] T028 Audit par le ChatGPT d'Olivier (P-26), corrections, puis feu vert de publication (interrupteurs éteints) et recette réelle à 1 € (quickstart, après publication) : audit n° 11 rendu le 28/11 (15 constats), « Tout corriger avant publication » (Olivier, 28/11 03:42), corrections T029 faites
+- [x] T029 Corrections de l'audit n° 11 : un seul lien ouvert par commande, créé sous verrou et jamais après un paiement arrivé ; montant revérifié contre la commande ; suivi « à vérifier » ; places en paiement comptées dans la gestion et jamais libérées sur la seule horloge ; chaque paiement à rembourser ; reçu pris avant l'envoi ; liens de paiement retirés de ce que lit l'assistant ; TVA ventilée ; statistiques sans « frais réels » ; total vu revérifié ; email du payeur plus gardé (`paiement.php`, `modele.php`, `enregistrer.php`, `pages-*.php`, `qonto.php`, `vues.php`, `assistant-donnees.php`, `envoyer.php`, `site.js`, `gen.py`, `coreen.php`, `manuel.php`)
 
 ## Dépendances
 

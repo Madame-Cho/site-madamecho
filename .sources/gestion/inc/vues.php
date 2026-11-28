@@ -502,9 +502,12 @@ function avec_acompte(array $k): bool {
 function paiements_proposes(array $k): array {
     return avec_acompte($k) ? PAIEMENTS : array_diff_key(PAIEMENTS, ['acompte_demande' => 1, 'acompte_recu' => 1]);
 }
-/** Les moyens qu'on peut choisir à la main : « En ligne » seulement s'il est déjà celui de la commande (seul Qonto le constate, spécification 006). */
+/** Les moyens qu'on peut choisir à la main : « En ligne » seulement s'il est déjà celui de la commande, ou si un paiement en ligne
+ *  « à vérifier » est arrivé (Youngmi le note après l'avoir vu dans Mollie) : seul Qonto le constate sinon (spécification 006). */
 function moyens_proposes(array $k): array {
-    return MOYENS_SAISIE + (($k['moyen'] ?? '') === 'en_ligne' ? ['en_ligne' => MOYENS['en_ligne']] : []);
+    $enLigne = ($k['moyen'] ?? '') === 'en_ligne'
+        || (!empty($k['id']) && gestion_base_existante() && val("SELECT 1 FROM liens_paiement WHERE commande_id = ? AND recu_etat = 'a_verifier'", [(int)$k['id']]));
+    return MOYENS_SAISIE + ($enLigne ? ['en_ligne' => MOYENS['en_ligne']] : []);
 }
 /* ---------- Les mails aux clients (demandes d'Olivier du 07/11/2026) ----------
  * Tout se fait dans la gestion, Gmail en secours : chaque mail part de la gestion au toucher de Youngmi sur « Envoyer »
@@ -736,11 +739,15 @@ function mail_commande(array $k, string $type, array $o = []): array {
                   . ((string)$d['ref'] !== '' ? ' (référence du paiement : ' . $d['ref'] . ')' : '') . '.';
             $pas = 'Ce mail tient lieu de reçu ; ce n\'est pas une facture. Besoin d\'une facture ? Répondez simplement à ce mail.';
             $annul = 'Un empêchement ? Prévenez-nous au plus tôt, en répondant à ce mail ou au 06 61 31 17 79 : une commande payée en ligne puis annulée est remboursée en entier.';
+            // Les conditions acceptées, gardées par le client avec son reçu (audit n° 11, C11-12)
+            $condUrl = 'https://madamecho.com/conditions-de-commande/';
+            $cond = 'Nos conditions de commande (annulation, remboursement, droit de rétractation) : ';
             $agenda = $recuConfirme && rdv_client_possible($k) ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:14px') : '';
             $html .= mail_recap($kp, 'confirmation', $S) . $p('<b>' . h($recu) . '</b>', 'margin-top:20px') . $agenda . $p(h($pas), 'margin-top:14px') . $p(h($annul), 'margin-top:14px')
+                   . $p(h(rtrim($cond, ' :')) . ' : ' . $lien($condUrl, 'madamecho.com/conditions-de-commande'), 'margin-top:14px')
                    . $p(h(MAIL_MENTIONS), 'margin-top:14px;font-size:13px;line-height:19px;color:#736A64');
             $texte .= lignes_email($k) . "\n\n" . total_email($kp) . "\n" . retrait_email($k) . "\n\n" . $recu . "\n" . ($recuConfirme ? rdv_client_texte($k) : '')
-                    . "\n" . $pas . "\n" . $annul . "\n\n" . MAIL_MENTIONS . "\n\n";
+                    . "\n" . $pas . "\n" . $annul . "\n" . $cond . $condUrl . "\n\n" . MAIL_MENTIONS . "\n\n";
             $fin = 'À très bientôt,';
             break;
         case 'rappel':

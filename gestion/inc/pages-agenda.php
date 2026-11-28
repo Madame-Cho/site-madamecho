@@ -176,12 +176,14 @@ function bloc_plages(string $jour, string $auj, array $kj = []): string {
     $l = '';
     foreach (plages_du_jour($jour) as $code => $p) {
         $code = (string)$code;
-        $cle = $p['fermee'] ? 'fermee' : ($p['indispo'] !== null ? 'indispo' : ($p['n'] > $p['maximum'] ? 'depassee' : ($p['n'] >= $p['maximum'] ? 'complete' : 'libre')));
+        $cle = $p['fermee'] ? 'fermee' : ($p['indispo'] !== null ? 'indispo' : ($p['n'] > $p['maximum'] ? 'depassee' : ($p['n'] + $p['en_paiement'] >= $p['maximum'] ? 'complete' : 'libre')));
         $etat = ['fermee' => 'Fermée', 'indispo' => 'Indispo', 'depassee' => 'Dépassée', 'complete' => 'Complète', 'libre' => 'Libre'][$cle];
         $cmds = '';
         if (!empty($parPlage[$code]['places'])) $cmds .= '<span class="plage-cmds-liste">' . implode('', array_map($lien, $parPlage[$code]['places'])) . '</span>';
         if (!empty($parPlage[$code]['attente'])) $cmds .= '<span class="plage-cmds-liste plage-attente"><span class="petit">En attente, sans place prise :</span> ' . implode('', array_map($lien, $parPlage[$code]['attente'])) . '</span>';
-        $compte = fr_ko($p['n'] . ' sur ' . $p['maximum'], $p['n'] . '명 / 최대 ' . $p['maximum'] . '명');
+        // un client en train de payer sur le site tient une place quelques minutes (audit n° 11, C11-04)
+        $compte = fr_ko($p['n'] . ' sur ' . $p['maximum'] . ($p['en_paiement'] ? ' + ' . $p['en_paiement'] . ' en paiement' : ''),
+                        $p['n'] . '명 / 최대 ' . $p['maximum'] . '명' . ($p['en_paiement'] ? ' + 결제 중 ' . $p['en_paiement'] . '명' : ''));
         $cache = '<input type="hidden" name="plage_jour" value="' . h($jour) . '"><input type="hidden" name="plage" value="' . h($code) . '">';
         $act = '';
         if ($modifiable) {

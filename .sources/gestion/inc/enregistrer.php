@@ -73,10 +73,9 @@ function enregistrer_demande(array $d): int {
 function plages_pour_demande(string $date): array {
     $libres = ['plages' => array_fill_keys(array_map('strval', array_keys(PLAGES)), 'libre'), 'message' => ''];
     if (!date_valide($date) || !gestion_base_existante()) return $libres;
-    $etats = plages_du_jour($date);
-    $retenues = retenues_du_jour($date);   // les places retenues pendant un paiement en ligne comptent pour le site (spécification 006)
+    $etats = plages_du_jour($date);   // les places retenues pendant un paiement en ligne y comptent déjà (spécification 006)
     $r = ['plages' => [], 'message' => ''];
-    foreach ($etats as $c => $p) $r['plages'][(string)$c] = ($p['complete'] || $p['n'] + ($retenues[(string)$c] ?? 0) >= $p['maximum']) ? 'complet' : 'libre';
+    foreach ($etats as $c => $p) $r['plages'][(string)$c] = $p['complete'] ? 'complet' : 'libre';
     if (!in_array('libre', $r['plages'], true)) $r['message'] = jour_complet_texte($date);
     return $r;
 }

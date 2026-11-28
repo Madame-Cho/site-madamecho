@@ -114,7 +114,7 @@ function lien_refus(array $k): string {
 /** Le bouton « Payer en ligne » peut-il partir avec la confirmation de cette commande ? */
 function paiement_propose(array $k): bool { return paiement_temps(1) && lien_refus($k) === ''; }
 /** Les lignes d'un lien du temps 1 : une par gâteau (prix TTC et TVA de la fiche) si leur somme fait le montant dû ; sinon une seule
- *  ligne « Commande MC-… » au taux de TVA le plus présent (un prix final convenu après une proposition). */
+ *  ligne « Commande MC-… » par taux de TVA, au prorata des gâteaux (un prix final convenu après une proposition). */
 function lien_lignes(array $k, int $montant): array {
     $tva = tva_produits();
     $items = []; $somme = 0; $parTaux = [];
@@ -128,10 +128,17 @@ function lien_lignes(array $k, int $montant): array {
         $somme += $prix * $q;
     }
     if ($items && $somme === $montant && ($k['perso'] ?? '') === '') return $items;
+    // Prix final différent de la somme des gâteaux : une ligne par taux de TVA, au prorata des gâteaux (audit n° 11, C11-10), jamais
+    // tout au taux le plus présent ; un seul taux (ou rien de calculable) : une seule ligne
     arsort($parTaux);
-    $t = $parTaux ? (int)array_key_first($parTaux) : 55;
-    return [['title' => 'Commande ' . $k['reference'] . ' · Madame Cho', 'quantity' => 1, 'unit_price' => ['value' => montant_qonto($montant), 'currency' => 'EUR'],
-             'vat_rate' => tva_qonto($t), 'type' => 'good']];
+    $ligne = fn(int $v, int $t, string $suffixe): array => ['title' => 'Commande ' . $k['reference'] . ' · Madame Cho' . $suffixe, 'quantity' => 1,
+                                                            'unit_price' => ['value' => montant_qonto($v), 'currency' => 'EUR'], 'vat_rate' => tva_qonto($t), 'type' => 'good'];
+    if (count($parTaux) > 1) {
+        $total = array_sum($parTaux); $reste = $montant; $i = 0; $parts = [];
+        foreach ($parTaux as $t => $v) { $part = ++$i === count($parTaux) ? $reste : (int)round($montant * $v / $total); $reste -= $part; $parts[(int)$t] = $part; }
+        if (min($parts) >= 1) return array_map(fn($t) => $ligne($parts[$t], $t, ' (TVA ' . str_replace('.', ',', tva_qonto($t)) . ' %)'), array_keys($parts));
+    }
+    return [$ligne($montant, $parTaux ? (int)array_key_first($parTaux) : 55, '')];
 }
 /** Crée un lien chez Qonto pour ces lignes ; vérifie que Qonto annonce bien le montant attendu (sinon le lien est désactivé aussitôt).
  *  Renvoie [identifiant, adresse, échéance] ; rien n'est écrit dans la base ici. */
@@ -158,16 +165,39 @@ function lien_garder(int $commande, string $qid, string $url, int $montant, stri
       [$commande, $qid, $url, $montant, $origine, $now, $par ?? (auteur() ?: 'système'), $expire, $retenue, $suivi, $now]);
     return lien((int)db()->lastInsertId());
 }
-/** Le lien du temps 1 pour cette commande : l'ouvert s'il est du bon montant, sinon un neuf (l'ancien est désactivé d'abord, FR-006). */
+/** Un seul lien créé à la fois (deux onglets ou deux appareils qui envoient la même confirmation : audit n° 11, C11-02). */
+function liens_verrou() {
+    $v = fopen(gestion_dossier() . '/liens.verrou', 'c');
+    if ($v === false || !flock($v, LOCK_EX)) throw new \RuntimeException('verrou des liens de paiement indisponible');
+    return $v;
+}
+/**
+ * Le lien du temps 1 pour cette commande, sous verrou et sur la commande relue : l'ouvert s'il est du bon montant, sinon un neuf ; tout
+ * autre lien encore ouvert est désactivé d'abord (FR-006), pour qu'il n'y en ait jamais deux. Si un ancien lien se révèle payé pendant
+ * sa désactivation, aucun nouveau lien n'est créé (audit n° 11, C11-01). Un refus lève une \DomainException (phrase pour Youngmi).
+ */
 function lien_pour_commande(array $k): array {
-    $du = montant_du($k);
-    $o = lien_ouvert((int)$k['id']);
-    if ($o && (int)$o['montant'] === $du && $o['origine'] === 'gestion') return $o;
-    if ($o) lien_desactiver($o, 'nouveau lien pour un autre montant');
-    [$qid, $url, $expire] = qonto_lien_nouveau(lien_lignes($k, $du), $du);
-    $l = lien_garder((int)$k['id'], $qid, $url, $du, 'gestion', $expire);
-    evenement('paiement_lien', 'Lien de paiement en ligne créé : ' . euros($du), ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']], '', 'open');
-    return $l;
+    $verrou = liens_verrou();
+    try {
+        $k = commande((int)$k['id']) ?? $k;
+        if (($r = lien_refus($k)) !== '') throw new \DomainException($r);
+        $du = montant_du($k);
+        $garde = null;
+        foreach (lignes("SELECT * FROM liens_paiement WHERE commande_id = ? AND etat IN ('open', 'processing') AND paiement_qonto_id IS NULL ORDER BY id DESC", [(int)$k['id']]) as $o) {
+            if ($o['etat'] === 'processing') throw new \DomainException('le client est en train de payer avec le lien déjà envoyé : attendez quelques minutes');
+            if ($garde === null && (int)$o['montant'] === $du && $o['origine'] === 'gestion') { $garde = $o; continue; }
+            lien_desactiver($o, 'nouveau lien pour un autre montant');
+        }
+        if (lien_paye((int)$k['id'])) throw new \DomainException('un paiement en ligne est déjà arrivé');
+        if ($garde) return $garde;
+        [$qid, $url, $expire] = qonto_lien_nouveau(lien_lignes($k, $du), $du);
+        $l = lien_garder((int)$k['id'], $qid, $url, $du, 'gestion', $expire);
+        evenement('paiement_lien', 'Lien de paiement en ligne créé : ' . euros($du), ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']], '', 'open');
+        return $l;
+    } finally {
+        flock($verrou, LOCK_UN);
+        fclose($verrou);
+    }
 }
 /** Désactive un lien ouvert chez Qonto (il ne permet plus de payer) et le note annulé. Lève une erreur si Qonto ne répond pas : le lien
  *  reste alors ouvert dans la gestion, et Youngmi peut réessayer depuis la commande. */
@@ -191,20 +221,23 @@ function lien_desactiver(array $l, string $raison, ?string $auteur = null): void
  *  (FR-005, FR-006). Appelé par commande_statut, commande_paiement et commande_modifier ; jamais bloquant. */
 function paiement_commande_changee(int $id): void {
     if (!gestion_base_existante()) return;
-    $o = lien_ouvert($id);
-    $k = $o ? commande($id) : null;
-    if (!$o || !$k) return;
-    $raison = match (true) {
-        in_array($k['paiement'], ['paye', 'rembourse'], true) => 'commande payée autrement',
-        in_array($k['statut'], ['annulee', 'remise', 'sans_suite'], true) => 'commande ' . mb_strtolower(STATUTS[$k['statut']]),
-        $o['origine'] === 'gestion' && montant_du($k) !== (int)$o['montant'] => 'prix changé',
-        default => '',
-    };
-    if ($raison === '') return;
-    try { lien_desactiver($o, $raison); }
-    catch (\Throwable $e) {
-        error_log('madamecho gestion paiement : lien ' . $o['id'] . ' non désactivé : ' . $e->getMessage());
-        evenement('paiement_lien', 'Lien de paiement en ligne à annuler (' . $raison . ') : Qonto n\'a pas répondu, réessayez depuis la commande', ['commande' => $id, 'client' => (int)$k['client_id']], '', '', 'système');
+    $ouverts = lignes("SELECT * FROM liens_paiement WHERE commande_id = ? AND etat IN ('open', 'processing') AND paiement_qonto_id IS NULL", [$id]);
+    $k = $ouverts ? commande($id) : null;
+    if (!$k) return;
+    foreach ($ouverts as $o) {
+        // Le prix compte aussi pour un lien du site (audit n° 11, C11-01) : un lien d'un autre montant ne doit plus pouvoir être payé
+        $raison = match (true) {
+            in_array($k['paiement'], ['paye', 'rembourse'], true) => 'commande payée autrement',
+            in_array($k['statut'], ['annulee', 'remise', 'sans_suite'], true) => 'commande ' . mb_strtolower(STATUTS[$k['statut']]),
+            montant_du($k) !== (int)$o['montant'] => 'prix changé',
+            default => '',
+        };
+        if ($raison === '') continue;
+        try { lien_desactiver($o, $raison); }
+        catch (\Throwable $e) {
+            error_log('madamecho gestion paiement : lien ' . $o['id'] . ' non désactivé : ' . $e->getMessage());
+            evenement('paiement_lien', 'Lien de paiement en ligne à annuler (' . $raison . ') : Qonto n\'a pas répondu, réessayez depuis la commande', ['commande' => $id, 'client' => (int)$k['client_id']], '', '', 'système');
+        }
     }
 }
 
@@ -250,16 +283,20 @@ function paiement_constater(array $l, array $p): bool {
     $paye_le = date_qonto($p['paid_at'] ?? '') ?: maintenant();
     $moyen = (string)($p['payment_method'] ?? '');
     $moyen = isset(PAIEMENT_MOYENS_QONTO[$moyen]) ? $moyen : '';
-    $email = mb_strtolower(trim((string)($p['debitor_email'] ?? '')));
-    if (!email_valide($email) || mb_strlen($email) > 120) $email = '';
+    // L'adresse du payeur n'est pas gardée : la commande a déjà l'email du client (audit n° 11, C11-13, minimisation)
     $now = maintenant();
+    $suite = '';   // après la transaction : 'payee' (commande du site confirmée), 'verifier' (à regarder avant de préparer), '' (rien de plus)
     $pdo = db();
     $pdo->beginTransaction();
     try {
-        $bon = $montant === (int)$l['montant'];
-        $n = q("UPDATE liens_paiement SET etat = 'paid', paiement_qonto_id = ?, paye_le = ?, moyen_detail = ?, payeur_email = ?, paye_montant = ?, frais_estimes = ?,
+        // Bon montant : celui du lien ET celui que la commande vaut encore (prix changé après l'envoi du lien : audit n° 11, C11-01)
+        $k0 = commande((int)$l['commande_id']);
+        $ferme = $k0 && ($k0['paiement'] === 'paye' || $k0['statut'] === 'annulee' || !empty($k0['efface_le']));
+        $attendu = $k0 ? ($l['origine'] === 'site' ? montant_commande($k0) : montant_du($k0)) : null;
+        $bon = $montant === (int)$l['montant'] && ($ferme || $attendu === null || $montant === $attendu);
+        $n = q("UPDATE liens_paiement SET etat = 'paid', paiement_qonto_id = ?, paye_le = ?, moyen_detail = ?, payeur_email = '', paye_montant = ?, frais_estimes = ?,
                 recu_envoye_le = ?, recu_etat = ?, maj_le = ? WHERE id = ? AND paiement_qonto_id IS NULL",
-               [$pid, $paye_le, $moyen, $email, $montant, $montant !== null ? paiement_frais_estimes($montant) : null, $bon ? $now : null, $bon ? 'reserve' : 'a_verifier', $now, (int)$l['id']])->rowCount();
+               [$pid, $paye_le, $moyen, $montant, $montant !== null ? paiement_frais_estimes($montant) : null, $bon ? $now : null, $bon ? 'reserve' : 'a_verifier', $now, (int)$l['id']])->rowCount();
         if ($n === 0) { $pdo->commit(); return false; }   // déjà constaté par un autre chemin
         q("DELETE FROM retenues WHERE commande_id = ?", [(int)$l['commande_id']]);
         $k = commande((int)$l['commande_id']);
@@ -267,17 +304,23 @@ function paiement_constater(array $l, array $p): bool {
         $liens = ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']];
         $detail = euros((int)$montant) . ($moyen !== '' ? ' par ' . PAIEMENT_MOYENS_QONTO[$moyen] : '') . ', le ' . date_fr($paye_le, 'heure');
         if (!$bon) {
-            probleme_ajouter($k, 'Paiement en ligne à vérifier : Qonto annonce ' . ($montant === null ? 'un montant illisible' : euros($montant)) . ' au lieu de ' . euros((int)$l['montant']) . '. Rien n\'a été noté payé : regardez le paiement dans Mollie, puis notez le paiement à la main.');
-            evenement('probleme', 'Paiement en ligne à vérifier : montant différent de celui du lien', $liens, '', '1', 'système');
+            $pourquoi = $montant === (int)$l['montant']
+                ? 'Paiement en ligne à vérifier : ' . euros((int)$montant) . ' reçus avec un lien créé avant un changement de prix ; la commande vaut maintenant ' . euros((int)$attendu) . '.'
+                : 'Paiement en ligne à vérifier : Qonto annonce ' . ($montant === null ? 'un montant illisible' : euros($montant)) . ' au lieu de ' . euros((int)$l['montant']) . '.';
+            probleme_ajouter($k, $pourquoi . ' Rien n\'a été noté payé ni confirmé : regardez le paiement dans Mollie, appelez le client si besoin, puis notez le paiement à la main.');
+            evenement('probleme', 'Paiement en ligne à vérifier : montant différent de celui de la commande', $liens, '', '1', 'système');
             $pdo->commit();
+            try { mail_interne_paiement((int)$k['id'], 'verifier', $pourquoi); } catch (\Throwable $e) { error_log('madamecho gestion paiement : mail interne non envoyé'); }
             return true;
         }
-        if ($k['paiement'] === 'paye' || $k['statut'] === 'annulee' || !empty($k['efface_le'])) {
+        if ($ferme) {
             // Payée deux fois (en ligne et au retrait), ou payée après l'annulation : rien n'est écrasé, la commande est signalée
             $note = $k['statut'] === 'annulee' ? 'Payée en ligne après son annulation (' . $detail . ') : à rembourser en entier dans Mollie.'
                                               : 'Payée deux fois : en ligne (' . $detail . ') et ' . mb_strtolower(MOYENS[$k['moyen']] ?? 'autrement') . ' : ' . euros((int)$montant) . ' à rembourser au client dans Mollie.';
             probleme_ajouter($k, $note);
             evenement('probleme', $note, $liens, '', '1', 'système');
+            $suite = 'verifier';
+            $pourquoi = $note;
         } else {
             q("UPDATE commandes SET paiement = 'paye', moyen = 'en_ligne', paiement_par = ?, paiement_le = ?, qonto_ref = ?, qonto_le = ?, qonto_par = ?, maj_le = ? WHERE id = ?",
               [PAIEMENT_PAR, $paye_le, $pid, $now, PAIEMENT_PAR, $now, (int)$k['id']]);
@@ -286,6 +329,7 @@ function paiement_constater(array $l, array $p): bool {
                 // Temps 2 : la commande de la carte payée est confirmée sans Youngmi (décision du 27/11/2026), avec sa plage
                 q("UPDATE commandes SET statut = 'confirmee', dernier_echange = ?, maj_le = ? WHERE id = ?", [$now, $now, (int)$k['id']]);
                 evenement('statut', 'Confirmée : payée en ligne sur le site', $liens, $k['statut'], 'confirmee', 'site');
+                $suite = 'payee';
                 $av = plage_avertissement(commande((int)$k['id']) ?? $k);
                 if ($av !== '') {   // payée après la fin de la retenue, sur une plage devenue complète : acceptée, signalée
                     probleme_ajouter(commande((int)$k['id']) ?? $k, 'Payée en ligne sur une plage devenue complète entre-temps. ' . $av . ' Appelez le client si besoin.');
@@ -300,12 +344,11 @@ function paiement_constater(array $l, array $p): bool {
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
     }
-    // Après la transaction : le reçu (une seule fois, réservé ci-dessus), et au temps 2 le mail interne « Nouvelle commande payée »
-    if ($bon) {
-        try { recu_envoyer((int)$l['id'], 'système'); } catch (\Throwable $e) { error_log('madamecho gestion paiement : reçu non envoyé : ' . $e->getMessage()); }
-        if ($l['origine'] === 'site') {
-            try { mail_interne_paiement((int)$l['commande_id'], 'payee'); } catch (\Throwable $e) { error_log('madamecho gestion paiement : mail interne non envoyé'); }
-        }
+    // Après la transaction : le reçu (une seule fois, réservé ci-dessus) ; à Madame Cho, « Commande payée en ligne » seulement pour une
+    // commande du site vraiment confirmée par ce paiement, sinon « à vérifier, ne pas préparer » (audit n° 11, C11-03)
+    try { recu_envoyer((int)$l['id'], 'système'); } catch (\Throwable $e) { error_log('madamecho gestion paiement : reçu non envoyé : ' . $e->getMessage()); }
+    if ($suite !== '') {
+        try { mail_interne_paiement((int)$l['commande_id'], $suite, $pourquoi ?? ''); } catch (\Throwable $e) { error_log('madamecho gestion paiement : mail interne non envoyé'); }
     }
     return true;
 }
@@ -318,15 +361,21 @@ function recu_details(array $l): array {
 }
 /** Envoie le reçu d'un paiement constaté (tout seul, ou au toucher de Youngmi sur « Renvoyer le reçu ») : signé DKIM, copie à contact@,
  *  dans la même conversation que les autres mails de la commande, rangé dans les Échanges. Au temps 2, il vaut confirmation.
- *  Renvoie 'envoye', 'sans_email', 'echec' ou 'sans'. */
+ *  Renvoie 'envoye', 'sans_email', 'echec', 'doublon' (déjà en cours d'envoi) ou 'sans'. */
 function recu_envoyer(int $lienId, string $auteur): string {
     $l = lien($lienId);
     if (!$l || $l['paiement_qonto_id'] === null || $l['recu_etat'] === 'a_verifier') return 'sans';
     $k = commande((int)$l['commande_id']);
     if (!$k) return 'sans';
+    // Le reçu est « pris » avant l'envoi : l'envoi automatique et « Renvoyer le reçu » ne partent jamais ensemble (audit n° 11, C11-07) ;
+    // un reçu resté « pris » plus de 15 minutes est signalé par la tâche planifiée
+    $avant = $auteur === 'système' ? ['reserve'] : ['reserve', 'envoye', 'echec', 'sans_email'];
+    if (q("UPDATE liens_paiement SET recu_etat = 'envoi', maj_le = ? WHERE id = ? AND recu_etat IN (" . implode(', ', array_fill(0, count($avant), '?')) . ")",
+          array_merge([maintenant(), $lienId], $avant))->rowCount() === 0) return 'doublon';
     if (!email_valide((string)$k['client_email'])) { q("UPDATE liens_paiement SET recu_etat = 'sans_email' WHERE id = ?", [$lienId]); return 'sans_email'; }
     $d = recu_details($l);
-    $d['confirme'] = $d['confirme'] && $k['statut'] === 'confirmee';   // payée sur le site mais pas confirmée (annulée entre-temps) : un simple reçu
+    // « Confirmée » seulement si c'est ce paiement qui a confirmé la commande du site ; sinon (annulée, payée deux fois, à vérifier) un simple reçu
+    $d['confirme'] = $d['confirme'] && $k['statut'] === 'confirmee' && $k['paiement'] === 'paye' && $k['moyen'] === 'en_ligne' && (string)$k['qonto_ref'] === (string)$l['paiement_qonto_id'];
     $m = mail_commande($k, 'paiement', ['paiement' => $d]);
     $mid = envoyer_email_client((string)$k['client_email'], $m['sujet'], $m['corps'], $m['html'], mail_refs((int)$k['id']), true);
     $liens = ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']];
@@ -386,13 +435,19 @@ function commander_et_payer(array $d): array {
             $somme += $prix;
         }
         if ($somme !== (int)$d['total']) return ['ok' => false, 'message' => 'Le paiement en ligne n\'est pas possible pour ce panier : envoyez votre demande sans payer.'];
+        if (val("SELECT 1 FROM commandes WHERE reference = ?", [(string)$d['ref']])) return ['ok' => false, 'message' => 'Le paiement en ligne n\'a pas pu commencer : réessayez dans un instant.'];   // C11-02
         try { [$qid, $url, $expire] = qonto_lien_nouveau($items, $somme); }
         catch (\Throwable $e) {
             error_log('madamecho formulaire : lien de paiement non créé (' . $e->getMessage() . ')');
             return ['ok' => false, 'message' => 'Le paiement en ligne ne répond pas pour le moment, et rien n\'a été débité : envoyez votre demande sans payer, Madame Cho vous répond sous 24 heures.'];
         }
-        $id = enregistrer_demande($d + ['paiement' => true]);
-        if ($id <= 0) throw new \RuntimeException('commande non enregistrée');
+        try {
+            $id = enregistrer_demande($d + ['paiement' => true]);
+            if ($id <= 0) throw new \RuntimeException('commande non enregistrée');
+        } catch (\Throwable $e) {   // le lien créé ne doit pas rester payable sans commande (audit n° 11, C11-02)
+            try { qonto_ecrire((string)paiement_org(), 'PATCH', 'v2/payment_links/' . $qid . '/deactivate', null, 10); } catch (\Throwable) {}
+            throw $e;
+        }
         $jusqua = date('Y-m-d H:i:s', time() + paiement_retenue_minutes() * 60);
         $suivi = bin2hex(random_bytes(16));
         $pdo = db();
@@ -400,7 +455,8 @@ function commander_et_payer(array $d): array {
         try {
             q("INSERT OR REPLACE INTO retenues (commande_id, jour, plage, jusqua) VALUES (?, ?, ?, ?)", [$id, (string)$d['date'], (string)$d['plage'], $jusqua]);
             lien_garder($id, $qid, $url, $somme, 'site', $expire, $jusqua, $suivi, 'site');
-            evenement('paiement_lien', 'Le client paie en ligne sur le site (' . euros($somme) . ') : place retenue jusqu\'à ' . substr($jusqua, 11, 5), ['commande' => $id, 'client' => (int)val("SELECT client_id FROM commandes WHERE id = ?", [$id])], '', 'open', 'site');
+            // Ce que le client a accepté, gardé avec la commande (audit n° 11, C11-12) : la case des conditions de commande, cochée, et le total
+            evenement('paiement_lien', 'Le client a accepté les conditions de commande et paie en ligne sur le site (' . euros($somme) . ') : place retenue jusqu\'à ' . substr($jusqua, 11, 5), ['commande' => $id, 'client' => (int)val("SELECT client_id FROM commandes WHERE id = ?", [$id])], '', 'open', 'site');
             $pdo->commit();
         } catch (\Throwable $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
@@ -438,15 +494,25 @@ function paiement_non_abouti(array $l, string $pourquoi, bool $desactiver = true
     if ($k['statut'] === 'demande') demande_sans_paiement((int)$k['id'], $pourquoi);
     return true;
 }
+/** Qonto ne répond pas, ou le paiement est en cours : la place reste retenue 10 minutes de plus, au plus trois heures après la commande
+ *  (audit n° 11, C11-04) ; ensuite, un paiement qui arrive quand même est accepté et signalé (« Plage dépassée »). */
+function retenue_prolonger(array $l): void {
+    if (strtotime((string)$l['cree_le']) < time() - 3 * 3600) return;
+    q("UPDATE retenues SET jusqua = ? WHERE commande_id = ?", [date('Y-m-d H:i:s', time() + 600), (int)$l['commande_id']]);
+}
 /** Les retenues échues : chaque lien est relu (un paiement arrivé est constaté), sinon désactivé et la commande devient une demande. */
 function paiement_retenues_echues(): void {
     foreach (lignes("SELECT l.* FROM retenues r JOIN liens_paiement l ON l.commande_id = r.commande_id AND l.origine = 'site' AND l.paiement_qonto_id IS NULL
                      WHERE r.jusqua <= ? ORDER BY r.jusqua LIMIT 20", [maintenant()]) as $l) {
         try {
             $l = lien_relire($l, true) ?? $l;
-            if ($l['paiement_qonto_id'] !== null || $l['etat'] === 'processing') continue;   // payé, ou paiement en cours : on attend
-            paiement_non_abouti($l, 'délai de paiement dépassé');
-        } catch (\Throwable $e) { error_log('madamecho gestion paiement : retenue ' . $l['commande_id'] . ' : ' . $e->getMessage()); }
+            if ($l['paiement_qonto_id'] !== null) continue;   // payé : constaté par la relecture
+            if ($l['etat'] === 'processing') { retenue_prolonger($l); continue; }   // paiement en cours : on attend, la place reste prise
+            if (!paiement_non_abouti($l, 'délai de paiement dépassé')) retenue_prolonger($l);
+        } catch (\Throwable $e) {
+            retenue_prolonger($l);
+            error_log('madamecho gestion paiement : retenue ' . $l['commande_id'] . ' : ' . $e->getMessage());
+        }
     }
     // Une retenue sans lien (lien jamais gardé) ne retient rien longtemps
     q("DELETE FROM retenues WHERE jusqua <= ? AND commande_id NOT IN (SELECT commande_id FROM liens_paiement WHERE paiement_qonto_id IS NULL AND etat IN ('open', 'processing'))", [date('Y-m-d H:i:s', time() - 3600)]);
@@ -465,8 +531,13 @@ function paiement_suivi(string $jeton, bool $sansPayer = false): array {
             $l = lien((int)$l['id']) ?? $l;
         }
     } catch (\Throwable $e) { error_log('madamecho formulaire : suivi du paiement : ' . $e->getMessage()); }
-    if ($l['paiement_qonto_id'] !== null && $l['recu_etat'] !== 'a_verifier')
-        return ['etat' => 'paye', 'message' => 'Paiement reçu : votre commande est confirmée. Un mail de confirmation, qui vaut reçu, vous a été envoyé.'];
+    if ($l['paiement_qonto_id'] !== null) {
+        $k = commande((int)$l['commande_id']);
+        if ($l['recu_etat'] !== 'a_verifier' && $k && $k['statut'] === 'confirmee' && $k['paiement'] === 'paye' && $k['moyen'] === 'en_ligne')
+            return ['etat' => 'paye', 'message' => 'Paiement reçu : votre commande est confirmée. Un mail de confirmation, qui vaut reçu, vous a été envoyé.'];
+        // Payé, mais pas confirmé (montant à vérifier, commande annulée entre-temps) : jamais « confirmée », jamais « rien n'a été débité »
+        return ['etat' => 'verifier', 'message' => 'Votre paiement est bien arrivé. Madame Cho doit le vérifier avant de confirmer votre commande : elle vous écrit très vite. Ne payez pas une deuxième fois.'];
+    }
     if (in_array($l['etat'], ['open', 'processing'], true))
         return ['etat' => 'attente'] + ($sansPayer ? ['message' => 'Votre paiement est en cours : attendez quelques instants avant de changer d\'avis.'] : []);
     return ['etat' => 'non_abouti', 'message' => $sansPayer ? 'Votre demande est envoyée, sans paiement : Madame Cho vous répond sous 24 heures. Vous paierez au retrait.'
@@ -483,6 +554,9 @@ function mail_interne_paiement(int $id, string $quoi, string $pourquoi = ''): bo
     if ($quoi === 'payee') {
         $sujet = 'Commande payée en ligne ' . $k['reference'] . ' : ' . $nom . ', retrait le ' . date('d/m', (int)strtotime((string)$k['retrait_date']));
         $tete = 'Nouvelle commande de la carte, payée en ligne sur le site madamecho.com : elle est déjà confirmée, sa place est prise dans la plage, et le client a reçu tout seul la confirmation qui vaut reçu. Rien à répondre : préparez-la.';
+    } elseif ($quoi === 'verifier') {
+        $sujet = 'Paiement en ligne à vérifier ' . $k['reference'] . ' : ' . $nom;
+        $tete = 'Un paiement en ligne est arrivé pour cette commande, mais il est à vérifier avant tout : ' . $pourquoi . ' Ne préparez pas la commande avant d\'avoir regardé le cadre « Paiement en ligne » de la commande.';
     } else {
         $sujet = 'Demande ' . $k['reference'] . ' : ' . $nom . ', retrait le ' . ($k['retrait_date'] ? date('d/m', (int)strtotime((string)$k['retrait_date'])) : '?') . ' (paiement en ligne non abouti)';
         $tete = 'Nouvelle demande reçue par le site madamecho.com. Le client avait choisi de payer en ligne, mais le paiement n\'a pas abouti (' . $pourquoi . ') : rien n\'a été débité. C\'est une demande ordinaire, à traiter comme les autres (proposition, puis confirmation).';
@@ -492,7 +566,11 @@ function mail_interne_paiement(int $id, string $quoi, string $pourquoi = ''): bo
     if ((string)$k['client_tel'] !== '') $t[] = 'Téléphone : ' . $k['client_tel'];
     $t[] = '';
     $t[] = 'Dans la gestion : https://' . GESTION_DOMAINE . '/gestion/?p=commande&ref=' . $k['reference'];
-    $t[] = $quoi === 'payee' ? '관리 화면에서 확인해 주세요. 이미 확정되고 결제된 주문이에요.' : '관리 화면에서 다른 문의처럼 처리해 주세요. 온라인 결제는 되지 않았어요.';
+    $t[] = match ($quoi) {
+        'payee' => '관리 화면에서 확인해 주세요. 이미 확정되고 결제된 주문이에요.',
+        'verifier' => '온라인 결제가 들어왔지만 확인이 필요해요. 관리 화면의 « 온라인 결제 »를 먼저 확인하고, 그 전에는 준비하지 마세요.',
+        default => '관리 화면에서 다른 문의처럼 처리해 주세요. 온라인 결제는 되지 않았어요.',
+    };
     return envoyer_email(GESTION_COMPTE_INITIAL, $sujet, implode("\n", $t));
 }
 
@@ -576,15 +654,22 @@ function paiement_abonner(): void {
     parametre_ecrire('qonto_notification_le', maintenant());
     evenement('reglage', 'Paiement en ligne : abonnement aux notifications de Qonto activé');
 }
-function paiement_desabonner(): void {
+/** Retire l'abonnement aux notifications ; false si Qonto n'a pas confirmé (à retirer alors dans le portail développeurs de Qonto). */
+function paiement_desabonner(): bool {
     $id = (string)parametre('qonto_notification_id', '');
     $org = paiement_org();
+    $fait = true;
     if ($id !== '' && $org !== null) {
         try { qonto_ecrire($org, 'DELETE', 'v2/webhook_subscriptions/' . $id, null, 10); }
-        catch (\Throwable $e) { error_log('madamecho gestion paiement : ancien abonnement non retiré (' . $e->getMessage() . ')'); }
+        catch (\Throwable $e) {
+            $fait = false;
+            error_log('madamecho gestion paiement : ancien abonnement non retiré (' . $e->getMessage() . ')');
+            evenement('reglage', 'Paiement en ligne : Qonto n\'a pas confirmé le retrait de l\'abonnement aux notifications (à retirer dans le portail développeurs de Qonto)');
+        }
     }
     parametre_ecrire('qonto_notification_id', '');
     parametre_ecrire('qonto_notification_secret', '');
+    return $fait;
 }
 
 /* ---------- Paramètres › Paiement en ligne (T022) ---------- */
@@ -608,7 +693,7 @@ function bloc_reglages_paiement(): string {
     $t1 = parametre('paiement_temps1', '0') === '1'; $t2 = parametre('paiement_temps2', '0') === '1';
     [$pc, $fixe] = paiement_bareme();
     $t .= '<h3>' . h('Interrupteurs et réglages') . '</h3>'
-        . (!$pret ? '<p class="aide">' . h('Les interrupteurs n\'ont d\'effet qu\'une fois les trois étapes faites.') . '</p>' : '')
+        . (!$pret ? '<p class="aide">' . h('Les interrupteurs s\'allument une fois les trois étapes faites.') . '</p>' : '')
         . formulaire('paiement_reglages',
             case_a_cocher('temps1', h('Bouton « Payer en ligne » dans la confirmation (commandes de particuliers confirmées)'), $t1)
             . case_a_cocher('temps2', h('« Commander et payer » sur le site (gâteaux de la carte, plage libre)'), $t2)
@@ -619,7 +704,7 @@ function bloc_reglages_paiement(): string {
             . '</div><div class="ligne-champs">'
             . champ('bareme_pc', 'Frais estimés : pourcentage', number_format($pc / 100, 2, ',', ''), ['inputmode' => 'decimal', 'required' => true])
             . champ('bareme_fixe', 'Frais estimés : fixe par paiement (€)', number_format($fixe / 100, 2, ',', ''), ['inputmode' => 'decimal', 'required' => true])
-            . '</div><p class="aide">' . h('Le barème sert seulement à estimer les frais de chaque paiement ; les frais réels se lisent sur les versements de Mollie (Statistiques).') . '</p>'
+            . '</div><p class="aide">' . h('Le barème sert seulement à estimer les frais de chaque paiement ; les frais réels sont sur les relevés de Mollie.') . '</p>'
             . bouton('Enregistrer', 'secondaire'));
     return bloc('Paiement en ligne', $t, '', 'paiement-en-ligne');
 }
@@ -637,11 +722,12 @@ function reglages_paiement_action(string $a): string {
             catch (\Throwable $e) { error_log('madamecho gestion paiement : abonnement : ' . $e->getMessage()); flash('erreur', 'Qonto n\'a pas accepté (' . $e->getMessage() . ') : rien n\'a changé.'); }
             break;
         case 'paiement_desactiver':
-            paiement_desabonner();
+            $retire = paiement_desabonner();
             parametre_ecrire('paiement_temps1', '0');
             parametre_ecrire('paiement_temps2', '0');
             evenement('reglage', 'Paiement en ligne coupé (notifications retirées, interrupteurs éteints)');
-            flash('ok', 'Paiement en ligne coupé. Les liens déjà envoyés restent payables jusqu\'à leur échéance ; la gestion les relit chaque heure.');
+            flash('ok', 'Paiement en ligne coupé. Les liens déjà envoyés restent payables jusqu\'à leur échéance ; la gestion les relit chaque heure et envoie encore leurs reçus.'
+                        . ($retire ? '' : ' Qonto n\'a pas confirmé le retrait des notifications : retirez-les aussi dans le portail développeurs de Qonto.'));
             break;
         case 'paiement_reglages':
             $min = centimes(texte('minimum', 12));
@@ -653,14 +739,16 @@ function reglages_paiement_action(string $a): string {
                 break;
             }
             $avant = [parametre('paiement_temps1', '0'), parametre('paiement_temps2', '0')];
-            $apres = [!empty($_POST['temps1']) ? '1' : '0', !empty($_POST['temps2']) ? '1' : '0'];
+            // Pas d'interrupteur allumé d'avance : il n'agirait d'un coup qu'à l'activation (audit n° 11, C11-08)
+            $pret = paiement_pret();
+            $apres = [$pret && !empty($_POST['temps1']) ? '1' : '0', $pret && !empty($_POST['temps2']) ? '1' : '0'];
             parametre_ecrire('paiement_temps1', $apres[0]);
             parametre_ecrire('paiement_temps2', $apres[1]);
             parametre_ecrire('paiement_minimum', (string)$min);
             parametre_ecrire('paiement_retenue_minutes', (string)$ret);
             parametre_ecrire('paiement_bareme', $pc . ',' . $fixe);
             if ($avant !== $apres) evenement('reglage', 'Paiement en ligne : bouton de la confirmation ' . ($apres[0] === '1' ? 'allumé' : 'éteint') . ', « Commander et payer » ' . ($apres[1] === '1' ? 'allumé' : 'éteint'));
-            flash('ok', 'Enregistré.' . (($apres[0] === '1' || $apres[1] === '1') && !paiement_pret() ? ' Les interrupteurs agiront une fois les trois étapes faites.' : ''));
+            flash('ok', 'Enregistré.' . ((!empty($_POST['temps1']) || !empty($_POST['temps2'])) && !$pret ? ' Les interrupteurs restent éteints tant que les trois étapes ne sont pas faites.' : ''));
             break;
     }
     return 'paiement-en-ligne';
@@ -676,28 +764,49 @@ function paiement_tache(): array {
     foreach (lignes("SELECT * FROM liens_paiement WHERE etat IN ('open', 'processing') AND paiement_qonto_id IS NULL AND maj_le < ? ORDER BY maj_le LIMIT 50", [date('Y-m-d H:i:s', time() - 600)]) as $l) {
         try { lien_relire($l, true); $cr['relus']++; } catch (\Throwable $e) { $cr['erreurs']++; error_log('madamecho gestion paiement : lien ' . $l['id'] . ' non relu : ' . $e->getMessage()); }
     }
-    // Les liens des commandes disparues (corbeille vidée) : 40 jours après, plus rien ne les garde
-    q("DELETE FROM liens_paiement WHERE commande_id NOT IN (SELECT id FROM commandes) AND cree_le < ?", [date('Y-m-d H:i:s', time() - 40 * 86400)]);
+    // Un reçu resté « pris » plus de 15 minutes (arrêt en plein envoi) : signalé sur la commande, à vérifier puis renvoyer (C11-07)
+    foreach (lignes("SELECT * FROM liens_paiement WHERE paiement_qonto_id IS NOT NULL AND recu_etat IN ('reserve', 'envoi') AND maj_le < ?", [date('Y-m-d H:i:s', time() - 900)]) as $l) {
+        if (q("UPDATE liens_paiement SET recu_etat = 'echec' WHERE id = ? AND recu_etat IN ('reserve', 'envoi')", [(int)$l['id']])->rowCount() === 0) continue;
+        if ($k = commande((int)$l['commande_id'])) {
+            probleme_ajouter($k, 'Reçu du paiement en ligne pas confirmé : regardez dans les Échanges s\'il est parti, sinon touchez « Envoyer le reçu » dans « Paiement en ligne ».');
+            evenement('paiement_en_ligne', 'Reçu du paiement en ligne pas parti : à renvoyer depuis la commande', ['commande' => (int)$k['id'], 'client' => (int)$k['client_id']], '', '', 'système');
+        }
+    }
+    // Les liens non payés des commandes disparues (corbeille vidée) : 40 jours après, plus rien ne les garde ; un lien payé reste toujours
+    q("DELETE FROM liens_paiement WHERE commande_id NOT IN (SELECT id FROM commandes) AND paiement_qonto_id IS NULL AND cree_le < ?", [date('Y-m-d H:i:s', time() - 40 * 86400)]);
     return $cr;
 }
 
 /* ---------- Rembourser ---------- */
-/** Une commande payée en ligne puis annulée (ou payée deux fois) : à rembourser en entier par Youngmi dans Mollie (FR-016 à FR-018). */
+/** Les paiements en ligne d'une commande à rendre en entier au client, chacun (FR-016 à FR-018 ; audit n° 11, C11-05) : tous si elle
+ *  est annulée ou payée autrement ; si elle est payée en ligne, tous sauf celui qui l'a réglée. Un paiement « à vérifier » n'y est pas :
+ *  il se regarde d'abord dans Mollie (problème signalé sur la commande). */
+function liens_a_rembourser(array $k): array {
+    if (!gestion_base_existante() || ($k['paiement'] ?? '') === 'rembourse') return [];
+    $payes = lignes("SELECT * FROM liens_paiement WHERE commande_id = ? AND paiement_qonto_id IS NOT NULL AND rembourse_le IS NULL AND recu_etat <> 'a_verifier' ORDER BY id", [(int)$k['id']]);
+    if (!$payes) return [];
+    if (($k['statut'] ?? '') === 'annulee' || (($k['paiement'] ?? '') === 'paye' && ($k['moyen'] ?? '') !== 'en_ligne')) return $payes;
+    if (($k['paiement'] ?? '') === 'paye' && ($k['moyen'] ?? '') === 'en_ligne')
+        return array_values(array_filter($payes, fn($l) => (string)$l['paiement_qonto_id'] !== (string)($k['qonto_ref'] ?? '')));
+    return [];
+}
+/** La commande est-elle payée par un paiement en ligne constaté (pas noté à la main) ? Son paiement ne se change plus à la main. */
+function paye_en_ligne(array $k): bool {
+    return ($k['paiement'] ?? '') === 'paye' && ($k['moyen'] ?? '') === 'en_ligne' && (string)($k['qonto_ref'] ?? '') !== '' && gestion_base_existante()
+        && (bool)val("SELECT 1 FROM liens_paiement WHERE commande_id = ? AND paiement_qonto_id = ?", [(int)$k['id'], (string)$k['qonto_ref']]);
+}
 function a_rembourser(array $k): int {
-    if (($k['paiement'] ?? '') === 'rembourse') return 0;
-    $l = lien_paye((int)$k['id']);
-    if (!$l || $l['rembourse_le'] !== null || $l['recu_etat'] === 'a_verifier') return 0;
-    $double = $k['moyen'] !== 'en_ligne' && $k['paiement'] === 'paye';
-    return ($k['statut'] === 'annulee' || $double) ? (int)($l['paye_montant'] ?? $l['montant']) : 0;
+    return array_sum(array_map(fn($l) => (int)($l['paye_montant'] ?? $l['montant']), liens_a_rembourser($k)));
 }
 function rembourse_noter(int $id): string {
     $k = commande($id);
-    $l = $k ? lien_paye($id) : null;
-    if (!$k || !$l || !a_rembourser($k)) return 'Rien à rembourser sur cette commande : rechargez la page.';
+    $ls = $k ? liens_a_rembourser($k) : [];
+    if (!$k || !$ls) return 'Rien à rembourser sur cette commande : rechargez la page.';
     $now = maintenant();
-    q("UPDATE liens_paiement SET rembourse_le = ?, rembourse_par = ? WHERE id = ?", [$now, auteur(), (int)$l['id']]);
+    foreach ($ls as $l) q("UPDATE liens_paiement SET rembourse_le = ?, rembourse_par = ? WHERE id = ? AND rembourse_le IS NULL", [$now, auteur(), (int)$l['id']]);
+    $total = array_sum(array_map(fn($l) => (int)($l['paye_montant'] ?? $l['montant']), $ls));
     if ($k['statut'] === 'annulee') commande_paiement($id, 'rembourse', 'en_ligne', null, (string)$k['facture']);
-    evenement('paiement_en_ligne', 'Paiement en ligne remboursé dans Mollie : ' . euros((int)($l['paye_montant'] ?? $l['montant'])), ['commande' => $id, 'client' => (int)$k['client_id']], '', 'rembourse');
+    evenement('paiement_en_ligne', 'Paiement en ligne remboursé dans Mollie : ' . euros($total), ['commande' => $id, 'client' => (int)$k['client_id']], '', 'rembourse');
     return '';
 }
 
@@ -713,6 +822,7 @@ function bloc_paiement_en_ligne(array $k): string {
     if ($retenue) $t .= '<p class="erreur">' . icone('alerte') . ' ' . h('Le client est en train de payer en ligne sur le site (place retenue jusqu\'à ' . substr((string)$retenue['jusqua'], 11, 5) . ') : attendez avant de lui répondre.') . '</p>';
     if (($r = a_rembourser($k)) > 0) {
         $t .= '<div class="a-rembourser"><p><b>' . h('À rembourser : ' . euros($r)) . '</b> ' . h($k['statut'] === 'annulee' ? '(payée en ligne puis annulée : Madame Cho ne garde rien).' : '(payée deux fois).') . '</p>'
+            . (count(liens_a_rembourser($k)) > 1 ? '<p class="aide">' . h('Plusieurs paiements en ligne : remboursez chacun d\'eux dans Mollie.') . '</p>' : '')
             . '<p class="aide">' . h(PAIEMENT_ETAPES_MOLLIE) . '</p>'
             . formulaire('rembourse_noter', bouton('J\'ai remboursé dans Mollie', 'principal'), ['data-confirmer' => 'Le remboursement de ' . euros($r) . ' est bien fait dans Mollie ?']) . '</div>';
     }
@@ -730,12 +840,12 @@ function bloc_paiement_en_ligne(array $k): string {
                 'envoye' => 'Reçu envoyé le ' . date_fr((string)$l['recu_envoye_le'], 'heure') . '.',
                 'echec' => 'Le reçu n\'est pas parti (souci d\'envoi).',
                 'sans_email' => 'Pas d\'email pour ce client : pas de reçu automatique.',
-                'a_verifier' => '',
+                'a_verifier' => 'Pas de reçu tant que le paiement n\'est pas vérifié.',
                 default => 'Reçu en cours d\'envoi.',
             };
             if ($recu !== '') $suite .= '<p class="petit">' . h($recu) . '</p>';
-            if (in_array($l['recu_etat'], ['envoye', 'echec', 'reserve'], true) && email_valide((string)$k['client_email']))
-                $suite .= formulaire('recu_renvoyer', '<input type="hidden" name="lien" value="' . (int)$l['id'] . '">' . bouton($l['recu_etat'] === 'echec' ? 'Envoyer le reçu' : 'Renvoyer le reçu', 'secondaire'),
+            if (in_array($l['recu_etat'], ['envoye', 'echec', 'reserve', 'sans_email'], true) && email_valide((string)$k['client_email']))
+                $suite .= formulaire('recu_renvoyer', '<input type="hidden" name="lien" value="' . (int)$l['id'] . '">' . bouton(in_array($l['recu_etat'], ['echec', 'sans_email'], true) ? 'Envoyer le reçu' : 'Renvoyer le reçu', 'secondaire'),
                                      ['data-confirmer' => 'Envoyer le reçu à ' . $k['client_email'] . ' ?']);
         } elseif (in_array($l['etat'], ['open', 'processing'], true)) {
             $suite .= '<p class="petit" translate="no" id="lien-' . (int)$l['id'] . '">' . h($l['url']) . '</p>'
@@ -774,11 +884,17 @@ function paiement_action(string $a, array $k): array {
                 $l = $lien();
                 if (!$l || $l['paiement_qonto_id'] === null) return ['erreur', 'Pas de paiement en ligne à reprendre : rechargez la page.'];
                 $r = recu_envoyer((int)$l['id'], auteur());
-                return $r === 'envoye' ? ['ok', 'Reçu envoyé au client. Une copie arrive dans contact@madamecho.com.'] : ['erreur', 'Le reçu n\'est pas parti : réessayez dans un moment.'];
+                return match ($r) {
+                    'envoye' => ['ok', 'Reçu envoyé au client. Une copie arrive dans contact@madamecho.com.'],
+                    'doublon' => ['ok', 'Le reçu est déjà en cours d\'envoi.'],
+                    default => ['erreur', 'Le reçu n\'est pas parti : réessayez dans un moment.'],
+                };
             case 'rembourse_noter':
                 $e = rembourse_noter($id);
                 return $e === '' ? ['ok', 'Remboursement noté.'] : ['erreur', $e];
         }
+    } catch (\DomainException $e) {
+        return ['erreur', 'Pas de nouveau lien : ' . $e->getMessage() . '.'];
     } catch (\Throwable $e) {
         error_log('madamecho gestion paiement : ' . $a . ' : ' . $e->getMessage());
         return ['erreur', 'Qonto n\'a pas répondu (' . $e->getMessage() . ') : rien n\'a changé, réessayez dans un moment.'];
@@ -817,13 +933,15 @@ function paiement_statistiques(): string {
     }
     return bloc('Paiements en ligne', '<div class="defile"><table class="tableau"><thead><tr><th>Mois</th><th class="nombre">Paiements</th><th class="nombre">Payé TTC</th>'
         . '<th class="nombre">Frais estimés</th><th class="nombre">Remboursé</th><th class="nombre">Versé par Mollie</th></tr></thead><tbody>' . $rows . '</tbody></table></div>'
-        . '<p class="aide">' . h('Mollie verse les paiements quelques jours plus tard, frais déduits : la différence entre « Payé » et « Versé » donne les frais réels, à quelques jours près. Les versements viennent de la dernière lecture de Qonto.') . '</p>', '', 'paiements-en-ligne');
+        . '<p class="aide">' . h('Mollie verse les paiements quelques jours plus tard, frais déduits. L\'écart entre « Payé » et « Versé » n\'est pas exactement les frais : il compte aussi les remboursements, les versements à cheval sur deux mois et les sommes que Mollie garde en réserve. Les frais réels sont sur les relevés de Mollie. Les versements viennent de la dernière lecture de Qonto.') . '</p>', '', 'paiements-en-ligne');
 }
 /** Pour l'assistant (FR-025) : où en est le paiement en ligne, en clair, sans adresse de lien ni donnée du payeur. */
 function paiement_en_ligne_texte(array $k): string {
     if (!gestion_base_existante()) return '';
-    $l = liens_de((int)$k['id'])[0] ?? null;
+    $l = lien_paye((int)$k['id']) ?? (liens_de((int)$k['id'])[0] ?? null);
     if (!$l) return '';
+    if ($l['paiement_qonto_id'] !== null && $l['recu_etat'] === 'a_verifier')
+        return 'paiement en ligne reçu à vérifier (' . euros((int)($l['paye_montant'] ?? $l['montant'])) . ', montant différent de la commande) : rien n\'est noté payé ni confirmé, Youngmi le vérifie dans Mollie';
     if ($l['paiement_qonto_id'] !== null) return 'payée en ligne le ' . date_fr((string)$l['paye_le'], 'heure') . ' (' . euros((int)($l['paye_montant'] ?? $l['montant'])) . ')' . (($r = a_rembourser($k)) ? ', à rembourser ' . euros($r) . ' dans Mollie' : '') . ($l['rembourse_le'] !== null ? ', remboursée' : '');
     return 'lien de paiement ' . mb_strtolower(PAIEMENT_ETATS[$l['etat']] ?? $l['etat']) . ' (' . euros((int)$l['montant']) . ')';
 }

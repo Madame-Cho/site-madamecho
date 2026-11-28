@@ -896,7 +896,8 @@ function plage_de_commande(array $k): ?string {
 function commande_prend_place(array $k): bool {
     return ($k['mode'] ?? 'retrait') === 'retrait' && in_array($k['statut'] ?? '', ['confirmee', 'remise'], true) && empty($k['efface_le']);
 }
-/** Les plages d'un jour : bornes, maximum, réglage, indispo qui la touche, commandes qui y comptent, et si elle est complète.
+/** Les plages d'un jour : bornes, maximum, réglage, indispo qui la touche, commandes qui y comptent, places retenues par un client en
+ *  train de payer sur le site (en_paiement), et si elle est complète (les places en paiement comptent : audit n° 11, C11-04).
  *  $sauf : une commande à ne pas compter (celle qu'on est en train de confirmer ou de modifier). */
 function plages_du_jour(string $jour, int $sauf = 0): array {
     $defaut = plage_maximum_defaut();
@@ -909,7 +910,7 @@ function plages_du_jour(string $jour, int $sauf = 0): array {
         $indispo = null;
         foreach ($indispos as $i) if (indispo_journee($i) || ($i['heure_debut'] < $a && $i['heure_fin'] > $de)) { $indispo = $i; break; }
         $r[$c] = ['code' => (string)$c, 'debut' => $de, 'fin' => $a, 'maximum' => ($reg && $reg['maximum'] !== null) ? (int)$reg['maximum'] : $defaut,
-                  'particulier' => $reg && $reg['maximum'] !== null, 'fermee' => $reg && (int)$reg['fermee'] === 1, 'indispo' => $indispo, 'commandes' => [], 'n' => 0];
+                  'particulier' => $reg && $reg['maximum'] !== null, 'fermee' => $reg && (int)$reg['fermee'] === 1, 'indispo' => $indispo, 'commandes' => [], 'n' => 0, 'en_paiement' => 0];
     }
     $ks = lignes("SELECT id, retrait_moment, retrait_heure, statut, mode, efface_le FROM commandes WHERE retrait_date = ? AND mode = 'retrait'
                   AND statut IN ('confirmee', 'remise') AND efface_le IS NULL AND id <> ?", [$jour, $sauf]);
@@ -919,7 +920,9 @@ function plages_du_jour(string $jour, int $sauf = 0): array {
         $r[$p]['commandes'][] = (int)$k['id'];
         $r[$p]['n']++;
     }
-    foreach ($r as $c => $p) $r[$c]['complete'] = $p['fermee'] || $p['indispo'] !== null || $p['n'] >= $p['maximum'];
+    if (function_exists(__NAMESPACE__ . '\\retenues_du_jour'))
+        foreach (retenues_du_jour($jour, $sauf) as $c => $n) if (isset($r[$c])) $r[$c]['en_paiement'] = $n;
+    foreach ($r as $c => $p) $r[$c]['complete'] = $p['fermee'] || $p['indispo'] !== null || $p['n'] + $p['en_paiement'] >= $p['maximum'];
     return $r;
 }
 /** « entre 10 h 30 et 12 h » : une plage dans une phrase (mails, rappels). */
@@ -941,6 +944,8 @@ function plage_avertissement(array $k): string {
     $quoi = date_fr((string)$k['retrait_date'], 'jour') . ', ' . PLAGES_COURTES[$p];
     if ($etat['fermee']) return 'Vous avez fermé cette plage (' . $quoi . ').';
     if ($etat['n'] >= $etat['maximum']) return 'Cette plage est déjà complète : ' . $etat['n'] . ' sur ' . $etat['maximum'] . ' (' . $quoi . ').';
+    if ($etat['n'] + $etat['en_paiement'] >= $etat['maximum'])
+        return 'Cette plage est complète avec ' . ($etat['en_paiement'] > 1 ? 'les ' . $etat['en_paiement'] . ' clients' : 'le client') . ' en train de payer en ligne sur le site : ' . $etat['n'] . ' sur ' . $etat['maximum'] . ' + ' . $etat['en_paiement'] . ' en paiement (' . $quoi . ').';
     return '';
 }
 /** Le code de plage à enregistrer avec une heure précise : celui de la plage qui contient l'heure, pour que l'Agenda, les places et
@@ -1539,8 +1544,11 @@ const CORBEILLE_JOURS = 30;
 /** Supprimer une commande d'essai ou saisie par erreur (test d'Olivier du 07/11/2026, FR-002) : jamais une vente facturée, rapprochée avec Qonto ou notée payée. */
 function commande_supprimable(array $k): bool {
     // Ni facture, ni rapprochement Qonto, ni argent noté reçu : une vraie vente payée (même en espèces) ne disparaît jamais (FR-002)
+    // ni paiement en ligne arrivé, même « à vérifier » (audit n° 11, C11-05)
     return trim((string)($k['facture'] ?? '')) === '' && trim((string)($k['qonto_ref'] ?? '')) === ''
-        && !in_array((string)($k['paiement'] ?? ''), ['paye', 'acompte_recu'], true);
+        && !in_array((string)($k['paiement'] ?? ''), ['paye', 'acompte_recu'], true)
+        && !(!empty($k['id']) && val("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'liens_paiement'")
+             && val("SELECT 1 FROM liens_paiement WHERE commande_id = ? AND paiement_qonto_id IS NOT NULL", [(int)$k['id']]));
 }
 function commande_supprimer(int $id, string $motif): void {
     $k = commande($id);

@@ -380,7 +380,18 @@ function reglages_qonto_action(string $a): string {
             flash('ok', 'Application Qonto enregistrée. Reliez maintenant chaque espace.');
             break;
         case 'qonto_retirer':
-            qonto_retirer(texte('org', 80));
+            // L'espace du paiement en ligne ne se retire pas tant que des liens peuvent encore être payés : la gestion ne pourrait plus
+            // constater ces paiements (audit n° 11, C11-08)
+            $org = texte('org', 80);
+            if ($org !== '' && $org === (string)paiement_org()) {
+                $ouverts = (int)val("SELECT COUNT(*) FROM liens_paiement WHERE etat IN ('open', 'processing') AND paiement_qonto_id IS NULL");
+                if ($ouverts > 0 || (string)parametre('qonto_notification_id', '') !== '') {
+                    flash('erreur', 'Cet espace sert au paiement en ligne : touchez d\'abord « Couper le paiement en ligne » (Paramètres › Paiement en ligne)'
+                        . ($ouverts ? ', puis annulez les ' . $ouverts . ' lien(s) encore ouvert(s), depuis le cadre « Paiement en ligne » de chaque commande' : '') . '. Rien n\'a été retiré.');
+                    break;
+                }
+            }
+            qonto_retirer($org);
             flash('ok', 'Espace Qonto retiré. Pour couper aussi l\'accès côté Qonto : appli Qonto › Paramètres › Intégrations.');
             break;
         case 'qonto_essai':
