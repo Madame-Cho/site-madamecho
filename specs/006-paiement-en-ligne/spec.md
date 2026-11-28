@@ -77,8 +77,8 @@ n'oublie pas le mail avec le reçu. »
 Une cliente a accepté la proposition de Youngmi. Youngmi confirme la commande et lui envoie la
 confirmation : le mail rappelle la commande, le jour et la plage de retrait, le prix, et porte un
 bouton « Payer en ligne ». La cliente touche le bouton, paie par carte sur une page sécurisée, et
-revient sur une page de Madame Cho qui lui dit merci. Elle peut aussi ne rien faire et payer au
-retrait, comme aujourd'hui.
+reçoit aussitôt le mail de reçu. Elle peut aussi ne rien faire et payer au retrait, comme
+aujourd'hui.
 
 **Why this priority**: c'est la demande ; cela marche pour la carte comme pour le sur demande, sans
 risque de devoir rembourser une date que Youngmi ne peut pas tenir.
@@ -93,12 +93,13 @@ confirmer une commande, envoyer la confirmation, payer, vérifier la commande et
    et la phrase « Vous pouvez aussi payer au retrait, par carte, en espèces ou par virement ».
 2. **Given** le mail reçu, **When** la cliente touche le bouton, **Then** elle arrive sur une page
    de paiement au nom de Madame Cho qui montre la référence de la commande et le montant exact.
-3. **Given** le paiement réussi, **When** elle revient sur le site, **Then** une page lui confirme
-   le paiement et lui rappelle le jour, la plage et le lieu du retrait.
+3. **Given** le paiement réussi, **When** il est constaté, **Then** elle reçoit le mail de reçu
+   qui rappelle le jour, la plage et le lieu du retrait (Qonto ne renvoie pas le client sur le site
+   après le paiement : research R2).
 4. **Given** le paiement réussi, **When** Youngmi ouvre la gestion, **Then** la commande est notée
    « Payé · En ligne », avec une pastille « Nouveau », sans qu'elle ait rien saisi.
-5. **Given** un paiement abandonné ou refusé, **When** la cliente revient sur le site, **Then** on
-   lui dit que rien n'a été débité, qu'elle peut réessayer avec le même bouton ou payer au retrait.
+5. **Given** un paiement abandonné ou refusé, **When** la cliente rouvre le mail, **Then** le même
+   bouton permet de réessayer, et le mail rappelle qu'elle peut aussi payer au retrait.
 6. **Given** une commande déjà payée, **When** quelqu'un rouvre le lien, **Then** aucun second
    paiement n'est possible.
 
@@ -297,8 +298,9 @@ des données fictives.
 - **FR-020**: La page Confidentialité et le registre des traitements DOIVENT décrire le paiement en
   ligne : Qonto et Mollie, données transmises (référence, montant, nom et email si demandés),
   aucune donnée de carte chez Madame Cho.
-- **FR-021**: Les pages de retour (paiement réussi, paiement non abouti) DOIVENT exister en
-  français, sans donnée personnelle dans l'adresse, et ne jamais être indexées.
+- **FR-021**: Au temps 2, la page du formulaire DOIT suivre le paiement ouvert dans un autre onglet
+  et dire « Paiement reçu » ou « Paiement non abouti », en français, sans donnée personnelle dans
+  l'adresse ni dans les réponses du serveur ; elle n'est jamais indexée.
 - **FR-022**: Le manuel de la gestion et « Quoi de neuf » DOIVENT expliquer la fonction en français
   et en coréen.
 
