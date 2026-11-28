@@ -23,6 +23,7 @@ require_once __DIR__ . '/inc/assistant.php';
 require_once __DIR__ . '/inc/assistant-donnees.php';
 require_once __DIR__ . '/inc/qonto.php';
 require_once __DIR__ . '/inc/rapprochement.php';   // le rapprochement automatique avec Qonto (13/11/2026)
+require_once __DIR__ . '/inc/paiement.php';        // le paiement en ligne par les liens de Qonto (spécification 006)
 require_once __DIR__ . '/inc/pages-connexion.php';
 require_once __DIR__ . '/inc/pages-commandes.php';
 require_once __DIR__ . '/inc/pages-agenda.php';
@@ -33,7 +34,7 @@ require_once __DIR__ . '/inc/obligations.php';
 require_once __DIR__ . '/inc/pages-obligations.php';
 require_once __DIR__ . '/inc/pages-hygiene.php';
 
-$pages_publiques = ['connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'mot-de-passe' => 'page_mot_de_passe', 'deconnexion' => 'page_deconnexion', 'miroir' => 'page_miroir', 'langue' => 'page_langue', 'rdv' => 'page_rdv', 'reponses' => 'page_reponses', 'photos' => 'page_photos', 'nouvelles' => 'page_nouvelles'];   // nouvelles : vérifie elle-même la session, sans la prolonger
+$pages_publiques = ['qonto-notification' => 'page_qonto_notification', 'connexion' => 'page_connexion', 'oubli' => 'page_oubli', 'mot-de-passe' => 'page_mot_de_passe', 'deconnexion' => 'page_deconnexion', 'miroir' => 'page_miroir', 'langue' => 'page_langue', 'rdv' => 'page_rdv', 'reponses' => 'page_reponses', 'photos' => 'page_photos', 'nouvelles' => 'page_nouvelles'];   // nouvelles : vérifie elle-même la session, sans la prolonger
 $pages = ['accueil' => 'page_accueil', 'commandes' => 'page_commandes', 'commande' => 'page_commande', 'commande-edition' => 'page_commande_edition', 'apercu-mail' => 'page_apercu_mail', 'corriger' => 'page_corriger',
           'agenda' => 'page_agenda', 'production' => 'page_production', 'clients' => 'page_clients', 'client' => 'page_client', 'client-edition' => 'page_client_edition', 'photo-client' => 'page_photo_client', 'releve' => 'page_releve',
           'produits' => 'page_produits', 'produit' => 'page_produit', 'ingredients' => 'page_ingredients', 'ingredient' => 'page_ingredient',

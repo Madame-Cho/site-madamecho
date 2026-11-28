@@ -502,6 +502,10 @@ function avec_acompte(array $k): bool {
 function paiements_proposes(array $k): array {
     return avec_acompte($k) ? PAIEMENTS : array_diff_key(PAIEMENTS, ['acompte_demande' => 1, 'acompte_recu' => 1]);
 }
+/** Les moyens qu'on peut choisir à la main : « En ligne » seulement s'il est déjà celui de la commande (seul Qonto le constate, spécification 006). */
+function moyens_proposes(array $k): array {
+    return MOYENS_SAISIE + (($k['moyen'] ?? '') === 'en_ligne' ? ['en_ligne' => MOYENS['en_ligne']] : []);
+}
 /* ---------- Les mails aux clients (demandes d'Olivier du 07/11/2026) ----------
  * Tout se fait dans la gestion, Gmail en secours : chaque mail part de la gestion au toucher de Youngmi sur « Envoyer »
  * (jamais par une IA, R-01), une copie arrive dans contact@, « Ouvrir dans ma messagerie » reste possible, et ce que Youngmi
@@ -512,7 +516,10 @@ function paiements_proposes(array $k): array {
  * Un seul objet par commande (« Votre commande MC-… · Madame Cho ») et les en-têtes de réponse : chez le client, une seule conversation.
  * Aperçu dans la gestion ($apercu) : sa politique de sécurité refuse les styles en ligne, chaque style devient une classe « m-… »
  * dont les règles sont dans gestion.css (bloc « Aperçu du mail », généré par apercu_mail_css() : à refaire si un style change). */
-const MAIL_TYPES = ['recu' => 'Commande reçue', 'proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'rappel' => 'Rappel', 'message' => 'Message', 'avis' => 'Merci'];
+const MAIL_TYPES = ['recu' => 'Commande reçue', 'proposition' => 'Proposition', 'confirmation' => 'Commande confirmée', 'rappel' => 'Rappel', 'message' => 'Message', 'avis' => 'Merci', 'paiement' => 'Paiement reçu'];
+// Paiement en ligne (spécification 006) : la phrase sous le bouton « Payer en ligne » ; le paiement reste facultatif (FR-003)
+const MAIL_PAYER_PHRASE = 'Paiement sécurisé par Qonto, par carte bancaire ou Apple Pay. Vous pouvez aussi payer au retrait, par carte ou en espèces, ou par virement.';
+const MAIL_MENTIONS = 'MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, TVA FR37941761918, 4 avenue du Château, 92190 Meudon.';
 const MAIL_F = "font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;";
 function sujet_commande(array $k): string { return 'Votre commande ' . $k['reference'] . ' · Madame Cho'; }
 /** L'objet d'un message libre : celui de la commande par défaut ; la référence MC-… y reste toujours (pour retrouver la conversation). */
@@ -653,17 +660,25 @@ function mail_cadre(string $titre, string $etiquette, string $contenu, \Closure 
     return '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . h($titre) . '</title></head>'
         . '<body style="margin:0;padding:0;background:#ffffff">' . $corps . '</body></html>';
 }
+/** Un bouton de mail (« Payer en ligne ») : un tableau, comme les clients de messagerie l'attendent. */
+function mail_bouton(string $href, string $texte, \Closure $S): string {
+    return '<table role="presentation" cellpadding="0" cellspacing="0"' . $S('margin-top:20px') . '><tr><td' . $S('background:#3B1D0E;border-radius:6px') . '>'
+         . '<a href="' . h($href) . '"' . $S(MAIL_F . 'display:inline-block;padding:13px 24px;font-size:16px;line-height:20px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:6px') . '>' . h($texte) . '</a></td></tr></table>';
+}
 /**
- * Un mail au client, en trois morceaux : objet, texte, HTML (ou l'aperçu). $type : proposition, confirmation, message, avis.
- * $o : accueil (phrase d'accueil ou, pour un message, le message), mot (petit mot), sujet (message), lien (avis), apercu.
+ * Un mail au client, en trois morceaux : objet, texte, HTML (ou l'aperçu). $type : proposition, confirmation, message, avis, paiement (reçu).
+ * $o : accueil (phrase d'accueil ou, pour un message, le message), mot (petit mot), sujet (message), lien (avis), apercu,
+ * paiement_url (confirmation : le lien du bouton « Payer en ligne »), paiement (reçu : montant, le, moyen, ref, confirme).
  */
 function mail_commande(array $k, string $type, array $o = []): array {
     $apercu = !empty($o['apercu']);
     $S = mail_style($apercu);
     $p = mail_paragraphe($S);
-    $accueil = trim((string)($o['accueil'] ?? '')) !== '' ? (string)$o['accueil'] : accueil_mail($k, $type);
+    $recuConfirme = $type === 'paiement' && !empty($o['paiement']['confirme']);   // au temps 2, le reçu vaut confirmation
+    $accueil = trim((string)($o['accueil'] ?? '')) !== '' ? (string)$o['accueil']
+             : ($recuConfirme ? salutation($k) . "\n\nMerci pour votre commande " . $k['reference'] . ' : elle est confirmée et payée. Je vous attends :' : accueil_mail($k, $type));
     $mot = trim((string)($o['mot'] ?? ''));
-    $etiquette = MAIL_TYPES[$type] . ($type === 'avis' ? '' : ' · ' . $k['reference']);
+    $etiquette = ($recuConfirme ? 'Commande confirmée et payée' : MAIL_TYPES[$type]) . ($type === 'avis' ? '' : ' · ' . $k['reference']);
     $sujet = $type === 'message' ? sujet_libre($k, (string)($o['sujet'] ?? '')) : sujet_commande($k);
     $lien = fn(string $href, string $t) => '<a href="' . h($href) . '"' . $S('color:#6E2A10;font-weight:bold') . '>' . $t . '</a>';
     $html = texte_mail_html($accueil, $p, 'margin-bottom:14px');
@@ -696,11 +711,37 @@ function mail_commande(array $k, string $type, array $o = []): array {
         case 'confirmation':
             $agenda = rdv_client_possible($k) ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:20px') : '';
             $regle = ($k['paiement'] === 'paye' ? '' : 'Paiement par carte, virement ou espèces. ') . annulation_phrase($k);
-            $html .= mail_recap($k, $type, $S) . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '') . $agenda
+            // Le bouton « Payer en ligne » du montant dû (spécification 006, temps 1) : le vrai lien à l'envoi, un exemple dans l'aperçu
+            $payer = (string)($o['paiement_url'] ?? '');
+            if ($payer === '' && $apercu && ($o['payer'] ?? true) && function_exists(__NAMESPACE__ . '\\paiement_propose') && paiement_propose($k)) $payer = '#';
+            $payerHtml = ''; $payerTexte = '';
+            if ($payer !== '' && $k['paiement'] !== 'paye') {
+                $du = function_exists(__NAMESPACE__ . '\\montant_du') ? montant_du($k) : montant_commande($k);
+                $payerHtml = mail_bouton($payer, 'Payer en ligne · ' . euros($du), $S) . $p(h(MAIL_PAYER_PHRASE), 'margin-top:10px');
+                $payerTexte = "\nPayer en ligne (" . euros($du) . "), par carte bancaire ou Apple Pay : " . $payer . "\n" . MAIL_PAYER_PHRASE . "\n";
+                $regle = annulation_phrase($k);
+            }
+            $html .= mail_recap($k, $type, $S) . $payerHtml . ($mot !== '' ? texte_mail_html($mot, $p, 'margin-top:20px') : '') . $agenda
                    . $p(h($regle), 'margin-top:14px');
             $texte .= lignes_email($k) . "\n\n" . total_email($k) . "\n"
-                    . retrait_email($k) . "\n" . ($mot !== '' ? "\n" . $mot . "\n" : '') . rdv_client_texte($k)
+                    . retrait_email($k) . "\n" . $payerTexte . ($mot !== '' ? "\n" . $mot . "\n" : '') . rdv_client_texte($k)
                     . "\n" . $regle . "\n\n";
+            break;
+        case 'paiement':
+            // Le reçu d'un paiement en ligne, parti tout seul (exception à R-01 décidée le 27/11/2026, inc/paiement.php) ; au temps 2,
+            // il vaut aussi confirmation. Pas une facture : la facture suit la spécification 003, sur demande du client.
+            $d = (array)($o['paiement'] ?? []) + ['montant' => montant_commande($k), 'le' => maintenant(), 'moyen' => 'carte bancaire', 'ref' => '', 'confirme' => false];
+            $kp = ['paiement' => 'paye'] + $k;
+            $recu = 'Paiement reçu le ' . date_fr((string)$d['le'], 'heure') . ' : ' . euros((int)$d['montant']) . ' TTC, par ' . $d['moyen'] . ', paiement en ligne sécurisé par Qonto'
+                  . ((string)$d['ref'] !== '' ? ' (référence du paiement : ' . $d['ref'] . ')' : '') . '.';
+            $pas = 'Ce mail tient lieu de reçu ; ce n\'est pas une facture. Besoin d\'une facture ? Répondez simplement à ce mail.';
+            $annul = 'Un empêchement ? Prévenez-nous au plus tôt, en répondant à ce mail ou au 06 61 31 17 79 : une commande payée en ligne puis annulée est remboursée en entier.';
+            $agenda = $recuConfirme && rdv_client_possible($k) ? $p('Si vous le souhaitez, ajoutez le retrait à votre agenda : ' . $lien(lien_rdv_client($k, 'google'), 'Google Agenda') . ' ou ' . $lien(lien_rdv_client($k, 'ics'), 'iPhone, Outlook et autres') . '.', 'margin-top:14px') : '';
+            $html .= mail_recap($kp, 'confirmation', $S) . $p('<b>' . h($recu) . '</b>', 'margin-top:20px') . $agenda . $p(h($pas), 'margin-top:14px') . $p(h($annul), 'margin-top:14px')
+                   . $p(h(MAIL_MENTIONS), 'margin-top:14px;font-size:13px;line-height:19px;color:#736A64');
+            $texte .= lignes_email($k) . "\n\n" . total_email($kp) . "\n" . retrait_email($k) . "\n\n" . $recu . "\n" . ($recuConfirme ? rdv_client_texte($k) : '')
+                    . "\n" . $pas . "\n" . $annul . "\n\n" . MAIL_MENTIONS . "\n\n";
+            $fin = 'À très bientôt,';
             break;
         case 'rappel':
             $empeche = ($k['paiement'] === 'paye' ? '' : 'Paiement par carte, virement ou espèces. ') . 'Un empêchement ? Répondez simplement à ce mail ou appelez le 06 61 31 17 79.';
@@ -790,6 +831,8 @@ function apercu_mail_css(): string {
           'id' => 1, 'acompte' => 100, 'paiement' => 'acompte_recu', 'perso' => 'x', 'besoin' => '', 'prix_final' => 1000, 'client_prenom' => 'A', 'client_nom' => 'B',
           'lignes_tab' => [['q' => 1, 'nom' => 'x', 'libelle' => 'y', 'prix' => 100, 'plaque' => 'z']]];
     foreach (array_keys(MAIL_TYPES) as $t) mail_commande($k, $t, ['accueil' => "a\n\nb", 'mot' => 'c', 'lien' => 'https://g.page/r/x', 'apercu' => true]);
+    mail_commande($k, 'confirmation', ['paiement_url' => '#', 'apercu' => true]);                 // le bouton « Payer en ligne » (spécification 006)
+    mail_commande($k, 'paiement', ['paiement' => ['confirme' => true], 'apercu' => true]);
     $css = '';
     foreach (array_keys($GLOBALS['mc_styles_mail']) as $r) $css .= '.apercu-mail .m-' . substr(md5($r), 0, 8) . '{' . $r . "}\n";
     return $css;

@@ -212,10 +212,13 @@ ETAPES = [
  ("Vous confirmez", "Vous acceptez la proposition par écrit, et Madame Cho confirme votre commande."),
  ("Vous retirez à Meudon", "Au 4 avenue du Château, sur la plage horaire choisie."),
 ]
+# Paiement en ligne (spécification 006) : False tant que Youngmi ne l'a pas allumé dans la gestion ; à passer à True en même temps,
+# pour que la carte pratique et les Questions le disent (les Conditions et la Confidentialité le couvrent déjà, au conditionnel).
+PAIEMENT_EN_LIGNE = False
 PRATIQUE = [
  ("Retrait", "Sur rendez-vous, au 4 avenue du Château, 92190 Meudon, du lundi au samedi de 9 h à 19 h, sur la plage horaire choisie. Pas de livraison. À quelques minutes de Boulogne-Billancourt, d'Issy-les-Moulineaux, de Sèvres, de Chaville et de Clamart."),
  ("Délais", "La veille pour les cookies et la tarte, 2 jours avant pour les autres gâteaux. Annulation sans frais jusqu'à 24 heures avant le début de votre plage de retrait. Pas de retrait le dimanche (sauf cas particulier convenu par téléphone) ni le 24 décembre."),
- ("Paiement", "Au retrait, par carte bancaire, virement ou espèces."),
+ ("Paiement", "Au retrait, par carte bancaire, virement ou espèces" + (", ou en ligne, par carte bancaire ou Apple Pay, quand le site ou Madame Cho vous le propose." if PAIEMENT_EN_LIGNE else ".")),
  ("Conservation", "Indiquée sur la page de chaque gâteau."),
 ]
 
@@ -247,7 +250,9 @@ FAQ = [
  ("Y a-t-il un gâteau vegan ?",
   "Oui, le petit cake vegan au praliné cacahuète, parmi les petits gâteaux du goûter. Les allergènes de chaque gâteau sont indiqués sur sa page."),
  ("Comment payer ?",
-  "Au retrait, par carte bancaire, virement ou espèces : aucun acompte n'est demandé. L'annulation est sans frais jusqu'à 24 heures avant le début de votre plage de retrait. Un empêchement ensuite ? Appelez Madame Cho ou répondez à son message : vous chercherez une solution ensemble."),
+  "Au retrait, par carte bancaire, virement ou espèces : aucun acompte n'est demandé. "
+  + ("Vous pouvez aussi payer en ligne, par carte bancaire ou Apple Pay : sur le site, au moment de commander des gâteaux de la carte, ou avec le bouton « Payer en ligne » du mail qui confirme votre commande. Une commande payée en ligne puis annulée est remboursée en entier. " if PAIEMENT_EN_LIGNE else "")
+  + "L'annulation est sans frais jusqu'à 24 heures avant le début de votre plage de retrait. Un empêchement ensuite ? Appelez Madame Cho ou répondez à son message : vous chercherez une solution ensemble."),
  ("Madame Cho travaille-t-elle pour les entreprises et les restaurants ?",
   "Oui. Madame Cho prépare chaque semaine les desserts de restaurants et de cafés parisiens : tartes, cakes, cookies, brownies et carrés. Pour une réunion, un séminaire ou une fête d'entreprise, elle compose une sélection sucrée, sur devis."),
 ]

@@ -14,7 +14,8 @@ const PASTILLES_JOURS = 30;
 /** Une nouveauté de l'outil reste signalée au plus ce nombre de jours après sa publication. */
 const NOUVEAUTES_JOURS = 21;
 /** Les événements d'une commande qui comptent, et leur couleur ; une création par le site, un mail reçu et un problème ouvert sont rouges. */
-const PASTILLES_TYPES_COMMANDE = ['creation', 'email_recu', 'probleme', 'statut', 'paiement', 'rapprochement', 'modification', 'assistant', 'commentaire', 'email_client', 'avis', 'restauration'];
+const PASTILLES_TYPES_COMMANDE = ['creation', 'email_recu', 'probleme', 'statut', 'paiement', 'rapprochement', 'modification', 'assistant', 'commentaire', 'email_client', 'avis', 'restauration',
+                                  'paiement_en_ligne', 'paiement_non_abouti', 'paiement_lien'];
 /** Ceux d'une fiche client (hors commande). */
 const PASTILLES_TYPES_CLIENT = ['creation', 'modification', 'commentaire', 'fusion', 'avis', 'restauration'];
 
@@ -93,6 +94,11 @@ function pastille_de(array $e, bool $surCommande): ?array {
             'email_client' => ['change', 'Mail envoyé au client'],
             'avis' => ['change', 'Avis Google'],
             'restauration' => ['change', 'Restaurée'],
+            // Paiement en ligne (spécification 006) : rouge pour un reçu pas parti, un paiement non abouti ou un lien que Qonto n'a pas laissé annuler
+            'paiement_en_ligne' => str_starts_with((string)$e['texte'], 'Reçu du paiement en ligne pas parti') ? ['action', 'Reçu pas parti']
+                                 : ['change', (string)$e['nouveau'] === 'rembourse' ? 'Remboursement noté' : 'Payé en ligne'],
+            'paiement_non_abouti' => ['action', 'Paiement non abouti'],
+            'paiement_lien' => (string)$e['nouveau'] === '' ? ['action', 'Lien à annuler'] : ['change', 'Lien de paiement'],
             default => null,
         };
     }
@@ -121,7 +127,8 @@ function pastilles(): array {
     $uid = (int)$u['id'];
     $typesK = "'" . implode("','", PASTILLES_TYPES_COMMANDE) . "'";
     $typesC = "'" . implode("','", PASTILLES_TYPES_CLIENT) . "'";
-    $agir = "(e.type = 'email_recu' OR (e.type = 'creation' AND e.auteur = 'site' AND e.commande_id IS NOT NULL) OR (e.type = 'probleme' AND e.nouveau = '1'))";
+    $agir = "(e.type = 'email_recu' OR (e.type = 'creation' AND e.auteur = 'site' AND e.commande_id IS NOT NULL) OR (e.type = 'probleme' AND e.nouveau = '1')"
+          . " OR e.type = 'paiement_non_abouti' OR (e.type = 'paiement_lien' AND e.nouveau = '') OR (e.type = 'paiement_en_ligne' AND e.texte LIKE 'Reçu du paiement en ligne pas parti%'))";
     $objet = "(e.commande_id IS NULL), COALESCE(e.commande_id, e.client_id)";
     // Une seule requête, sans limite globale : chaque commande ou fiche garde ses 10 derniers changements pour l'affichage, plus ses
     // rouges, et son total (audit n° 5, constat 5). Le « vu » est propre à la personne et ne dépend jamais du repère partagé

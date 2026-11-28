@@ -259,6 +259,11 @@
     if (!form) return;
     var panier = $('[data-panier]'), dateIn = $('[data-date]'), dateAide = $('[data-date-aide]');
     var erreurs = $('[data-erreurs]'), envoyer = $('[data-envoyer]'), perso = $('[data-perso]');
+    // « Commander et payer » (spécification 006, temps 2) : proposé seulement si le site le permet pour le jour choisi (réponse de
+    // « verifier ») et si le panier s'y prête ; le serveur revérifie tout à l'envoi
+    var payerBloc = $('[data-payer]'), payerNon = $('[data-payer-non]'), payerBouton = $('[data-commander-payer]'), payerJour = null;
+    var TEXTE_ENVOYER = 'Envoyer ma demande, sans engagement', TEXTE_SANS_PAYER = 'Envoyer une demande sans payer', texteEnvoyer = TEXTE_ENVOYER;
+    var envoiEnCours = false;
     var plaques = {};
     var racine = '../';
     var lienCarte = ($('.vide a', panier) || { getAttribute: function () { return '../#carte'; } }).getAttribute('href');
@@ -287,7 +292,7 @@
       var on = $('[data-pro]') && $('[data-pro]').checked;
       $('[data-societe]').hidden = !on; $('[data-message-pro]').hidden = !on;
     }
-    if ($('[data-pro]')) $('[data-pro]').addEventListener('change', function () { majPro(); majDate(); });
+    if ($('[data-pro]')) $('[data-pro]').addEventListener('change', function () { majPro(); majDate(); majPayer(); });
     majPro();
 
     function delaiMin(ls) {
@@ -342,6 +347,7 @@
       var d = form.elements.date.value, n = ++numIndispo;
       montrerIndispo('', '');
       majPlages(null);
+      payerJour = null; majPayer();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
       if (estDimanche(d) || d.slice(5) === '12-24') {   // jours fermés connus : aucune plage, comme le dimanche (C10-12)
         majPlages(TOUT_COMPLET);
@@ -361,12 +367,13 @@
           if (!j || !j.ok || !j.plages) { nonVerifie(); return; }
           var retiree = majPlages(j.plages);
           montrerIndispo(d, String(j.message || ''));
+          payerJour = j.payer === true ? { date: d, minimum: Math.max(0, +j.minimum || 0) } : null; majPayer();
           noter(retiree ? 'La plage choisie n’est plus libre ce jour-là : choisissez-en une autre, votre demande est gardée.' : '');
         })
         .catch(nonVerifie);
     }
     dateIn.addEventListener('change', verifierAgenda);
-    plageSel.addEventListener('change', function () { if (plageSel.value) plageSel.removeAttribute('aria-invalid'); });
+    plageSel.addEventListener('change', function () { if (plageSel.value) plageSel.removeAttribute('aria-invalid'); majPayer(); });
     majPlages(null);
 
     var sansStockage = $('[data-sans-stockage]');
@@ -387,7 +394,7 @@
         var v = document.createElement('p'); v.className = 'vide';
         v.textContent = 'Votre demande est vide pour l’instant. ';
         var va = document.createElement('a'); va.href = lienCarte; va.textContent = 'Voir la carte'; v.appendChild(va);
-        panier.appendChild(v); majDate();
+        panier.appendChild(v); majDate(); majPayer();
         if (cleF) panier.focus();
         return;
       }
@@ -431,7 +438,7 @@
       panier.appendChild(s);
       var ms = manques(ls);
       if (ms.length) { var a = document.createElement('p'); a.className = 'avert'; a.textContent = ms.join(' '); panier.appendChild(a); }
-      majDate();
+      majDate(); majPayer();
       if (cleF) {
         var cible = $('[data-f="' + cleF.replace(/"/g, '') + '"]', panier);
         if (!cible && /^retirer\|/.test(cleF)) {   // ligne retirée : le bouton « Retirer » de la ligne qui prend sa place, ou de la dernière
@@ -442,7 +449,7 @@
       }
     }
     rendreDemande = rendre;
-    perso.addEventListener('input', majDate);
+    perso.addEventListener('input', function () { majDate(); majPayer(); });
     form.addEventListener('input', function (e) { if (e.target.removeAttribute) e.target.removeAttribute('aria-invalid'); });
     rendre();
     if (form.elements.date.value) verifierAgenda();   // date remise par le navigateur (retour arrière)
@@ -463,6 +470,37 @@
       if (f.pro && f.pro.checked) t.push('Entreprise\u00a0: ' + f.societe.value.trim() + (f.besoin.value.trim() ? ' · Besoin\u00a0: ' + f.besoin.value.trim() : ''));
       return t.join('\n');
     }
+
+    // Le bloc « Commander et payer » : le récapitulatif (gâteaux, prix TTC, jour et plage, annulation), ou la phrase qui dit pourquoi
+    // le paiement en ligne n'est pas proposé pour ce panier (seulement quand il l'est pour ce jour-là)
+    function totalPanier(ls) { var t = 0; ls.forEach(function (l) { t += prixLigne(l); }); return t; }
+    function payerPossible() { return !!payerBloc && !payerBloc.hidden; }
+    function majPayer() {
+      if (!payerBloc || !envoyer) return;
+      var f = form.elements, ls = lignes(), pourquoi = '';
+      var possible = !!payerJour && payerJour.date === f.date.value;
+      if (possible) {
+        if ((f.pro && f.pro.checked) || f.perso.value.trim() || !ls.length || manques(ls).length)
+          pourquoi = 'Le paiement en ligne est proposé pour les gâteaux de la carte, sans personnalisation au-delà de la plaque. Pour votre demande, Madame Cho vous répond sous 24 heures.';
+        else if (totalPanier(ls) < payerJour.minimum)
+          pourquoi = 'Le paiement en ligne commence à ' + euros(payerJour.minimum) + '\u00a0: envoyez votre demande, vous paierez au retrait.';
+      }
+      var ok = possible && !pourquoi && !!f.plage.value && f.date.value >= dateIn.min;
+      payerBloc.hidden = !ok;
+      if (payerNon) { payerNon.hidden = !pourquoi; payerNon.textContent = pourquoi; }
+      if (ok) {
+        var t = [];
+        ls.forEach(function (l) { var k = cleLigne(l); t.push(l.q + ' × ' + CAT.produits[l.p].nom + ', ' + libelle(l) + '\u00a0: ' + euros(prixLigne(l)) + (plaques[k] && plaques[k].trim() ? ' (plaque\u00a0: «\u00a0' + plaques[k].trim() + '\u00a0»)' : '')); });
+        t.push('Total à payer\u00a0: ' + euros(totalPanier(ls)) + ' TTC');
+        t.push('Retrait\u00a0: ' + dateFr(f.date.value) + ', ' + (CAT.plages[f.plage.value] || '').toLowerCase());
+        t.push('Annulation\u00a0: par écrit ou au 06 61 31 17 79\u00a0; une commande payée en ligne puis annulée est remboursée en entier.');
+        $('[data-payer-recap]').textContent = t.join('\n');
+        if (payerBouton && !envoiEnCours) payerBouton.textContent = 'Commander et payer ' + euros(totalPanier(ls));
+      }
+      texteEnvoyer = ok ? TEXTE_SANS_PAYER : TEXTE_ENVOYER;
+      if (!envoiEnCours) envoyer.textContent = texteEnvoyer;
+    }
+    form.addEventListener('input', function (e) { if (e.target && e.target.closest && e.target.closest('.plaque')) majPayer(); });
 
     function verifier() {
       var f = form.elements, out = [], ls = lignes();
@@ -494,11 +532,88 @@
       return out;
     }
 
-    var envoiEnCours = false;
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
+    /* L'envoi : une demande sans engagement (bouton du formulaire), ou « Commander et payer » (spécification 006) : la commande est
+       enregistrée, la place retenue, et la page de paiement de Qonto s'ouvre dans un nouvel onglet ; cette page suit le paiement. */
+    var boutonsTexte = function () { envoyer.textContent = texteEnvoyer; if (payerBouton) majPayer(); };
+    function rouvrir() { envoiEnCours = false; envoyer.disabled = false; if (payerBouton) payerBouton.disabled = false; boutonsTexte(); }
+    function fini(ref, variante) {
+      var r = $('[data-recu]'), texte = recap(ref);
+      $('[data-ref]').textContent = ref; $('[data-recap]').textContent = texte;
+      var pr = form.elements.prenom, prenom = pr ? pr.value.trim() : ''; if (/^[A-Za-zÀ-ɏㄱ-힝'’ -]{1,40}$/.test(prenom)) $('[data-merci-prenom]').textContent = ' ' + prenom;
+      if (variante && variante.paye) {   // payée en ligne : la commande est confirmée, le mail de confirmation vaut reçu
+        $('[data-recu-etiquette]').textContent = 'Commande confirmée et payée';
+        $('[data-recu-titre]').textContent = ', votre commande est confirmée';
+        $('[data-recu-texte]').textContent = 'Paiement reçu. Un mail de confirmation, qui vaut reçu, part à votre adresse. Madame Cho vous attend ' + (form.elements.date.value ? 'le ' + dateFr(form.elements.date.value) + ', ' + (CAT.plages[form.elements.plage.value] || '').toLowerCase() : 'au jour convenu') + '.';
+        $('[data-recu-suite]').textContent = 'Un empêchement ? Prévenez Madame Cho au plus tôt, en répondant au mail ou au 06 61 31 17 79 : une commande payée en ligne puis annulée est remboursée en entier.';
+      }
+      var msg = $('[data-recu-message]');
+      if (msg && variante && variante.message) { msg.textContent = variante.message; msg.hidden = false; }
+      form.hidden = true; var ch = $('.demande .chapo'); if (ch) ch.hidden = true;
+      var sv = $('[data-suivi]'); if (sv) sv.hidden = true;
+      r.hidden = false; r.focus(); window.scrollTo(0, 0);
+      $('[data-copier]').addEventListener('click', function () {
+        var b = this; copier(texte, function (ok) { b.textContent = ok ? 'Récapitulatif copié' : 'Sélectionnez le texte pour le copier'; });
+      });
+      ecrire([]);
+      try { sessionStorage.removeItem('mc-suivi'); } catch (e) {}
+    }
+    function echec(msg) {
+      rouvrir();
+      erreurs.hidden = false;
+      erreurs.innerHTML = '';
+      erreurs.appendChild(document.createTextNode(msg + ' Votre demande est gardée. Vous pouvez réessayer, appeler le 06 61 31 17 79 ou '));
+      var a = document.createElement('a');
+      a.href = 'mailto:contact@madamecho.com?subject=' + encodeURIComponent('Demande depuis le site') + '&body=' + encodeURIComponent(recap(''));
+      a.textContent = 'l’envoyer par email';
+      erreurs.appendChild(a); erreurs.appendChild(document.createTextNode('.'));
+      erreurs.focus();
+    }
+
+    // Le suivi du paiement : toutes les 5 secondes, 40 minutes au plus ; le jeton seul, sans aucune donnée personnelle
+    var suivi = null, suiviMinuterie = null;
+    function suivre(etatSuivi) {
+      suivi = etatSuivi;
+      try { sessionStorage.setItem('mc-suivi', JSON.stringify(suivi)); } catch (e) {}
+      var sv = $('[data-suivi]');
+      form.hidden = true; var ch = $('.demande .chapo'); if (ch) ch.hidden = true;
+      $('[data-suivi-ref]').textContent = suivi.ref;
+      $('[data-suivi-lien]').href = suivi.url;
+      var j = new Date(suivi.jusqua);
+      $('[data-suivi-delai]').textContent = isNaN(j) ? '' : 'Votre plage est retenue jusqu’à ' + j.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '. Sans paiement d’ici là, votre demande arrive quand même chez Madame Cho, sans paiement.';
+      sv.hidden = false; sv.focus(); window.scrollTo(0, 0);
+      interroger();
+    }
+    function interroger(sansPayer) {
+      clearTimeout(suiviMinuterie);
+      if (!suivi) return;
+      if (!sansPayer && Date.now() - suivi.debut > 40 * 60000) { $('[data-suivi-texte]').textContent = 'Nous n’avons pas encore la réponse de Qonto. Si vous avez payé, le mail de confirmation vous arrivera ; sinon, Madame Cho a reçu votre demande et vous répond sous 24 heures.'; return; }
+      var fd = new FormData(); fd.append(sansPayer ? 'sans_payer' : 'suivi', suivi.suivi);
+      fetch(form.getAttribute('action'), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j && j.etat === 'paye') { if (window._paq) window._paq.push(['trackEvent', 'Demande', 'Payée en ligne']); fini(suivi.ref, { paye: true }); suivi = null; return; }
+          if (j && j.etat === 'non_abouti') { fini(suivi.ref, { message: j.message }); suivi = null; return; }
+          if (j && j.etat === 'inconnu') { fini(suivi.ref, {}); suivi = null; return; }
+          if (sansPayer && j && j.message) $('[data-suivi-texte]').textContent = j.message;
+          suiviMinuterie = setTimeout(interroger, 5000);
+        })
+        .catch(function () { suiviMinuterie = setTimeout(interroger, 10000); });
+    }
+    var sansPayerB = $('[data-sans-payer]');
+    if (sansPayerB) sansPayerB.addEventListener('click', function () { interroger(true); });
+    // Revenu sur la page (onglet rechargé) pendant un paiement : le suivi reprend
+    try {
+      var sv0 = JSON.parse(sessionStorage.getItem('mc-suivi') || 'null');
+      if (sv0 && sv0.suivi && Date.now() - sv0.debut < 40 * 60000) suivre(sv0); else sessionStorage.removeItem('mc-suivi');
+    } catch (e) {}
+
+    function envoyerDemande(payer) {
       if (envoiEnCours) return;
       var errs = verifier();
+      if (payer && !errs.length && !(form.elements.conditions && form.elements.conditions.checked)) {
+        errs.push('Cochez « J’accepte les conditions de commande » pour commander et payer.');
+        if (form.elements.conditions) form.elements.conditions.setAttribute('aria-invalid', 'true');
+      }
       if (errs.length) {
         erreurs.hidden = false; erreurs.textContent = errs.join('\n'); erreurs.focus(); return;
       }
@@ -509,53 +624,51 @@
         if (plaques[cleLigne(l)]) o.plaque = plaques[cleLigne(l)].trim().slice(0, 60);
         return o;
       })));
-      envoiEnCours = true; envoyer.disabled = true; envoyer.textContent = 'Envoi en cours…';
-      function rouvrir() { envoiEnCours = false; envoyer.disabled = false; envoyer.textContent = 'Envoyer ma demande, sans engagement'; }
-      function fini(ref) {
-        var r = $('[data-recu]'), texte = recap(ref);
-        $('[data-ref]').textContent = ref; $('[data-recap]').textContent = texte;
-        var pr = form.elements.prenom, prenom = pr ? pr.value.trim() : ''; if (/^[A-Za-z\u00C0-\u024F\u3131-\uD79D'’ -]{1,40}$/.test(prenom)) $('[data-merci-prenom]').textContent = ' ' + prenom;
-        form.hidden = true; var ch = $('.demande .chapo'); if (ch) ch.hidden = true;
-        r.hidden = false; r.focus(); window.scrollTo(0, 0);
-        $('[data-copier]').addEventListener('click', function () {
-          var b = this; copier(texte, function (ok) { b.textContent = ok ? 'Récapitulatif copié' : 'Sélectionnez le texte pour le copier'; });
-        });
-        ecrire([]);
-      }
-      function echec(msg) {
-        rouvrir();
-        erreurs.hidden = false;
-        erreurs.innerHTML = '';
-        erreurs.appendChild(document.createTextNode(msg + ' Votre demande est gardée. Vous pouvez réessayer, appeler le 06 61 31 17 79 ou '));
-        var a = document.createElement('a');
-        a.href = 'mailto:contact@madamecho.com?subject=' + encodeURIComponent('Demande depuis le site') + '&body=' + encodeURIComponent(recap(''));
-        a.textContent = 'l’envoyer par email';
-        erreurs.appendChild(a); erreurs.appendChild(document.createTextNode('.'));
-        erreurs.focus();
-      }
+      if (payer) donnees.append('payer', '1'); else donnees.delete && donnees.delete('conditions');
+      // L'onglet de paiement s'ouvre tout de suite (sinon le navigateur le bloque), puis reçoit l'adresse de Qonto
+      var onglet = null;
+      if (payer && !APERCU) { try { onglet = window.open('', '_blank'); if (onglet) { onglet.opener = null; onglet.document.title = 'Paiement · Madame Cho'; } } catch (e) { onglet = null; } }
+      var fermer = function () { try { if (onglet) onglet.close(); } catch (e) {} };
+      envoiEnCours = true; envoyer.disabled = true; if (payerBouton) payerBouton.disabled = true;
+      (payer ? payerBouton : envoyer).textContent = payer ? 'Préparation du paiement…' : 'Envoi en cours…';
       if (APERCU) {
-        setTimeout(function () { fini('MC-APERCU'); }, 500);
+        setTimeout(function () { fini('MC-APERCU', payer ? { paye: true } : null); }, 500);
         return;
       }
       var ctrl = window.AbortController ? new AbortController() : null;
-      var minuterie = setTimeout(function () { if (ctrl) ctrl.abort(); }, 20000);
+      var minuterie = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
       fetch(form.getAttribute('action'), { method: 'POST', body: donnees, headers: { 'Accept': 'application/json' }, signal: ctrl ? ctrl.signal : undefined })
         .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
         .then(function (j) {
           clearTimeout(minuterie);
-          if (j && j.ok && j.ref) {
+          if (j && j.ok && j.ref && j.paiement && j.paiement.url) {
+            if (window._paq) window._paq.push(['trackEvent', 'Demande', 'Commander et payer']);
+            ecrire([]);
+            try { if (onglet) onglet.location.href = j.paiement.url; } catch (e) { onglet = null; }
+            envoiEnCours = false;
+            suivre({ ref: j.ref, url: j.paiement.url, suivi: j.paiement.suivi, jusqua: j.paiement.jusqua, debut: Date.now() });
+          }
+          else if (j && j.ok && j.ref) {
+            fermer();
             // Mesure d'audience : la demande envoyée est comptée, sans aucune donnée de la demande (ni référence, ni contenu)
             if (window._paq) window._paq.push(['trackEvent', 'Demande', 'Envoyée']);
-            fini(j.ref);
+            fini(j.ref, j.message ? { message: j.message } : null);
+          }
+          else if (j && j.payer === false) {   // le paiement n'est plus possible : la même demande peut partir sans payer, en un toucher
+            fermer(); payerJour = null; rouvrir();
+            erreurs.hidden = false; erreurs.textContent = (j.message || 'Le paiement en ligne n’est pas possible pour le moment.') + ' Votre demande est gardée : touchez « ' + texteEnvoyer + ' ».';
+            erreurs.focus();
           }
           else if (j && j.indispo) {   // la plage ou le jour vient d'être fermé (ou rempli) dans l'agenda : à changer, comme une erreur de saisie
-            rouvrir(); verifierAgenda();
+            fermer(); rouvrir(); verifierAgenda();
             erreurs.hidden = false; erreurs.textContent = (j.erreurs || [j.indispo]).join('\n'); erreurs.focus();
           }
-          else echec((j && j.erreurs && j.erreurs.length) ? j.erreurs.join(' ') : 'L’envoi n’a pas abouti.');
+          else { fermer(); echec((j && j.erreurs && j.erreurs.length) ? j.erreurs.join(' ') : 'L’envoi n’a pas abouti.'); }
         })
-        .catch(function () { clearTimeout(minuterie); echec('L’envoi n’a pas abouti (connexion interrompue\u00a0?).'); });
-    });
+        .catch(function () { clearTimeout(minuterie); fermer(); echec('L’envoi n’a pas abouti (connexion interrompue ?).'); });
+    }
+    form.addEventListener('submit', function (e) { e.preventDefault(); envoyerDemande(false); });
+    if (payerBouton) payerBouton.addEventListener('click', function () { envoyerDemande(true); });
   }
 
   var rendreDemande = null;

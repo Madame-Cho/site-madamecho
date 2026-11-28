@@ -13,12 +13,14 @@ if (!defined('GESTION_CONTEXTE_SITE')) define('GESTION_CONTEXTE_SITE', true);
 require_once __DIR__ . '/base.php';
 require_once __DIR__ . '/modele.php';
 require_once __DIR__ . '/accuse.php';   // l'accusé de réception au client (09/11/2026)
+require_once __DIR__ . '/paiement.php'; // « Commander et payer » et les places retenues pendant un paiement (spécification 006)
 
 /**
  * $d : ref, prenom, nom, email, telephone, date (AAAA-MM-JJ), plage (code de PLAGES ; « moment » pour une ancienne page), lignes ([p, c, q, prix (total de la ligne), plaque]),
  * perso, pro (bool), societe, besoin, via (facultatif : campagne Matomo de la visite, « qr-code packaging » après un scan du QR code,
  * « instagram bio » par le lien de la page Instagram), depuis (facultatif : le bouton de l'accueil par lequel la demande a commencé, en clair),
- * connu (facultatif : la réponse à « Comment avez-vous connu Madame Cho ? », un code de CONNU_PAR).
+ * connu (facultatif : la réponse à « Comment avez-vous connu Madame Cho ? », un code de CONNU_PAR), paiement (facultatif : true pour une
+ * commande de la carte que le client paie en ligne tout de suite, spécification 006 : notée « paiement en ligne en cours »).
  * Renvoie le numéro interne de la commande (0 : rien d'enregistré).
  * Ne fait rien tant que l'espace n'est pas ouvert, ni avant que l'enregistrement soit activé dans Paramètres (mise en ligne en deux temps).
  */
@@ -52,7 +54,7 @@ function enregistrer_demande(array $d): int {
         $id = commande_creer(['reference' => $d['ref'], 'client_id' => $cid, 'canal' => $canal, 'type' => $type,
                               'retrait_date' => $d['date'], 'retrait_moment' => (string)($d['plage'] ?? $d['moment'] ?? ''), 'lignes' => $lignes,
                               'perso' => (string)$d['perso'], 'besoin' => (string)$d['besoin'], 'recue_le' => $quand, 'connu' => $connu,
-                              'origine' => 'Demande envoyée par le formulaire du site' . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ($insta ? ' après une arrivée par le lien de la page Instagram' : ''))
+                              'origine' => (!empty($d['paiement']) ? 'Commande de la carte passée sur le site, paiement en ligne en cours' : 'Demande envoyée par le formulaire du site') . ($qr ? ' après un scan du QR code' . ($support !== '' ? ' (' . $support . ')' : '') : ($insta ? ' après une arrivée par le lien de la page Instagram' : ''))
                                          . ($depuis !== '' ? ', commencée par ' . $depuis : ''), 'auteur' => 'site']);
         $pdo->commit();
         return $id;
@@ -72,8 +74,9 @@ function plages_pour_demande(string $date): array {
     $libres = ['plages' => array_fill_keys(array_map('strval', array_keys(PLAGES)), 'libre'), 'message' => ''];
     if (!date_valide($date) || !gestion_base_existante()) return $libres;
     $etats = plages_du_jour($date);
+    $retenues = retenues_du_jour($date);   // les places retenues pendant un paiement en ligne comptent pour le site (spécification 006)
     $r = ['plages' => [], 'message' => ''];
-    foreach ($etats as $c => $p) $r['plages'][(string)$c] = $p['complete'] ? 'complet' : 'libre';
+    foreach ($etats as $c => $p) $r['plages'][(string)$c] = ($p['complete'] || $p['n'] + ($retenues[(string)$c] ?? 0) >= $p['maximum']) ? 'complet' : 'libre';
     if (!in_array('libre', $r['plages'], true)) $r['message'] = jour_complet_texte($date);
     return $r;
 }

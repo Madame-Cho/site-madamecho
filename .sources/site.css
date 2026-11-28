@@ -169,6 +169,17 @@ button,input,select,textarea{font:inherit;color:inherit}
 .recu p+p{margin-top:12px}
 .recu .ref{margin-top:16px}
 .recap{white-space:pre-wrap;font:400 14px/1.6 var(--police);background:var(--ivoire);padding:16px;margin:12px 0 0}
+/* Commander et payer (spécification 006) : le récapitulatif, la case des conditions, puis « ou » la demande sans payer */
+.payer{border:1px solid var(--ligne);border-left:4px solid var(--accent);padding:20px;margin-top:24px}
+.payer .sous-titre{margin-top:0}
+.payer .case{margin-top:16px}
+.payer .envoyer{margin-top:16px}
+.ou{display:flex;align-items:center;gap:12px;color:var(--doux);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:24px 0 -4px}
+.ou::before,.ou::after{content:"";flex:1;border-top:1px solid var(--ligne)}
+[data-payer-non]{margin-top:24px}
+.suivi-paiement{margin-top:32px;border:1px solid var(--ligne);border-left:4px solid var(--accent);padding:20px}
+.suivi-paiement p+p{margin-top:12px}
+.recu .avert{color:var(--erreur)}
 .texte-long p{margin-top:10px}
 .texte-long .sous-titre{margin-top:32px}
 .encadre{border:1px solid var(--champ);padding:4px 18px 16px;margin-top:14px;font-size:14px}

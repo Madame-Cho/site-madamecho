@@ -24,6 +24,11 @@ namespace MadameCho\Gestion;
 define('GESTION_QONTO_OAUTH', GESTION_ESSAI && getenv('MC_QONTO') ? rtrim((string)getenv('MC_QONTO'), '/') . '/' : 'https://oauth.qonto.com/');
 define('GESTION_QONTO_API', GESTION_ESSAI && getenv('MC_QONTO') ? rtrim((string)getenv('MC_QONTO'), '/') . '/' : 'https://thirdparty.qonto.com/');
 const GESTION_QONTO_PORTEES = 'organization.read client_invoices.read offline_access';
+// Paiement en ligne (spécification 006) : droits limités aux liens de paiement, par exception à R-24 décidée par Olivier (21/11 et 27/11/2026).
+// Demandés seulement quand Olivier les a ajoutés à l'application dans le portail de Qonto (Paramètres › Paiement en ligne, étape 1) :
+// sans eux, Qonto refuserait toute la liaison.
+const GESTION_QONTO_PORTEES_PAIEMENT = 'payment_link.read payment_link.write webhook';
+function qonto_portees(): string { return GESTION_QONTO_PORTEES . (parametre('paiement_portees', '0') === '1' ? ' ' . GESTION_QONTO_PORTEES_PAIEMENT : ''); }
 // L'adresse de retour déclarée dans le portail de Qonto : elle doit y être recopiée exactement
 const GESTION_QONTO_RETOUR = 'https://madamecho.com/gestion/?p=qonto-retour';
 const GESTION_QONTO_JOURS = 400;         // encaissements lus : 400 jours, pour retrouver aussi les paiements anciens (Qonto garde l'historique du Crédit Mutuel relié)
@@ -40,13 +45,16 @@ function qonto_espaces_ecrire(array $e): void { parametre_ecrire('qonto_espaces'
 function qonto_relie(): bool { foreach (qonto_espaces() as $e) if (($e['refresh'] ?? '') !== '') return true; return false; }
 
 /* ---------- HTTP ---------- */
-/** Un appel à Qonto. Renvoie [code HTTP, réponse décodée]. Le secret et les jetons ne passent que dans le corps ou l'en-tête. */
-function qonto_http(string $methode, string $url, array $entetes = [], ?array $formulaire = null): array {
+/** Un appel à Qonto. Renvoie [code HTTP, réponse décodée]. Le secret et les jetons ne passent que dans le corps ou l'en-tête.
+ *  $json : un corps JSON (liens de paiement, spécification 006) ; PATCH et DELETE seulement pour eux (inc/paiement.php, liste fermée). */
+function qonto_http(string $methode, string $url, array $entetes = [], ?array $formulaire = null, ?string $json = null, int $delai = 25): array {
     if (!function_exists('curl_init')) throw new \RuntimeException('cURL manque sur ce serveur');
     $ch = curl_init($url);
-    $o = [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 10, CURLOPT_TIMEOUT => 25,
-          CURLOPT_HTTPHEADER => array_merge(['accept: application/json', 'user-agent: Gestion Madame Cho'], $entetes)];
-    if ($methode === 'POST') { $o[CURLOPT_POST] = true; $o[CURLOPT_POSTFIELDS] = http_build_query($formulaire ?? [], '', '&', PHP_QUERY_RFC1738); }
+    $o = [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => min(10, $delai), CURLOPT_TIMEOUT => $delai,
+          CURLOPT_HTTPHEADER => array_merge(['accept: application/json', 'user-agent: Gestion Madame Cho'], $json !== null ? ['content-type: application/json'] : [], $entetes)];
+    if ($json !== null) { $o[CURLOPT_CUSTOMREQUEST] = $methode; $o[CURLOPT_POSTFIELDS] = $json; }
+    elseif ($methode === 'PATCH' || $methode === 'DELETE') $o[CURLOPT_CUSTOMREQUEST] = $methode;
+    elseif ($methode === 'POST') { $o[CURLOPT_POST] = true; $o[CURLOPT_POSTFIELDS] = http_build_query($formulaire ?? [], '', '&', PHP_QUERY_RFC1738); }
     curl_setopt_array($ch, $o);
     $r = curl_exec($ch);
     $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
@@ -62,7 +70,8 @@ function qonto_erreur(int $code, mixed $j): string {
     return match (true) {
         $e === 'invalid_client' => 'identifiant ou secret de l\'application refusé par Qonto',
         $e === 'invalid_grant' => 'autorisation expirée ou déjà utilisée : reliez l\'espace à nouveau',
-        $e === 'invalid_scope' => 'droits refusés : vérifiez dans le portail que l\'application a bien organization.read, client_invoices.read et offline_access',
+        $e === 'invalid_scope' => 'droits refusés : vérifiez dans le portail que l\'application a bien organization.read, client_invoices.read et offline_access'
+                                  . (parametre('paiement_portees', '0') === '1' ? ', ainsi que payment_link.read, payment_link.write et webhook' : ''),
         $code === 401 => 'accès refusé par Qonto : reliez l\'espace à nouveau',
         $code === 403 => 'Qonto refuse cette lecture (droit manquant sur l\'application)',
         $code === 429 => 'trop de demandes à Qonto, réessayez dans une minute',
@@ -87,7 +96,7 @@ function qonto_demarrer(): never {
     session_ouvrir();
     $_SESSION['qonto_etat'] = [$etat, time()];
     $url = GESTION_QONTO_OAUTH . 'oauth2/auth?' . http_build_query(['client_id' => $id, 'redirect_uri' => qonto_adresse_retour(), 'response_type' => 'code',
-                                                                    'scope' => GESTION_QONTO_PORTEES, 'state' => $etat], '', '&', PHP_QUERY_RFC3986);
+                                                                    'scope' => qonto_portees(), 'state' => $etat], '', '&', PHP_QUERY_RFC3986);
     header('Location: ' . $url, true, 302);
     exit;
 }
@@ -117,12 +126,13 @@ function page_qonto_retour(): void {
             $org = qonto_organisation_lire((string)$j['access_token']);
             $e = qonto_espaces();
             $e[$org['id']] = $org + ['access' => (string)$j['access_token'], 'expire' => time() + (int)($j['expires_in'] ?? 3600) - 60,
-                                     'refresh' => (string)($j['refresh_token'] ?? ''), 'portees' => (string)($j['scope'] ?? ''),
+                                     'refresh' => (string)($j['refresh_token'] ?? ''), 'portees' => (string)($j['scope'] ?? qonto_portees()),   // sans « scope » dans la réponse : ceux demandés
                                      'relie_le' => maintenant(), 'relie_par' => auteur(), 'renouvele_le' => maintenant(), 'erreur' => '', 'comptes_le' => time()];
             qonto_espaces_ecrire($e);
             parametre_ecrire('qonto_cache', '');
-            evenement('reglage', 'Qonto relié en lecture seule : espace « ' . $org['nom'] . ' »');
-            flash('ok', 'Espace Qonto « ' . $org['nom'] . ' » relié, en lecture seule.' . (($j['refresh_token'] ?? '') === '' ? ' Attention : Qonto n\'a pas donné de jeton durable (offline_access) : la liaison s\'arrêtera dans 1 heure.' : ''));
+            $liensOk = str_contains(' ' . (string)($j['scope'] ?? qonto_portees()) . ' ', ' payment_link.write ');
+            evenement('reglage', 'Qonto relié en lecture seule' . ($liensOk ? ' (et les liens de paiement)' : '') . ' : espace « ' . $org['nom'] . ' »');
+            flash('ok', 'Espace Qonto « ' . $org['nom'] . ' » relié, en lecture seule' . ($liensOk ? ', plus les liens de paiement en ligne' : '') . '.' . (($j['refresh_token'] ?? '') === '' ? ' Attention : Qonto n\'a pas donné de jeton durable (offline_access) : la liaison s\'arrêtera dans 1 heure.' : ''));
         } catch (\Throwable $ex) {
             error_log('madamecho gestion qonto retour : ' . $ex->getMessage());
             flash('erreur', 'Liaison Qonto non faite : ' . $ex->getMessage() . '.');
@@ -283,7 +293,9 @@ function qonto_operation(array $t, array $compte, string $espace, array $propres
         if (str_contains($tout, ' APPORT ')) return null;                                           // apport en compte courant
         if (preg_match('/^ (VRST|VERSEMENT ESP|DEPOT ESP|VERSEMENT D ESPECES)/', $nl)) return null;  // dépôt d'espèces au guichet
         if (preg_match('/ (SIE|DGFIP|DRFIP|URSSAF|TRESOR PUBLIC|IMPOTS GOUV) /', $nl)) return null;   // impôts, Urssaf : un remboursement, jamais une vente
-        $genre = $type === 'cheque' || preg_match('/^ (REM CHQ|REMISE CHQ|REMISE CHEQUE|REMISE DE CHEQUE)/', $nl) ? 'cheque' : 'virement';
+        // Un versement de Mollie regroupe des paiements en ligne déjà constatés un par un (spécification 006) : jamais rapproché d'une commande
+        $genre = str_contains($tout, ' MOLLIE ') ? 'en_ligne'
+               : ($type === 'cheque' || preg_match('/^ (REM CHQ|REMISE CHQ|REMISE CHEQUE|REMISE DE CHEQUE)/', $nl) ? 'cheque' : 'virement');
     }
     $le = (string)($t['settled_at'] ?? '') !== '' ? (string)$t['settled_at'] : (string)($t['emitted_at'] ?? '');
     $ts = strtotime($le);
@@ -315,8 +327,8 @@ function qonto_type(string $t): string {
 function bloc_reglages_qonto(): string {
     $prete = qonto_application_prete();
     $espaces = qonto_espaces();
-    $t = '<p>' . fr_ko('La gestion lit Qonto en lecture seule et y retrouve toute seule les paiements des commandes (Plus › Rapprochement Qonto). Elle ne peut faire aucun virement ni rien changer dans Qonto.',
-                       '관리 화면은 Qonto를 읽기만 하고, 주문 결제를 알아서 찾아요(더보기 › Qonto 대조). 이체나 Qonto 안의 변경은 전혀 할 수 없어요.') . '</p>';
+    $t = '<p>' . fr_ko('La gestion lit Qonto en lecture seule et y retrouve toute seule les paiements des commandes (Plus › Rapprochement Qonto). Elle ne peut faire aucun virement ni rien changer dans Qonto' . (parametre('paiement_portees', '0') === '1' ? ', sauf créer et annuler des liens de paiement en ligne (Paiement en ligne, plus bas).' : '.'),
+                       '관리 화면은 Qonto를 읽기만 하고, 주문 결제를 알아서 찾아요(더보기 › Qonto 대조). 이체나 Qonto 안의 변경은 전혀 할 수 없어요' . (parametre('paiement_portees', '0') === '1' ? '. 다만 온라인 결제 링크를 만들고 취소하는 것만 해요(아래 « 온라인 결제 »).' : '.')) . '</p>';
     if ($espaces) {
         $rows = '';
         foreach ($espaces as $org => $e) {
@@ -342,7 +354,7 @@ function bloc_reglages_qonto(): string {
     $t .= '<details class="replie"' . ($prete ? '' : ' open') . '><summary>' . ($prete ? 'Remplacer l\'application Qonto' : 'Enregistrer l\'application Qonto') . '</summary>'
         . '<ol class="aide marche">'
         . '<li>Portail développeurs de Qonto, compte de Youngmi : application « Gestion Madame Cho », cas d\'usage « Automate your business operations », accès OAuth 2.0.</li>'
-        . '<li>Droits : organization.read, client_invoices.read et offline_access, rien d\'autre.</li>'
+        . '<li>Droits : organization.read, client_invoices.read et offline_access ; pour le paiement en ligne, aussi payment_link.read, payment_link.write et webhook ; rien d\'autre.</li>'
         . '<li>Adresse de retour (Redirect URI) : <code translate="no">' . h(GESTION_QONTO_RETOUR) . '</code></li>'
         . '<li>Collez ici le Client ID et le Client Secret de Production. Le secret est gardé hors du site et jamais réaffiché.</li></ol>'
         . formulaire('qonto_application', champ('qonto_client_id', 'Client ID', (string)parametre('qonto_client_id', ''), ['autocomplete' => 'off', 'spellcheck' => 'false', 'autocapitalize' => 'off', 'required' => true, 'maxlength' => '200'])

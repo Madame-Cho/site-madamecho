@@ -524,20 +524,43 @@ def demande():
   <p class="notice">Vos coordonnées servent seulement à répondre à votre demande ; elles ne sont ni vendues ni utilisées pour de la publicité. <a href="{lien('confidentialite/', prof)}">Confidentialité</a> · <a href="{lien('conditions-de-commande/', prof)}">Conditions de commande</a></p>
   <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
   <p class="aide" data-sans-stockage hidden>Votre navigateur ne garde pas la demande d'une page à l'autre. Si vous voulez d'autres gâteaux, ajoutez-les depuis leur page juste avant d'envoyer, ou écrivez-les dans « Votre envie ».</p>
+  <!-- « Commander et payer » (spécification 006, temps 2) : montré seulement quand Madame Cho l'a allumé, pour des gâteaux de la carte
+       sans personnalisation, un particulier, un jour ouvert et une plage libre ; le serveur revérifie tout -->
+  <div class="payer" data-payer hidden>
+   <h2 class="sous-titre">Commander et payer maintenant</h2>
+   <p class="aide">Votre commande est confirmée dès le paiement, et la plage de retrait vous est réservée. Vérifiez votre commande :</p>
+   <pre class="recap" data-payer-recap></pre>
+   <label class="case"><input type="checkbox" name="conditions" value="1" data-conditions> <span>J'ai lu et j'accepte les <a href="{lien('conditions-de-commande/', prof)}" target="_blank" rel="noopener">conditions de commande</a>, et je m'engage à payer cette commande.</span></label>
+   <button class="bouton plein envoyer" type="button" data-commander-payer>Commander et payer</button>
+   <p class="aide">Paiement sécurisé par Qonto, par carte bancaire ou Apple Pay, dans un nouvel onglet. Si vous annulez votre commande, vous êtes remboursé en entier.</p>
+   <p class="ou"><span>ou</span></p>
+  </div>
+  <p class="aide" data-payer-non hidden></p>
   <button class="bouton plein envoyer" type="submit" data-envoyer>Envoyer ma demande, sans engagement</button>
   <p class="aide centre">Un souci ? Appelez Madame Cho au <a href="tel:{TEL_LIEN}">{TEL}</a> ou écrivez à {EMAIL_HTML}.</p>
  </form>
+
+ <div class="suivi-paiement" data-suivi hidden tabindex="-1">
+  <div class="etiquette">Paiement en cours</div>
+  <h2 class="titre">Terminez le paiement dans la page de Qonto</h2>
+  <p data-suivi-texte role="status">La page de paiement s'est ouverte dans un nouvel onglet. Revenez ici une fois le paiement fait : cette page le dira toute seule.</p>
+  <p><a class="bouton plein" data-suivi-lien href="#" target="_blank" rel="noopener">Ouvrir la page de paiement</a></p>
+  <p class="aide" data-suivi-delai></p>
+  <p class="ref">Référence : <b data-suivi-ref></b></p>
+  <p><button type="button" class="lien-bouton" data-sans-payer>Finalement, envoyer ma demande sans payer</button></p>
+ </div>
 
  <div class="recu" data-recu hidden tabindex="-1">
   <div class="recu-merci" role="status">
    <svg class="recu-coche" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>
    <div>
-    <div class="etiquette">Demande bien reçue</div>
-    <h2 class="titre">Merci<span data-merci-prenom></span>, votre demande est bien arrivée chez Madame Cho</h2>
-    <p>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et la plage horaire du retrait.</p>
+    <div class="etiquette" data-recu-etiquette>Demande bien reçue</div>
+    <h2 class="titre">Merci<span data-merci-prenom></span><span data-recu-titre>, votre demande est bien arrivée chez Madame Cho</span></h2>
+    <p data-recu-texte>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et la plage horaire du retrait.</p>
    </div>
   </div>
-  <p>Rien n'est encore réservé ni à payer : si la proposition vous convient, répondez-y, et Madame Cho vous confirme la commande par écrit. Votre retrait est réservé à ce moment-là.</p>
+  <p class="avert" data-recu-message hidden></p>
+  <p data-recu-suite>Rien n'est encore réservé ni à payer : si la proposition vous convient, répondez-y, et Madame Cho vous confirme la commande par écrit. Votre retrait est réservé à ce moment-là.</p>
   <p>Sa réponse viendra de <b>{EMAIL}</b> : <a href="{lien('madame-cho.vcf', prof)}">ajoutez Madame Cho à vos contacts</a>, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>
@@ -618,6 +641,7 @@ CONFID = [
  ("Quelles données", ["Votre nom, votre email, votre téléphone si vous le donnez, le jour et la plage horaire de retrait souhaités (puis l'heure convenue avec Madame Cho, s'il y en a une) et le contenu de votre demande, votre réponse à la question « Comment avez-vous connu Madame Cho ? » si vous y répondez, puis le suivi de votre commande (étapes, montant, paiement, notes de préparation) et les échanges à son sujet : emails, et résumé des appels ou messages notés par Madame Cho. N'écrivez pas d'information médicale dans le formulaire : les allergènes sont indiqués sur la page de chaque gâteau, et pour une allergie ou un besoin particulier, Madame Cho en parle avec vous au téléphone."]),
  ("Qui les reçoit", ["Madame Cho. Prestataires techniques : OVH (hébergement du site, envoi du formulaire et outil de suivi des commandes, en France) et Google (messagerie).",
    "Votre demande est enregistrée dans l'outil de suivi des commandes de Madame Cho, hébergé avec le site chez OVH en France et réservé à Madame Cho.",
+   "Si vous payez en ligne, le paiement est traité par Qonto, la banque de Madame Cho, et son prestataire de paiement Mollie (Pays-Bas), qui reçoivent les données de votre carte : Madame Cho ne les voit jamais. L'outil de suivi des commandes crée le lien de paiement de votre commande (sa référence, les gâteaux et le montant) et reçoit de Qonto la confirmation du paiement : date, montant, moyen de paiement et email du payeur, gardés avec votre commande.",
    "Quand vous payez par carte ou par virement, l'outil retrouve votre paiement dans les comptes bancaires de Madame Cho (Qonto, et son compte au Crédit Mutuel relié à Qonto) : il y lit les paiements reçus (date, montant, libellé du virement avec le nom de celui qui paie) pour les rapprocher de votre commande, en lecture seule. Ce libellé n'est transmis à aucun assistant d'intelligence artificielle.",
    "Les emails de Madame Cho au sujet de votre commande partent de cet outil, depuis contact@madamecho.com, quand elle les envoie. Seule exception : dès que votre commande arrive, par ce site ou par téléphone, un email automatique vous confirme que Madame Cho l'a bien reçue. Vos réponses à ces emails (celles dont l'objet porte la référence de la commande, MC-…) sont recopiées automatiquement de sa messagerie Google vers l'outil, pour être rangées avec votre commande : expéditeur, date, objet, texte et nom des pièces jointes, sans leur contenu. L'original reste dans la messagerie. Un email qui ne correspond à aucune commande est retiré de l'outil après 30 jours.",
    "Pour classer les emails, suivre les commandes et préparer les réponses, Madame Cho se fait aider par des assistants d'intelligence artificielle : Claude (Anthropic) et ChatGPT (OpenAI). L'outil de suivi des commandes a son propre assistant (Claude), qui lit les demandes, les commandes et les échanges pour répondre aux questions de Madame Cho, lui préparer des mises à jour et corriger le français de ses messages ; quand elle lui parle à voix haute, sa voix est transcrite par le service vocal de son navigateur (Google ou Apple). Ces assistants ne décident de rien et n'envoient aucun email : Madame Cho relit, confirme et envoie elle-même. Aucun autre destinataire.",
@@ -634,14 +658,17 @@ CONFID = [
    '<p class="choix-mesure" id="mesure"><label><input type="checkbox" id="mesure-choix" checked> Compter mes visites de façon anonyme</label> <span id="mesure-etat" class="petit" aria-live="polite"></span></p>'])] if MESURE else [])
 CONDITIONS = [
  ("Madame Cho", [f"MADAME CHO, SASU au capital de 1 000 €, RCS Nanterre 941 761 918, {E(ADRESSE)}. Téléphone : <a href=\"tel:{TEL_LIEN}\">{TEL}</a>. Email : {EMAIL_HTML}."]),
- ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau."]),
+ ("1. La demande", ["Le formulaire du site envoie une demande sans engagement. Elle ne vaut ni commande ni réservation d'un créneau.",
+   "Lorsque le site le propose, pour des gâteaux de la carte sans personnalisation au-delà de la plaque, le client peut aussi « Commander et payer » : il vérifie le récapitulatif (gâteaux, prix TTC total, jour et plage horaire du retrait), accepte les présentes conditions et paie en ligne. La commande est conclue dès que le paiement est reçu ; un email la confirme et vaut reçu. Si le paiement n'aboutit pas, rien n'est débité et la commande redevient une demande sans engagement."]),
  ("2. La proposition et l'acceptation", ["Madame Cho répond sous 24 heures par une proposition écrite : gâteaux, tailles, personnalisation, prix TTC total, jour et plage horaire du retrait. Le client l'accepte par écrit (réponse à l'email ou message) ; la commande est conclue quand Madame Cho la confirme par écrit."]),
  ("3. Les prix", ["Les prix sont indiqués en euros TTC. Le prix de la carte est celui de la proposition ; une personnalisation au-delà de la plaque en chocolat (comprise) est chiffrée dans la proposition."]),
  ("4. Le retrait", [f"Pas de livraison : la commande est retirée au {E(ADRESSE)}, du lundi au samedi de 9 h à 19 h, sur la plage horaire convenue (pas de retrait le dimanche, sauf cas particulier convenu par téléphone, ni le 24 décembre). Le client vérifie sa commande au retrait."]),
- ("5. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces. Aucun acompte n'est demandé."]),
+ ("5. Le paiement", ["Au retrait, par carte bancaire, virement ou espèces. Aucun acompte n'est demandé.",
+   "Lorsque Madame Cho le propose, le client peut aussi payer en ligne le prix total, par carte bancaire ou Apple Pay : au moment de commander sur le site, ou avec le bouton « Payer en ligne » de l'email de confirmation. Le paiement est sécurisé par Qonto, la banque de Madame Cho, et son prestataire de paiement Mollie ; Madame Cho ne voit jamais les données de la carte. Un email confirme le paiement et vaut reçu ; une facture est envoyée sur simple demande."]),
  # Délai d'annulation fixé par Youngmi le 04/11/2026 (réponse au mail du 03/11) : 24 heures avant le retrait ; depuis les plages
  # (audit n° 10, décision d'Olivier du 28/11/2026) : avant le début de la plage, ou avant l'heure convenue
- ("6. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le début de la plage de retrait, ou avant l'heure convenue s'il y en a une. Pour un empêchement après ce délai, le client prévient Madame Cho au plus tôt, par téléphone ou par écrit."]),
+ ("6. Annulation", ["Le client peut annuler sans frais, par écrit, une commande confirmée jusqu'à 24 heures avant le début de la plage de retrait, ou avant l'heure convenue s'il y en a une. Pour un empêchement après ce délai, le client prévient Madame Cho au plus tôt, par téléphone ou par écrit.",
+   "Une commande payée en ligne puis annulée, à quelque moment que ce soit, est remboursée en entier, sur le moyen de paiement utilisé, dans les meilleurs délais."]),
  ("7. Droit de rétractation", ["Les gâteaux de la carte sont des denrées fraîches, à consommer dans les 3 jours : le droit de rétractation ne s'applique pas à eux, car ils sont susceptibles de se détériorer rapidement (code de la consommation, article L221-28, 4°). Il ne s'applique pas non plus à un gâteau confectionné selon les choix du client, comme un gâteau personnalisé (même article, 3°)."]),
  ("8. Allergènes", ["Les allergènes de chaque gâteau sont indiqués sur sa page et rappelés au retrait. Tous les gâteaux sont préparés dans un atelier qui utilise aussi des fruits à coque et des arachides."]),
  ("9. Réclamations", [f"Une réclamation s'adresse à {EMAIL_HTML} ou au {TEL}, de préférence le jour du retrait."]),

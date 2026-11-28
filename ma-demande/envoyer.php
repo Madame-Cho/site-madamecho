@@ -10,6 +10,9 @@
  * - Si une protection ne marche pas (dossier des limites, verrou, signature DKIM), aucun email ne part :
  *   la page le dit et propose le téléphone ou l'email (audit du site du 03/11/2026, C04).
  * - Une fois la demande partie, la gestion envoie au client un accusé de réception (demande d'Olivier du 09/11/2026, inc/accuse.php).
+ * - « Commander et payer » (spécification 006, temps 2, éteint tant que Youngmi ne l'allume pas) : payer=1 avec les mêmes champs ;
+ *   la gestion revérifie tout, retient la place, crée le lien de paiement de Qonto et renvoie son adresse ; suivi=<jeton> dit où en est
+ *   le paiement, sans aucune donnée personnelle ; sans_payer=<jeton> transforme la commande en demande ordinaire.
  * - Aucun secret dans ce fichier (dépôt public, R-08). Signature DKIM : dkim.php (clé créée sur le serveur).
  */
 declare(strict_types=1);
@@ -123,7 +126,16 @@ function plages_libres(string $date, array $CAT): array {
 }
 // Pendant la saisie, la page demande l'état des plages du jour choisi : la date seulement, rien d'enregistré ni d'envoyé.
 if (champ('verifier', 1) === '1') {
-    repondre(true, plages_libres(champ('date', 10), $CAT), true);
+    $r = plages_libres(champ('date', 10), $CAT);
+    // « Commander et payer » possible (temps 2 allumé, Qonto prêt, jour ouvert) : la page décide ensuite selon le panier (spécification 006)
+    $r['payer'] = $r['message'] === '' && (bool)gestion_agenda(fn() => \MadameCho\Gestion\paiement_site_actif(), false);
+    if ($r['payer']) $r['minimum'] = (int)gestion_agenda(fn() => \MadameCho\Gestion\paiement_minimum(), 500);   // en centimes
+    repondre(true, $r, true);
+}
+// Le suivi d'un paiement en ligne (spécification 006) : le jeton seul, toutes les 5 secondes au plus ; jamais de nom, d'email ni de montant
+if (($jeton = champ('suivi', 40)) !== '' || ($jeton = champ('sans_payer', 40)) !== '') {
+    $sansPayer = champ('sans_payer', 40) !== '';
+    repondre(true, gestion_agenda(fn() => \MadameCho\Gestion\paiement_suivi($jeton, $sansPayer), ['etat' => 'inconnu']), true);
 }
 
 // Champ-piège : un robot le remplit ; on répond comme si tout allait bien, sans rien envoyer.
@@ -260,7 +272,8 @@ if ($sel === null) indisponible('clé des empreintes illisible', $enJson);
 // Empreinte pseudonymisée de l'adresse IP : HMAC avec une clé secrète du serveur, jamais l'adresse elle-même.
 // Sans date dans l'empreinte, la limite de 5 envois est bien glissante sur une heure, même à minuit.
 $ipHash = hash_hmac('sha256', (string)($_SERVER['REMOTE_ADDR'] ?? ''), $sel);
-$empreinte = hash('sha256', (string)json_encode([$nomComplet, $email, $date, $plage, $lignes, $perso, $besoin]));
+$payer = $enJson && champ('payer', 1) === '1';   // « Commander et payer » (spécification 006) : seulement depuis la page, jamais sans JavaScript
+$empreinte = hash('sha256', (string)json_encode([$nomComplet, $email, $date, $plage, $lignes, $perso, $besoin, $payer]));
 $fichier = $dossier . '/' . substr($ipHash, 0, 32) . '.json';
 $etat = ['envois' => [], 'dernier' => null];
 $fh = @fopen($fichier, 'c+');
@@ -275,7 +288,8 @@ if (is_array($lu)) {
 $etat['envois'] = array_values(array_filter($etat['envois'], fn($t) => $t > time() - 3600));
 if ($etat['dernier'] && $etat['dernier']['e'] === $empreinte && $etat['dernier']['t'] > time() - 120) {
     flock($fh, LOCK_UN); fclose($fh);
-    repondre(true, ['ref' => $etat['dernier']['ref']], $enJson);   // double clic : même référence, pas de second email
+    // double clic : même référence, pas de second email ni de second lien de paiement
+    repondre(true, ['ref' => $etat['dernier']['ref']] + (is_array($etat['dernier']['p'] ?? null) ? ['paiement' => $etat['dernier']['p']] : []), $enJson);
 }
 if (count($etat['envois']) >= MAX_PAR_HEURE) {
     flock($fh, LOCK_UN); fclose($fh);
@@ -288,6 +302,43 @@ function ecrire_etat($fh, array $etat): bool {
 // L'envoi est compté avant de partir : si le compteur ne peut pas être écrit, rien ne part.
 $etat['envois'][] = time();
 if (!ecrire_etat($fh, $etat)) indisponible('compteur non écrit', $enJson, $fh);
+
+/* ---------- « Commander et payer » (spécification 006, temps 2) ---------- */
+// La gestion revérifie le panier, le minimum et la plage (places retenues comprises), crée le lien de paiement de Qonto, enregistre
+// la commande comme une demande et retient sa place. Aucun mail à ce moment : la confirmation (qui vaut reçu) part quand le paiement
+// est constaté ; sinon la commande redevient une demande ordinaire (mail à Madame Cho, accusé de réception au client).
+if ($payer) {
+    $refuser = function (string $message) use ($fh, &$etat): void {
+        array_pop($etat['envois']); ecrire_etat($fh, $etat);   // un paiement refusé ne compte pas dans la limite
+        flock($fh, LOCK_UN); fclose($fh);
+        http_response_code(409);
+        repondre(false, ['payer' => false, 'message' => $message], true);
+    };
+    if (champ('conditions', 1) !== '1') $refuser('Cochez « J\'accepte les conditions de commande » pour commander et payer.');
+    if (PHP_VERSION_ID < 80000 || !is_file(GESTION_ENREGISTRER)) $refuser('Le paiement en ligne n\'est pas proposé pour le moment : envoyez votre demande sans payer.');
+    $ref = 'MC-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
+    try {
+        require_once GESTION_ENREGISTRER;
+        $r = \MadameCho\Gestion\commander_et_payer(($deuxChamps ? ['prenom' => $prenom] : []) + ['ref' => $ref, 'nom' => $nom, 'email' => $email, 'telephone' => $tel, 'date' => $date, 'plage' => $plage,
+            'lignes' => $lignes, 'perso' => $perso, 'pro' => $pro, 'societe' => $societe, 'besoin' => $besoin, 'via' => $via,
+            'depuis' => $depuis !== '' ? $CAT['envies'][$depuis]['origine'] : '', 'connu' => $connu, 'total' => $total]);
+    } catch (\Throwable $e) {
+        error_log('madamecho formulaire : commander et payer (' . get_class($e) . ')');
+        $r = ['ok' => false, 'message' => 'Le paiement en ligne ne répond pas pour le moment, et rien n\'a été débité : envoyez votre demande sans payer.'];
+    }
+    if (empty($r['ok'])) {
+        if (!empty($r['envoyee'])) {   // la demande est arrivée sans paiement possible : comme un envoi ordinaire
+            $etat['dernier'] = ['e' => $empreinte, 't' => time(), 'ref' => $ref]; ecrire_etat($fh, $etat); flock($fh, LOCK_UN); fclose($fh);
+            repondre(true, ['ref' => $ref, 'message' => (string)$r['message']], true);
+        }
+        $refuser((string)($r['message'] ?? 'Le paiement en ligne n\'est pas possible pour le moment : envoyez votre demande sans payer.'));
+    }
+    $paiement = ['url' => (string)$r['url'], 'suivi' => (string)$r['suivi'], 'jusqua' => (string)$r['jusqua']];
+    $etat['dernier'] = ['e' => $empreinte, 't' => time(), 'ref' => $ref, 'p' => $paiement];
+    ecrire_etat($fh, $etat);
+    flock($fh, LOCK_UN); fclose($fh);
+    repondre(true, ['ref' => $ref, 'paiement' => $paiement], true);
+}
 
 /* ---------- L'email à Madame Cho ---------- */
 $ref = 'MC-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));

@@ -50,7 +50,9 @@ const STATUTS_COURTS = ['demande' => 'À répondre', 'proposition' => 'Propositi
 const STATUTS_EN_COURS = ['demande', 'proposition', 'confirmee'];
 const PAIEMENTS = ['aucun' => 'Pas encore payé', 'acompte_demande' => 'Acompte demandé', 'acompte_recu' => 'Acompte reçu',
                    'paye' => 'Payé', 'rembourse' => 'Remboursé'];
-const MOYENS = ['' => 'Moyen non noté', 'carte' => 'Carte (Tap to Pay)', 'virement' => 'Virement', 'especes' => 'Espèces', 'autre' => 'Autre'];
+const MOYENS = ['' => 'Moyen non noté', 'carte' => 'Carte (Tap to Pay)', 'virement' => 'Virement', 'especes' => 'Espèces', 'autre' => 'Autre', 'en_ligne' => 'En ligne'];
+// « En ligne » (spécification 006) : noté seulement par la gestion, sur la foi de Qonto, jamais choisi à la main
+const MOYENS_SAISIE = ['' => 'Moyen non noté', 'carte' => 'Carte (Tap to Pay)', 'virement' => 'Virement', 'especes' => 'Espèces', 'autre' => 'Autre'];
 const CANAUX = ['site' => 'Site', 'qr' => 'QR code', 'email' => 'Email', 'instagram' => 'Instagram', 'telephone' => 'Téléphone',
                 'marche' => 'Marché', 'sur_place' => 'Sur place', 'restaurant' => 'Restaurant', 'autre' => 'Autre'];
 // Comment le client a connu Madame Cho (14/11/2026) : sa réponse à la question facultative du formulaire du site (mêmes codes que CONNU
@@ -211,6 +213,7 @@ function gestion_schema(PDO $pdo): void {
     hygiene_schema($pdo);       // relevés d'hygiène (spécification 004, lot 2), même principe : marqueur à part
     photos_schema($pdo);        // photos des clients (10/11/2026), même principe : marqueur à part
     plages_schema($pdo);        // réglages des plages de retrait (spécification 007), même principe : marqueur à part
+    paiement_schema($pdo);      // paiement en ligne (spécification 006), même principe : marqueur à part
     $v = (int)($pdo->query("SELECT valeur FROM parametres WHERE cle='schema'")->fetchColumn() ?: 0);
     if ($v >= 10) return;
     if ($v < 1) $pdo->exec("
@@ -406,6 +409,20 @@ function plages_schema(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS plages_reglages (jour TEXT NOT NULL, plage TEXT NOT NULL, maximum INTEGER, fermee INTEGER NOT NULL DEFAULT 0,
   maj_le TEXT NOT NULL, maj_par TEXT NOT NULL DEFAULT '', PRIMARY KEY (jour, plage))");
     $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_plages', '1')");
+}
+/** Le paiement en ligne (spécification 006, décisions d'Olivier du 21/11 et du 27/11/2026) : les liens de paiement de Qonto créés par la
+ *  gestion (une ligne par lien) et les places retenues sur le site pendant un paiement (temps 2). Marqueur schema_paiement. */
+function paiement_schema(PDO $pdo): void {
+    if ($pdo->query("SELECT valeur FROM parametres WHERE cle = 'schema_paiement'")->fetchColumn() === '1') return;
+    $pdo->exec("
+CREATE TABLE IF NOT EXISTS liens_paiement (id INTEGER PRIMARY KEY, commande_id INTEGER NOT NULL, qonto_id TEXT NOT NULL UNIQUE, url TEXT NOT NULL, montant INTEGER NOT NULL,
+  origine TEXT NOT NULL, etat TEXT NOT NULL, cree_le TEXT NOT NULL, cree_par TEXT NOT NULL DEFAULT '', expire_le TEXT NOT NULL DEFAULT '', retenue_jusqua TEXT,
+  suivi TEXT UNIQUE, paiement_qonto_id TEXT UNIQUE, paye_le TEXT, moyen_detail TEXT NOT NULL DEFAULT '', payeur_email TEXT NOT NULL DEFAULT '', paye_montant INTEGER,
+  frais_estimes INTEGER, recu_envoye_le TEXT, recu_etat TEXT NOT NULL DEFAULT '', rembourse_le TEXT, rembourse_par TEXT NOT NULL DEFAULT '', maj_le TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS liens_paiement_commande ON liens_paiement(commande_id, etat);
+CREATE TABLE IF NOT EXISTS retenues (commande_id INTEGER PRIMARY KEY, jour TEXT NOT NULL, plage TEXT NOT NULL, jusqua TEXT NOT NULL);
+");
+    $pdo->exec("INSERT OR REPLACE INTO parametres (cle, valeur) VALUES ('schema_paiement', '1')");
 }
 /** Les relevés d'hygiène (spécification 004, lot 2) : tables à part, marqueur schema_hygiene. */
 function hygiene_schema(PDO $pdo): void {

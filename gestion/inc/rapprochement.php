@@ -175,6 +175,7 @@ function rapprochement_op_court(array $o, bool $libelle = true): string {
     return match ($o['genre'] ?? '') {
         'tap' => 'Tap to Pay du ' . $j . ' (' . $m . ')',
         'cheque' => 'remise de chèques du ' . $j . ' (' . $m . ')',
+        'en_ligne' => 'versement des paiements en ligne (Mollie) du ' . $j . ' (' . $m . ')',
         default => 'virement du ' . $j . ' (' . $m . ($libelle && $o['libelle'] !== '' ? ', ' . $o['libelle'] : '') . ')',
     };
 }

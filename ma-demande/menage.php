@@ -7,6 +7,8 @@
  * 2 heures + 24 heures, toujours moins de 48 heures (audit du site du 03/11/2026, C07). Jamais servi par le site (.htaccess).
  * La même tâche applique les durées de conservation de l'espace de gestion (06/11/2026) : demandes sans suite 12 mois,
  * clients 3 ans, journal des connexions 6 mois (politique de confidentialité).
+ * Paiement en ligne (spécification 006) : la tâche peut tourner toutes les heures ; les liens de paiement ouverts sont alors relus
+ * chaque heure, et la partie de nuit de la gestion ne tourne toujours qu'une fois par jour (tache_horaire).
  */
 declare(strict_types=1);
 
@@ -38,7 +40,7 @@ if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE
     if (PHP_VERSION_ID >= 80000 && is_file($gestion)) {
         try {
             require_once $gestion;
-            \MadameCho\Gestion\tache_de_nuit();
+            \MadameCho\Gestion\tache_horaire();
         } catch (\Throwable $e) {
             error_log('madamecho ménage : espace de gestion : ' . get_class($e) . ' : ' . $e->getMessage());
             $restes++;

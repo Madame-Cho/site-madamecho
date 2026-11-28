@@ -2,6 +2,8 @@
 /*
  * Madame Cho : tâche de nuit de l'espace de gestion, lancée par ma-demande/menage.php (tâche planifiée OVH, chaque nuit vers 4 h).
  * Applique les durées de conservation de la politique de confidentialité ; ne crée jamais la base si l'espace n'est pas encore ouvert.
+ * Paiement en ligne (spécification 006) : la même tâche, lancée toutes les heures, relit les liens de paiement ouverts (tache_horaire) ;
+ * la partie de nuit ne tourne qu'une fois par jour, à partir de 3 h.
  */
 declare(strict_types=1);
 namespace MadameCho\Gestion;
@@ -14,6 +16,20 @@ require_once __DIR__ . '/email.php';        // le mail interne du lundi (écran 
 require_once __DIR__ . '/obligations.php';  // démarches des échéances, conservation 10 ans, mail du lundi (spécification 004)
 require_once __DIR__ . '/qonto.php';        // le rapprochement automatique avec Qonto (13/11/2026) : une lecture fraîche chaque nuit
 require_once __DIR__ . '/rapprochement.php';
+require_once __DIR__ . '/paiement.php';     // les liens de paiement ouverts relus, les retenues échues (spécification 006)
+
+/** Chaque appel de la tâche planifiée : le paiement en ligne ; puis la nuit, une seule fois par jour (même si la tâche tourne toutes les heures). */
+function tache_horaire(): array {
+    if (!gestion_base_existante()) return [];
+    $cr = [];
+    try { $cr['paiement'] = paiement_tache(); }
+    catch (\Throwable $e) { error_log('madamecho gestion : paiement en ligne : ' . $e->getMessage()); $cr['paiement'] = ['erreur' => $e->getMessage()]; }
+    if ((int)date('G') >= 3 && parametre('nuit_tentee') !== aujourdhui()) {
+        parametre_ecrire('nuit_tentee', aujourdhui());   // avant : une nuit qui s'arrête en chemin ne repart pas l'heure suivante
+        $cr += tache_de_nuit();
+    }
+    return $cr;
+}
 
 function tache_de_nuit(): array {
     if (!gestion_base_existante()) return [];

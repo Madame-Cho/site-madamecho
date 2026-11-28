@@ -189,6 +189,7 @@ function page_statistiques(): void {
     usort($s['statuts'], fn($a, $b) => array_search($a['statut'], array_keys(STATUTS), true) <=> array_search($b['statut'], array_keys(STATUTS), true));
     foreach ($s['statuts'] as $k) $rows .= '<tr><td><a class="lien-chip" href="' . h(u('commandes', ['vue' => 'toutes', 'statut' => (string)$k['statut']])) . '">' . chip_statut($k['statut'], false) . '</a></td><td class="nombre">' . (int)$k['n'] . '</td></tr>';
     if ($rows !== '') $c .= bloc('Où en sont les demandes', '<table class="tableau"><tbody>' . $rows . '</tbody></table>');
+    $c .= paiement_statistiques();   // spécification 006 (T020)
     $c .= bloc('Exporter', '<p class="aide">Pour un tableur, sans email ni téléphone. Contient des noms de clients : à ranger dans le Drive de Madame Cho.</p><div class="actions">'
         . lien_bouton(u('export', ['jeu' => 'commandes']), 'Commandes (CSV)', 'discret') . lien_bouton(u('export', ['jeu' => 'clients']), 'Clients (CSV)', 'discret') . '</div>');
     mise_en_page('Statistiques', $c, 'statistiques');
@@ -629,6 +630,10 @@ function page_reglages(): void {
                 if (!$admin) break;
                 $ancre = reglages_qonto_action($a);
                 break;
+            case 'paiement_portees': case 'paiement_activer': case 'paiement_desactiver': case 'paiement_reglages':   // paiement en ligne (paiement.php)
+                if (!$admin) break;
+                $ancre = reglages_paiement_action($a);
+                break;
             case 'importer':
                 if (!$admin) break;
                 $ancre = 'reprise';
@@ -754,7 +759,7 @@ function page_reglages(): void {
         $c .= bloc('Assistant', $t, '', 'assistant');
     }
     // Qonto, en lecture seule (R-24)
-    if ($admin) $c .= bloc_reglages_qonto();
+    if ($admin) $c .= bloc_reglages_qonto() . bloc_reglages_paiement();
     // Conservation et RGPD
     if ($admin) {
         $ap = conservation_apercu();

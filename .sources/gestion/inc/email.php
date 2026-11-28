@@ -8,9 +8,16 @@ declare(strict_types=1);
 namespace MadameCho\Gestion;
 
 /** Envoie un email texte signé DKIM ; en essai local, le garde pour l'afficher à l'écran. */
+/** En essai local seulement : MC_ESSAI_MAILS=<fichier> garde chaque mail qui serait parti (une ligne JSON), pour les essais automatiques. */
+function essai_mail_noter(array $m): void {
+    $f = GESTION_ESSAI ? (string)getenv('MC_ESSAI_MAILS') : '';
+    if ($f !== '') @file_put_contents($f, json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+}
 function envoyer_email(string $a, string $sujet, string $corps): bool {
     if (!email_valide($a)) return false;
     if (GESTION_ESSAI) {
+        essai_mail_noter(['a' => $a, 'sujet' => $sujet, 'corps' => $corps]);
+        if (session_status() === PHP_SESSION_NONE && (contexte_site() || headers_sent())) return true;
         session_ouvrir();
         $_SESSION['essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $corps];
         return true;
@@ -68,6 +75,8 @@ function envoyer_email_client(string $a, string $sujet, string $texte, string $h
     $mid = '<commande.' . bin2hex(random_bytes(8)) . '@' . GESTION_DOMAINE . '>';
     $refs = array_slice(array_values(array_unique(array_filter($refs, fn($r) => preg_match('/^<[^<>\s]{3,200}>$/', $r)))), -10);
     if (GESTION_ESSAI) {
+        essai_mail_noter(['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'copie' => $copie, 'refs' => $refs]);
+        if (session_status() === PHP_SESSION_NONE && (headers_sent() || (int)http_response_code() === 0 || ($_GET['p'] ?? '') === 'qonto-notification')) { $GLOBALS['mc_essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid]; return $mid; }   // notification de Qonto, ligne de commande : pas de session
         if (session_status() === PHP_SESSION_NONE && contexte_site()) { $GLOBALS['mc_essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid, 'refs' => $refs, 'copie' => $copie]; return $mid; }   // le formulaire du site : pas de session
         session_ouvrir();
         $_SESSION['essai_email'] = ['a' => $a, 'sujet' => $sujet, 'corps' => $texte, 'html' => $html, 'mid' => $mid, 'refs' => $refs];

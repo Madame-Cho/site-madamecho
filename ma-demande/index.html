@@ -83,20 +83,43 @@
   <p class="notice">Vos coordonnées servent seulement à répondre à votre demande ; elles ne sont ni vendues ni utilisées pour de la publicité. <a href="../confidentialite/">Confidentialité</a> · <a href="../conditions-de-commande/">Conditions de commande</a></p>
   <p class="erreurs" id="erreurs" data-erreurs role="alert" tabindex="-1" hidden></p>
   <p class="aide" data-sans-stockage hidden>Votre navigateur ne garde pas la demande d'une page à l'autre. Si vous voulez d'autres gâteaux, ajoutez-les depuis leur page juste avant d'envoyer, ou écrivez-les dans « Votre envie ».</p>
+  <!-- « Commander et payer » (spécification 006, temps 2) : montré seulement quand Madame Cho l'a allumé, pour des gâteaux de la carte
+       sans personnalisation, un particulier, un jour ouvert et une plage libre ; le serveur revérifie tout -->
+  <div class="payer" data-payer hidden>
+   <h2 class="sous-titre">Commander et payer maintenant</h2>
+   <p class="aide">Votre commande est confirmée dès le paiement, et la plage de retrait vous est réservée. Vérifiez votre commande :</p>
+   <pre class="recap" data-payer-recap></pre>
+   <label class="case"><input type="checkbox" name="conditions" value="1" data-conditions> <span>J'ai lu et j'accepte les <a href="../conditions-de-commande/" target="_blank" rel="noopener">conditions de commande</a>, et je m'engage à payer cette commande.</span></label>
+   <button class="bouton plein envoyer" type="button" data-commander-payer>Commander et payer</button>
+   <p class="aide">Paiement sécurisé par Qonto, par carte bancaire ou Apple Pay, dans un nouvel onglet. Si vous annulez votre commande, vous êtes remboursé en entier.</p>
+   <p class="ou"><span>ou</span></p>
+  </div>
+  <p class="aide" data-payer-non hidden></p>
   <button class="bouton plein envoyer" type="submit" data-envoyer>Envoyer ma demande, sans engagement</button>
   <p class="aide centre">Un souci ? Appelez Madame Cho au <a href="tel:+33661311779">06 61 31 17 79</a> ou écrivez à <span class="email"><a href="mailto:contact@madamecho.com">contact@madamecho.com</a><button type="button" class="copier-email" data-copier-email="contact@madamecho.com" aria-label="Copier l'adresse email" title="Copier l'adresse"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span class="copie-ok" aria-live="polite"></span></button></span>.</p>
  </form>
+
+ <div class="suivi-paiement" data-suivi hidden tabindex="-1">
+  <div class="etiquette">Paiement en cours</div>
+  <h2 class="titre">Terminez le paiement dans la page de Qonto</h2>
+  <p data-suivi-texte role="status">La page de paiement s'est ouverte dans un nouvel onglet. Revenez ici une fois le paiement fait : cette page le dira toute seule.</p>
+  <p><a class="bouton plein" data-suivi-lien href="#" target="_blank" rel="noopener">Ouvrir la page de paiement</a></p>
+  <p class="aide" data-suivi-delai></p>
+  <p class="ref">Référence : <b data-suivi-ref></b></p>
+  <p><button type="button" class="lien-bouton" data-sans-payer>Finalement, envoyer ma demande sans payer</button></p>
+ </div>
 
  <div class="recu" data-recu hidden tabindex="-1">
   <div class="recu-merci" role="status">
    <svg class="recu-coche" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>
    <div>
-    <div class="etiquette">Demande bien reçue</div>
-    <h2 class="titre">Merci<span data-merci-prenom></span>, votre demande est bien arrivée chez Madame Cho</h2>
-    <p>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et la plage horaire du retrait.</p>
+    <div class="etiquette" data-recu-etiquette>Demande bien reçue</div>
+    <h2 class="titre">Merci<span data-merci-prenom></span><span data-recu-titre>, votre demande est bien arrivée chez Madame Cho</span></h2>
+    <p data-recu-texte>Elle la regarde avec soin et vous recontacte très vite, au plus tard sous 24 heures, avec une proposition écrite : le prix, le jour et la plage horaire du retrait.</p>
    </div>
   </div>
-  <p>Rien n'est encore réservé ni à payer : si la proposition vous convient, répondez-y, et Madame Cho vous confirme la commande par écrit. Votre retrait est réservé à ce moment-là.</p>
+  <p class="avert" data-recu-message hidden></p>
+  <p data-recu-suite>Rien n'est encore réservé ni à payer : si la proposition vous convient, répondez-y, et Madame Cho vous confirme la commande par écrit. Votre retrait est réservé à ce moment-là.</p>
   <p>Sa réponse viendra de <b>contact@madamecho.com</b> : <a href="../madame-cho.vcf">ajoutez Madame Cho à vos contacts</a>, et regardez dans vos courriers indésirables si vous ne la voyez pas sous 24 heures.</p>
   <p class="ref">Référence : <b data-ref></b></p>
   <pre class="recap" data-recap></pre>

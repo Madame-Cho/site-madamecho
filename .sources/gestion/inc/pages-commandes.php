@@ -173,7 +173,7 @@ function page_commande(): void {
                     rediriger('commande', $garder, 'etape');
                 }
                 commande_statut($id, 'confirmee', ['retrait_date' => $d, 'retrait_heure' => $h, 'retrait_moment' => $pl] + ($prix !== null ? ['prix_final' => $prix] : []));
-                if (!empty($_POST['acompte_recu']) && (int)$k['acompte'] && in_array($k['paiement'], ['aucun', 'acompte_demande'], true)) commande_paiement($id, 'acompte_recu', choix('moyen', MOYENS, ''), (int)$k['acompte'] ?: null, (string)$k['facture']);
+                if (!empty($_POST['acompte_recu']) && (int)$k['acompte'] && in_array($k['paiement'], ['aucun', 'acompte_demande'], true)) commande_paiement($id, 'acompte_recu', choix('moyen', MOYENS_SAISIE, ''), (int)$k['acompte'] ?: null, (string)$k['facture']);
                 if ($alerte !== '') {
                     evenement('agenda', 'Retrait confirmé en exception convenue avec le client : ' . $alerte, ['commande' => $id, 'client' => (int)$k['client_id']]);
                     flash('ok', 'Commande confirmée, en exception convenue avec le client : envoyez-lui la confirmation et ajoutez le retrait à votre agenda.');
@@ -194,7 +194,16 @@ function page_commande(): void {
             case 'envoyer_confirmation':
                 if (!apercu_a_jour($k, 'confirmation')) break;
                 if ($k['statut'] !== 'confirmee' || !email_valide((string)$k['client_email'])) { flash('erreur', 'Pas d\'email pour ce client, ou la commande n\'est pas confirmée.'); break; }
-                if (envoyer_mail_commande($k, 'confirmation', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000)])) flash_envoi('Confirmation envoyée au client. Une copie arrive dans contact@madamecho.com.');
+                // Le bouton « Payer en ligne » (spécification 006, temps 1) : le lien est créé ou repris au toucher d'« Envoyer » ; si Qonto ne répond
+                // pas, la confirmation part sans bouton et le bandeau le dit
+                $payerUrl = ''; $sansBouton = '';
+                if (!empty($_POST['payer']) && paiement_propose($k)) {
+                    try { $payerUrl = (string)lien_pour_commande($k)['url']; }
+                    catch (\Throwable $e) { error_log('madamecho gestion paiement : lien pour la confirmation : ' . $e->getMessage()); $sansBouton = ' Qonto n\'a pas répondu : elle est partie sans le bouton « Payer en ligne » (vous pourrez créer le lien plus bas, dans « Paiement en ligne »).'; }
+                }
+                if (envoyer_mail_commande($k, 'confirmation', ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'paiement_url' => $payerUrl])) {
+                    flash_envoi('Confirmation envoyée au client' . ($payerUrl !== '' ? ', avec le bouton « Payer en ligne »' : '') . '. Une copie arrive dans contact@madamecho.com.' . $sansBouton);
+                }
                 else flash('erreur', 'L\'email n\'est pas parti. Regardez d\'abord dans les Échanges ou dans Gmail (Envoyés) s\'il est arrivé, puis réessayez, ou utilisez « Autre façon » plus bas.');
                 break;
             case 'ecrire_client':   // « Écrire au client » : un autre mail sur la même commande
@@ -229,13 +238,19 @@ function page_commande(): void {
                 $prix = centimes(texte('prix_final', 12));
                 commande_statut($id, 'remise', $prix !== null ? ['prix_final' => $prix] : []);
                 $p = choix('paiement', paiements_proposes($k), 'paye');   // pas d'état d'acompte pour une commande sans acompte (audit n° 10, C10-07)
-                commande_paiement($id, $p, choix('moyen', MOYENS, ''), null, une_ligne(texte('facture', 40)));
+                commande_paiement($id, $p, choix('moyen', moyens_proposes($k), ''), null, une_ligne(texte('facture', 40)));
                 flash('ok', livraison_pro($k) ? 'Livraison notée : elle est dans le relevé du mois du restaurant.' : 'Commande remise. Pensez à proposer un avis Google au client.');
                 break;
             case 'supprimer':
                 // Une commande d'essai ou saisie par erreur, jamais une vraie vente facturée (demande d'Olivier, test du 07/11/2026)
                 if (texte('confirmation', 12) !== 'SUPPRIMER') { flash('erreur', 'Pour supprimer, tapez SUPPRIMER en majuscules.'); break; }
                 if (!commande_supprimable($k)) { flash('erreur', 'Cette commande a une facture, un paiement rapproché ou un paiement reçu : elle reste pour les comptes. Annulez-la plutôt.'); break; }
+                if (($o = lien_ouvert($id)) !== null) {   // un lien de paiement ouvert est annulé d'abord (spécification 006, FR-005)
+                    try { lien_desactiver($o, 'commande supprimée'); }
+                    catch (\Throwable $e) { flash('erreur', 'Le lien de paiement en ligne n\'a pas pu être annulé (Qonto ne répond pas) : rien n\'a été supprimé, réessayez dans un moment.'); break; }
+                    if (lien_paye($id)) { flash('erreur', 'Le client vient de payer en ligne : la commande reste pour les comptes.'); break; }
+                }
+                q("DELETE FROM retenues WHERE commande_id = ?", [$id]);
                 commande_supprimer($id, une_ligne(texte('motif', 200)) ?: 'essai');
                 flash('ok', 'Commande ' . $k['reference'] . ' mise à la corbeille, avec ses échanges : 30 jours pour la restaurer (Plus › Corbeille).');
                 rediriger('commandes');
@@ -261,7 +276,8 @@ function page_commande(): void {
                 $sort = choix('acompte_sort', ['' => '', 'acquis' => 'acquis', 'rembourse' => 'remboursé'], '');
                 if ($sort === 'rembourse') commande_paiement($id, 'rembourse', (string)$k['moyen'], null, (string)$k['facture']);
                 elseif ($sort === 'acquis') commentaire('Acompte de ' . euros((int)$k['acompte']) . ' acquis (annulation moins de 24 h avant le retrait).', $id, (int)$k['client_id']);
-                flash('ok', 'Commande annulée.');
+                $k2 = commande($id);
+                flash('ok', $k2 && ($r = a_rembourser($k2)) > 0 ? 'Commande annulée. Elle a été payée en ligne : remboursez ' . euros($r) . ' en entier dans Mollie (cadre « Paiement en ligne »).' : 'Commande annulée.');
                 break;
             case 'paiement':
                 // Un état ou un montant d'acompte seulement sur une commande qui en a déjà un (audit n° 10, C10-07)
@@ -269,11 +285,18 @@ function page_commande(): void {
                     flash('erreur', 'Plus d\'acompte pour une nouvelle commande : le client paie tout au retrait. Rien n\'a été changé.');
                     break;
                 }
-                commande_paiement($id, choix('paiement', paiements_proposes($k), 'aucun'), choix('moyen', MOYENS, ''), isset($_POST['acompte']) && avec_acompte($k) ? (centimes(texte('acompte', 12)) ?? 0) : null, une_ligne(texte('facture', 40)));
+                commande_paiement($id, choix('paiement', paiements_proposes($k), 'aucun'), choix('moyen', moyens_proposes($k), ''), isset($_POST['acompte']) && avec_acompte($k) ? (centimes(texte('acompte', 12)) ?? 0) : null, une_ligne(texte('facture', 40)));
                 $pf = texte('prix_final', 12);
                 if ($pf !== '') commande_modifier($id, ['prix_final' => centimes($pf)]);
                 flash('ok', 'Paiement enregistré.');
                 break;
+            case 'lien_creer':
+            case 'lien_annuler':
+            case 'recu_renvoyer':
+            case 'rembourse_noter':
+                [$t, $m] = paiement_action($a, $k);
+                if ($m !== '') flash($t, $m);
+                rediriger('commande', ['id' => $id], 'paiement-en-ligne');
             case 'rapprocher':
                 $e = commande_rapprocher($id, texte('qonto_ref', 120));
                 flash($e === '' ? 'ok' : 'erreur', $e === '' ? 'Paiement rapproché avec Qonto.' : $e);
@@ -312,6 +335,7 @@ function page_commande(): void {
         }
         rediriger('commande', ['id' => $id]);
     }
+    paiement_relire_commande($id);   // un lien ouvert est relu chez Qonto au plus une fois par minute (spécification 006, T011)
     $k = commande($id);
     $client = client((int)$k['client_id']);
     $nom = commande_client_nom($k);
@@ -403,8 +427,9 @@ function page_commande(): void {
                                      'Qonto' => rapprochement_texte($k),
                                      'Facture Qonto' => h($k['facture'])])
         . rapprochement_formulaire($k)
+        . bloc_paiement_en_ligne($k)
         . '<details class="replie"><summary>Modifier le paiement</summary>'
-        . formulaire('paiement', '<div class="ligne-champs">' . liste_choix('paiement', 'Paiement', paiements_proposes($k), $k['paiement']) . liste_choix('moyen', 'Moyen', MOYENS, $k['moyen']) . '</div>'
+        . formulaire('paiement', '<div class="ligne-champs">' . liste_choix('paiement', 'Paiement', paiements_proposes($k), $k['paiement']) . liste_choix('moyen', 'Moyen', moyens_proposes($k), $k['moyen']) . '</div>'
             . '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $k['prix_final'] !== null ? number_format((int)$k['prix_final'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal'])
             . (avec_acompte($k) ? champ('acompte', 'Acompte (€)', (int)$k['acompte'] ? number_format((int)$k['acompte'] / 100, 2, ',', '') : '', ['inputmode' => 'decimal']) : '') . '</div>'
             . champ('facture', 'N° de facture Qonto', $k['facture'], ['placeholder' => 'F-2026-013']) . bouton('Enregistrer', 'secondaire'))
@@ -469,7 +494,15 @@ function bloc_mail_client(array $k, string $type, string $titre, string $avant =
          . '<details class="replie"><summary>Autre façon : ouvrir dans ma messagerie</summary>' . bloc_email($boite . '-texte', 'Texte simple, à envoyer vous-même', $m, $email) . $secours . '</details>'
          . '</details>';
 }
-function bloc_confirmation_client(array $k): string { return bloc_mail_client($k, 'confirmation', 'Envoyer la confirmation au client'); }
+function bloc_confirmation_client(array $k): string {
+    // Le bouton « Payer en ligne » (spécification 006, temps 1) : coché d'office quand le paiement en ligne est possible ; décoché, la
+    // confirmation part comme avant
+    $payer = paiement_propose($k)
+        ? '<label class="case"><input type="checkbox" name="payer" value="1" checked data-apercu="apercu-confirmation"><span>' . h('Avec le bouton « Payer en ligne » (' . euros(montant_du($k)) . ')') . '</span></label>'
+          . '<p class="aide">' . h('Le client peut aussi payer au retrait ou par virement : le mail le dit. Le lien est créé chez Qonto au moment de l\'envoi.') . '</p>'
+        : '';
+    return bloc_mail_client($k, 'confirmation', 'Envoyer la confirmation au client', $payer);
+}
 
 /** Le rappel de retrait (FR-040) : sur une commande confirmée dont le retrait est aujourd'hui, demain ou après-demain. Mail au toucher
  *  de « Envoyer », ou version courte à copier pour un SMS ou WhatsApp, puis « J'ai envoyé le rappel » avec le canal. Pas de bouton
@@ -539,7 +572,7 @@ function page_apercu_mail(): void {
         if ($prix !== null) $k['prix_final'] = $prix;
         $k['acompte'] = centimes(texte('acompte', 12)) ?? 0;
     }
-    echo mail_commande($k, $type, ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'apercu' => true])['html'];
+    echo mail_commande($k, $type, ['accueil' => texte('accueil', 1500), 'mot' => texte('mot', 1000), 'apercu' => true, 'payer' => !empty($_POST['payer'])])['html'];
     exit;
 }
 
@@ -630,7 +663,7 @@ function etape_suivante(array $k): string {
                       . champ('retrait_heure', 'Heure précise (facultatif)', $ch, ['type' => 'time', 'step' => '900'], 'Seulement si vous avez convenu d\'une heure avec le client : la plage suit l\'heure.')
                       . ($alerteC !== '' ? '<p class="erreur">' . icone('alerte') . ' ' . h($alerteC) . '</p>' . case_a_cocher('quand_meme', 'Confirmer quand même (exception convenue avec le client)') : '')
                       . champ('prix_final', 'Prix final (€ TTC)', $cprix, ['inputmode' => 'decimal'])
-                      . ((int)$k['acompte'] ? case_a_cocher('acompte_recu', 'Acompte de ' . h(euros((int)$k['acompte'])) . ' reçu', $k['paiement'] === 'acompte_recu') . liste_choix('moyen', 'Moyen de l\'acompte', MOYENS, $k['moyen']) : '')
+                      . ((int)$k['acompte'] ? case_a_cocher('acompte_recu', 'Acompte de ' . h(euros((int)$k['acompte'])) . ' reçu', $k['paiement'] === 'acompte_recu') . liste_choix('moyen', 'Moyen de l\'acompte', MOYENS_SAISIE, $k['moyen']) : '')
                       . bouton('Confirmer la commande', 'principal'), ['class' => 'form-etape'])
                  . formulaire('statut', '<input type="hidden" name="statut" value="sans_suite">' . bouton('Classer sans suite', 'discret'), ['class' => 'form-secondaire'])
                  . '</section>';
@@ -654,7 +687,7 @@ function etape_suivante(array $k): string {
                  . bloc_rappel_client($k)
                  . agenda_boutons($k)
                  . formulaire('remise', '<div class="ligne-champs">' . champ('prix_final', 'Prix final (€ TTC)', $prixDefaut, ['inputmode' => 'decimal'])
-                      . liste_choix('moyen', 'Payé par', MOYENS, $k['moyen'] !== '' ? $k['moyen'] : 'carte') . '</div>'
+                      . liste_choix('moyen', 'Payé par', moyens_proposes($k), $k['moyen'] !== '' ? $k['moyen'] : 'carte') . '</div>'
                       . liste_choix('paiement', 'Paiement', ['paye' => 'Payé', 'aucun' => 'Pas encore payé'], 'paye')
                       . champ('facture', 'N° de facture Qonto (si facture)', $k['facture'], ['placeholder' => 'F-2026-013'])
                       . bouton('Commande remise au client', 'principal'), ['class' => 'form-etape'])
@@ -768,7 +801,7 @@ function page_commande_edition(): void {
                                      + (preg_match('/^MC-\d{6}-[0-9A-F]{4}$/', $ref) && !val("SELECT 1 FROM commandes WHERE reference = ?", [$ref]) ? ['reference' => $ref] : []));
                 if ($prix !== null) commande_modifier($id, ['prix_final' => $prix]);   // une nouvelle commande n'a jamais d'acompte (C10-07)
                 if ($statut !== 'demande') commande_statut($id, $statut);
-                if ($statut === 'remise') commande_paiement($id, choix('paiement', paiements_proposes(['acompte' => 0, 'paiement' => 'aucun']), $d['type'] === 'pro' && $d['mode'] === 'livraison' ? 'aucun' : 'paye'), choix('moyen', MOYENS, ''), null, '');
+                if ($statut === 'remise') commande_paiement($id, choix('paiement', paiements_proposes(['acompte' => 0, 'paiement' => 'aucun']), $d['type'] === 'pro' && $d['mode'] === 'livraison' ? 'aucun' : 'paye'), choix('moyen', MOYENS_SAISIE, ''), null, '');
                 $note = texte('note', 2000);
                 if ($note !== '') commentaire($note, $id, $cid);
                 // Accusé de réception au client, tout seul (demande d'Olivier du 11/11/2026, exception à R-01) : pas pour une livraison de la gamme pro
@@ -864,7 +897,7 @@ function page_commande_edition(): void {
             . zone('note', 'Commentaire (facultatif)', $val('note'), ['rows' => '2', 'maxlength' => '2000']);
     } elseif (!$k) {
         $m .= liste_choix('statut', 'Où en est-elle ?', ['demande' => 'Demande reçue, à répondre', 'proposition' => 'Proposition déjà envoyée', 'confirmee' => 'Déjà confirmée', 'remise' => 'Déjà remise (vente faite)'], $val('statut', 'demande'))
-            . '<div class="ligne-champs" data-si="f-statut=remise">' . liste_choix('paiement', 'Paiement', ['paye' => 'Payé', 'aucun' => 'Pas encore payé'], $val('paiement', 'paye')) . liste_choix('moyen', 'Payé par', MOYENS, $val('moyen', 'carte')) . '</div>'
+            . '<div class="ligne-champs" data-si="f-statut=remise">' . liste_choix('paiement', 'Paiement', ['paye' => 'Payé', 'aucun' => 'Pas encore payé'], $val('paiement', 'paye')) . liste_choix('moyen', 'Payé par', MOYENS_SAISIE, $val('moyen', 'carte')) . '</div>'
             . zone('note', 'Commentaire (facultatif)', $val('note'), ['rows' => '2', 'maxlength' => '2000']);
     }
     $f .= bloc($livraison ? 'Où en est-elle ?' : 'Montant', $m);
@@ -997,6 +1030,8 @@ function page_production(): void {
 /* ---------- Rapprochement avec Qonto, sur la fiche de la commande (FR-030) ---------- */
 function rapprochement_texte(array $k): string {
     $ref = (string)$k['qonto_ref'];
+    if ($ref !== '' && (string)$k['qonto_par'] === PAIEMENT_PAR)   // payé en ligne : constaté par Qonto lui-même, rien à rapprocher (spécification 006)
+        return '<span class="paiement p-paye">' . h('Payé en ligne') . '</span> · <span translate="no">' . h($ref) . '</span> · ' . h(date_fr($k['qonto_le'], 'heure'));
     if ($ref === RAPPROCHEMENT_HORS) return '<span class="paiement p-paye">Vérifiée hors Qonto</span> · <span translate="no">' . h($k['qonto_par']) . '</span> · ' . h(date_fr($k['qonto_le'], 'heure'));
     if ($ref !== '') return '<span class="paiement p-paye">Rapproché</span> ' . rapprochement_ref_texte($ref) . ' · '
         . ((string)$k['qonto_par'] === RAPPROCHEMENT_PAR ? '<span>' . h('retrouvé tout seul') . '</span>' : '<span translate="no">' . h($k['qonto_par']) . '</span>') . ' · ' . h(date_fr($k['qonto_le'], 'heure'));
@@ -1006,6 +1041,7 @@ function rapprochement_texte(array $k): string {
         . (qonto_relie() ? ' · <span>' . h($suivi ? 'La gestion le cherche toute seule dans Qonto' : 'Payé avant le suivi automatique : jamais signalé') . '</span>' : '');
 }
 function rapprochement_formulaire(array $k): string {
+    if ((string)$k['qonto_par'] === PAIEMENT_PAR) return '';
     if ((string)$k['qonto_ref'] !== '') return '<details class="replie"><summary>Retirer le rapprochement</summary>'
         . formulaire('derapprocher', '<p class="aide">' . h((string)$k['qonto_par'] === RAPPROCHEMENT_PAR ? 'Si la gestion s\'est trompée, retirez-le : elle ne le refera pas toute seule.' : 'Si la référence est fausse, retirez-la : le paiement revient dans la liste « À rapprocher ».') . '</p>' . bouton('Retirer le rapprochement', 'discret')) . '</details>';
     if (!rapprochement_attendu($k)) return '';

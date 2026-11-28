@@ -238,13 +238,16 @@ function outil_commande(array $in): array {
     if ($k['moyen'] !== '') $r['moyen'] = MOYENS[$k['moyen']] ?? $k['moyen'];
     if ($k['facture'] !== '') $r['facture'] = $k['facture'];
     if ((string)($k['paiement_par'] ?? '') !== '') $r['paiement_constate'] = $k['paiement_par'] . ', ' . substr((string)$k['paiement_le'], 0, 16);
+    // Paiement en ligne (spécification 006, FR-025) : lisible, sans l'adresse du lien ni les données du payeur ; l'assistant n'agit jamais sur les liens
+    if (($pl = paiement_en_ligne_texte($k)) !== '') $r['paiement_en_ligne'] = $pl;
     // Rapprochement Qonto (FR-030) : retrouvé tout seul par la gestion ou noté par une personne, jamais par l'assistant ; sans le libellé de la banque
     $qr = (string)($k['qonto_ref'] ?? '');
-    $r['qonto'] = $qr === RAPPROCHEMENT_HORS ? 'vérifié hors Qonto (' . $k['qonto_par'] . ', ' . substr((string)$k['qonto_le'], 0, 10) . ')'
+    $r['qonto'] = $qr !== '' && (string)$k['qonto_par'] === PAIEMENT_PAR ? 'payé en ligne, constaté par Qonto (rien à rapprocher)'
+                : ($qr === RAPPROCHEMENT_HORS ? 'vérifié hors Qonto (' . $k['qonto_par'] . ', ' . substr((string)$k['qonto_le'], 0, 10) . ')'
                 : ($qr !== '' ? 'rapproché (' . ((string)$k['qonto_par'] === RAPPROCHEMENT_PAR ? 'retrouvé tout seul par la gestion' : 'noté par ' . $k['qonto_par']) . ', ' . substr((string)$k['qonto_le'], 0, 10)
                     . (($d = rapprochement_ref_clair($qr)) !== '' ? ' : ' . $d : '') . ')'
                 : (rapprochement_attendu($k) ? (rapprochement_suivi($k) ? 'pas encore retrouvé dans Qonto (la gestion le cherche toute seule)' : 'payé avant le suivi automatique, pas retrouvé dans Qonto (jamais signalé)')
-                : ($k['moyen'] === 'especes' && $k['paiement'] !== 'aucun' ? 'espèces : pas de rapprochement' : 'sans objet')));
+                : ($k['moyen'] === 'especes' && $k['paiement'] !== 'aucun' ? 'espèces : pas de rapprochement' : 'sans objet'))));
     if ((int)$k['probleme']) $r['probleme'] = $k['probleme_note'] !== '' ? $k['probleme_note'] : 'signalé';
     $r['dates'] = array_filter(['recue_le' => substr((string)$k['recue_le'], 0, 16), 'dernier_echange' => substr((string)$k['dernier_echange'], 0, 16),
                                 'remise_le' => substr((string)($k['remise_le'] ?? ''), 0, 16), 'annulee_le' => substr((string)($k['annulee_le'] ?? ''), 0, 16),
@@ -650,7 +653,7 @@ function proposition_valeur(string $type, mixed $v, string &$err): mixed {
             if (in_array($s, ['oui', 'true', '1', 'yes'], true)) return 'oui';
             if (in_array($s, ['non', 'false', '0', 'no', ''], true)) return 'non';
             $err = 'oui ou non'; return '';
-        case 'moyen': return $enum(MOYENS, 'moyen');
+        case 'moyen': return $enum(MOYENS_SAISIE, 'moyen');   // « En ligne » : seul Qonto le constate (spécification 006)
         case 'paiement': return $enum(PAIEMENTS, 'paiement');
         case 'paiement_remise': return $enum(['paye' => 1, 'aucun' => 1], 'paiement');
         case 'qui': return $enum(['client' => 1, 'madamecho' => 1], 'qui');

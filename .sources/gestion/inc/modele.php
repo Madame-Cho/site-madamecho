@@ -429,6 +429,8 @@ function commande_modifier(int $id, array $d): string {
         obligations_client_pro((int)$k['client_id']);
         if ($k['statut'] === 'confirmee' && ($k2 = commande($id))) obligations_commande_pro($k2);
     }
+    // Prix changé avec un lien de paiement ouvert : le lien est annulé avant tout nouvel envoi (spécification 006, FR-006)
+    if (function_exists(__NAMESPACE__ . '\\paiement_commande_changee') && array_intersect(array_keys($diff), ['prix_final', 'lignes', 'acompte'])) paiement_commande_changee($id);
     return $clair;
 }
 /** Changement d'étape, avec ce qui va avec (date de remise, motif, retrait). */
@@ -455,6 +457,8 @@ function commande_statut(int $id, string $statut, array $extra = []): bool {
     evenement('statut', $texte, ['commande' => $id, 'client' => (int)$k['client_id']], $k['statut'], $statut, $extra['auteur'] ?? null);
     // Client professionnel : vérifier les obligations avant de livrer, et pour chaque gâteau qu'il n'a jamais eu (écran Obligations, audit n° 7, P2-02)
     if ($statut === 'confirmee' && function_exists(__NAMESPACE__ . '\\obligations_commande_pro') && ($k2 = commande($id))) obligations_commande_pro($k2);
+    // Paiement en ligne (spécification 006) : un lien ouvert d'une commande annulée, remise ou sans suite ne permet plus de payer (FR-005)
+    if (function_exists(__NAMESPACE__ . '\\paiement_commande_changee')) paiement_commande_changee($id);
     return true;
 }
 function commande_paiement(int $id, string $paiement, string $moyen, ?int $acompte, string $facture): void {
@@ -476,6 +480,7 @@ function commande_paiement(int $id, string $paiement, string $moyen, ?int $acomp
     $detail = PAIEMENTS[$paiement] . ($moyen !== '' ? ' · ' . MOYENS[$moyen] : '') . ($acompte ? ' · acompte ' . euros($acompte) : '') . ($facture !== '' ? ' · facture ' . $facture : '');
     if ($change || $k['facture'] !== $facture || (int)$k['acompte'] !== ($acompte ?? (int)$k['acompte']))
         evenement('paiement', $detail, ['commande' => $id, 'client' => (int)$k['client_id']], $k['paiement'], $paiement);
+    if ($change && function_exists(__NAMESPACE__ . '\\paiement_commande_changee')) paiement_commande_changee($id);   // payée autrement : le lien ouvert est annulé
 }
 
 /* ---------- Rapprochement avec Qonto (audit n° 2, C14, FR-030) ----------
@@ -621,6 +626,8 @@ function commande_anonymiser(int $id, string $quand): void {
     q("UPDATE commandes SET lignes = ?, perso = CASE WHEN perso = '' THEN '' ELSE '(effacé)' END, besoin = CASE WHEN besoin = '' THEN '' ELSE '(effacé)' END,
        probleme_note = '', annulee_motif = '', efface_le = ?, maj_le = ? WHERE id = ?", [json_encode($l, JSON_UNESCAPED_UNICODE), $quand, $quand, $id]);
     q("UPDATE evenements SET texte = '(effacé)', ancien = '', nouveau = '' WHERE commande_id = ? AND type IN ('commentaire', 'probleme', 'modification', 'email_client', 'email_recu')", [$id]);
+    // Paiement en ligne : l'adresse du payeur s'efface avec la commande ; le montant, la date et le moyen restent pour les comptes
+    if ((int)val("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'liens_paiement'")) q("UPDATE liens_paiement SET payeur_email = '', url = '' WHERE commande_id = ?", [$id]);
 }
 /** Filtres de la liste des commandes venus d'un lien (Statistiques) : étape, canal, mois de remise, particuliers ou professionnels. */
 function commandes_filtres(array $g): array {
