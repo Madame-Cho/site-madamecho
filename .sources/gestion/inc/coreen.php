@@ -2034,11 +2034,133 @@ Une plage complète ou fermée n'est plus proposée sur le site ; dans la gestio
 Fermer une plage ou baisser son maximum n'annule aucun retrait déjà confirmé. | 시간대를 닫거나 최대 인원을 줄여도 이미 확정된 픽업은 취소되지 않아요.
 Plus d'acompte | 선금 없음
 Madame Cho ne demande plus d'acompte : la proposition n'a plus de case « Acompte », et le site n'en parle plus. Le client paie le prix complet. Une commande qui avait déjà un acompte le garde. | 이제 Madame Cho는 선금을 받지 않아요. 견적에 « 선금 » 칸이 없고, 사이트에도 더 이상 나오지 않아요. 고객은 전체 가격을 내요. 이미 선금이 있던 주문은 그대로 남아요.
+# Paiement en ligne (spécification 006, 28/11/2026)
+Paiement en ligne | 온라인 결제
+Paiements en ligne | 온라인 결제
+Lien de paiement | 결제 링크
+Créer le lien de paiement | 결제 링크 만들기
+Copier le lien | 링크 복사
+Annuler le lien | 링크 취소
+Renvoyer le reçu | 영수증 다시 보내기
+Envoyer le reçu | 영수증 보내기
+J'ai remboursé dans Mollie | Mollie에서 환불했어요
+En ligne | 온라인
+Payé en ligne | 온라인 결제 완료
+Paiement reçu | 결제 받음
+Paiement non abouti | 결제 안 됨
+Lien à annuler | 취소할 링크
+Reçu pas parti | 영수증 안 나감
+Remboursement noté | 환불 기록
+Envoyé, pas encore payé | 보냄, 아직 미결제
+Paiement en cours | 결제 중
+Paiement à vérifier | 결제 확인 필요
+carte bancaire | 카드
+Qonto (paiement en ligne) | Qonto (온라인 결제)
+Paiements | 결제 건수
+Payé TTC | 결제 금액 (부가세 포함)
+Frais estimés | 예상 수수료
+Versé par Mollie | Mollie 입금액
+Mollie verse les paiements quelques jours plus tard, frais déduits : la différence entre « Payé » et « Versé » donne les frais réels, à quelques jours près. Les versements viennent de la dernière lecture de Qonto. | Mollie는 며칠 뒤에 수수료를 빼고 결제 금액을 입금해요. « 결제 금액 »과 « Mollie 입금액 »의 차이가 실제 수수료예요(며칠 차이는 있어요). 입금 내역은 마지막으로 읽은 Qonto에서 가져와요.
+(payée deux fois). | (두 번 결제됨).
+(payée en ligne puis annulée : Madame Cho ne garde rien). | (온라인 결제 후 취소됨: Madame Cho는 아무것도 받지 않아요).
+Ouvrez Mollie (my.mollie.com) avec le compte de Madame Cho › Transactions › Paiements › touchez le paiement (référence de la commande) › « Rembourser » › montant entier › confirmez. Puis revenez ici et touchez « J'ai remboursé dans Mollie ». | Madame Cho 계정으로 Mollie(my.mollie.com)를 열고 › Transactions › Paiements › 결제(주문 번호)를 누르고 › « Rembourser » › 전체 금액 › 확인하세요. 그다음 여기로 돌아와 « Mollie에서 환불했어요 »를 누르세요.
+Le reçu n'est pas parti (souci d'envoi). | 영수증이 나가지 않았어요 (발송 문제).
+Pas d'email pour ce client : pas de reçu automatique. | 이 고객은 이메일이 없어서 자동 영수증이 없어요.
+Reçu en cours d'envoi. | 영수증 보내는 중이에요.
+Annuler ce lien ? Le client ne pourra plus payer avec. | 이 링크를 취소할까요? 고객이 더 이상 이 링크로 결제할 수 없어요.
+Pour un client sans email : copiez le lien et envoyez-le par SMS ou WhatsApp depuis votre téléphone. | 이메일이 없는 고객: 링크를 복사해서 휴대폰으로 SMS나 WhatsApp으로 보내세요.
+Le client peut aussi payer au retrait ou par virement : le mail le dit. Le lien est créé chez Qonto au moment de l'envoi. | 고객은 픽업 때나 이체로도 결제할 수 있어요. 이메일에 그렇게 적혀 있어요. 링크는 보낼 때 Qonto에서 만들어져요.
+Lien de paiement créé : copiez-le dans « Paiement en ligne ». | 결제 링크를 만들었어요. « 온라인 결제 »에서 복사하세요.
+Ce lien n'est plus ouvert : rechargez la page. | 이 링크는 더 이상 열려 있지 않아요. 페이지를 새로 고치세요.
+Trop tard : le client venait de payer. Le paiement est noté. | 늦었어요. 고객이 방금 결제했어요. 결제를 기록했어요.
+Lien annulé : le client ne peut plus payer avec. | 링크를 취소했어요. 고객이 더 이상 이 링크로 결제할 수 없어요.
+Pas de paiement en ligne à reprendre : rechargez la page. | 다시 처리할 온라인 결제가 없어요. 페이지를 새로 고치세요.
+Reçu envoyé au client. Une copie arrive dans contact@madamecho.com. | 고객에게 영수증을 보냈어요. 사본이 contact@madamecho.com으로 와요.
+Le reçu n'est pas parti : réessayez dans un moment. | 영수증이 나가지 않았어요. 잠시 뒤에 다시 해 보세요.
+Remboursement noté. | 환불을 기록했어요.
+Rien à rembourser sur cette commande : rechargez la page. | 이 주문은 환불할 것이 없어요. 페이지를 새로 고치세요.
+Confirmation envoyée au client. | 고객에게 확정 이메일을 보냈어요.
+Une copie arrive dans contact@madamecho.com. | 사본이 contact@madamecho.com으로 와요.
+Confirmation envoyée au client, avec le bouton « Payer en ligne ». | 고객에게 « Payer en ligne » 버튼과 함께 확정 이메일을 보냈어요.
+Qonto n'a pas répondu : elle est partie sans le bouton « Payer en ligne » (vous pourrez créer le lien plus bas, dans « Paiement en ligne »). | Qonto가 응답하지 않아서 « Payer en ligne » 버튼 없이 보냈어요 (아래 « 온라인 결제 »에서 링크를 만들 수 있어요).
+Le lien de paiement en ligne n'a pas pu être annulé (Qonto ne répond pas) : rien n'a été supprimé, réessayez dans un moment. | 온라인 결제 링크를 취소하지 못했어요 (Qonto가 응답하지 않아요). 아무것도 삭제하지 않았어요. 잠시 뒤에 다시 해 보세요.
+Le client vient de payer en ligne : la commande reste pour les comptes. | 고객이 방금 온라인으로 결제했어요. 회계를 위해 주문을 남겨 둬요.
+Paiement en ligne à vérifier : montant différent de celui du lien | 온라인 결제 확인 필요: 링크 금액과 달라요
+Rien n'a été noté payé : regardez le paiement dans Mollie, puis notez le paiement à la main. | 결제 완료로 적지 않았어요. Mollie에서 결제를 확인한 뒤 직접 결제를 적으세요.
+Confirmée : payée en ligne sur le site | 확정: 사이트에서 온라인 결제됨
+payée en ligne sur le site | 사이트에서 온라인 결제됨
+Plage dépassée par une commande payée en ligne | 온라인 결제 주문으로 시간대 인원 초과
+Payée en ligne sur une plage devenue complète entre-temps. | 그사이 꽉 찬 시간대에 온라인 결제가 들어왔어요.
+Appelez le client si besoin. | 필요하면 고객에게 전화하세요.
+Reçu du paiement en ligne pas parti : à renvoyer depuis la commande | 온라인 결제 영수증이 나가지 않았어요. 주문에서 다시 보내세요
+Paiement en ligne : abonnement aux notifications de Qonto activé | 온라인 결제: Qonto 알림 구독 켬
+Paiement en ligne : droits des liens demandés à Qonto | 온라인 결제: Qonto에 링크 권한 요청
+Paiement en ligne : droits des liens plus demandés | 온라인 결제: 링크 권한 요청 안 함
+Paiement en ligne coupé (notifications retirées, interrupteurs éteints) | 온라인 결제 끔 (알림 해제, 스위치 꺼짐)
+(effacé) | (삭제됨)
+Le client peut payer sa commande en ligne, par carte bancaire ou Apple Pay, grâce aux liens de paiement de Qonto (Mollie). La gestion peut seulement créer et annuler ces liens : ni virement, ni carte, ni facture. Les deux interrupteurs restent éteints tant que vous ne les allumez pas. | 고객이 Qonto(Mollie)의 결제 링크로 주문을 카드나 Apple Pay로 온라인 결제할 수 있어요. 관리 화면은 이 링크를 만들고 취소하는 것만 해요. 이체, 카드, 청구서는 못 해요. 두 스위치는 직접 켜기 전까지 꺼져 있어요.
+Portail développeurs de Qonto, application « Gestion Madame Cho » : ajoutez les droits payment_link.read, payment_link.write et webhook, puis cochez ci-dessous. | Qonto 개발자 포털, « Gestion Madame Cho » 앱: payment_link.read, payment_link.write, webhook 권한을 추가한 뒤 아래에 체크하세요.
+Les droits sont ajoutés dans le portail | 포털에 권한을 추가했어요
+Reliez de nouveau l'espace « Madame CHO » (cadre Qonto ci-dessus) : Qonto demande d'accepter les nouveaux droits. | « Madame CHO » 공간을 다시 연결하세요 (위의 Qonto 칸). Qonto가 새 권한을 승인해 달라고 해요.
+Activez les notifications : Qonto préviendra la gestion à chaque paiement. | 알림을 켜세요. 결제가 있을 때마다 Qonto가 관리 화면에 알려 줘요.
+Activer le paiement en ligne | 온라인 결제 켜기
+Couper le paiement en ligne | 온라인 결제 끄기
+Couper le paiement en ligne ? Les deux interrupteurs s'éteignent ; les liens déjà envoyés restent payables jusqu'à leur échéance. | 온라인 결제를 끌까요? 두 스위치가 꺼지고, 이미 보낸 링크는 기한까지 결제할 수 있어요.
+Interrupteurs et réglages | 스위치와 설정
+Les interrupteurs n'ont d'effet qu'une fois les trois étapes faites. | 스위치는 세 단계를 모두 마친 뒤에만 작동해요.
+Bouton « Payer en ligne » dans la confirmation (commandes de particuliers confirmées) | 확정 이메일의 « Payer en ligne » 버튼 (확정된 개인 주문)
+« Commander et payer » sur le site (gâteaux de la carte, plage libre) | 사이트의 « Commander et payer » (메뉴 케이크, 여유 있는 시간대)
+« Commander et payer » attend aussi que les demandes du site s'enregistrent dans la gestion. | « Commander et payer »는 사이트 문의가 관리 화면에 저장되어야 작동해요.
+Montant minimum (€) | 최소 금액 (€)
+Place retenue pendant le paiement (minutes) | 결제하는 동안 자리 잡아 두는 시간 (분)
+Frais estimés : pourcentage | 예상 수수료: 퍼센트
+Frais estimés : fixe par paiement (€) | 예상 수수료: 결제당 고정 (€)
+Le barème sert seulement à estimer les frais de chaque paiement ; les frais réels se lisent sur les versements de Mollie (Statistiques). | 이 요율은 결제마다 수수료를 어림하는 데만 써요. 실제 수수료는 Mollie 입금 내역(통계)에서 봐요.
+Noté. Reliez maintenant de nouveau l'espace « Madame CHO » dans le cadre Qonto : Qonto demandera d'accepter les nouveaux droits. | 기록했어요. 이제 Qonto 칸에서 « Madame CHO » 공간을 다시 연결하세요. Qonto가 새 권한을 승인해 달라고 할 거예요.
+Noté : la gestion ne demandera plus les droits des liens. | 기록했어요. 관리 화면이 더 이상 링크 권한을 요청하지 않아요.
+Paiement en ligne activé chez Qonto. Allumez maintenant le ou les interrupteurs. | Qonto에서 온라인 결제를 켰어요. 이제 스위치를 켜세요.
+Paiement en ligne coupé. Les liens déjà envoyés restent payables jusqu'à leur échéance ; la gestion les relit chaque heure. | 온라인 결제를 껐어요. 이미 보낸 링크는 기한까지 결제할 수 있고, 관리 화면이 매시간 다시 확인해요.
+Rien n'a été changé : minimum entre 1 et 1 000 €, retenue entre 10 et 60 minutes, pourcentage entre 0 et 10, fixe entre 0 et 5 €. | 바뀐 것은 없어요. 최소 금액은 1~1 000 €, 자리 잡아 두는 시간은 10~60분, 퍼센트는 0~10, 고정 수수료는 0~5 €예요.
+Les interrupteurs agiront une fois les trois étapes faites. | 스위치는 세 단계를 마치면 작동해요.
+Le paiement en ligne | 온라인 결제
+Vos clients pourront payer en ligne, par carte bancaire ou Apple Pay, grâce aux liens de paiement de Qonto : avec le bouton « Payer en ligne » du mail de confirmation, ou en commandant des gâteaux de la carte directement sur le site. Une commande payée sur le site arrive déjà confirmée. Le paiement en ligne reste éteint tant qu'il n'est pas allumé dans Paramètres › Paiement en ligne. | 고객이 Qonto 결제 링크로 카드나 Apple Pay로 온라인 결제를 할 수 있게 돼요. 확정 이메일의 « Payer en ligne » 버튼으로, 또는 사이트에서 메뉴 케이크를 바로 주문하면서요. 사이트에서 결제된 주문은 이미 확정된 상태로 들어와요. 온라인 결제는 설정 › 온라인 결제에서 켜기 전까지 꺼져 있어요.
+# Qonto (Paramètres), textes de la mise en place
+Portail développeurs de Qonto, compte de Youngmi : application « Gestion Madame Cho », cas d'usage « Automate your business operations », accès OAuth 2.0. | Qonto 개발자 포털, Youngmi 계정: « Gestion Madame Cho » 앱, 사용 사례 « Automate your business operations », OAuth 2.0 접근.
+Droits : organization.read, client_invoices.read et offline_access ; pour le paiement en ligne, aussi payment_link.read, payment_link.write et webhook ; rien d'autre. | 권한: organization.read, client_invoices.read, offline_access. 온라인 결제에는 payment_link.read, payment_link.write, webhook도 필요해요. 그 밖에는 없어요.
+Adresse de retour (Redirect URI) : | 돌아올 주소 (Redirect URI):
+Collez ici le Client ID et le Client Secret de Production. Le secret est gardé hors du site et jamais réaffiché. | 여기에 Production의 Client ID와 Client Secret을 붙여 넣으세요. 비밀 키는 사이트 밖에 보관되고 다시 보이지 않아요.
+Aucun compte bancaire (facturation seulement) | 은행 계좌 없음 (청구서만)
+Reliez cet espace à nouveau bientôt : Qonto demande de redonner l'accord tous les 90 jours. | 곧 이 공간을 다시 연결하세요. Qonto는 90일마다 다시 동의해 달라고 해요.
 TXT;
 }
 
 /* ---------- Dates, heures, durées ---------- */
 /** « 06/11/2026 à 21 h 09 », « 02/09/2026 », « dimanche 1 novembre », « 6 novembre 2026 », « dim. 1 nov. » → coréen. */
+/* ---------- Paiement en ligne (spécification 006, 28/11/2026) ---------- */
+/** Les moyens nommés dans l'historique du paiement en ligne (Qonto, et MOYENS en minuscules pour « Payée deux fois »). */
+const KO_PAIEMENT_MOYENS = ['carte bancaire' => '카드', 'Apple Pay' => 'Apple Pay', 'PayPal' => 'PayPal', 'iDEAL' => 'iDEAL', 'virement' => '계좌 이체',
+                            'carte (tap to pay)' => '카드 (Tap to Pay)', 'espèces' => '현금', 'autre' => '기타', 'autrement' => '다른 방법',
+                            'en ligne' => '온라인', 'moyen non noté' => '결제 수단 미기록'];
+/** Pourquoi un lien est annulé, un paiement n'aboutit pas, ou un lien ne peut pas être créé (paiement.php). */
+const KO_PAIEMENT_RAISONS = ['commande annulée' => '주문 취소', 'commande remise' => '전달 완료된 주문', 'commande sans suite' => '진행 안 된 주문',
+                             'commande payée autrement' => '다른 방법으로 결제됨', 'prix changé' => '가격 변경', 'délai de paiement dépassé' => '결제 시간 초과',
+                             'le client a choisi d\'envoyer sa demande sans payer' => '고객이 결제 없이 문의를 보내기로 함', 'commande supprimée' => '주문 삭제',
+                             'nouveau lien pour un autre montant' => '다른 금액의 새 링크', 'erreur technique au moment du paiement' => '결제할 때 기술 오류',
+                             'lien expiré chez Qonto' => 'Qonto에서 링크 만료', 'lien annulé' => '링크 취소됨', 'commande effacée' => '삭제된 주문',
+                             'les professionnels paient sur facture' => '업체는 청구서로 결제해요', 'déjà payée' => '이미 결제됨', 'un paiement en ligne est déjà arrivé' => '온라인 결제가 이미 들어왔어요',
+                             'la commande n\'est pas confirmée' => '주문이 확정되지 않았어요', 'pas encore de prix final' => '아직 최종 가격이 없어요'];
+/** « 40 € par carte bancaire, le 28/11/2026 à 01 h 50 » → « 40 € (카드), 2026. 11. 28. 01:50 » ; null si un morceau est inconnu. */
+function coreen_paiement_detail(string $s): ?string {
+    if (!preg_match('/^([−-]?\d[\d ]*(?:,\d{1,2})? €)(?: par (.+?))?, le (.+)$/u', $s, $m) || ($d = coreen_date($m[3])) === null) return null;
+    return $m[1] . (($m[2] ?? '') !== '' ? ' (' . (KO_PAIEMENT_MOYENS[$m[2]] ?? $m[2]) . ')' : '') . ', ' . $d;
+}
+function coreen_paiement_raison(string $s): ?string {
+    if (isset(KO_PAIEMENT_RAISONS[$s])) return KO_PAIEMENT_RAISONS[$s];
+    if (preg_match('/^annulé par (.+)$/u', $s, $m)) return $m[1] . ' 취소';
+    if (preg_match('/^montant sous le minimum du paiement en ligne \((.+)\)$/u', $s, $m)) return '온라인 결제 최소 금액(' . $m[1] . ')보다 적어요';
+    return null;
+}
+
 function coreen_date(string $s): ?string {
     $s = trim($s);
     if (preg_match('~^(\d{2})/(\d{2})/(\d{4})(?: à (\d{2}) h (\d{2}))?$~', $s, $m)) {
@@ -2063,8 +2185,9 @@ function coreen_date(string $s): ?string {
 function coreen_encaissements(string $s): ?string {
     $l = [];
     foreach (explode(' + ', $s) as $x) {
-        if (!preg_match('~^(Tap to Pay|[Rr]emise de chèques|[Vv]irement) du (\d{2}/\d{2}/\d{4}) \((.+)\)$~u', trim($x), $m) || ($d = coreen_date($m[2])) === null) return null;
-        $l[] = match (mb_strtolower($m[1])) { 'tap to pay' => $d . ' Tap to Pay 입금', 'remise de chèques' => $d . ' 수표 입금', default => $d . ' 이체' } . ' (' . $m[3] . ')';
+        if (!preg_match('~^(Tap to Pay|[Rr]emise de chèques|[Vv]irement|[Vv]ersement des paiements en ligne \(Mollie\)) du (\d{2}/\d{2}/\d{4}) \((.+)\)$~u', trim($x), $m) || ($d = coreen_date($m[2])) === null) return null;
+        $l[] = match (mb_strtolower($m[1])) { 'tap to pay' => $d . ' Tap to Pay 입금', 'remise de chèques' => $d . ' 수표 입금',
+                                              'versement des paiements en ligne (mollie)' => $d . ' 온라인 결제 입금 (Mollie)', default => $d . ' 이체' } . ' (' . $m[3] . ')';
     }
     return implode(' + ', $l);
 }
@@ -2203,6 +2326,63 @@ function coreen_motifs(): array {
             ? '지금은 할 수 없어요: ' . KO_PROPOSITION_RAISONS[$m[1]] . '. 어시스턴트에게 다시 부탁하세요.' : null],
         // Une indispo seule, écrite en toutes lettres (carte de l'assistant)
         ['/^.+, (?:toute la journée|\d{1,2} h(?: \d{2})? – \d{1,2} h(?: \d{2})?)(?: \(.*\))?$/us', fn($m) => $indispo($m[0])],
+        // Paiement en ligne (spécification 006, 28/11/2026)
+        ['/^Lien de paiement en ligne créé : (' . $E . ')$/u', fn($m) => '온라인 결제 링크 만듦: ' . $m[1]],
+        ['/^Lien de paiement en ligne annulé \((.+)\)$/u', fn($m) => ($r = coreen_paiement_raison($m[1])) !== null ? '온라인 결제 링크 취소 (' . $r . ')' : null],
+        ['/^Lien de paiement en ligne à annuler \((.+)\) : Qonto n\'a pas répondu, réessayez depuis la commande$/u',
+            fn($m) => ($r = coreen_paiement_raison($m[1])) !== null ? '취소할 온라인 결제 링크 (' . $r . '): Qonto가 응답하지 않았어요. 주문에서 다시 해 보세요' : null],
+        ['/^Paiement en ligne non abouti \((.+)\) : demande à traiter comme les autres$/u',
+            fn($m) => ($r = coreen_paiement_raison($m[1])) !== null ? '온라인 결제 안 됨 (' . $r . '): 다른 문의처럼 처리하세요' : null],
+        ['/^Paiement en ligne reçu : (.+)$/u', fn($m) => ($x = coreen_paiement_detail($m[1])) !== null ? '온라인 결제 받음: ' . $x : null],
+        ['/^Payé en ligne : (.+)$/u', fn($m) => ($x = coreen_paiement_detail($m[1])) !== null ? '온라인 결제 완료: ' . $x : null],
+        ['/^Paiement en ligne remboursé dans Mollie : (' . $E . ')$/u', fn($m) => 'Mollie에서 온라인 결제 환불: ' . $m[1]],
+        ['/^Le client paie en ligne sur le site \((' . $E . ')\) : place retenue jusqu\'à (\d{2}:\d{2})$/u', fn($m) => '고객이 사이트에서 온라인 결제 중 (' . $m[1] . '): ' . $m[2] . '까지 자리를 잡아 둠'],
+        ['/^Le client est en train de payer en ligne sur le site \(place retenue jusqu\'à (\d{2}:\d{2})\) : attendez avant de lui répondre\.$/u',
+            fn($m) => '고객이 지금 사이트에서 온라인 결제 중이에요 (' . $m[1] . '까지 자리를 잡아 둠). 답하기 전에 기다리세요.'],
+        ['/^Reçu du paiement en ligne (envoyé automatiquement|renvoyé) à (\S+) : « (.+) »$/u',
+            fn($m) => $m[2] . '에게 온라인 결제 영수증 ' . ($m[1] === 'renvoyé' ? '다시 보냄' : '자동 발송') . ': « ' . $m[3] . ' »'],
+        ['/^Payée deux fois : en ligne \((.+)\) et (.+) : (' . $E . ') à rembourser au client dans Mollie\.$/u',
+            fn($m) => ($x = coreen_paiement_detail($m[1])) !== null ? '두 번 결제됨: 온라인 (' . $x . '), ' . (KO_PAIEMENT_MOYENS[$m[2]] ?? $m[2]) . '. Mollie에서 고객에게 ' . $m[3] . '을 환불하세요.' : null],
+        ['/^Payée en ligne après son annulation \((.+)\) : à rembourser en entier dans Mollie\.$/u',
+            fn($m) => ($x = coreen_paiement_detail($m[1])) !== null ? '취소 뒤에 온라인으로 결제됨 (' . $x . '). Mollie에서 전액 환불하세요.' : null],
+        ['/^Paiement en ligne à vérifier : Qonto annonce (un montant illisible|' . $E . ') au lieu de (' . $E . ')\.$/u',
+            fn($m) => '온라인 결제 확인 필요: Qonto가 ' . $m[2] . ' 대신 ' . ($m[1] === 'un montant illisible' ? '읽을 수 없는 금액' : $m[1]) . '을 알려 왔어요.'],
+        ['/^Paiement en ligne : bouton de la confirmation (allumé|éteint), « Commander et payer » (allumé|éteint)$/u',
+            fn($m) => '온라인 결제: 확정 이메일 버튼 ' . ($m[1] === 'allumé' ? '켬' : '끔') . ', « Commander et payer » ' . ($m[2] === 'allumé' ? '켬' : '끔')],
+        ['/^Frais estimés : (' . $E . ') \(barème des Paramètres ; les frais réels sont retenus sur les versements de Mollie\)$/u',
+            fn($m) => '예상 수수료: ' . $m[1] . ' (설정의 요율 기준. 실제 수수료는 Mollie 입금에서 빠져요)'],
+        ['/^Remboursé dans Mollie, noté le (.+) par (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? 'Mollie에서 환불함 · ' . $d . ' 기록 (' . $m[2] . ')' : null],
+        ['/^Reçu envoyé le (.+)\.$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 영수증 보냄.' : null],
+        ['/^Payé le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 결제됨' : null],
+        ['/^lien créé le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 링크 만듦' : null],
+        ['/^commandé sur le site le (.+)$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . ' 사이트에서 주문' : null],
+        ['/^Envoyer le reçu à (\S+) \?$/u', fn($m) => $m[1] . '로 영수증을 보낼까요?'],
+        ['/^À rembourser : (' . $E . ')$/u', fn($m) => '환불할 금액: ' . $m[1]],
+        ['/^Le remboursement de (' . $E . ') est bien fait dans Mollie \?$/u', fn($m) => 'Mollie에서 ' . $m[1] . ' 환불을 마쳤나요?'],
+        ['/^Le bouton « Payer en ligne » \((' . $E . ')\) part avec la confirmation\. Pour un client sans email, créez le lien et copiez-le\.$/u',
+            fn($m) => '« Payer en ligne » 버튼(' . $m[1] . ')이 확정 이메일과 함께 나가요. 이메일이 없는 고객은 링크를 만들어 복사하세요.'],
+        ['/^Pas de paiement en ligne pour cette commande : (.+)\.$/u', fn($m) => ($r = coreen_paiement_raison($m[1])) !== null ? '이 주문은 온라인 결제를 할 수 없어요: ' . $r . '.' : null],
+        ['/^Pas de lien pour cette commande(?: : (.+))?\.$/u',
+            fn($m) => ($r = ($m[1] ?? '') === '' ? '' : coreen_paiement_raison($m[1])) !== null ? '이 주문은 결제 링크를 만들 수 없어요' . ($r !== '' ? ': ' . $r : '') . '.' : null],
+        ['/^Avec le bouton « Payer en ligne » \((' . $E . ')\)$/u', fn($m) => '« Payer en ligne » 버튼 포함 (' . $m[1] . ')'],
+        ['/^Elle a été payée en ligne : remboursez (' . $E . ') en entier dans Mollie \(cadre « Paiement en ligne »\)\.$/u',
+            fn($m) => '온라인으로 결제된 주문이에요. Mollie에서 ' . $m[1] . ' 전액을 환불하세요 (‘온라인 결제’ 칸).'],
+        ['/^Qonto n\'a pas répondu \((.+)\) : rien n\'a changé, réessayez dans un moment\.$/u', fn($m) => 'Qonto가 응답하지 않았어요 (' . $m[1] . '). 바뀐 것은 없어요. 잠시 뒤에 다시 해 보세요.'],
+        ['/^Qonto n\'a pas accepté \((.+)\) : rien n\'a changé\.$/u', fn($m) => 'Qonto가 받아들이지 않았어요 (' . $m[1] . '). 바뀐 것은 없어요.'],
+        ['/^Espace relié avec ces droits : (.+)\.$/u', fn($m) => '이 권한으로 연결된 공간: ' . $m[1] . '.'],
+        ['/^Notifications de Qonto actives depuis le (.+)\.$/u', fn($m) => ($d = coreen_date($m[1])) ? $d . '부터 Qonto 알림이 켜져 있어요.' : null],
+        ['/^Commande de la carte passée sur le site, paiement en ligne en cours(.*)$/u',
+            fn($m) => ($x = coreen_motif('Demande envoyée par le formulaire du site' . $m[1])) !== null && str_starts_with($x, '사이트 문의 양식으로 접수')
+                ? '사이트에서 메뉴 케이크 주문, 온라인 결제 중' . substr($x, strlen('사이트 문의 양식으로 접수')) : null],
+        // Qonto (Paramètres) : l'espace relié
+        ['/^Relié le (.+?) par (.+?)(?: · dernière lecture (.+))?$/u', function ($m) {
+            $d = coreen_date($m[1]);
+            $d2 = ($m[3] ?? '') !== '' ? coreen_date($m[3]) : '';
+            return $d !== null && $d2 !== null ? $d . ' 연결 (' . $m[2] . ')' . ($d2 !== '' ? ' · 마지막으로 읽은 때 ' . $d2 : '') : null;
+        }],
+        ['/^Retirer l\'espace Qonto « (.+) » \? La gestion ne le lira plus\.$/u', fn($m) => 'Qonto 공간 « ' . $m[1] . ' »을 뺄까요? 관리 화면이 더 이상 읽지 않아요.'],
+        ['/^Dernière erreur : (.+)$/u', fn($m) => '마지막 오류: ' . $m[1]],
+        ['/^Aucun encaissement Qonto non rapproché sur les (\d+) derniers jours\.$/u', fn($m) => '최근 ' . $m[1] . '일 동안 대조되지 않은 Qonto 입금이 없어요.'],
         // Plages de retrait (spécification 007, 27/11/2026)
         ['/^La plage (.+?) du (.+) est fermée aux nouvelles demandes : les clients ne peuvent plus la choisir sur le site\.$/u',
             fn($m) => ($d = coreen_date($m[2])) && ($h = $plage($m[1])) ? $d . ' ' . $h . ' 시간대를 새 주문에 닫았어요. 고객이 사이트에서 더 이상 고를 수 없어요.' : null],

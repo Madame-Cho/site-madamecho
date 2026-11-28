@@ -545,6 +545,9 @@
         $('[data-recu-titre]').textContent = ', votre commande est confirmée';
         $('[data-recu-texte]').textContent = 'Paiement reçu. Un mail de confirmation, qui vaut reçu, part à votre adresse. Madame Cho vous attend ' + (form.elements.date.value ? 'le ' + dateFr(form.elements.date.value) + ', ' + (CAT.plages[form.elements.plage.value] || '').toLowerCase() : 'au jour convenu') + '.';
         $('[data-recu-suite]').textContent = 'Un empêchement ? Prévenez Madame Cho au plus tôt, en répondant au mail ou au 06 61 31 17 79 : une commande payée en ligne puis annulée est remboursée en entier.';
+        var rc = $('[data-recu-courrier]'), rd = $('[data-recu-delai]');
+        if (rc) rc.textContent = 'Le mail de confirmation vient';
+        if (rd) rd.textContent = 'si vous ne le voyez pas d’ici quelques minutes';
       }
       var msg = $('[data-recu-message]');
       if (msg && variante && variante.message) { msg.textContent = variante.message; msg.hidden = false; }

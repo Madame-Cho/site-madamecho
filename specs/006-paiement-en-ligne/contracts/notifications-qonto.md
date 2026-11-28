@@ -33,7 +33,10 @@ Chaque notification acceptée ou refusée laisse une ligne courte dans le journa
 
 ## Abonnement
 
-Créé par la gestion (Paramètres › Qonto › « Activer le paiement en ligne »), au toucher de Youngmi,
-après la nouvelle liaison : `POST /v2/webhook_subscriptions` avec `callback_url`, `types =
-["v1/payment-links"]` et un secret de 64 caractères tiré au hasard par le serveur. Le secret est
-gardé dans `parametres`, jamais montré, jamais exporté.
+Créé par la gestion (Paramètres › Paiement en ligne › « Activer le paiement en ligne »), au toucher
+de Youngmi, après la nouvelle liaison : `POST /v2/webhook_subscriptions` avec un corps à plat
+(`callback_url`, `types = ["v1/payment-links"]`, `secret`, `description`) et un secret de 64 caractères
+tiré au hasard par le serveur. Le secret est gardé dans `parametres`, jamais montré, jamais exporté.
+« Couper le paiement en ligne » retire l'abonnement (`DELETE /v2/webhook_subscriptions/{id}`) et
+éteint les deux interrupteurs ; les liens déjà envoyés restent relus chaque heure par la tâche
+planifiée jusqu'à leur échéance.

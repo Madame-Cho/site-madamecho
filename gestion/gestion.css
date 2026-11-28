@@ -732,13 +732,10 @@ details.geste>form{padding:0 2px 6px}
 .confirmer-bas{margin:8px 0 6px;padding:12px 14px;border-radius:var(--r);background:var(--ivoire)}
 .confirmer-bas p{margin:0 0 10px}
 .apercu-mail .m-814d6317{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-bottom:14px}
-.apercu-mail .m-62b54660{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:22px;color:#2B2623;padding:2px 0}
-.apercu-mail .m-20c0cfd1{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#736A64;padding:0 0 2px}
-.apercu-mail .m-42d07982{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#2B2623;border-top:1px solid #DDD3C6;padding:8px 0 0}
 .apercu-mail .m-dd04cd0d{background:#F3EDE4;border-radius:6px;margin-top:6px}
 .apercu-mail .m-1349f2cd{padding:18px 20px}
+.apercu-mail .m-8b1f556a{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#2B2623;margin:0}
 .apercu-mail .m-abf3c79a{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:17px;line-height:24px;color:#3B1D0E;font-weight:bold;margin:0}
-.apercu-mail .m-2ca25459{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#2B2623;margin:2px 0 14px}
 .apercu-mail .m-3bd4e46c{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:20px}
 .apercu-mail .m-cbd26aef{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:22px}
 .apercu-mail .m-194dc928{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#736A64;margin:0}
@@ -753,9 +750,18 @@ details.geste>form{padding:0 2px 6px}
 .apercu-mail .m-b8cebe6a{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;line-height:16px;letter-spacing:2px;color:#736A64;margin:0 0 18px}
 .apercu-mail .m-ad4bac1d{padding:28px 0 0}
 .apercu-mail .m-5f4bedf1{border-top:1px solid #E9E5E1;padding-top:16px}
+.apercu-mail .m-62b54660{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:22px;color:#2B2623;padding:2px 0}
+.apercu-mail .m-20c0cfd1{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#736A64;padding:0 0 2px}
+.apercu-mail .m-42d07982{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#2B2623;border-top:1px solid #DDD3C6;padding:8px 0 0}
+.apercu-mail .m-2ca25459{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#2B2623;margin:2px 0 14px}
 .apercu-mail .m-24c7d94c{color:#6E2A10;font-weight:bold}
 .apercu-mail .m-055df721{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:14px}
 .apercu-mail .m-1ba5d5a6{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:4px}
+.apercu-mail .m-933fc0e7{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:14px;font-size:13px;line-height:19px;color:#736A64}
+.apercu-mail .m-3ae1f62a{margin-top:20px}
+.apercu-mail .m-f9652945{background:#3B1D0E;border-radius:6px}
+.apercu-mail .m-35ef3c87{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;display:inline-block;padding:13px 24px;font-size:16px;line-height:20px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:6px}
+.apercu-mail .m-c8758584{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#2B2623;margin:0;margin-top:10px}
 
 /* Frise des étapes d'une commande (retour d'Olivier en test, 07/11/2026) */
 .parcours{position:sticky;top:56px;z-index:15;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:4px calc(-1 * var(--g)) 14px;padding:10px var(--g) 8px;list-style:none;background:var(--fond);border-bottom:1px solid var(--ligne)}
@@ -1014,3 +1020,20 @@ html:lang(ko) .par::after{content:" 님"}
 .rappro-fait{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--ligne);font-size:15px}
 .rappro-fait:last-child{border-bottom:0}
 .rappro-fait form{margin:0}
+/* Paiement en ligne (spécification 006) : le cadre de la commande, « À rembourser », les étapes des Paramètres */
+.paiement-en-ligne{margin-top:16px;padding-top:12px;border-top:1px solid var(--ligne);scroll-margin-top:72px;min-width:0}
+.paiement-en-ligne h3{margin:0 0 8px}
+.liens-paiement{list-style:none;padding-left:0}
+.liens-paiement li{padding:8px 0;border-bottom:1px solid var(--ligne)}
+.liens-paiement li:last-child{border-bottom:0}
+.liens-paiement p{margin:2px 0}
+.liens-paiement p[translate=no]{overflow-wrap:anywhere;color:var(--doux)}
+.liens-paiement .actions{margin:6px 0}
+.liens-paiement .actions form,.paiement-en-ligne>form{margin:6px 0 0}
+.a-rembourser{padding:12px 14px;margin:8px 0 12px;background:var(--rouge-f);border-radius:var(--r)}
+.a-rembourser p{margin:0 0 8px}
+.a-rembourser b{color:var(--erreur);font-weight:600}
+.a-rembourser form{margin:0}
+.marche li.fait{color:var(--doux)}
+.marche li.fait .icone,.marche li.fait svg{color:var(--vert)}
+.marche li form{margin:6px 0 2px}

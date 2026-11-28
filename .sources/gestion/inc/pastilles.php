@@ -28,6 +28,9 @@ const CHAMPS_FICHE = ['type' => 'particulier ou professionnel', 'nom' => 'nom', 
  * Une ligne par publication qui change ce que Youngmi voit ; les textes coréens sont dans inc/coreen.php.
  */
 const NOUVEAUTES = [
+    ['id' => '2026-11-paiement', 'le' => '2026-11-28', 'titre' => 'Le paiement en ligne',
+     'texte' => 'Vos clients pourront payer en ligne, par carte bancaire ou Apple Pay, grâce aux liens de paiement de Qonto : avec le bouton « Payer en ligne » du mail de confirmation, ou en commandant des gâteaux de la carte directement sur le site. Une commande payée sur le site arrive déjà confirmée. Le paiement en ligne reste éteint tant qu\'il n\'est pas allumé dans Paramètres › Paiement en ligne.',
+     'lien' => ['manuel', 'paiement']],
     ['id' => '2026-11-plages', 'le' => '2026-11-28', 'titre' => 'Les plages de retrait',
      'texte' => 'Le site propose maintenant six plages de retrait, du lundi au samedi : 9 h – 10 h 30, 10 h 30 – 12 h, 12 h – 14 h, 14 h – 16 h, 16 h – 18 h et 18 h – 19 h. Plusieurs clients peuvent venir dans la même plage, jusqu\'à 5 retraits confirmés ; ensuite le site ne la propose plus. Dans l\'Agenda, touchez un jour : « Plages de retrait » montre « 2 sur 5 » pour chaque plage, et vous pouvez la fermer, la rouvrir ou changer son maximum. Le maximum de tous les jours se règle dans Paramètres › Retraits. Le dimanche, plus de retrait sur le site. Sous chaque plage, vous voyez les noms des clients. Une plage complète ou fermée ne se confirme qu\'en cochant « Confirmer quand même », seulement si c\'est convenu avec le client.',
      'lien' => ['agenda', 'plages']],

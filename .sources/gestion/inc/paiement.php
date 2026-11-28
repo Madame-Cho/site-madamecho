@@ -104,6 +104,8 @@ function lien_refus(array $k): string {
     if (!empty($k['efface_le'])) return 'commande effacée';
     if (($k['client_type'] ?? '') === 'professionnel' || ($k['type'] ?? '') === 'pro') return 'les professionnels paient sur facture';
     if (in_array($k['paiement'] ?? '', ['paye', 'rembourse'], true)) return 'déjà payée';
+    // un paiement en ligne déjà arrivé (même « à vérifier ») : pas de second bouton, pour ne pas faire payer deux fois
+    if (!empty($k['id']) && gestion_base_existante() && lien_paye((int)$k['id'])) return 'un paiement en ligne est déjà arrivé';
     if (!in_array($k['statut'] ?? '', ['confirmee'], true)) return 'la commande n\'est pas confirmée';
     if ($k['prix_final'] === null) return 'pas encore de prix final';
     if (montant_du($k) < paiement_minimum()) return 'montant sous le minimum du paiement en ligne (' . euros(paiement_minimum()) . ')';
@@ -717,7 +719,7 @@ function bloc_paiement_en_ligne(array $k): string {
     $rows = '';
     foreach (array_slice($liens, 0, 5) as $l) {
         $etat = PAIEMENT_ETATS[$l['etat']] ?? $l['etat'];
-        $quoi = '<b>' . h(euros((int)$l['montant'])) . '</b> · ' . h($etat) . ' · ' . h(($l['origine'] === 'site' ? 'payé sur le site' : 'lien créé') . ' le ' . date_fr((string)$l['cree_le'], 'heure'));
+        $quoi = '<b>' . h(euros((int)$l['montant'])) . '</b> · ' . h($etat) . ' · ' . h(($l['origine'] === 'site' ? 'commandé sur le site' : 'lien créé') . ' le ' . date_fr((string)$l['cree_le'], 'heure'));
         $suite = '';
         if ($l['paiement_qonto_id'] !== null) {
             $quoi = '<b>' . h(euros((int)($l['paye_montant'] ?? $l['montant']))) . '</b> · ' . h($l['recu_etat'] === 'a_verifier' ? 'Paiement à vérifier' : 'Payé le ' . date_fr((string)$l['paye_le'], 'heure'))
