@@ -23,12 +23,15 @@ déjà avec leur accord ne sont pas recopiés dans les spécifications : on renv
   qu'après le feu vert explicite d'Olivier ou de Youngmi sur cette version, dans la conversation
   (R-07, R-19). Ensuite : vérification en ligne, journal des publications, Registre.
 - Aucun email n'est envoyé par une IA (R-01). Un outil prépare un brouillon ou un texte, et une
-  personne l'envoie, ou clique elle-même sur le bouton qui l'envoie.
+  personne l'envoie, ou clique elle-même sur le bouton qui l'envoie. Exceptions inscrites au
+  rulebook : l'accusé de réception d'une demande (v0.49) et le mail de confirmation et de reçu
+  du paiement en ligne (v0.50), textes fixes écrits à l'avance.
 - Tout outil qui envoie des emails en @madamecho.com est signé DKIM (rulebook v0.38) ; un email
   qui ne peut pas être signé ne part pas.
 - Paiement, suppression, signature, publication sur les réseaux sociaux : jamais par une IA ni
   par le code sans la personne compétente (R-07, R-24). Aucune IA n'a de compte dans
-  l'espace de gestion.
+  l'espace de gestion. Exception (R-24, v0.50) : la gestion crée et désactive les liens de
+  paiement de la spécification 006 ; jamais de virement ni de remboursement par le code.
 
 ### III. L'information sur un produit vient de la fiche validée par Youngmi
 
@@ -116,4 +119,4 @@ ChatGPT d'Olivier, 2026-11-07, décision « Tout retenir, C1-C3 et C8 d'abord »
 - Version au format MAJEUR.MINEUR.CORRECTIF : MAJEUR quand un principe est retiré ou
   redéfini, MINEUR quand un principe ou une section est ajouté, CORRECTIF pour la forme.
 
-**Version**: 1.1.0 (principe VIII ajouté le 2026-11-07 après l'audit n° 2) | **Ratified**: TODO(RATIFICATION_DATE) : proposée le 2026-11-07 par Claude, IA maître d'Olivier Dion, à ratifier par Olivier | **Last Amended**: 2026-11-07
+**Version**: 1.2.0 (principe VIII ajouté le 2026-11-07 après l'audit n° 2 ; exceptions R-01 et R-24 du rulebook v0.50 ajoutées au principe II le 2026-11-28) | **Ratified**: TODO(RATIFICATION_DATE) : proposée le 2026-11-07 par Claude, IA maître d'Olivier Dion, à ratifier par Olivier | **Last Amended**: 2026-11-28
