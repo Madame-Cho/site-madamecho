@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,11 +31,11 @@
 
 ## Notes
 
-- 2 marqueurs [NEEDS CLARIFICATION] : FR-013 (reçu envoyé tout seul, exception à R-01) et FR-018
-  (ce qui est gardé après une annulation tardive). FR-007 levé le 2026-11-21 (la gestion crée le
-  lien au toucher de Youngmi, exception à R-24). À lever avant `/speckit-plan`.
+- 2026-11-28 : plus aucun marqueur. FR-007 levé le 2026-11-21 ; FR-013 (reçu automatique) et
+  FR-018 (rien n'est gardé après annulation) tranchés le 2026-11-27 ; l'acompte est retiré (FR-002) ;
+  le temps 2 entre dans la même version, avec son interrupteur, les plages étant en ligne.
 - Le prestataire (lien de paiement de Qonto) est nommé dans le constat et les hypothèses parce que
   c'est le système de paiement de Madame Cho ; les exigences restent indépendantes de l'outil.
-- À vérifier à l'activation chez Qonto : remboursement, plafond et durée de vie d'un lien, délai
-  et forme des versements.
+- Vérifié le 2026-11-28 (aide Qonto et Mollie) : remboursement dans Mollie, liens valables 6 mois,
+  versement chaque jour ouvré, réserve glissante d'environ 20 % ; plafond par lien encore inconnu.
 - Rien de privé : aucun nom de client, aucun tarif professionnel, aucun identifiant de compte.
